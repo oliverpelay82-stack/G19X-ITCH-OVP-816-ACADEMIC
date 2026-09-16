@@ -9,6 +9,7 @@ from config.database import init_db
 from controllers.titular_controller import router as titular_router
 from controllers.expediente_controller import router as expediente_router
 from controllers.documento_controller import router as documento_router
+from controllers.regla_controller import router as regla_router
 
 # Inicializar la aplicación FastAPI
 app = FastAPI(
@@ -37,6 +38,7 @@ def on_startup():
 app.include_router(titular_router)
 app.include_router(expediente_router)
 app.include_router(documento_router)
+app.include_router(regla_router)
 
 
 from fastapi.responses import HTMLResponse
