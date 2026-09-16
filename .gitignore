@@ -16,3 +16,8 @@ storage_vault/*
 .vscode/
 .idea/
 Thumbs.db
+
+# Frontend (Vite + React)
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
