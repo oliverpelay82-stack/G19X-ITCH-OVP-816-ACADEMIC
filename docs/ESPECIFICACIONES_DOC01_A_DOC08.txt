@@ -1,0 +1,1386 @@
+
+================================================================================
+ARCHIVO: 07_Plan_Proyecto_Backlog_APA7.docx
+================================================================================
+
+Plan del Proyecto y Product Backlog
+Fase de Propuesta y Planificacion
+Motor de Validacion de Cumplimiento Documental
+Oliver
+Residencia Profesional — Ingenieria en Sistemas Computacionales
+PluriOne S.A. de C.V. — Develop Talent & Technology
+Septiembre de 2026
+Introduccion
+El presente documento establece el plan formal del proyecto y el Product Backlog para el desarrollo del Motor de Validacion de Cumplimiento Documental de PluriOne S.A. de C.V. Este entregable cierra la Fase de Propuesta y Planificacion del cronograma y constituye la hoja de ruta operativa que guiara la ejecucion del proyecto durante las 16 semanas de la residencia profesional (320 horas totales).
+El plan se estructura conforme a la metodologia agil Scrum (Schwaber y Sutherland, 2020), definida en la Ficha Tecnica 045 del proyecto. Se detallan los roles del equipo, la organizacion de los sprints, el Product Backlog con las historias de usuario priorizadas, el calendario de ejecucion y los criterios de aceptacion globales del producto.
+Toda la informacion contenida en este documento se fundamenta en los entregables previos de la Fase de Analisis: el Documento de Requerimientos (SRS), la Estrategia de Validacion Multinivel y el Catalogo de Reglas de Negocio, garantizando la coherencia y trazabilidad entre la planificacion y los requisitos identificados.
+Metodologia de Desarrollo: Scrum
+El proyecto se desarrollara bajo la metodologia agil Scrum, la cual permite avanzar de forma iterativa e incremental, entregando funcionalidad verificable al final de cada sprint y adaptandose a los ajustes que surjan durante el desarrollo. Segun Schwaber y Sutherland (2020), Scrum se fundamenta en los pilares de transparencia, inspeccion y adaptacion, lo que resulta adecuado para proyectos donde los requerimientos pueden refinarse conforme se avanza en la implementacion.
+Roles del Equipo Scrum
+Tabla 1
+Asignacion de roles del equipo Scrum
+Estructura de los Sprints
+Cada sprint tendra una duracion de dos semanas (40 horas de trabajo), al termino de las cuales se presentara un incremento funcional verificable al asesor empresarial. La estructura de cada sprint incluye:
+1. Planificacion del Sprint:
+Seleccion de las historias de usuario prioritarias del Product Backlog.
+2. Desarrollo:
+Implementacion del codigo, integracion de servicios y pruebas unitarias.
+3. Revision del Sprint:
+Demostracion del incremento funcional al Product Owner.
+4. Retrospectiva:
+Identificacion de mejoras para el siguiente sprint.
+Fases del Proyecto y Cronograma General
+El proyecto se ejecuta en un periodo de 16 semanas (320 horas totales), distribuidas en las siguientes fases conforme al cronograma aprobado en el anteproyecto de residencia profesional:
+Tabla 2
+Fases del proyecto, semanas asignadas y entregables
+Nota. La Fase 4 (Desarrollo) se organiza internamente en cuatro sprints de dos semanas cada uno.
+Plan de Sprints de Desarrollo
+La Fase 4 (Desarrollo del Motor) comprende 240 horas distribuidas en ocho semanas, organizadas en cuatro sprints de dos semanas cada uno. Cada sprint tiene un objetivo funcional claro, con entregables verificables y criterios de aceptacion definidos.
+Sprint 1 (Semanas 5 - 6): Cimientos del Sistema
+Objetivo: Construir la base del sistema sobre la cual se apoyaran los demas modulos. Incluye el diseno de la base de datos, la API REST inicial, la autenticacion de usuarios con roles diferenciados y el modulo de gestion de expedientes con carga de documentos.
+Tabla 3
+Historias de usuario del Sprint 1
+Total de horas estimadas para el Sprint 1: 54 horas.
+Sprint 2 (Semanas 7 - 8): Motor de Reglas y Vigencias
+Objetivo: Implementar el motor de reglas configurables, la verificacion de vigencia de documentos y el sistema de alertas y recomendaciones. Al finalizar este sprint, el sistema debe ser capaz de evaluar un expediente de forma determinista (sin inteligencia artificial) y emitir un dictamen basico de cumplimiento.
+Tabla 4
+Historias de usuario del Sprint 2
+Total de horas estimadas para el Sprint 2: 56 horas.
+Sprint 3 (Semanas 9 - 10): Analisis Inteligente con IA
+Objetivo: Integrar los servicios de extraccion de texto (OCR) e inteligencia artificial para el analisis semantico de documentos. Implementar el agente de validacion inteligente con sus habilidades (skills) configurables. Al finalizar este sprint, el sistema debe ser capaz de extraer texto de un PDF, analizar su contenido con un modelo de lenguaje y emitir un dictamen con cita textual y nivel de confianza.
+Tabla 5
+Historias de usuario del Sprint 3
+Total de horas estimadas para el Sprint 3: 66 horas.
+Sprint 4 (Semanas 11 - 12): Reportes, Dashboard e Integracion
+Objetivo: Desarrollar el panel de control con indicadores de cumplimiento, el sistema de reportes exportables y completar la integracion entre todos los modulos. Al finalizar este sprint, el sistema debe estar funcionalmente completo y listo para la fase de pruebas.
+Tabla 6
+Historias de usuario del Sprint 4
+Total de horas estimadas para el Sprint 4: 64 horas.
+Resumen del Product Backlog
+El Product Backlog completo contiene 33 historias de usuario distribuidas en los 7 modulos del sistema y un componente de integracion general. La siguiente tabla resume la distribucion por modulo y sprint:
+Tabla 7
+Distribucion de historias de usuario por modulo y sprint
+Calendario del Proyecto
+El siguiente calendario integra todas las fases del proyecto con sus fechas estimadas, considerando que la residencia profesional inicia formalmente el 31 de agosto de 2026 y concluye el 19 de diciembre de 2026 (16 semanas completas):
+Tabla 8
+Calendario detallado del proyecto por semanas
+Criterios de Aceptacion del Producto
+Para considerar el proyecto como finalizado satisfactoriamente y proceder a la entrega formal, el sistema debe cumplir con los siguientes criterios de aceptacion:
+Criterios Funcionales
+El sistema permite crear, organizar y buscar expedientes corporativos con identificador unico y clasificacion por tipo.
+El sistema permite cargar documentos en formato PDF e imagen, calculando automaticamente la huella criptografica SHA-256.
+El motor de reglas evalua correctamente la completitud, vigencia y presencia de anexos de un expediente.
+Las reglas de validacion son configurables desde la interfaz sin necesidad de modificar el codigo fuente.
+El servicio de OCR extrae texto de documentos escaneados de forma legible.
+La inteligencia artificial analiza clausulas contractuales y emite dictamenes con cita textual y nivel de confianza.
+Los hallazgos con baja confianza requieren ratificacion humana antes de ser definitivos.
+El sistema genera alertas automaticas ante documentos faltantes, vencidos o proximos a vencer.
+El dashboard muestra el semaforo de cumplimiento (Verde, Amarillo, Rojo) por expediente.
+Los reportes pueden exportarse en formato PDF y Excel.
+Criterios de Seguridad y Auditoria
+El acceso al sistema se controla mediante autenticacion con roles diferenciados (Administrador, Validador, Auditor, Consulta).
+Cada accion relevante queda registrada en la bitacora de auditoria de forma inmutable.
+Los documentos almacenados estan protegidos mediante cifrado y control de acceso.
+Criterios de Calidad y Entrega
+El sistema se entrega contenerizado, listo para desplegarse con un solo comando.
+Se entrega la documentacion tecnica completa (arquitectura, APIs, configuracion y manual de usuario).
+Se ejecutan y documentan las pruebas funcionales, de integracion y de precision de la IA.
+Gestion de Riesgos del Proyecto
+La siguiente tabla identifica los principales riesgos del proyecto y las estrategias de mitigacion previstas para cada uno:
+Tabla 9
+Riesgos identificados y estrategias de mitigacion
+Conclusiones
+El plan del proyecto y el Product Backlog aqui definidos proporcionan una hoja de ruta clara, medible y realista para el desarrollo del Motor de Validacion de Cumplimiento Documental. La organizacion en cuatro sprints de desarrollo, precedidos por una fase solida de analisis y arquitectura, garantiza que cada incremento funcional aporte valor verificable al producto.
+Las 33 historias de usuario del backlog cubren la totalidad de los 7 modulos establecidos en el anteproyecto y se distribuyen de forma logica: primero los cimientos del sistema (Sprint 1), luego el motor de reglas deterministas (Sprint 2), despues la inteligencia artificial (Sprint 3) y finalmente los reportes y la integracion completa (Sprint 4). Esta secuencia asegura que en caso de retraso, el producto minimo viable (motor de reglas sin IA) ya estaria operativo al finalizar el Sprint 2.
+Con la entrega de este documento se cierra formalmente la Fase de Propuesta y Planificacion del cronograma, habilitando el inicio de la Fase de Diseno de Arquitectura de Software.
+Referencias
+PluriOne S.A. de C.V. (2026). Ficha tecnica del proyecto 045: Motor de Validacion de Cumplimiento Documental. Documento interno de ingenieria.
+Pressman, R. S. y Maxim, B. R. (2020). Ingenieria del software: Un enfoque practico (9.a ed.). McGraw-Hill Interamericana.
+Schwaber, K. y Sutherland, J. (2020). La Guia de Scrum. Scrum.org. https://scrumguides.org/scrum-guide.html
+Sommerville, I. (2011). Ingenieria del software (9.a ed.). Addison-Wesley.
+
+--- TABLA 1 (4 filas x 3 cols) ---
+Rol | Persona | Responsabilidad
+Product Owner | Lic. Juan Mendez Herrera (PluriOne) | Define las prioridades del producto, valida los entregables y aprueba los criterios de aceptacion.
+Scrum Master / Desarrollador | Oliver (Residente) | Planifica los sprints, desarrolla el software, ejecuta las pruebas y documenta los avances.
+Stakeholder Evaluador | Edgar Loheffelmman (PluriOne) | Evalua la calidad del desarrollo y proporciona retroalimentacion tecnica.
+
+
+--- TABLA 2 (10 filas x 4 cols) ---
+Fase | Semanas | Horas | Entregable Principal
+1. Analisis y Deteccion de Necesidades | 1 - 2 | 50 | Documento de Requerimientos (SRS)
+2. Propuesta y Planificacion | 2 - 3 | 30 | Propuesta Tecnica y Plan del Proyecto
+3. Diseno de Arquitectura | 3 - 5 | 50 | Documento de Arquitectura de Software
+4. Desarrollo del Motor | 5 - 12 | 240 | Sistema Funcional (7 modulos)
+5. Pruebas de Calidad (QA) | 12 - 14 | 55 | Reporte de Pruebas
+6. Documentacion Tecnica | 14 - 15 | 25 | Manual Tecnico y de Usuario
+7. Mantenimiento y Soporte | 15 | 15 | Plan de Mantenimiento
+8. Capacitacion y Entrega | 15 - 16 | 15 | Acta de Capacitacion
+9. Cierre | 16 | 10 | Informe Final
+
+
+--- TABLA 3 (9 filas x 5 cols) ---
+ID | Historia de Usuario | Modulo | Prioridad | Horas
+HU-01 | Como administrador, quiero crear tipos de expedientes (juridico, corporativo, regulatorio) para clasificar la documentacion. | M1: Gestion de Expedientes | Alta | 6
+HU-02 | Como validador, quiero crear un expediente nuevo asignandole un nombre, empresa y tipo para organizar los documentos. | M1: Gestion de Expedientes | Alta | 6
+HU-03 | Como validador, quiero cargar documentos PDF e imagenes a un expediente y que el sistema calcule su hash SHA-256 automaticamente. | M1: Gestion de Expedientes | Alta | 8
+HU-04 | Como validador, quiero buscar expedientes por nombre, empresa, tipo o fecha para localizar rapidamente la informacion. | M1: Gestion de Expedientes | Alta | 5
+HU-05 | Como administrador, quiero gestionar usuarios y asignarles roles (Administrador, Validador, Auditor, Consulta) para controlar el acceso. | M7: Administracion y Seguridad | Alta | 10
+HU-06 | Como usuario, quiero iniciar sesion de forma segura y que el sistema solo me muestre las funciones de mi rol. | M7: Administracion y Seguridad | Alta | 8
+HU-07 | Como sistema, quiero registrar cada accion relevante en la bitacora de auditoria (usuario, fecha, accion, IP). | M7: Administracion y Seguridad | Alta | 6
+HU-08 | Como administrador, quiero que el sistema verifique la integridad de los documentos comparando el hash actual con el original. | M1: Gestion de Expedientes | Media | 5
+
+
+--- TABLA 4 (10 filas x 5 cols) ---
+ID | Historia de Usuario | Modulo | Prioridad | Horas
+HU-09 | Como administrador, quiero definir que documentos son obligatorios y cuales son opcionales para cada tipo de expediente. | M2: Reglas de Validacion | Alta | 8
+HU-10 | Como administrador, quiero vincular anexos obligatorios a documentos principales para que el sistema valide su presencia. | M2: Reglas de Validacion | Alta | 6
+HU-11 | Como administrador, quiero asignar un nivel de severidad (Critica, Alta, Media) a cada regla y definir la accion ante incumplimiento. | M2: Reglas de Validacion | Alta | 5
+HU-12 | Como validador, quiero que el sistema verifique automaticamente la completitud del expediente y me muestre el porcentaje de documentos presentes. | M2: Reglas de Validacion | Alta | 6
+HU-13 | Como validador, quiero que el sistema calcule si cada documento esta vigente, proximo a vencer o vencido comparando fechas. | M4: Verificacion de Vigencia | Alta | 8
+HU-14 | Como administrador, quiero configurar los umbrales de anticipacion (30, 15, 5 dias) para las alertas de vencimiento. | M4: Verificacion de Vigencia | Media | 4
+HU-15 | Como validador, quiero recibir alertas automaticas cuando un expediente tenga documentos faltantes, vencidos o con anexos ausentes. | M5: Alertas y Recomendaciones | Alta | 8
+HU-16 | Como validador, quiero que cada alerta incluya una recomendacion clara de que accion tomar para corregir el hallazgo. | M5: Alertas y Recomendaciones | Media | 5
+HU-17 | Como validador, quiero recibir notificaciones por correo electronico cuando un expediente cambie a estatus critico. | M5: Alertas y Recomendaciones | Media | 6
+
+
+--- TABLA 5 (9 filas x 5 cols) ---
+ID | Historia de Usuario | Modulo | Prioridad | Horas
+HU-18 | Como sistema, quiero extraer el texto completo de un documento PDF o imagen escaneada mediante OCR y almacenarlo segmentado por paginas. | M3: Analisis Inteligente | Alta | 12
+HU-19 | Como validador, quiero que el sistema analice semanticamente un contrato y verifique si contiene clausulas obligatorias (confidencialidad, penalizacion, vigencia). | M3: Analisis Inteligente | Alta | 14
+HU-20 | Como validador, quiero que cada resultado de la IA incluya la cita textual exacta del documento y un porcentaje de confianza. | M3: Analisis Inteligente | Alta | 6
+HU-21 | Como validador, quiero que cuando la confianza de la IA sea menor al 85%, el hallazgo se marque para mi revision manual. | M3: Analisis Inteligente | Alta | 5
+HU-22 | Como validador, quiero aprobar o rechazar los hallazgos de la IA desde el panel de validacion y que mi decision quede en la bitacora. | M3: Analisis Inteligente | Alta | 6
+HU-23 | Como validador, quiero que la IA extraiga los datos del firmante (nombre, cargo, empresa) y me los presente para que yo confirme si coinciden con el poder notarial. | M3: Analisis Inteligente | Media | 8
+HU-24 | Como administrador, quiero dar de alta nuevos tipos de documentos y definir en lenguaje natural el criterio que la IA debe evaluar. | M2: Reglas de Validacion | Alta | 10
+HU-25 | Como sistema, quiero reutilizar el dictamen anterior si el documento no ha cambiado (mismo hash SHA-256) para no reprocesarlo. | M3: Analisis Inteligente | Media | 5
+
+
+--- TABLA 6 (9 filas x 5 cols) ---
+ID | Historia de Usuario | Modulo | Prioridad | Horas
+HU-26 | Como validador, quiero ver un dashboard con el porcentaje global de cumplimiento, total de expedientes conformes y no conformes. | M6: Reportes y Panel | Alta | 10
+HU-27 | Como validador, quiero ver el semaforo de cada expediente (Verde, Amarillo, Rojo) de forma visual e inmediata. | M6: Reportes y Panel | Alta | 6
+HU-28 | Como auditor, quiero generar un dictamen formal de cumplimiento por expediente que consolide todos los resultados de la validacion. | M6: Reportes y Panel | Alta | 8
+HU-29 | Como auditor, quiero exportar reportes de auditoria en formato PDF y Excel para presentarlos en revisiones externas. | M6: Reportes y Panel | Alta | 8
+HU-30 | Como auditor, quiero consultar la bitacora completa de un expediente para ver quien valido, cuando y que resultado obtuvo. | M7: Administracion y Seguridad | Alta | 5
+HU-31 | Como usuario de consulta, quiero ver unicamente el semaforo de mis expedientes asignados sin acceder a configuraciones internas. | M7: Administracion y Seguridad | Media | 4
+HU-32 | Como validador, quiero ejecutar la validacion completa de un expediente (reglas + IA) con un solo boton y ver el resultado consolidado. | Integracion General | Alta | 14
+HU-33 | Como sistema, quiero manejar errores de forma controlada (documentos ilegibles, servicio de IA no disponible) sin interrumpir la operacion. | Integracion General | Alta | 9
+
+
+--- TABLA 7 (10 filas x 6 cols) ---
+Modulo | Sprint 1 | Sprint 2 | Sprint 3 | Sprint 4 | Total HU
+M1: Gestion de Expedientes | 4 | - | - | - | 4
+M2: Reglas de Validacion Configurables | - | 4 | 1 | - | 5
+M3: Analisis Inteligente de Documentos | - | - | 6 | - | 6
+M4: Verificacion de Vigencia | - | 2 | - | - | 2
+M5: Alertas y Recomendaciones | - | 3 | - | - | 3
+M6: Reportes y Panel de Control | - | - | - | 4 | 4
+M7: Administracion y Seguridad | 3 | - | - | 2 | 5
+Integracion General | - | - | - | 2 | 2
+ |  |  |  | Total: | 33
+
+
+--- TABLA 8 (17 filas x 4 cols) ---
+Semana | Fechas | Fase / Sprint | Actividad Principal
+1 | 31 ago - 6 sep | Fase 1: Analisis | Entrevistas, requisitos documentales, marcos regulatorios
+2 | 7 - 13 sep | Fase 1 + Fase 2 | Documento de requerimientos (SRS), estrategia de validacion
+3 | 14 - 20 sep | Fase 2 + Fase 3 | Plan del proyecto y backlog, inicio de diseno de arquitectura
+4 | 21 - 27 sep | Fase 3: Arquitectura | Diseno de APIs, base de datos y modelo de integracion
+5 | 28 sep - 4 oct | Fase 3 + Sprint 1 | Finalizacion de arquitectura e inicio de desarrollo
+6 | 5 - 11 oct | Sprint 1 | Backend, autenticacion, gestion de expedientes
+7 | 12 - 18 oct | Sprint 2 | Motor de reglas, verificacion de vigencia
+8 | 19 - 25 oct | Sprint 2 | Alertas, recomendaciones, notificaciones
+9 | 26 oct - 1 nov | Sprint 3 | Integracion OCR, extraccion de texto
+10 | 2 - 8 nov | Sprint 3 | Analisis semantico con IA, agente de validacion
+11 | 9 - 15 nov | Sprint 4 | Dashboard, reportes, exportacion PDF/Excel
+12 | 16 - 22 nov | Sprint 4 | Integracion de modulos, pruebas de flujo completo
+13 | 23 - 29 nov | Fase 5: QA | Pruebas funcionales, de integracion y de seguridad
+14 | 30 nov - 6 dic | Fase 5: QA | Pruebas de precision de IA, correccion de defectos
+15 | 7 - 13 dic | Fase 6, 7 y 8 | Documentacion tecnica, plan de mantenimiento, capacitacion
+16 | 14 - 19 dic | Fase 9: Cierre | Entrega final, evaluacion de resultados, informe de cierre
+
+
+--- TABLA 9 (6 filas x 4 cols) ---
+Riesgo | Probabilidad | Impacto | Mitigacion
+Cambio en los requisitos durante el desarrollo. | Media | Medio | Scrum permite incorporar cambios al inicio de cada sprint. Las reglas son configurables en base de datos.
+Baja precision del modelo de IA en la deteccion de clausulas. | Media | Alto | Se contemplan 13 horas de pruebas de precision. Los resultados dudosos pasan a revision humana.
+Documentos escaneados de baja calidad. | Alta | Medio | El sistema detecta documentos ilegibles y solicita al usuario la recarga del archivo.
+Retraso en el cronograma por complejidad de integracion. | Media | Alto | Se priorizan los modulos con mayor valor funcional para asegurar un producto minimo viable.
+Disponibilidad de servicios externos de IA u OCR. | Baja | Medio | El motor de reglas (Nivel 2) funciona sin dependencias externas. Se implementan reintentos automaticos.
+
+
+================================================================================
+ARCHIVO: 3.3 Formato de Registro de asesoría - semana 1.docx
+================================================================================
+
+Formato de registro de asesoría
+
+--- TABLA 1 (29 filas x 8 cols) ---
+ |  | Chilpancingo, Gro; a | Chilpancingo, Gro; a | 24 | de | AGOSTO | del 2026
+ |  |  |  |  |  |  | 
+Departamento Académico: | Departamento Académico: | DEPARTAMENTO DE SISTEMAS Y COMPUTACIÓN | DEPARTAMENTO DE SISTEMAS Y COMPUTACIÓN | DEPARTAMENTO DE SISTEMAS Y COMPUTACIÓN | DEPARTAMENTO DE SISTEMAS Y COMPUTACIÓN | DEPARTAMENTO DE SISTEMAS Y COMPUTACIÓN | DEPARTAMENTO DE SISTEMAS Y COMPUTACIÓN
+Nombre del Residente: | Nombre del Residente: | JUAN ANTONIO ALDAY ARELLANO | JUAN ANTONIO ALDAY ARELLANO | JUAN ANTONIO ALDAY ARELLANO | JUAN ANTONIO ALDAY ARELLANO | JUAN ANTONIO ALDAY ARELLANO | JUAN ANTONIO ALDAY ARELLANO
+Número de Control: | Número de Control: | 21520408 | 21520408 | Carrera: | INGENIERÍA EN SISTEMAS COMPUTACIONALES (ISIC-2010-224) | INGENIERÍA EN SISTEMAS COMPUTACIONALES (ISIC-2010-224) | INGENIERÍA EN SISTEMAS COMPUTACIONALES (ISIC-2010-224)
+Nombre del proyecto: | Nombre del proyecto: | DESARROLLO DE UN SISTEMA WEB INTEGRAL DE GESTIÓN ADMINISTRATIVA | DESARROLLO DE UN SISTEMA WEB INTEGRAL DE GESTIÓN ADMINISTRATIVA | DESARROLLO DE UN SISTEMA WEB INTEGRAL DE GESTIÓN ADMINISTRATIVA | DESARROLLO DE UN SISTEMA WEB INTEGRAL DE GESTIÓN ADMINISTRATIVA | DESARROLLO DE UN SISTEMA WEB INTEGRAL DE GESTIÓN ADMINISTRATIVA | DESARROLLO DE UN SISTEMA WEB INTEGRAL DE GESTIÓN ADMINISTRATIVA
+Y DE CONTROL DE AGREMIADOS EN LA SECCIÓN LXXV DEL SUSPEG | Y DE CONTROL DE AGREMIADOS EN LA SECCIÓN LXXV DEL SUSPEG | Y DE CONTROL DE AGREMIADOS EN LA SECCIÓN LXXV DEL SUSPEG | Y DE CONTROL DE AGREMIADOS EN LA SECCIÓN LXXV DEL SUSPEG | Y DE CONTROL DE AGREMIADOS EN LA SECCIÓN LXXV DEL SUSPEG | Y DE CONTROL DE AGREMIADOS EN LA SECCIÓN LXXV DEL SUSPEG | Y DE CONTROL DE AGREMIADOS EN LA SECCIÓN LXXV DEL SUSPEG | Y DE CONTROL DE AGREMIADOS EN LA SECCIÓN LXXV DEL SUSPEG
+ |  |  |  |  |  |  | 
+ |  |  |  |  |  |  | 
+Periodo de realización de la residencia profesional: | Periodo de realización de la residencia profesional: | Periodo de realización de la residencia profesional: | Periodo de realización de la residencia profesional: | AGOSTO-DICIEMBRE 2026 | AGOSTO-DICIEMBRE 2026 | AGOSTO-DICIEMBRE 2026 | AGOSTO-DICIEMBRE 2026
+Empresa, organismo o dependencia: | Empresa, organismo o dependencia: | Empresa, organismo o dependencia: | SECCIÓN LXXV DEL SUSPEG | SECCIÓN LXXV DEL SUSPEG | SECCIÓN LXXV DEL SUSPEG | SECCIÓN LXXV DEL SUSPEG | SECCIÓN LXXV DEL SUSPEG
+ |  |  |  |  |  |  | 
+Asesoría número: | Asesoría número: | 1 |  | Tipo de Asesoría: | Tipo de Asesoría: | SEMANAL | SEMANAL
+Temas a asesorar: | Temas a asesorar: | EXPLICACIÓN DEL PROYECTO A REALIZAR, ENTREGA DE REPORTE | EXPLICACIÓN DEL PROYECTO A REALIZAR, ENTREGA DE REPORTE | EXPLICACIÓN DEL PROYECTO A REALIZAR, ENTREGA DE REPORTE | EXPLICACIÓN DEL PROYECTO A REALIZAR, ENTREGA DE REPORTE | EXPLICACIÓN DEL PROYECTO A REALIZAR, ENTREGA DE REPORTE | EXPLICACIÓN DEL PROYECTO A REALIZAR, ENTREGA DE REPORTE
+PRELIMINAR Y EXPLICACIÓN DE PARTE DEL ASESOR(A) INTERNO PARA DAR INICIO AL PROYECTO | PRELIMINAR Y EXPLICACIÓN DE PARTE DEL ASESOR(A) INTERNO PARA DAR INICIO AL PROYECTO | PRELIMINAR Y EXPLICACIÓN DE PARTE DEL ASESOR(A) INTERNO PARA DAR INICIO AL PROYECTO | PRELIMINAR Y EXPLICACIÓN DE PARTE DEL ASESOR(A) INTERNO PARA DAR INICIO AL PROYECTO | PRELIMINAR Y EXPLICACIÓN DE PARTE DEL ASESOR(A) INTERNO PARA DAR INICIO AL PROYECTO | PRELIMINAR Y EXPLICACIÓN DE PARTE DEL ASESOR(A) INTERNO PARA DAR INICIO AL PROYECTO | PRELIMINAR Y EXPLICACIÓN DE PARTE DEL ASESOR(A) INTERNO PARA DAR INICIO AL PROYECTO | PRELIMINAR Y EXPLICACIÓN DE PARTE DEL ASESOR(A) INTERNO PARA DAR INICIO AL PROYECTO
+ |  |  |  |  |  |  | 
+ |  |  |  |  |  |  | 
+Solución recomendada: | Solución recomendada: |  |  |  |  |  | 
+ |  |  |  |  |  |  | 
+ |  |  |  |  |  |  | 
+ |  |  |  |  |  |  | 
+ |  |  |  |  |  |  | 
+ |  |  |  |  |  |  | 
+DRA. MARÍA ZAVALA HURTADO | DRA. MARÍA ZAVALA HURTADO | DRA. MARÍA ZAVALA HURTADO |  |  |  |  | 
+Nombre y firma del asesor interno | Nombre y firma del asesor interno | Nombre y firma del asesor interno |  |  |  |  | 
+ |  |  |  |  |  |  | 
+ |  |  |  |  |  |  | 
+JUAN ANTONIO ALDAY ARELLANO | JUAN ANTONIO ALDAY ARELLANO | JUAN ANTONIO ALDAY ARELLANO |  |  |  |  | 
+Nombre y firma del residente | Nombre y firma del residente | Nombre y firma del residente |  |  |  |  | 
+
+
+================================================================================
+ARCHIVO: DOC-01 Entrevista con Stakeholder.docx
+================================================================================
+
+INSTITUTO TECNOLÓGICO DE CHILPANCINGO
+Ingeniería en Sistemas Computacionales
+Proyecto de Desarrollo de un Motor de Validación de Cumplimiento Documental
+ENTREVISTA CON EL STAKEHOLDER
+Presenta:
+Villanueva Pelay Oliver
+Empresa:
+Develop Talent & Technology
+Chilpancingo, Guerrero
+Introducción
+El presente documento registra la sesión de entrevista realizada con el asesor empresarial del proyecto como parte de la fase de Análisis y Detección de Necesidades del Motor de Validación de Cumplimiento Documental.
+La entrevista se llevó a cabo de forma remota a través de mensajería instantánea (WhatsApp), dado que la empresa PluriOne S.A. de C.V. La entrevista no estructurada permite obtener información flexible y detallada adaptándose al contexto del entrevistado, lo cual resultó adecuado para este medio de comunicación.
+El objetivo fue comprender qué tipos de documentos validará el sistema, cómo funcionará técnicamente la validación y cómo se asegurará que el motor valide correctamente.
+Nombre: Juan Méndez Herrera
+Cargo: director Comercial
+Desarrollo de la Entrevista
+Sobre los Tipos de Documentos
+Oliver: Buenas tardes, ingeniero. Tengo algunas dudas sobre el proyecto. En la delimitación dice que el motor va a validar expedientes jurídicos y corporativos, pero quiero confirmar: ¿qué tipo de documentos son exactamente? Porque no serían documentos personales como INE o CURP, ¿verdad?
+Juan Méndez: No, para nada. El INE, CURP, actas de nacimiento, todo eso son documentos personales y no tienen nada que ver con lo que va a hacer el motor. Lo que el sistema valida son expedientes de empresas: contratos, pólizas de seguro, licencias de operación, certificaciones, permisos, actas constitutivas, poderes notariales, avisos de privacidad, constancias fiscales de la empresa y los anexos que les pidan según su regulación.
+Oliver: Ok, entonces es pura documentación empresarial. ¿Y más o menos cuántos documentos tiene un expediente?
+Juan Méndez: Varía. Depende del tipo de expediente y del sector del cliente. Puede tener desde unos diez documentos hasta varias decenas. Por ejemplo, una empresa de construcción puede tener en un solo expediente la licencia de construcción, póliza, contrato con el cliente, permisos ambientales, dictámenes técnicos y sus anexos. Cada uno tiene que estar completo y vigente.
+Oliver: ¿Y muchos de esos documentos tienen fecha de vencimiento?
+Juan Méndez: Sí, varios. Las licencias, permisos, certificaciones, pólizas y muchos contratos tienen vigencia. El problema de ahorita es que eso lo llevan en Excel y no siempre está actualizado, entonces cuando algo se vence nadie se entera hasta que les cae la auditoría.
+Oliver: ¿En qué formato manejan los documentos?
+Juan Méndez: La mayoría en PDF, que es lo estándar en el ámbito jurídico. Algunos vienen escaneados. La idea es que el sistema pueda leer esos PDFs y extraer su contenido.
+Funcionalidad del Motor
+El motor de validación de cumplimiento documental está diseñado exclusivamente para procesar expedientes jurídicos y corporativos pertenecientes a organizaciones empresariales
+El sistema no está diseñado para validar documentos de identificación personal como la credencial para votar (INE), la Clave Única de Registro de Población (CURP), actas de nacimiento, comprobantes de domicilio personales, pasaportes ni títulos universitarios. Estos documentos pertenecen al ámbito de la identificación personal y no forman parte de los expedientes corporativos sujetos a marcos regulatorios empresariales.
+Tipología de Documentos Corporativos y Jurídicos
+Con base en el planteamiento del problema y los alcances definidos en el anteproyecto, los documentos que el sistema validará se clasifican en las siguientes categorías. La Tabla 1 presenta esta clasificación de manera detallada.
+Tabla 1
+Documentos Excluidos del Alcance
+Para mayor claridad, la Tabla 2 presenta los tipos de documentos que quedan explícitamente fuera del alcance del motor, junto con la justificación de su exclusión.
+Tabla 2
+Hallazgos Principales
+Sobre los tipos de documentos
+H1. El motor valida exclusivamente expedientes jurídicos y corporativos, no documentos personales (INE, CURP, actas).
+H2. Los documentos incluyen contratos, pólizas, licencias, certificaciones, documentación corporativa y anexos obligatorios, con la posibilidad de agregar un campo para que se puedan adjuntar nuevos documentos según se vayan requiriendo.
+H3. Un expediente puede tener de diez a varias decenas de documentos.
+H4. Múltiples documentos tienen vigencia definida (licencias, permisos, pólizas, contratos).
+H5. El formato predominante es PDF, incluyendo escaneados.
+Sobre el mecanismo de validación
+H6. El sistema opera en dos niveles: motor de reglas (sin IA) y análisis inteligente (con IA de Azure).
+H7. El motor de reglas verifica integridad, vigencia, anexos y formato sin consumir servicios externos.
+H8. Azure AI Document Intelligence extrae texto; Azure OpenAI analiza semánticamente el contenido.
+H9. La conexión con los servicios de IA es mediante APIs REST con claves de suscripción (tokens).
+H10. LangChain orquesta las llamadas; Azure AI Search indexa para búsquedas semánticas.
+Sobre el aseguramiento de precisión
+H11. Las validaciones del motor de reglas son deterministas.
+H12. La precisión de la IA se evalúa con un dataset de prueba y métricas estándar.
+H13. Cada validación queda registrada en un log de auditoría completo.
+H15. El sistema se alinea con ISO 25010, ISO 27001 e ISO 30301.
+Extensibilidad del Catálogo
+De acuerdo con la indicación del asesor empresarial Juan Méndez Herrera, el catálogo de documentos presentado en las tablas anteriores constituye la base inicial del sistema, mas no una lista cerrada. El motor contempla la posibilidad de que el administrador agregue nuevos tipos de documentos desde el panel de administración, sin necesidad de modificar el código fuente del sistema.
+Para cada nuevo tipo de documento que el administrador registre, deberá configurar los siguientes campos: nombre del documento, carácter obligatorio u opcional, si tiene vigencia definida, formato aceptado y, de manera fundamental, los criterios de validación que la inteligencia artificial deberá aplicar al analizar el contenido del documento. Esto significa que el usuario es quien define qué debe buscar el sistema dentro del documento, y la IA ejecuta el análisis semántico con base en esos criterios proporcionados por el usuario.
+La entrevista con el asesor empresarial Juan Méndez Herrera permitió confirmar tres aspectos clave del proyecto. Primero, que el alcance documental se limita a expedientes jurídicos y corporativos de empresas, no a documentos de identidad personal. Segundo, que la validación opera en dos niveles: un motor de reglas determinista y un módulo de análisis inteligente con servicios de Azure AI conectados mediante APIs REST. Tercero, que la precisión se asegura con pruebas formales, métricas estándar y registros de auditoría completos. Los hallazgos identificados cubren los siete módulos del sistema y servirán como insumo para el documento de requerimientos.
+
+--- TABLA 1 (8 filas x 3 cols) ---
+Categoría | Ejemplos de documentos | Criterios de validación
+Contratos | Contratos de prestación de servicios, contratos laborales, contratos de arrendamiento, acuerdos de confidencialidad (NDA) | Presencia de cláusulas obligatorias, firmas, vigencia, contenido semántico
+Licencias y permisos | Licencias de operación, permisos municipales, autorizaciones sectoriales | Vigencia activa, renovación oportuna, correspondencia con el giro empresarial
+Certificaciones | Certificaciones ISO, certificaciones de calidad, certificaciones ambientales | Vigencia, presencia de anexos técnicos, organismo certificador válido
+Pólizas de seguro | Pólizas de responsabilidad civil, pólizas de seguro patrimonial, fianzas | Vigencia, coberturas mínimas requeridas, montos adecuados
+Documentación corporativa | Acta constitutiva, poderes notariales, estatutos sociales, actas de asamblea | Existencia en el expediente, integridad del documento, vigencia del poder
+Documentación regulatoria | Avisos de privacidad, constancias de cumplimiento fiscal empresarial, registros sectoriales | Cumplimiento con el marco regulatorio aplicable al sector
+Anexos obligatorios | Dictámenes, peritajes, informes técnicos, constancias de capacitación | Presencia según el tipo de expediente, completitud del contenido
+
+
+--- TABLA 2 (7 filas x 2 cols) ---
+Tipo de documento | Justificación de exclusión
+Credencial para votar (INE) | Documento de identificación personal; no forma parte de expedientes corporativos regulados
+Clave Única de Registro de Población (CURP) | Identificador personal emitido por RENAPO; ajeno al compliance empresarial
+Acta de nacimiento | Documento del registro civil de carácter personal
+Comprobante de domicilio personal | Documento de servicios personales, no documentación empresarial
+Pasaporte | Documento de identidad y viaje de carácter personal
+Título universitario | Documento académico personal, no sujeto a regulación corporativa
+
+
+================================================================================
+ARCHIVO: DOC-02 Identificación de Requisitos Documentales.docx
+================================================================================
+
+INSTITUTO TECNOLÓGICO DE CHILPANCINGO
+Ingeniería en Sistemas Computacionales
+Proyecto de Desarrollo de un Motor de Validación de Cumplimiento Documental
+IDENTIFICACIÓN DE REQUISITOS DOCUMENTALES
+Presenta:
+Villanueva Pelay Oliver
+Empresa:
+Develop Talent & Technology
+Chilpancingo, Guerrero
+Introducción
+El presente documento tiene como objetivo identificar y clasificar los requisitos documentales que el Motor de Validación de Cumplimiento Documental deberá evaluar.
+La información aquí contenida se obtuvo a partir de la entrevista realizada con el asesor empresarial Juan Méndez Herrera, del análisis de los alcances definidos en el anteproyecto de residencia profesional y de la ficha del proyecto 045. Este inventario constituye la base para la configuración del motor de reglas de validación y para el diseño de los criterios de análisis inteligente del sistema.
+Según Laudon y Laudon (2016), un sistema de información requiere una definición precisa de los datos que procesará, almacenará y distribuirá para apoyar la toma de decisiones dentro de una organización. En este sentido, la identificación de los requisitos documentales permite establecer con claridad qué debe validar el motor, bajo qué criterios y con qué nivel de criticidad.
+Clasificación de Tipos de Expedientes
+A partir del análisis realizado, se identificaron tres tipos principales de expedientes que el motor deberá procesar. La clasificación se basa en la naturaleza de la documentación y el marco regulatorio al que responde cada tipo que a continuación se muestra en la tabla 1
+Tabla 1
+Nota. Un mismo expediente puede combinar documentos de las tres categorías según el sector y las obligaciones del cliente.
+Inventario de Documentos por Tipo de Expediente
+A continuación, en la tabla 2, se presenta el catálogo detallado de los documentos que puede contener cada tipo de expediente, especificando su carácter obligatorio u opcional, si tiene vigencia definida, el formato esperado y los criterios de validación que aplicará el motor.
+Tabla 2
+Expediente Corporativo
+Nota. Estos documentos conforman la base documental mínima que toda empresa debe mantener actualizada.
+Tabla 3
+Expediente Jurídico
+Tabla 4
+Expediente Regulatorio
+Conclusión
+Se identificaron tres tipos de expedientes (jurídico, corporativo y regulatorio) que en conjunto agrupan más de 20 tipos de documentos que el motor deberá validar. Cada documento fue clasificado según su obligatoriedad, vigencia, formato esperado y criterios de validación. Esta clasificación permite determinar qué validaciones corresponden al motor de reglas configurables y cuáles requieren análisis semántico con inteligencia artificial.
+El inventario aquí presentado servirá como insumo directo para la elaboración del documento de requerimientos del sistema y para la configuración de las reglas de negocio en la fase de Propuesta y Planificación. Las reglas de validación deberán ser configurables por el administrador del sistema para adaptarse a los distintos marcos regulatorios según el sector de cada cliente, tal como se establece en los alcances del anteproyecto.
+Referencias
+Kerlinger, F. N. y Lee, H. B. (2002). Investigación del comportamiento (4.ª ed.). McGraw-Hill.
+Laudon, K. C. y Laudon, J. P. (2016). Sistemas de Información Gerencial (14.ª ed.). Pearson.
+Organización Internacional de Normalización. (2011). ISO 30301:2011 — Información y documentación: Sistemas de gestión de documentos. ISO.
+Pressman, R. S. y Maxim, B. R. (2015). Ingeniería del Software: Un enfoque práctico (8.ª ed.). McGraw-Hill.
+PluriOne S.A. de C.V. (2026). Ficha del proyecto 045: Motor de Validación de Cumplimiento Documental. Documento interno.
+
+--- TABLA 1 (4 filas x 3 cols) ---
+Tipo de expediente | Descripción | Ejemplo de contexto
+Jurídico | Expedientes que contienen documentación legal sujeta a obligaciones contractuales, normativas o jurisdiccionales | Expediente de un contrato de prestación de servicios con sus anexos legales
+Corporativo | Expedientes que agrupan la documentación necesaria para la operación legal y administrativa de una empresa | Expediente de constitución de una empresa con acta constitutiva, poderes y registros
+Regulatorio | Expedientes que reúnen la documentación requerida por marcos normativos sectoriales para operar en un giro específico | Expediente de una empresa constructora con licencias, permisos y certificaciones del sector
+
+
+--- TABLA 2 (9 filas x 5 cols) ---
+Documento | Obligatorio | Vigencia | Formato | Criterios de validación
+Acta constitutiva | Sí | No — documento permanente | PDF | Presencia en el expediente, integridad del documento
+Poderes notariales | Sí | Sí — pueden tener vigencia limitada o ser revocados | PDF | Vigencia activa, correspondencia con el representante actual
+Estatutos sociales | Sí | No — se actualiza por reformas | PDF | Versión más reciente presente en el expediente
+Actas de asamblea | Sí | No — documento histórico | PDF | Presencia, integridad, orden cronológico
+Registro Federal de Contribuyentes (empresa) | Sí | No — permanente | PDF | Presencia, coincidencia con datos de la empresa
+Constancia de situación fiscal | Sí | Sí — se actualiza periódicamente | PDF | Vigencia no mayor a 3 meses, datos correctos
+Aviso de privacidad | Sí | No — pero debe actualizarse si cambia la ley | PDF | Presencia, alineación con la Ley Federal de Protección de Datos Personales
+Comprobante de domicilio fiscal | Sí | Sí — no mayor a 3 meses | PDF | Vigencia, correspondencia con domicilio registrado
+
+
+--- TABLA 3 (7 filas x 5 cols) ---
+Documento | Obligatorio | Vigencia | Formato | Criterios de validación
+Contrato de prestación de servicios | Sí | Sí — según duración del contrato | PDF | Presencia de cláusulas obligatorias (objeto, vigencia, penalización, confidencialidad), firmas de las partes, fecha de vigencia definida
+Acuerdo de confidencialidad (NDA) | Sí | Sí — según lo estipulado | PDF | Existencia de cláusula de no divulgación, identificación de las partes, vigencia
+Poder notarial del representante | Sí | Sí — puede tener vigencia limitada | PDF | Documento vigente, emitido por notario público, identificación del otorgante y apoderado
+Anexos legales del contrato | Según contrato | No aplica | PDF | Presencia de los anexos referenciados en el contrato principal
+Dictamen o peritaje (si aplica) | Según regulación | No aplica | PDF | Emitido por perito certificado, contenido completo
+Convenio modificatorio (si aplica) | Opcional | Sí — ligado al contrato original | PDF | Referencia al contrato original, firmas, fecha
+
+
+--- TABLA 4 (9 filas x 5 cols) ---
+Documento | Obligatorio | Vigencia | Formato | Criterios de validación
+Licencia de operación | Sí | Sí — según sector | PDF | Vigencia activa, correspondencia con giro empresarial
+Permisos municipales / sectoriales | Sí | Sí — renovación periódica | PDF | Vigencia, tipo de permiso vs. actividad del cliente
+Certificaciones (ISO, calidad, ambiental) | Según sector | Sí — generalmente 3 años | PDF | Vigencia, organismo certificador válido, anexos técnicos
+Póliza de seguro | Sí | Sí — renovación anual típica | PDF | Vigencia activa, coberturas mínimas requeridas, montos adecuados
+Póliza de responsabilidad civil | Según sector | Sí — renovación anual | PDF | Vigencia, monto de cobertura
+Fianza | Según contrato | Sí — ligada a vigencia del contrato | PDF | Vigencia, monto correspondiente
+Constancias de capacitación | Según regulación | Sí — periodicidad según norma | PDF | Vigencia, temas requeridos cubiertos
+Registros ante autoridades sectoriales | Sí | Sí — según autoridad | PDF | Vigencia, número de registro válido
+
+
+================================================================================
+ARCHIVO: DOC-03 Análisis de Marcos Regulatorios.docx
+================================================================================
+
+INSTITUTO TECNOLÓGICO DE CHILPANCINGO
+Ingeniería en Sistemas Computacionales
+Proyecto de Desarrollo de un Motor de Validación de Cumplimiento Documental
+ANÁLISIS DE MARCOS REGULATORIOS
+Presenta:
+Villanueva Pelay Oliver
+Empresa:
+Develop Talent & Technology
+Chilpancingo, Guerrero
+Análisis de Marcos Regulatorios
+El desarrollo del Motor de Validación de Cumplimiento Documental para PluriOne S.A. de C.V. responde a una necesidad crítica identificada en la gestión de expedientes jurídicos, corporativos y regulatorios de las organizaciones. En el ámbito corporativo, las empresas manejan decenas de documentos legales y comerciales (tales como contratos de prestación de servicios, convenios de confidencialidad, pólizas de responsabilidad civil, licencias de operación, actas constitutivas y poderes notariales) que deben cumplir rigurosamente con requisitos de integridad, vigencia y apego a cláusulas específicas.
+Actualmente, las revisiones manuales de estos expedientes resultan lentas, inconsistentes y altamente propensas a errores humanos, lo que genera cuellos de botella operativos y expone a las organizaciones a contingencias legales, sanciones administrativas, suspensión de operaciones o inhabilitación comercial por documentos vencidos o apócrifos.
+El presente análisis normativo establece los fundamentos legales y técnicos que determinan la arquitectura del software. Para que el motor tenga validez y robustez en entornos empresariales de misión crítica, debe sustentarse en una tríada regulatoria: las normas técnicas de calidad de software (ISO/IEC 25010), los estándares de seguridad de la información corporativa (ISO/IEC 27001), los marcos de gestión de registros documentales (ISO 30301) y la legislación mercantil mexicana aplicable a los actos de comercio y digitalización electrónica.
+¿Qué es el Análisis de Marcos Regulatorios en este proyecto?
+En el Análisis de Marcos Regulatorios (al que el cronograma asigna 13 horas) respondes al BAJO QUÉ NORMAS Y LEYES opera el sistema:
+Las 3 Normas Internacionales clave del Anteproyecto:
+ISO/IEC 25010: Garantiza la calidad técnica del motor (exactitud de la IA, rendimiento, confiabilidad y modularidad).
+ISO/IEC 27001: Rige la seguridad de la información (cifrado de contratos y actas en Azure, control de accesos con Microsoft Entra ID y bitácoras inmutables).
+ISO 30301: Establece cómo debe gestionarse el ciclo de vida de un documento y expediente corporativo (captura, integridad, metadatos y trazabilidad).
+El Marco Legal y Mercantil Nacional:
+Código de Comercio y NOM-151-SCFI-2016: Validez jurídica de contratos electrónicos, digitalización certificada y conservación de mensajes de datos.
+Ley General de Sociedades Mercantiles (LGSM): Requisitos de legitimidad en actas constitutivas, asambleas y facultades notariales.
+LFPDPPP (enfoque corporativo): Protección del secreto comercial y datos de representantes legales en contratos confidenciales (NDAs).
+La Adaptabilidad Sectorial (Información del asesor externo): Como PluriOne atiende a clientes de diferentes industrias (construcción, tecnología, servicios, finanzas), cada sector tiene leyes distintas. Por eso el sistema no tiene reglas "duras" en el código: cuenta con un motor de reglas configurables y la posibilidad de dar de alta nuevos documentos y criterios para que la IA los analice.
+Estándares Internacionales Aplicables al Sistema
+ISO/IEC 25010:2011 — Calidad del Producto de Software
+El motor implementa una arquitectura híbrida compuesta por un motor determinista de reglas de negocio y un módulo de inteligencia artificial con Modelos de Lenguaje (Azure OpenAI GPT-4) y extracción visual (Azure AI Document Intelligence). La norma ISO/IEC 25010 rige las siguientes características de calidad en el sistema:
+Adecuación Funcional y Exactitud: El sistema debe evaluar con precisión el contenido de los documentos. En el nivel determinista, la exactitud es absoluta (comprobación booleana de vigencias y presencia de anexos). En el nivel de IA, la precisión semántica se valida mediante un conjunto de pruebas (Gold Standard) con métricas controladas de precisión, exhaustividad (recall) y F1-Score.
+Tolerancia a Fallos y Confiabilidad: Ante documentos escaneados con baja resolución o fallas transitorias en las APIs de Azure, el sistema debe degradarse de manera controlada, registrando la imposibilidad de lectura sin interrumpir el flujo del resto del expediente.
+Mantenibilidad y Modularidad: La arquitectura divide claramente el backend en FastAPI, el frontend en React.js, la persistencia en PostgreSQL y los servicios cognitivos de Azure mediante orquestadores en LangChain. Las reglas de validación se almacenan en base de datos de manera desacoplada del código fuente, permitiendo incorporar nuevas reglas sin necesidad de recompilar o redesplegar el software.
+Usabilidad: El panel de control debe estructurar el dictamen de cumplimiento mediante semáforos visuales (Verde = Conforme, Amarillo = Próximo a vencer, Rojo = No conforme o faltante), facilitando la toma de decisiones del auditor de cumplimiento.
+ISO/IEC 27001:2022 — Seguridad de la Información
+Dado que los expedientes corporativos contienen información estratégica, estados financieros, secretos comerciales y poderes de representación legal, la seguridad es un pilar no negociable:
+Control de Acceso y Gestión de Identidades (A.9 / A.5.15): Autenticación y autorización centralizada mediante Microsoft Entra ID (anteriormente Azure Active Directory), implementando Control de Acceso Basado en Roles (RBAC): Administrador, Validador de Cumplimiento, Auditor Externo y Usuario de Consulta.
+Criptografía de Archivos (A.10 / A.8.24): Cifrado de documentos en reposo en Azure Blob Storage empleando cifrado simétrico AES de 256 bits, y protección de datos en tránsito utilizando el protocolo TLS 1.3 en todas las llamadas API REST.
+Trazabilidad y Registros de Auditoría (A.12.4 / A.8.15): Generación de bitácoras inmutables que registran: fecha y hora en UTC, usuario solicitante, expediente evaluado, reglas aplicadas, veredicto emitido, nivel de confianza devuelto por la IA y dirección IP de origen.
+ISO 30301:2019 — Información y Documentación: Sistemas de Gestión para los Documentos
+Estructura de Metadatos Obligatorios: Ningún documento puede existir en el sistema de manera aislada; debe asociarse a metadatos que incluyan tipo de documento, emisor oficial, fecha de expedición, fecha de vencimiento contractual, estatus de vigencia y expediente corporativo al que pertenece.
+Disponibilidad: Indexación del contenido textual mediante Azure AI Search para habilitar búsquedas corporativas semánticas y auditorías rápidas sobre cláusulas de penalización o coberturas de seguros.
+Marco Legal y Mercantil
+NOM-151-SCFI-2016 (Digitalización y Conservación de Documentos)
+Esta Norma Oficial Mexicana establece los requerimientos técnicos para la migración de archivos físicos a electrónicos y la conservación íntegra de mensajes de datos. El sistema garantiza que los expedientes digitalizados (PDFs) cumplan con criterios de fidelidad respecto a los originales, asegurando que cuenten con fecha cierta y trazabilidad suficiente para ser presentados ante auditorías corporativas o controversias jurisdiccionales.
+Ley General de Sociedades Mercantiles (LGSM)
+La LGSM regula la validez de las actas constitutivas, estatutos sociales y poderes notariales. Al evaluar un expediente corporativo, el sistema valida que los poderes cuenten con facultades vigentes (actos de administración, pleitos y cobranzas, o actos de dominio) y que los representantes legales ostenten la personalidad adecuada para suscribir los contratos asociados al expediente.
+Ley Federal de Protección de Datos Personales en Posesión de los Particulares (LFPDPPP)
+Si bien el sistema valida documentación corporativa y no identificaciones personales individuales, dentro de los contratos y actas constitutivas obran datos de los apoderados legales, accionistas y prestadores de servicios profesionales. El sistema cumple los principios de licitud, consentimiento y confidencialidad, garantizando que dichos datos no sean expuestos indebidamente ni utilizados para fines ajenos a la validación corporativa contratada.
+Adaptabilidad Regulatoria y Creación Dinámica de Documentos
+Un hallazgo determinante en las sesiones de análisis y confirmado explícitamente por la asesoría empresarial es que las empresas clientes de PluriOne pertenecen a diversos sectores productivos (construcción, tecnología, finanzas, transporte, manufactura). En consecuencia, los marcos regulatorios no son homogéneos:
+Una empresa de construcción requiere licencias de uso de suelo, permisos ambientales y pólizas de obra civil contra terceros.
+Una empresa de tecnología o servicios financieros requiere certificaciones ISO 27001, convenios de confidencialidad estrictos (NDAs) y contratos de niveles de servicio (SLAs).
+Una empresa de servicios industriales demanda pólizas de seguros patronales y certificaciones de protección civil.
+Incorporación de Nuevos Requisitos por el Usuario
+Configurador de Documentos y Criterios: El Módulo de Reglas Configurables permite al administrador dar de alta nuevos tipos de documentos dinámicamente desde la interfaz web (React.js).
+Definición de Criterios Asistidos para la IA: El usuario experto en cumplimiento define los parámetros clave que el motor de IA debe buscar (por ejemplo: "Verificar que la cláusula tercera especifique un monto de cobertura mínimo de $2,000,000 MXN").
+Tabla 1
+Matriz de Cumplimiento Normativo
+Lineamientos de Seguridad y Ética en el Uso de Inteligencia Artificial
+Para salvaguardar la confidencialidad exigida por los marcos regulatorios corporativos, el uso de servicios de inteligencia artificial en el sistema se rige por tres directrices:
+Privacidad de Modelos Empresariales: Las llamadas a Azure OpenAI Service se realizan bajo la directriz de tenencia empresarial de Microsoft. Los contratos, anexos y actas analizados por el modelo no se almacenan para reentrenamiento de modelos fundacionales ni quedan expuestos al dominio público.
+Explicación del Dictamen: El sistema no opera como una caja negra. Cada recomendación o dictamen de incumplimiento generado por la IA va acompañado de la cita textual y el fragmento del documento donde se detectó la discrepancia (por ejemplo: "Contrato de Arrendamiento: Se detectó cláusula de penalización por mora del 15%, la cual excede el tope configurado del 10%").
+Principio de Decisión Asistida (Human-in-the-Loop): El sistema funge como un asistente automatizado de alta precisión. Las decisiones con impacto contractual o de rescisión comercial son validadas formalmente por el usuario responsable, quien tiene la facultad de confirmar o corregir las observaciones del motor.
+Conclusiones
+El análisis de los marcos regulatorios confirma que el desarrollo del Motor de Validación de Cumplimiento Documental en PluriOne S.A. de C.V. está sólidamente justificado tanto a nivel técnico como normativo.
+La integración deliberada de las normas ISO 25010, ISO 27001 e ISO 30301, en sinergia con el Código de Comercio y la legislación mercantil mexicana, permite transformar un proceso operativo tradicionalmente vulnerable y manual en una plataforma tecnológica trazable, auditable y segura. Asimismo, la capacidad de configurar dinámicamente nuevos documentos y criterios de validación otorga al sistema la flexibilidad requerida para adaptarse a las normativas cambiantes de cualquier sector industrial.
+Referencias
+Cámara de Diputados del H. Congreso de la Unión. (1889). Código de Comercio. Diario Oficial de la Federación. (Última reforma publicada en 2023).
+Cámara de Diputados del H. Congreso de la Unión. (1934). Ley General de Sociedades Mercantiles. Diario Oficial de la Federación. (Última reforma publicada en 2023).
+Cámara de Diputados del H. Congreso de la Unión. (2010). Ley Federal de Protección de Datos Personales en Posesión de los Particulares. Diario Oficial de la Federación.
+International Organization for Standardization. (2011). Systems and software engineering — Systems and software Quality Requirements and Evaluation (SQuaRE) — System and software quality models (ISO/IEC 25010:2011). ISO. https://www.iso.org/standard/35733.html.
+International Organization for Standardization. (2019). Information and documentation — Management systems for records — Requirements (ISO 30301:2019). ISO. https://www.iso.org/standard/74291.html.
+International Organization for Standardization. (2022). Information security, cybersecurity and privacy protection — Information security management systems — Requirements (ISO/IEC 27001:2022). ISO. https://www.iso.org/standard/82875.html.
+PluriOne S.A. de C.V. (2026). Ficha técnica del proyecto 045: Motor de Validación de Cumplimiento Documental. Documento interno de ingeniería.
+Pressman, R. S. y Maxim, B. R. (2020). Ingeniería del software: Un enfoque práctico (9.ª ed.). McGraw-Hill Interamericana.
+Russell, S. y Norvig, P. (2021). Artificial Intelligence: A Modern Approach (4.ª ed.). Pearson.
+Secretaría de Economía. (2016). Norma Oficial Mexicana NOM-151-SCFI-2016, Requisitos que deben observarse para la conservación de mensajes de datos y digitalización de documentos. Diario Oficial de la Federación.
+Sommerville, I. (2011). Ingeniería del software (9.ª ed.). Addison-Wesley.
+
+--- TABLA 1 (11 filas x 4 cols) ---
+Marco Normativo | Requisito de la Norma / Ley | Módulo del Sistema | Mecanismo Técnico de Implementación
+ISO/IEC 25010 | Fiabilidad, mantenibilidad y desacoplamiento de reglas. | Módulo 2: Reglas de Validación Configurables | Almacenamiento de reglas dinámicas en PostgreSQL; configuración visual sin alterar código.
+ISO/IEC 25010 | Exactitud y medición de desempeño en la validación. | Módulo 3: Análisis Inteligente de Documentos | Integración de Azure OpenAI y Document Intelligence vía LangChain; pruebas de precisión con dataset.
+ISO/IEC 27001 | Control de acceso estricto y segregación de funciones. | Módulo 7: Administración y Seguridad | Autenticación con Microsoft Entra ID y control de accesos RBAC (Admin, Validador, Auditor).
+ISO/IEC 27001 | Criptografía y protección de información sensible. | Módulo 1: Gestión de Expedientes y Documentos | Almacenamiento en Azure Blob Storage con cifrado AES-256; comunicación cifrada con TLS 1.3.
+ISO/IEC 27001 | Registro de auditoría y no repudio de eventos. | Módulo 6: Reportes y Panel de Control | Bitácora relacional de auditoría con ID de usuario, timestamp, reglas ejecutadas y nivel de confianza.
+ISO 30301 | Integridad y preservación del documento electrónico. | Módulo 1: Gestión de Expedientes y Documentos | Generación de hash SHA-256 al momento de la carga para detectar cualquier modificación no autorizada.
+ISO 30301 | Ciclo de vida, vigencia y control de expedientes. | Módulo 4: Verificación de Vigencia y Vencimiento | Algoritmo cronológico determinista de validación de fechas contra la fecha actual del servidor.
+Código de Comercio | Validez legal y equivalencia funcional de mensajes de datos. | Módulo 3: Análisis Inteligente de Documentos | Reconocimiento y análisis de contratos digitales y firmas electrónicas avanzadas en formato PDF.
+NOM-151-SCFI-2016 | Conservación íntegra y constancia de existencia temporal. | Módulo 6 y Módulo 7: Auditoría y Seguridad | Trazabilidad del registro temporal de carga y validación de expedientes para sustento en auditorías externas.
+LFPDPPP | Confidencialidad y gobernanza en el uso de IA. | Módulo 3: Análisis Inteligente de Documentos | Procesamiento en instancia privada de Azure OpenAI Service sin retención ni uso de datos corporativos para reentrenamiento.
+
+
+================================================================================
+ARCHIVO: DOC-04 Documento de Requerimientos.docx
+================================================================================
+
+INSTITUTO TECNOLÓGICO DE CHILPANCINGO
+Ingeniería en Sistemas Computacionales
+Proyecto de Desarrollo de un Motor de Validación de Cumplimiento Documental
+DOCUMENTO DE REQUERIMIENTOS
+Presenta:
+Villanueva Pelay Oliver
+Empresa:
+Develop Talent & Technology
+Chilpancingo, Guerrero
+Introducción y Propósito
+El presente documento constituye la Especificación de Requerimientos de Software (SRS) para el desarrollo del Motor de Validación de Cumplimiento Documental de la empresa PluriOne S.A. de C.V. (Develop Talent & Technology). Su propósito es definir de manera exhaustiva, formal y verificable los requerimientos funcionales, no funcionales y reglas de negocio que regirán la arquitectura y desarrollo de la solución.
+El sistema tiene como objetivo automatizar y optimizar la dictaminación del cumplimiento documental en expedientes jurídicos, corporativos y regulatorios mediante un enfoque híbrido que combina un motor determinista de reglas configurables con inteligencia artificial generativa y análisis semántico (Azure OpenAI GPT-4 y Azure AI Document Intelligence). Conforme a los estándares de ingeniería de software (Pressman y Maxim, 2020; Sommerville, 2011) y la norma ISO/IEC 25010, este documento sirve como contrato técnico de referencia entre el residente desarrollador, el equipo de TI de PluriOne y los responsables de cumplimiento corporativo.
+Alcance del Sistema y Descripción General
+El sistema se concibe como una aplicación web empresarial centralizada, modular y desacoplada que opera en la nube de Microsoft Azure. El motor no procesa identificaciones personales individuales; su alcance se restringe estrictamente a la documentación corporativa y contractual de personas morales y organizaciones.
+El sistema comprende siete módulos funcionales interconectados:
+Módulo de Gestión de Expedientes: Carga, organización, almacenamiento e integridad de expedientes y sus versiones.
+Módulo de Reglas de Validación Configurables: Administración dinámica de reglas de obligatoriedad, formatos y criterios sin modificar código.
+Módulo de Análisis Inteligente: Extracción óptica y análisis semántico de contenido contractual con servicios cognitivos de Azure y LangChain.
+Módulo de Verificación de Vigencia: Control cronológico determinista de fechas de vencimiento de documentos y contratos.
+Módulo de Alertas y Recomendaciones: Generación de notificaciones automáticas preventivas y correctivas multicanal (panel y correo electrónico).
+Módulo de Reportes y Panel de Control: Visualización de métricas ejecutivas en dashboard con integración a Power BI y exportación en PDF/Excel.
+Módulo de Administración y Seguridad: Autenticación corporativa mediante Microsoft Entra ID, control de accesos RBAC y bitácora forense de auditoría.
+Actores del Sistema y Modelo de Permisos (RBAC)
+El acceso a las funcionalidades del sistema se gestiona mediante el esquema de Control de Acceso Basado en Roles (RBAC), alineado a la norma ISO/IEC 27001 que a continuación se muestra en la tabla 1
+Tabla 1
+Requerimientos Funcionales (RF)
+Los requerimientos funcionales se encuentran catalogados y clasificados conforme a los 7 módulos del sistema establecidos en el anteproyecto.
+Módulo 1: Gestión de Expedientes
+RF-01 (Creación de Expedientes): El sistema debe permitir al usuario crear un nuevo expediente corporativo asignándole un identificador único (ID alfanumérico), nombre descriptivo, empresa titular y clasificación temática (Jurídico, Corporativo o Regulatorio).
+RF-02 (Carga de Documentos): El sistema debe permitir la carga de documentos individuales o en lote en formato PDF e imágenes escaneadas (PNG, JPG), asociándolos a un expediente específico.
+RF-03 (Cálculo de Integridad Criptográfica): Al completarse la carga de cualquier archivo, el sistema debe calcular y almacenar de forma automática su huella digital mediante el algoritmo SHA-256 para garantizar la integridad y no repudio del documento (ISO 30301 y NOM-151).
+RF-04 (Control de Versiones): Si un documento es actualizado o reemplazado por un nuevo archivo, el sistema debe registrar una nueva versión del documento manteniendo el histórico accesible para auditorías posteriores.
+RF-05 (Búsqueda y Filtrado de Expedientes): El sistema debe proporcionar un buscador que permita filtrar expedientes por nombre, empresa, tipo de expediente, fecha de creación y estatus de cumplimiento.
+Módulo 2: Reglas de Validación Configurables
+RF-06 (Configuración de Reglas por Expediente): El sistema debe permitir al Administrador definir qué documentos son de carácter obligatorio y cuáles son opcionales para cada tipo de expediente sin alterar el código fuente.
+RF-07 (Vinculación de Anexos Obligatorios): El sistema debe permitir configurar la obligatoriedad de anexos dependientes de un documento principal (por ejemplo, dictámenes periciales vinculados a contratos o carátulas técnicas de pólizas).
+RF-08 (Parametrización de Criterios y Criticidad): Cada regla debe permitir configurar su nivel de severidad (Alta, Media, Baja) y la acción consecuente ante su incumplimiento (bloqueo del expediente o advertencia informativa).
+RF-09 (Alta Dinámica de Documentos y Criterios Asistidos): El sistema debe proveer una interfaz visual para que el usuario pueda agregar nuevos tipos de documentos requeridos por clientes de sectores específicos, definiendo los criterios textuales o cláusulas mínimas que la inteligencia artificial deberá localizar y evaluar.
+Módulo 3: Análisis Inteligente de Documentos
+RF-10 (Extracción de Texto y Tablas vía OCR): El sistema debe procesar los documentos cargados para extraer texto plano, estructura tabular y pares clave-valor de documentos escaneados o nativos.
+RF-11 (Análisis Semántico de Cláusulas): El sistema debe utilizar (GPT-4) orquestado para evaluar semánticamente el contenido del documento, verificando la presencia de cláusulas contractuales obligatorias (confidencialidad, rescisión, penas convencionales, coberturas mínimas).
+RF-12 (Indexación y Búsqueda Semántica): El sistema debe indexar el contenido textual de los expedientes para posibilitar búsquedas conceptuales sobre el corpus documental corporativo.
+RF-13 (Explicación y Cita de Evidencia): Cada resultado generado por la inteligencia artificial debe incluir la justificación técnica, el nivel de confianza (porcentaje de certidumbre) y la cita textual del fragmento del documento donde se detectó el cumplimiento o la omisión.
+RF-14 (Ratificación Humana en Bucle - Human-in-the-Loop): En caso de que la IA detecte una discrepancia o un nivel de confianza inferior al 80%, el sistema debe marcar el hallazgo como "Pendiente de Validación Humana", permitiendo al responsable de cumplimiento confirmar o descartar la observación.
+Módulo 4: Verificación de Vigencia
+RF-15 (Extracción de Fechas Críticas): El sistema debe identificar y registrar la fecha de emisión y la fecha de vencimiento contractual de cada documento (pólizas, licencias, contratos, certificaciones).
+RF-16 (Evaluación Cronológica Determinista): El sistema debe contrastar de forma automática y matemática la fecha de vencimiento del documento contra la fecha del servidor, clasificándolo en: Vigente, Próximo a Vencer o Vencido.
+RF-17 (Ventana de Anticipación Configurable): El sistema debe permitir parametrizar los días de anticipación con los que un documento entra en estado de advertencia (por defecto: 30, 15 y 5 días naturales previos al vencimiento).
+Módulo 5: Alertas y Recomendaciones
+RF-18 (Generación Automática de Alertas): El sistema debe disparar alertas de forma inmediata cuando se detecte un documento ausente, un documento vencido, un anexo faltante o el incumplimiento de una cláusula contractual obligatoria.
+RF-19 (Clasificación Visual por Semáforo): El panel debe representar el estado del expediente mediante codificación de colores:
+Verde: Expediente íntegro, documentos vigentes y requisitos cumplidos al 100%.
+Amarillo: Expediente con documentos próximos a vencer o pendientes de ratificación humana.
+Rojo: Expediente no conforme con documentos obligatorios faltantes o vencidos.
+RF-20 (Notificaciones por Correo Electrónico): El sistema debe enviar notificaciones automáticas por correo electrónico a los responsables asignados cuando un expediente cambie a estatus crítico o un documento esté a punto de expirar.
+RF-21 (Emisión de Recomendaciones Correctivas): Junto a cada alerta, el sistema debe desplegar una recomendación estructurada para solventar el hallazgo (por ejemplo: "Se requiere anexar la carátula de endoso con firma del representante legal").
+Módulo 6: Reportes y Panel de Control
+RF-22 (Dashboard de Cumplimiento): El sistema debe ofrecer un tablero visual integrado que muestre el porcentaje global de cumplimiento, total de expedientes conformes vs. no conformes y distribución de hallazgos por área.
+RF-23 (Generación de Dictamen de Cumplimiento): El sistema debe generar un dictamen formal de auditoría por expediente que consolide el resultado de todas las reglas evaluadas y la evidencia documental analizada.
+RF-24 (Exportación de Reportes): El sistema debe permitir la exportación de reportes de auditoría en formatos estándar PDF (para presentación formal) y Microsoft Excel (.xlsx, para análisis de datos y seguimiento operativo).
+Módulo 7: Administración y Seguridad
+RF-25 (Autenticación): El acceso al sistema debe realizarse exclusivamente a través de la identidad corporativa federada, soportando autenticación multifactor (MFA).
+RF-26 (Gestión de Roles y Permisos): El sistema debe aplicar políticas de autorización que restrinjan la visualización y edición de módulos conforme al rol del usuario (RBAC).
+RF-27 (Bitácora Inmutable de Auditoría): El sistema debe registrar en una tabla relacional protegida de PostgreSQL cada evento relevante: fecha/hora UTC, identificador del usuario, IP de origen, tipo de acción, expediente afectado y resultado de la validación (ISO 27001).
+Requerimientos No Funcionales (RNF)
+Los requerimientos no funcionales se estructuran conforme a los atributos de calidad de la norma ISO/IEC 25010 y el marco de seguridad ISO/IEC 27001:
+Desempeño y Rendimiento (ISO 25010)
+RNF-01 (Tiempo de Respuesta del Motor de Reglas): La evaluación determinista de reglas de negocio sobre un expediente completo (integridad, vigencia y anexos) no debe exceder los 2 segundos.
+RNF-02 (Tiempo de Análisis con IA): El procesamiento de extracción OCR y análisis semántico de un contrato o documento complejo (hasta 20 páginas) mediante Azure OpenAI y Document Intelligence no debe superar los 25 segundos en condiciones normales de red.
+RNF-03 (Concurrencia): La API construida sobre FastAPI debe soportar un mínimo de 50 peticiones simultáneas sin degradación del servicio ni pérdida de transacciones.
+Seguridad de la Información (ISO 27001)
+RNF-04 (Cifrado de Datos en Reposo): Todos los documentos y archivos almacenados en Azure Blob Storage deben estar cifrados mediante el estándar criptográfico AES-256.
+RNF-05 (Cifrado de Datos en Tránsito): Todas las comunicaciones entre el cliente (React.js), el servidor (FastAPI), la base de datos (PostgreSQL) y las APIs deben utilizar de forma estricta el protocolo seguro TLS 1.3 con certificados SSL vigentes.
+RNF-06 (Privacidad de Modelos de IA): Las llamadas deben configurarse en tenencia empresarial privada, garantizando que ningún dato contractual sea retenido, indexado públicamente ni utilizado para reentrenar modelos base.
+Usabilidad y Accesibilidad (ISO 25010)
+RNF-07 (Diseño Responsivo e Intuitivo): La interfaz desarrollada en React.js debe ser completamente responsiva, adaptándose a pantallas de escritorio y portátiles empresariales estándar (resolución mínima 1366x768).
+RNF-08 (Curva de Aprendizaje y Comprensión): El sistema de semáforos de cumplimiento y las explicaciones de los hallazgos deben ser comprensibles para un usuario del área jurídica o de compliance sin requerir conocimientos técnicos de software.
+Confiabilidad y Disponibilidad (ISO 25010)
+RNF-09 (Disponibilidad del Servicio): El backend y los servicios en la nube deben garantizar una disponibilidad mínima del 99.5% durante los horarios operativos laborales.
+RNF-10 (Persistencia y Recuperabilidad): La base de datos PostgreSQL debe contar con respaldos automatizados diarios y almacenamiento redundante en la nube para garantizar un Objetivo de Punto de Recuperación (RPO) menor a 24 horas.
+Mantenibilidad y Portabilidad (ISO 25010)
+RNF-11 (Contenerización): Toda la solución debe estar contenerizada mediante Docker, permitiendo su despliegue reproducible en entornos locales de prueba.
+RNF-12 (Integración Continua): El repositorio del proyecto en GitHub debe contar con flujos de trabajo automatizados mediante GitHub Actions para la ejecución de pruebas unitarias y análisis estático de código en cada confirmación.
+Reglas de Negocio (RN)
+Las reglas de negocio definen la lógica inmutable que gobierna las operaciones del motor:
+RN-01 (Incompletitud Impeditiva): Ningún expediente corporativo o jurídico puede obtener estatus "Aprobado / Conforme" si falta al menos un documento catalogado como obligatorio o si carece de sus anexos mandatorios.
+RN-02 (Vigencia Mandatoria): Si un documento con fecha de caducidad (póliza, licencia o certificación) alcanza su fecha de vencimiento sin haber sido actualizado, el sistema cambiará automáticamente el estatus del expediente a "No Conforme" y generará una alerta de severidad alta.
+RN-03 (Consistencia de Representación Legal): Al evaluar expedientes jurídicos que incluyan contratos mercantiles, el sistema debe comprobar que el apoderado legal que suscribe el contrato cuente con facultades notariales vigentes acreditadas en el poder o acta constitutiva del expediente.
+RN-04 (Imposibilidad de Borrado Físico): Los documentos y expedientes no se eliminan físicamente de la base de datos ni del almacenamiento; únicamente se marcan como inactivos o versionados (borrado lógico) para preservar la trazabilidad exigida por las auditorías de compliance.
+RN-05 (Prevalencia de la Ratificación Humana): Ante cualquier discrepancia entre el dictamen emitido por la inteligencia artificial y el criterio del analista de cumplimiento acreditado, prevalecerá la decisión humana registrada formalmente con su respectiva justificación en la bitácora.
+Referencias
+International Organization for Standardization. (2011). Systems and software engineering — Systems and software Quality Requirements and Evaluation (SQuaRE) — System and software quality models (ISO/IEC 25010:2011). ISO.
+International Organization for Standardization. (2019). Information and documentation — Management systems for records — Requirements (ISO 30301:2019). ISO.
+International Organization for Standardization. (2022). Information security, cybersecurity and privacy protection — Information security management systems — Requirements (ISO/IEC 27001:2022). ISO.
+PluriOne S.A. de C.V. (2026). Ficha técnica del proyecto 045: Motor de Validación de Cumplimiento Documental. Documento interno de ingeniería.
+Pressman, R. S. y Maxim, B. R. (2020). Ingeniería del software: Un enfoque práctico (9.ª ed.). McGraw-Hill Interamericana.
+Russell, S. y Norvig, P. (2021). Artificial Intelligence: A Modern Approach (4.ª ed.). Pearson.
+Sommerville, I. (2011). Ingeniería del software (9.ª ed.). Addison-Wesley.
+
+--- TABLA 1 (5 filas x 3 cols) ---
+Rol de Usuario | Descripción y Responsabilidades | Permisos Principales
+Administrador del Sistema | Personal de TI y administradores de PluriOne responsables de la configuración global de la plataforma. | Gestión de usuarios, configuración de repositorios de almacenamiento, alta y edición de tipos de expedientes, definición global de reglas de validación y supervisión de bitácoras de auditoría.
+Responsable de Cumplimiento | Abogados corporativos y analistas operativos encargados de la dictaminación de expedientes empresariales. | Carga de expedientes y documentos, ejecución manual o programada del motor de validación, revisión de alertas, alta de documentos personalizados por sector y ratificación de hallazgos de IA.
+Auditor | Perfil de supervisión legal, fiscal o de calidad que evalúa el estado de cumplimiento de la organización. | Acceso de solo lectura a expedientes validados, consulta de la bitácora inmutable de auditoría, visualización del nivel de confianza de validaciones y exportación de reportes ejecutivos para auditorías.
+Usuario de Consulta | Clientes u operadores que únicamente requieren conocer el estado global de un expediente específico. | Consulta visual del semáforo de cumplimiento (Verde, Amarillo, Rojo) de sus expedientes asignados sin privilegios de edición ni acceso a configuraciones internas.
+
+
+================================================================================
+ARCHIVO: DOC-05 Estrategia de Validación y Catálogo de Reglas de Negocio.docx
+================================================================================
+
+INSTITUTO TECNOLÓGICO DE CHILPANCINGO
+Ingeniería en Sistemas Computacionales
+Proyecto de Desarrollo de un Motor de Validación de Cumplimiento Documental
+ESTRATEGIA DE VALIDACIÓN Y REGLAS DE NEGOCIO
+Presenta:
+Villanueva Pelay Oliver
+Empresa:
+Develop Talent & Technology
+Chilpancingo, Guerrero
+Estrategia de Validación y Catálogo de Reglas de Negocio
+El éxito del Motor de Validación de Cumplimiento Documental radica en su capacidad para emitir dictámenes precisos, auditables y legalmente sustentados sobre expedientes corporativos y jurídicos. En un entorno empresarial real, delegar la validación enteramente a modelos de inteligencia artificial resultaría inviable debido a tres factores críticos:
+Consumo desmedido de tokens y costos en Azure: Enviar expedientes de decenas o cientos de páginas a modelos de lenguaje grandes (LLMs) saturaría las cuotas de suscripción y dispararía los costos operativos.
+Falta de determinismo en cálculos lógicos: Las inteligencias artificiales generativas son probabilísticas; para operaciones matemáticas estrictas (como calcular si una póliza venció ayer contra la fecha del servidor) se requiere código determinista absoluto, no un LLM.
+Riesgo de alucinación y falta de gobernanza: Ningún dictamen legal o contractual puede depender de un resultado opaco sin supervisión humana facultada.
+Por lo anterior, el presente documento define una estrategia de validación multinivel por embudo (pipeline) y establece el catálogo estructurado de reglas de negocio y criterios de decisión que el motor ejecutará sobre el backend en FastAPI y la base de datos PostgreSQL, articulando la interacción entre reglas lógicas, servicios cognitivos de Azure y la intervención humana (Human-in-the-Loop).
+Estrategia de Validación: El Pipeline en 5 Niveles
+El procesamiento de un expediente se estructura como un embudo secuencial de cinco fases progresivas. Cada nivel actúa como un filtro: si un expediente falla en un nivel anterior por una causa grave, el flujo se detiene o clasifica de inmediato, evitando el consumo innecesario de recursos en los niveles subsiguientes.
+Descripción Detallada de los Niveles
+Nivel 1 — Validación Estructural y Criptográfica
+Garantiza que los archivos subidos correspondan a formatos admitidos (PDF nativo, PDF escaneado, PNG o JPG) y no presenten corrupción de datos. De manera inmediata se genera la huella digital del archivo mediante el algoritmo SHA-256 de la librería estándar de Python (hashlib), la cual queda asociada al registro del documento en PostgreSQL. Si el archivo está dañado o no es un formato válido, se rechaza antes de continuar.
+Ejemplo 1 – Validación Criptográfica
+Nivel 2 — Validación Determinista (Motor de Reglas en Backend)
+Constituye la primera barrera de negocio. Mediante consultas SQL y lógica en FastAPI, el motor verifica tres condiciones fundamentales sin necesidad de inteligencia artificial:
+Completitud: ¿El expediente contiene la totalidad de documentos catalogados como obligatorios para su tipo?
+Anexos: ¿Los documentos que requieren anexos los tienen asociados?
+Vigencia: ¿Las fechas de vencimiento de cada documento no han sido rebasadas?
+Ejemplo 2 – Validación Determinista
+Si un expediente carece de los documentos mínimos obligatorios, se clasifica como No Conforme sin realizar llamadas a las APIs de IA, ahorrando el 100% de los costos de procesamiento cognitivo.
+Nivel 3 — Extracción de Texto
+Los documentos que superan el Nivel 2 y requieren análisis de contenido interno son procesados por un servicio de reconocimiento óptico de caracteres (OCR) y extracción de texto. Este servicio recibe el archivo PDF o imagen escaneada y devuelve el texto completo del documento de forma estructurada. El texto extraído se almacena en la base de datos asociado al documento correspondiente, segmentado por páginas del archivo original, para su posterior consulta y análisis.
+Nivel 4 — Análisis Semántico Asistido
+Una vez que se dispone del texto extraído, el sistema envía las secciones relevantes del documento a un modelo de inteligencia artificial capaz de comprender lenguaje natural. El modelo recibe el texto junto con el criterio específico que debe evaluar (por ejemplo: "¿El contrato contiene una cláusula de penalización por incumplimiento?") y devuelve una respuesta estructurada con tres elementos:
+Cumplimiento: Si la cláusula o requisito está presente o no (verdadero o falso).
+Evidencia: La cita textual exacta del fragmento del documento donde se encontró o donde debería estar la cláusula.
+Nivel de Confianza: Un valor porcentual que indica qué tan seguro está el modelo de su respuesta.
+El sistema no envía el documento completo al modelo de inteligencia artificial. Envía únicamente las páginas donde probablemente se encuentra la información buscada, reduciendo significativamente el consumo de recursos y el tiempo de procesamiento.
+Nivel 5 — Gobernanza y Supervisión Humana (Human-in-the-Loop)
+Ningún expediente se da por rechazado ni se toma una decisión contractual de forma exclusivamente automatizada. El sistema aplica la siguiente lógica de gobernanza:
+Si el nivel de confianza del modelo es igual o mayor al 85%, el hallazgo se registra como aprobado de forma automática.
+Si el nivel de confianza es menor al 85%, el hallazgo se marca como "Pendiente de Revisión Humana", y el analista de cumplimiento debe revisar la cita textual extraída y confirmar o descartar la observación desde el panel de control.
+En ambos casos, la decisión final queda registrada en la bitácora de auditoría del sistema con la identificación del usuario, la fecha y hora, y el resultado de la validación.
+Optimización de Recursos y Procesamiento
+Para garantizar que el sistema opere de forma eficiente y económicamente viable, la estrategia incorpora tres mecanismos de optimización:
+Preevaluación Determinista: La inteligencia artificial nunca se invoca si el expediente ya incumple las reglas del Nivel 2. Si faltan documentos obligatorios o un contrato está vencido, el expediente se dictamina como "No Conforme" de inmediato sin consumir recursos adicionales.
+Segmentación por Páginas: En lugar de procesar el documento completo con inteligencia artificial, el sistema divide el texto extraído por páginas y envía únicamente las secciones pertinentes al criterio que se está evaluando. Esto reduce el volumen de procesamiento de forma significativa.
+Caché de Dictámenes: Si un documento no ha sido modificado desde su última validación (la huella criptográfica SHA-256 es idéntica), el sistema reutiliza el dictamen previo almacenado en la base de datos sin volver a procesarlo. Esto evita trabajo redundante cuando un expediente se reevalúa periódicamente.
+Manejo de Excepciones y Tolerancia a Fallos
+El sistema contempla escenarios donde el procesamiento no puede completarse de forma normal y actúa de manera controlada para no interrumpir la operación general que a continuación se muestra en la tabla 1
+Tabla 1
+En ningún caso una falla en un documento individual detiene la validación del resto del expediente. El sistema procesa todos los documentos posibles y reporta de forma clara cuáles requieren atención.
+Catálogo Formal de Reglas de Negocio
+Las reglas de negocio representan la lógica que gobierna las operaciones del motor de validación. Se organizan en cuatro familias con nomenclatura estandarizada para facilitar su identificación, trazabilidad y mantenimiento:
+RIE: Reglas de Integridad y Estructura (Niveles 1 y 2).
+RCV: Reglas Cronológicas y de Vigencia (Nivel 2).
+RSC: Reglas Semánticas y Contractuales (Nivel 4 — IA).
+RDS: Reglas Dinámicas y Sectoriales (Configurables por el usuario).
+Reglas de Integridad y Estructura (RIE)
+RIE-01 — Completitud de Expediente
+El sistema calcula el porcentaje de documentos obligatorios presentes en el expediente respecto al total de documentos obligatorios configurados para ese tipo de expediente. Si el porcentaje es menor al 100%, el expediente no puede obtener estatus de aprobado. El sistema indica claramente cuáles documentos faltan.
+Severidad: Crítica (Bloqueante).
+Acción: Semáforo Rojo y listado de documentos faltantes.
+RIE-02 — Vinculación Obligatoria de Anexos
+Si un documento principal (por ejemplo, un Contrato de Prestación de Servicios) requiere anexos vinculados (como una Propuesta Técnica o una Póliza de Fianza), la ausencia de cualquiera de los anexos invalida el documento principal.
+Severidad: Alta.
+Acción: Semáforo Rojo con indicación específica del anexo ausente.
+RIE-03 — Integridad Criptográfica del Archivo
+Al consultar un documento previamente cargado, el sistema recalcula su huella criptográfica SHA-256 y la compara con el valor registrado en la base de datos al momento de la carga inicial. Si los valores no coinciden, se ha detectado una alteración no autorizada del archivo.
+Severidad: Crítica (Seguridad).
+Acción: Bloqueo inmediato del documento y registro en bitácora de auditoría.
+Reglas Cronológicas y de Vigencia (RCV)
+RCV-01 — Vigencia Mandatoria
+El sistema calcula la diferencia en días entre la fecha de vencimiento del documento y la fecha actual:
+Si la diferencia es negativa: El documento está vencido. Severidad Alta. Semáforo Rojo.
+Si la diferencia está entre 0 y 30 días: El documento está próximo a vencer. Severidad Media. Semáforo Amarillo.
+Si la diferencia es mayor a 30 días: El documento está vigente. Semáforo Verde.
+Caducidad Estricta de Documentos con Vigencia Legal Fija
+Ciertos documentos emitidos por autoridades tienen una vigencia legal predeterminada (por ejemplo, opiniones de cumplimiento fiscal con vigencia de 30 días naturales a partir de su emisión). Si la diferencia entre la fecha actual y la fecha de emisión supera el periodo legal establecido, el documento se marca automáticamente como vencido, requiriendo actualización inmediata.
+Severidad: Alta.
+Reglas Semánticas y Contractuales (RSC)
+RSC-01 — Detección de Cláusulas Contractuales Esenciales
+El modelo de inteligencia artificial evalúa si un contrato incluye cláusulas explícitas de:
+Confidencialidad y No Divulgación: Obligación recíproca entre las partes contratantes.
+Penalización por Incumplimiento: Establecimiento de penas convencionales tasadas.
+Vigencia y Terminación Anticipada: Procedimiento claro de rescisión del contrato.
+Si falta alguna de estas cláusulas en un contrato principal de servicios, el sistema emite un dictamen de "Omisión Contractual Relevante".
+Severidad: Media-Alta.
+Acción: Semáforo Amarillo y recomendación de revisión.
+RSC-02 — Extracción Asistida de Datos del Firmante
+La inteligencia artificial extrae del contrato los datos visibles del firmante (nombre, cargo y empresa que representa) y los presenta al analista de cumplimiento en el panel de validación. El analista es quien confirma manualmente si los datos del firmante corresponden con las facultades acreditadas en el Poder Notarial o Acta Constitutiva del mismo expediente.
+Severidad: Alta.
+Acción: La decisión final siempre recae en el analista humano.
+Reglas Dinámicas y Sectoriales (RDS)
+RDS-01 — Alta Dinámica de Requisitos por el Usuario
+El administrador o validador puede dar de alta desde la interfaz del sistema un nuevo tipo de documento no contemplado originalmente en el catálogo base (por ejemplo: "Permiso de Impacto Ambiental" o "Dictamen Estructural de Protección Civil"). Este registro crea una nueva entrada en la tabla de reglas de la base de datos sin necesidad de modificar el código fuente del sistema.
+RDS-02 — Configuración de Criterio para la IA
+Al crear un nuevo tipo de documento, el usuario escribe en lenguaje natural la instrucción que la inteligencia artificial debe evaluar. Esta instrucción se almacena en la base de datos y se utiliza dinámicamente al momento de la validación.
+Ejemplo de lo que el usuario escribe en la interfaz:
+"Verificar que el documento indique expresamente que el inmueble cuenta con visto bueno vigente de Protección Civil."
+RDS-03 — Ejecución Supervisada Obligatoria
+Todo documento creado dinámicamente que sea validado mediante inteligencia artificial ingresará de forma obligatoria al esquema Human-in-the-Loop (Nivel 5), requiriendo que el analista valide el resultado antes de que el expediente alcance el 100% de cumplimiento. Esto se justifica porque las reglas dinámicas no han sido probadas previamente con un conjunto de datos de referencia.
+Modelo de Puntuación de Cumplimiento y Semáforo
+Para consolidar la dictaminación de un expediente que puede contener múltiples documentos y reglas, el sistema calcula un porcentaje directo de cumplimiento con una regla de bloqueo por criticidad:
+El porcentaje se obtiene dividiendo el número de reglas cumplidas entre el total de reglas evaluadas, multiplicado por 100.
+Si alguna regla de severidad crítica falla (documento obligatorio ausente, documento vencido o alteración de integridad), el semáforo pasa directamente a Rojo sin importar el porcentaje.
+Protocolo de Auditoría y Trazabilidad
+Cada vez que el motor ejecuta el pipeline de validación sobre un expediente, el sistema genera un registro de auditoría que contiene los siguientes datos:
+Fecha y hora de la validación.
+Identificación del usuario que solicitó o ejecutó la validación.
+Identificador del expediente y del documento evaluado.
+Huella criptográfica del documento al momento de la evaluación.
+Identificador de la regla aplicada (por ejemplo: RCV-01, RSC-01).
+Resultado de la validación (cumple o no cumple).
+Nivel de confianza emitido por la inteligencia artificial (cuando aplica).
+Cita textual de la evidencia extraída del documento (cuando aplica).
+Registro de la decisión del analista humano en caso de ratificación.
+Dirección IP desde la cual se realizó la operación.
+Estos registros son inmutables: no pueden ser editados ni eliminados por ningún usuario del sistema. Esto garantiza que, durante cualquier auditoría interna o externa, la empresa pueda demostrar de forma transparente el fundamento de cada validación realizada.
+Conclusiones
+La estrategia de validación multinivel y el catálogo de reglas de negocio aquí definidos resuelven de manera integral los retos de eficiencia, costo y certeza jurídica del proyecto:
+Eficiencia de recursos: Se evita el procesamiento innecesario gracias al filtrado previo en los Niveles 1 y 2, la segmentación por páginas y el caché de dictámenes.
+Certeza matemática: Las vigencias, completitudes e integridades se evalúan de forma determinista mediante operaciones de fecha, conteos en base de datos y verificación de huellas criptográficas.
+Inteligencia aplicada: La inteligencia artificial se reserva exclusivamente para tareas que requieren comprensión de lenguaje natural, como la verificación de cláusulas contractuales y la extracción de datos de firmantes.
+Gobernanza total: El esquema Human-in-the-Loop y la bitácora inmutable de auditoría garantizan que las decisiones con impacto legal sean siempre supervisadas y trazables.
+Referencias
+International Organization for Standardization. (2011). Systems and software engineering — Systems and software Quality Requirements and Evaluation (SQuaRE) — System and software quality models (ISO/IEC 25010:2011). ISO.
+International Organization for Standardization. (2022). Information security, cybersecurity and privacy protection — Information security management systems — Requirements (ISO/IEC 27001:2022). ISO.
+PluriOne S.A. de C.V. (2026). Ficha técnica del proyecto 045: Motor de Validación de Cumplimiento Documental. Documento interno de ingeniería.
+Pressman, R. S. y Maxim, B. R. (2020). Ingeniería del software: Un enfoque práctico (9.ª ed.). McGraw-Hill Interamericana.
+Sommerville, I. (2011). Ingeniería del software (9.ª ed.). Addison-Wesley.
+
+--- TABLA 1 (4 filas x 4 cols) ---
+Escenario | Causa | Acción del Sistema | Estatus
+Documento Ilegible | Escaneo de muy baja calidad o imagen borrosa. | El servicio de extracción no logra obtener texto suficiente. El sistema notifica al usuario que debe recargar el archivo con mejor resolución. | Amarillo: "Documento ilegible, se requiere recarga".
+Servicio de IA no disponible | Interrupción temporal del servicio externo. | El sistema reintenta la operación hasta 3 veces con espera progresiva. Si la falla persiste, el documento se marca como pendiente para procesamiento posterior. | Alerta interna: "Procesamiento diferido".
+Archivo protegido con contraseña | PDF cifrado por el emisor original. | El Nivel 1 detecta que el archivo no puede abrirse ni procesarse. | Rojo: "Archivo protegido, no procesable".
+
+
+================================================================================
+ARCHIVO: DOC-06 Propuesta Técnica.docx
+================================================================================
+
+INSTITUTO TECNOLÓGICO DE CHILPANCINGO
+Ingeniería en Sistemas Computacionales
+Proyecto de Desarrollo de un Motor de Validación de Cumplimiento Documental
+PROPUESTA TÉCNICA
+Presenta:
+Villanueva Pelay Oliver
+Empresa:
+Develop Talent & Technology
+Chilpancingo, Guerrero
+Introducción
+El presente documento formaliza la propuesta técnica para el desarrollo del Motor de Validación de Cumplimiento Documental solicitado por la empresa PluriOne S.A. de C.V. (Develop Talent & Technology), con domicilio en Puebla 46, Colonia Roma Norte, Alcaldía Cuauhtémoc, Ciudad de México.
+La propuesta se fundamenta en los hallazgos obtenidos durante la Fase de Análisis y Detección de Necesidades, documentados en los siguientes entregables previos:
+Entrevistas con Stakeholders (Documento 01).
+Identificación de Requisitos Documentales (Documento 02).
+Análisis de Marcos Regulatorios (Documento 03).
+Especificación de Requerimientos de Software — SRS (Documento 04).
+Estrategia de Validación y Catálogo de Reglas de Negocio (Documento 05).
+El propósito de esta propuesta es presentar de manera clara y ordenada la solución técnica que se desarrollará, su arquitectura funcional, la metodología de trabajo, el cronograma de ejecución y el análisis de factibilidad, proporcionando a la empresa y al área académica una visión completa del proyecto antes de iniciar la fase de diseño y construcción.
+Planteamiento del Problema
+Las organizaciones que manejan expedientes jurídicos y corporativos enfrentan un desafío operativo crítico: garantizar que la totalidad de su documentación cumpla en todo momento con los requisitos de integridad, vigencia, obligatoriedad de anexos y apego a marcos regulatorios nacionales e internacionales.
+Actualmente, la revisión de estos expedientes se realiza de forma manual, lo que genera los siguientes problemas recurrentes:
+Inconsistencia en las revisiones: Diferentes personas aplican criterios distintos al evaluar un mismo expediente, produciendo resultados variables y poco confiables.
+Documentos vencidos que pasan desapercibidos: Cuando el volumen de expedientes crece o hay rotación de personal, las pólizas, licencias y certificaciones vencidas no se detectan a tiempo, exponiendo a la organización a sanciones y contingencias legales.
+Cuellos de botella operativos: La revisión manual de un solo expediente que contiene decenas de documentos puede tomar horas o incluso días, retrasando procesos de auditoría, contratación y cumplimiento regulatorio.
+Ausencia de trazabilidad: No existe un registro formal y auditable de quién revisó qué, cuándo lo hizo y qué criterios aplicó, lo que dificulta la defensa ante auditorías externas.
+Solución Propuesta
+Se propone el desarrollo de una aplicación web empresarial que automatice la validación del cumplimiento documental de expedientes jurídicos, corporativos y regulatorios. La solución opera mediante un enfoque híbrido que combina:
+Un motor de reglas configurables: Evalúa de forma determinista la completitud del expediente (presencia de documentos obligatorios y anexos), la vigencia de cada documento (cálculo matemático de fechas de vencimiento) y el cumplimiento de requisitos estructurales (formato, clasificación). Este nivel de validación no requiere inteligencia artificial y produce resultados exactos e inmediatos.
+Un módulo de análisis inteligente: Para los documentos que requieren evaluación de contenido interno (como verificar si un contrato contiene cláusulas específicas o si los datos del firmante son consistentes), el sistema utiliza servicios de extracción de texto (OCR) e inteligencia artificial con capacidad de comprensión de lenguaje natural. La IA emite un dictamen acompañado de la cita textual del documento y un nivel de confianza.
+Un esquema de supervisión humana (Human-in-the-Loop): Las decisiones de la inteligencia artificial con bajo nivel de confianza son presentadas al analista de cumplimiento para su ratificación o corrección, garantizando que ninguna decisión con impacto legal sea tomada de forma exclusivamente automática.
+El sistema genera un dictamen de cumplimiento por expediente representado mediante un semáforo visual (Verde = Conforme, Amarillo = Advertencia, Rojo = No Conforme) y mantiene una bitácora inmutable de auditoría que registra cada validación realizada.
+Arquitectura Funcional del Sistema
+El sistema se estructura en siete módulos funcionales interconectados, cada uno con responsabilidades claramente definidas:
+Módulo 1: Gestión de Expedientes y Documentos
+Permite crear, organizar, almacenar y versionar los expedientes corporativos y sus documentos. Cada expediente recibe un identificador único y se clasifica según su tipo (jurídico, corporativo o regulatorio). Al momento de la carga, se calcula la huella criptográfica SHA-256 del archivo para garantizar su integridad a lo largo del tiempo. El módulo permite buscar expedientes por nombre, tipo, empresa o fecha de ingreso.
+Módulo 2: Reglas de Validación Configurables
+Permite al administrador definir y gestionar las reglas que determinan qué documentos son obligatorios para cada tipo de expediente, qué anexos deben incluirse y qué criterios de vigencia aplican. Las reglas se almacenan en la base de datos de forma desacoplada del código fuente, lo que permite adaptarse a distintos marcos regulatorios según el sector del cliente sin necesidad de modificar ni redesplegar el software. El usuario también puede dar de alta nuevos tipos de documentos y definir criterios de validación que la inteligencia artificial evaluará.
+Módulo 3: Análisis Inteligente de Documentos
+Procesa los documentos mediante extracción de texto (OCR) y análisis semántico con inteligencia artificial. Permite identificar cláusulas faltantes, inconsistencias en el contenido y verificar que los documentos cumplan con los requisitos establecidos en las reglas de validación. Cada resultado incluye la cita textual probatoria, el veredicto de cumplimiento y el nivel de confianza del modelo.
+Módulo 4: Verificación de Vigencia y Vencimiento
+Controla las fechas de emisión y vencimiento de cada documento dentro del expediente. El sistema verifica de forma automática y matemática si los documentos se encuentran vigentes al momento de la validación y genera alertas cuando un documento está próximo a vencer o ya se encuentra fuera de vigencia, con umbrales de anticipación configurables.
+Módulo 5: Alertas y Recomendaciones
+Genera notificaciones automáticas cuando se detecta un incumplimiento documental: documento vencido, documento faltante, anexo ausente o desviación respecto a las reglas configuradas. Además, emite recomendaciones para facilitar la corrección de los hallazgos identificados. Las alertas se consultan en el panel de control y se envían por correo electrónico a los responsables designados.
+Módulo 6: Reportes y Panel de Control
+Proporciona un tablero visual (dashboard) que presenta indicadores clave del estado de cumplimiento documental de la organización. Permite generar reportes por expediente, por tipo de documento, por periodo o por nivel de cumplimiento. Los reportes pueden exportarse en formato PDF y Excel para su uso en auditorías y procesos de compliance.
+Módulo 7: Administración y Seguridad
+Controla el acceso al sistema mediante autenticación centralizada. Define roles y permisos para administradores, validadores de cumplimiento, auditores y usuarios de consulta, asegurando que cada actor acceda únicamente a las funcionalidades que le corresponden. Incluye la bitácora inmutable de auditoría que registra todas las acciones realizadas en el sistema.
+Metodología de Desarrollo
+El proyecto se desarrollará bajo la metodología ágil Scrum, conforme a lo establecido en la Ficha Técnica 045. Esta metodología permite avanzar de forma iterativa e incremental, entregando funcionalidad verificable al final de cada sprint y adaptándose a los ajustes que surjan durante el desarrollo.
+
+================================================================================
+ARCHIVO: DOC-07 Plan de Proyecto Blacklog.docx
+================================================================================
+
+INSTITUTO TECNOLÓGICO DE CHILPANCINGO
+Ingeniería en Sistemas Computacionales
+Proyecto de Desarrollo de un Motor de Validación de Cumplimiento Documental
+PLAN DE PROYECTO Y BLACKLOG
+Presenta:
+Villanueva Pelay Oliver
+Empresa:
+Develop Talent & Technology
+Chilpancingo, Guerrero
+Introducción
+El presente documento establece el plan formal del proyecto y el Product Backlog para el desarrollo del Motor de Validación de Cumplimiento Documental de PluriOne S.A. de C.V. Este entregable cierra la Fase de Propuesta y Planificación del cronograma y constituye la hoja de ruta operativa que guiará la ejecución del proyecto durante las 16 semanas de la residencia profesional (320 horas totales).
+El plan se estructura conforme a la metodología ágil Scrum (Schwaber y Sutherland, 2020), definida en la Ficha Técnica 045 del proyecto. Se detallan los roles del equipo, la organización de los sprints, el Product Backlog con las historias de usuario priorizadas, el calendario de ejecución y los criterios de aceptación globales del producto.
+Toda la información contenida en este documento se fundamenta en los entregables previos de la Fase de Análisis: el Documento de Requerimientos (SRS), la Estrategia de Validación Multinivel y el Catálogo de Reglas de Negocio, garantizando la coherencia y trazabilidad entre la planificación y los requisitos identificados.
+Metodología de Desarrollo: Scrum
+El proyecto se desarrollará bajo la metodología ágil Scrum, la cual permite avanzar de forma iterativa e incremental, entregando funcionalidad verificable al final de cada sprint y adaptándose a los ajustes que surjan durante el desarrollo. Según Schwaber y Sutherland (2020), Scrum se fundamenta en los pilares de transparencia, inspección y adaptación, lo que resulta adecuado para proyectos donde los requerimientos pueden refinarse conforme se avanza en la implementación.
+Roles del Equipo Scrum
+Tabla 1
+Asignación de roles del equipo Scrum
+Estructura de los Sprints
+Cada sprint tendrá una duración de dos semanas (40 horas de trabajo), al término de las cuales se presentará un incremento funcional verificable al asesor empresarial. La estructura de cada sprint incluye:
+Planificación del Sprint: Selección de las historias de usuario prioritarias del Product Backlog.
+Desarrollo: Implementación del código, integración de servicios y pruebas unitarias.
+Revisión del Sprint: Demostración del incremento funcional al Product Owner.
+Retrospectiva: Identificación de mejoras para el siguiente sprint.
+Fases del Proyecto y Cronograma General
+El proyecto se ejecuta en un periodo de 16 semanas (320 horas totales), distribuidas en las siguientes fases conforme al cronograma aprobado en el anteproyecto de residencia profesional:
+Tabla 2
+Fases del proyecto, semanas asignadas y entregables
+Nota. La Fase 4 (Desarrollo) se organiza internamente en cuatro sprints de dos semanas cada uno.
+Plan de Sprints de Desarrollo
+La Fase 4 (Desarrollo del Motor) comprende 240 horas distribuidas en ocho semanas, organizadas en cuatro sprints de dos semanas cada uno. Cada sprint tiene un objetivo funcional claro, con entregables verificables y criterios de aceptación definidos.
+Sprint 1 (Semanas 5 - 6): Cimientos del Sistema
+Objetivo: Construir la base del sistema sobre la cual se apoyarán los demás módulos. Incluye el diseño de la base de datos, la API REST inicial, la autenticación de usuarios con roles diferenciados y el módulo de gestión de expedientes con carga de documentos.
+Tabla 3
+Historias de usuario del Sprint 1
+Sprint 2 (Semanas 7 - 8): Motor de Reglas y Vigencias
+Objetivo: Implementar el motor de reglas configurables, la verificación de vigencia de documentos y el sistema de alertas y recomendaciones. Al finalizar este sprint, el sistema debe ser capaz de evaluar un expediente de forma determinista (sin inteligencia artificial) y emitir un dictamen básico de cumplimiento.
+Tabla 4
+Historias de usuario del Sprint 2
+Sprint 3 (Semanas 9 - 10): Análisis Inteligente con IA
+Objetivo: Integrar los servicios de extracción de texto (OCR) e inteligencia artificial para el análisis semántico de documentos. Implementar el agente de validación inteligente con sus habilidades (skills) configurables. Al finalizar este sprint, el sistema debe ser capaz de extraer texto de un PDF, analizar su contenido con un modelo de lenguaje y emitir un dictamen con cita textual y nivel de confianza.
+Tabla 5
+Historias de usuario del Sprint 3
+Sprint 4 (Semanas 11 - 12): Reportes, Dashboard e Integración
+Objetivo: Desarrollar el panel de control con indicadores de cumplimiento, el sistema de reportes exportables y completar la integración entre todos los módulos. Al finalizar este sprint, el sistema debe estar funcionalmente completo y listo para la fase de pruebas.
+Tabla 6
+Historias de usuario del Sprint 4
+Resumen del Product Backlog
+El Product Backlog completo contiene 33 historias de usuario distribuidas en los 7 módulos del sistema y un componente de integración general.
+Tabla 7
+Distribución de historias de usuario por módulo y sprint
+Criterios de Aceptación del Producto
+Para considerar el proyecto como finalizado satisfactoriamente y proceder a la entrega formal, el sistema debe cumplir con los siguientes criterios:
+Criterios Funcionales
+El sistema permite crear, organizar y buscar expedientes corporativos con identificador único y clasificación por tipo.
+El sistema permite cargar documentos en formato PDF e imagen, calculando automáticamente la huella criptográfica SHA-256.
+El motor de reglas evalúa correctamente la completitud, vigencia y presencia de anexos de un expediente.
+Las reglas de validación son configurables desde la interfaz sin necesidad de modificar el código fuente.
+El servicio de OCR extrae texto de documentos escaneados de forma legible.
+La inteligencia artificial analiza cláusulas contractuales y emite dictámenes con cita textual y nivel de confianza.
+Los hallazgos con baja confianza requieren ratificación humana antes de ser definitivos.
+El sistema genera alertas automáticas ante documentos faltantes, vencidos o próximos a vencer.
+El dashboard muestra el semáforo de cumplimiento (Verde, Amarillo, Rojo) por expediente.
+Los reportes pueden exportarse en formato PDF y Excel.
+Criterios de Seguridad y Auditoría
+El acceso al sistema se controla mediante autenticación con roles diferenciados (Administrador, Validador, Auditor, Consulta).
+Cada acción relevante queda registrada en la bitácora de auditoría de forma inmutable.
+Los documentos almacenados están protegidos mediante cifrado y control de acceso.
+Criterios de Calidad y Entrega
+El sistema se entrega contenerizado, listo para desplegarse con un solo comando.
+Se entrega la documentación técnica completa (arquitectura, APIs, configuración y manual de usuario).
+Se ejecutan y documentan las pruebas funcionales, de integración y de precisión de la IA.
+Gestión de Riesgos del Proyecto
+Tabla 9
+Riesgos identificados y estrategias de mitigación
+Conclusiones
+El plan del proyecto y el Product Backlog aquí definidos proporcionan una hoja de ruta clara, medible y realista para el desarrollo del Motor de Validación de Cumplimiento Documental. La organización en cuatro sprints de desarrollo, precedidos por una fase sólida de análisis y arquitectura, garantiza que cada incremento funcional aporte valor verificable al producto.
+Las 33 historias de usuario del backlog cubren la totalidad de los 7 módulos establecidos en el anteproyecto y se distribuyen de forma lógica: primero los cimientos del sistema (Sprint 1), luego el motor de reglas deterministas (Sprint 2), después la inteligencia artificial (Sprint 3) y finalmente los reportes y la integración completa (Sprint 4). Esta secuencia asegura que, en caso de retraso, el producto mínimo viable (motor de reglas sin IA) ya estaría operativo al finalizar el Sprint 2.
+Con la entrega de este documento se cierra formalmente la Fase de Propuesta y Planificación del cronograma, habilitando el inicio de la Fase de Diseño de Arquitectura de Software.
+
+--- TABLA 1 (4 filas x 3 cols) ---
+Rol | Persona | Responsabilidad
+Product Owner | Lic. Juan Méndez Herrera (PluriOne) | Define las prioridades del producto, valida los entregables y aprueba los criterios de aceptación.
+Scrum Master/ Desarrollador | Oliver Villanueva Pelay (Residente) | Planifica los sprints, desarrolla el software, ejecuta las pruebas y documenta los avances.
+Stakeholder Evaluador | Edgar Loheffelmman (PluriOne) | Evalúa la calidad del desarrollo y proporciona retroalimentación técnica.
+
+
+--- TABLA 2 (10 filas x 4 cols) ---
+Fase | Semanas | Horas | Entregable Principal
+Análisis y Detección de Necesidades | 1 - 2 | 50 | Documento de Requerimientos (SRS)
+Propuesta y Planificación | 2 - 3 | 30 | Propuesta Técnica y Plan del Proyecto
+Diseño de Arquitectura | 3 - 5 | 50 | Documento de Arquitectura de Software
+Desarrollo del Motor | 5 - 12 | 240 | Sistema Funcional (7 módulos)
+Pruebas de Calidad (QA) | 12 - 14 | 55 | Reporte de Pruebas
+Documentación Técnica | 14 - 15 | 25 | Manual Técnico y de Usuario
+Mantenimiento y Soporte | 15 | 15 | Plan de Mantenimiento
+Capacitación y Entrega | 15 - 16 | 15 | Acta de Capacitación
+Cierre | 16 | 10 | Informe Final
+
+
+--- TABLA 3 (9 filas x 5 cols) ---
+ID | Historia de Usuario | Módulo | Prioridad | Horas
+HU-01 | Como administrador, quiero crear tipos de expedientes (jurídico, corporativo, regulatorio) para clasificar la documentación. | M1: Gestión de Expedientes | Alta | 6
+HU-02 | Como validador, quiero crear un expediente nuevo asignándole un nombre, empresa y tipo para organizar los documentos. | M1: Gestión de Expedientes | Alta | 6
+HU-03 | Como validador, quiero cargar documentos PDF e imágenes a un expediente y que el sistema calcule su hash SHA-256 automáticamente. | M1: Gestión de Expedientes | Alta | 8
+HU-04 | Como validador, quiero buscar expedientes por nombre, empresa, tipo o fecha para localizar rápidamente la información. | M1: Gestión de Expedientes | Alta | 5
+HU-05 | Como administrador, quiero gestionar usuarios y asignarles roles (Administrador, Validador, Auditor, Consulta) para controlar el acceso. | M7: Administración y Seguridad | Alta | 10
+HU-06 | Como usuario, quiero iniciar sesión de forma segura y que el sistema solo me muestre las funciones de mi rol. | M7: Administración y Seguridad | Alta | 8
+HU-07 | Como sistema, quiero registrar cada acción relevante en la bitácora de auditoría (usuario, fecha, acción, IP). | M7: Administración y Seguridad | Alta | 6
+HU-08 | Como administrador, quiero que el sistema verifique la integridad de los documentos comparando el hash actual con el original. | M1: Gestión de Expedientes | Media | 5
+
+
+--- TABLA 4 (10 filas x 5 cols) ---
+ID | Historia de Usuario | Módulo | Prioridad | Horas
+HU-09 | Como administrador, quiero definir qué documentos son obligatorios y cuáles son opcionales para cada tipo de expediente. | M2: Reglas de Validación | Alta | 8
+HU-10 | Como administrador, quiero vincular anexos obligatorios a documentos principales para que el sistema valide su presencia. | M2: Reglas de Validación | Alta | 6
+HU-11 | Como administrador, quiero asignar un nivel de severidad (Crítica, Alta, Media) a cada regla y definir la acción ante incumplimiento. | M2: Reglas de Validación | Alta | 5
+HU-12 | Como validador, quiero que el sistema verifique automáticamente la completitud del expediente y me muestre el porcentaje de documentos presentes. | M2: Reglas de Validación | Alta | 6
+HU-13 | Como validador, quiero que el sistema calcule si cada documento está vigente, próximo a vencer o vencido comparando fechas. | M4: Verificación de Vigencia | Alta | 8
+HU-14 | Como administrador, quiero configurar los umbrales de anticipación (30, 15, 5 días) para las alertas de vencimiento. | M4: Verificación de Vigencia | Media | 4
+HU-15 | Como validador, quiero recibir alertas automáticas cuando un expediente tenga documentos faltantes, vencidos o con anexos ausentes. | M5: Alertas y Recomendaciones | Alta | 8
+HU-16 | Como validador, quiero que cada alerta incluya una recomendación clara de qué acción tomar para corregir el hallazgo. | M5: Alertas y Recomendaciones | Media | 5
+HU-17 | Como validador, quiero recibir notificaciones por correo electrónico cuando un expediente cambie a estatus crítico. | M5: Alertas y Recomendaciones | Media | 6
+
+
+--- TABLA 5 (9 filas x 5 cols) ---
+ID | Historia de Usuario | Módulo | Prioridad | Horas
+HU-18 | Como sistema, quiero extraer el texto completo de un documento PDF o imagen escaneada mediante OCR y almacenarlo segmentado por páginas. | M3: Análisis Inteligente | Alta | 12
+HU-19 | Como validador, quiero que el sistema analice semánticamente un contrato y verifique si contiene cláusulas obligatorias (confidencialidad, penalización, vigencia). | M3: Análisis Inteligente | Alta | 14
+HU-20 | Como validador, quiero que cada resultado de la IA incluya la cita textual exacta del documento y un porcentaje de confianza. | M3: Análisis Inteligente | Alta | 6
+HU-21 | Como validador, quiero que cuando la confianza de la IA sea menor al 85%, el hallazgo se marque para mi revisión manual. | M3: Análisis Inteligente | Alta | 5
+HU-22 | Como validador, quiero aprobar o rechazar los hallazgos de la IA desde el panel de validación y que mi decisión quede en la bitácora. | M3: Análisis Inteligente | Alta | 6
+HU-23 | Como validador, quiero que la IA extraiga los datos del firmante (nombre, cargo, empresa) y me los presente para que yo confirme si coinciden con el poder notarial. | M3: Análisis Inteligente | Media | 8
+HU-24 | Como administrador, quiero dar de alta nuevos tipos de documentos y definir en lenguaje natural el criterio que la IA debe evaluar. | M2: Reglas de Validación | Alta | 10
+HU-25 | Como sistema, quiero reutilizar el dictamen anterior si el documento no ha cambiado (mismo hash SHA-256) para no reprocesarlo. | M3: Análisis Inteligente | Media | 5
+
+
+--- TABLA 6 (9 filas x 5 cols) ---
+ID | Historia de Usuario | Módulo | Prioridad | Horas
+HU-26 | Como validador, quiero ver un dashboard con el porcentaje global de cumplimiento, total de expedientes conformes y no conformes. | M6: Reportes y Panel | Alta | 10
+HU-27 | Como validador, quiero ver el semáforo de cada expediente (Verde, Amarillo, Rojo) de forma visual e inmediata. | M6: Reportes y Panel | Alta | 6
+HU-28 | Como auditor, quiero generar un dictamen formal de cumplimiento por expediente que consolide todos los resultados de la validación. | M6: Reportes y Panel | Alta | 8
+HU-29 | Como auditor, quiero exportar reportes de auditoría en formato PDF y Excel para presentarlos en revisiones externas. | M6: Reportes y Panel | Alta | 8
+HU-30 | Como auditor, quiero consultar la bitácora completa de un expediente para ver quién validó, cuándo y qué resultado obtuvo. | M7: Administración y Seguridad | Alta | 5
+HU-31 | Como usuario de consulta, quiero ver únicamente el semáforo de mis expedientes asignados sin acceder a configuraciones internas. | M7: Administración y Seguridad | Media | 4
+HU-32 | Como validador, quiero ejecutar la validación completa de un expediente (reglas + IA) con un solo botón y ver el resultado consolidado. | Integración General | Alta | 14
+HU-33 | Como sistema, quiero manejar errores de forma controlada (documentos ilegibles, servicio de IA no disponible) sin interrumpir la operación. | Integración General | Alta | 9
+
+
+--- TABLA 7 (10 filas x 6 cols) ---
+Módulo | Sprint 1 | Sprint 2 | Sprint 3 | Sprint 4 | Total HU
+M1: Gestión de Expedientes | 4 | - | - | - | 4
+M2: Reglas de Validación Configurables | - | 4 | 1 | - | 5
+M3: Análisis Inteligente de Documentos | - | - | 6 | - | 6
+M4: Verificación de Vigencia | - | 2 | - | - | 2
+M5: Alertas y Recomendaciones | - | 3 | - | - | 3
+M6: Reportes y Panel de Control | - | - | - | 4 | 4
+M7: Administración y Seguridad | 3 | - | - | 2 | 5
+Integración General | - | - | - | 2 | 2
+Total: | 33 |  |  |  | 
+
+
+--- TABLA 8 (6 filas x 4 cols) ---
+Riesgo | Probabilidad | Impacto | Mitigación
+Cambio en los requisitos durante el desarrollo. | Media | Medio | Scrum permite incorporar cambios al inicio de cada sprint. Las reglas son configurables en base de datos.
+Baja precisión del modelo de IA en la detección de cláusulas. | Media | Alto | Se contemplan 13 horas de pruebas de precisión. Los resultados dudosos pasan a revisión humana.
+Documentos escaneados de baja calidad. | Alta | Medio | El sistema detecta documentos ilegibles y solicita al usuario la recarga del archivo.
+Retraso en el cronograma por complejidad de integración. | Media | Alto | Se priorizan los módulos con mayor valor funcional para asegurar un producto mínimo viable.
+Disponibilidad de servicios externos de IA u OCR. | Baja | Medio | El motor de reglas (Nivel 2) funciona sin dependencias externas. Se implementan reintentos automáticos.
+
+
+================================================================================
+ARCHIVO: DOC-08 Diseño de Arquitectura de Software, APIs y Base de Datos.docx
+================================================================================
+
+Documento 08: Diseño de Arquitectura de Software, APIs y Base de Datos
+Motor de Validación de Cumplimiento Documental
+Oliver Morales Ortiz
+Residencia Profesional
+Ingeniería en Sistemas Computacionales
+
+Empresa Receptora: PluriOne S.A. de C.V.
+Asesor Externo: Ing. Supervisor de Cumplimiento
+Septiembre de 2026
+1. Introducción
+El presente documento constituye el artefacto técnico central de la fase de diseño arquitectónico para el Motor de Validación de Cumplimiento Documental de PluriOne S.A. de C.V. Su propósito fundamental es formalizar la estructura de componentes, los contratos de comunicación entre subsistemas y el esquema relacional de datos que garantizarán el procesamiento ágil, transparente y normativamente riguroso de la documentación fiscal y legal de la empresa.
+El diseño arquitectónico aborda directamente la necesidad de sustituir los procesos manuales y dispersos de revisión documental por un motor automatizado, auditable y de alto rendimiento. En este sentido, se formalizan las decisiones técnicas relativas al patrón arquitectónico seleccionado, la especificación OpenAPI de los endpoints RESTful, la estructura tipada de datos mediante modelos Pydantic v2 y la normalización en Tercera Forma Normal (3FN) de la base de datos relacional sobre PostgreSQL 16.
+Asimismo, el documento integra los diagramas técnicos ejecutivos de alta fidelidad desarrollados bajo los estándares internacionales del modelo C4 (Brown, 2024), la notación Entidad-Relación y el flujo secuencial de decisión del pipeline de validación multi-agente, asegurando la trazabilidad completa entre los requerimientos funcionales y la implementación física del sistema.
+2. Decisión Arquitectónica: Monolito Modular vs. Microservicios
+Durante la concepción del sistema se evaluaron dos paradigmas arquitectónicos predominantes en la industria del software empresarial: la Arquitectura de Microservicios y el Monolito Modular basado en capas de Arquitectura Limpia (Martin, 2017). La evaluación consideró tanto las características intrínsecas de cada patrón como las restricciones operativas y de entrega definidas por PluriOne S.A. de C.V.
+2.1 Análisis Comparativo de Criterios
+A continuación, la Tabla 1 detalla la ponderación comparativa entre ambos enfoques a partir de ocho dimensiones técnicas y operativas críticas para el éxito de la residencia profesional.
+Tabla 1
+Comparación de patrones arquitectónicos evaluados para el Motor de Cumplimiento
+Nota. Evaluación elaborada a partir de los requerimientos de entrega atómica y volumen transaccional de PluriOne S.A. de C.V.
+2.2 Justificación de la Elección
+Con base en los resultados del análisis comparativo, se seleccionó de manera unánime el patrón de Monolito Modular con separación estricta de capas. Esta decisión se fundamenta en los siguientes argumentos rectores:
+En primer lugar, el requisito corporativo de entrega atómica estipula que el sistema debe desplegarse y quedar 100% operativo en cualquier entorno de PluriOne mediante un único comando docker compose up. Una arquitectura distribuida de microservicios añadiría una sobrecarga inaceptable en balanceadores, descubridores de servicios y configuración de redes virtuales.
+En segundo lugar, la integridad transaccional del motor exige que el registro del archivo, el cómputo inmutable de su hash SHA-256, la emisión del dictamen de auditoría y la actualización del porcentaje de avance del expediente se ejecuten bajo una transacción atómica (ACID). El monolito modular sobre PostgreSQL garantiza esta consistencia de forma nativa sin riesgo de estados intermedios inconsistentes.
+Finalmente, la separación modular de paquetes en Python (Dominio, Aplicación, Infraestructura y API) asegura que el código mantenga un desacoplamiento de nivel empresarial, permitiendo en el futuro segregar cualquier submódulo hacia un servicio independiente si la demanda transaccional de la empresa lo exigiera.
+3. Arquitectura del Sistema y Diagrama de Contenedores
+La arquitectura física y lógica del sistema se diseñó conforme a la metodología C4 (Contexto, Contenedores, Componentes y Código). La Figura 1 ilustra el Diagrama de Contenedores (Nivel 2), detallando las fronteras de red, los puertos expuestos, los protocolos de comunicación y los mecanismos de persistencia.
+Figura 1
+Diagrama de contenedores C4 del Motor de Validación de Cumplimiento Documental
+Nota. Representación de contenedores Docker, red interna bridge (plurione_net), puertos expuestos e interfaces de comunicación con el motor de inferencia local Ollama.
+3.1 Descripción de Contenedores y Componentes
+El sistema está conformado por dos contenedores Docker primarios y dos subsistemas auxiliares de almacenamiento e inteligencia artificial:
+1. Contenedor backend-engine: Ejecuta la aplicación monolítica construida sobre Python 3.12 y FastAPI. Implementa la arquitectura limpia dividida en cuatro capas: Presentación (routers REST y validación Pydantic v2), Aplicación (casos de uso y reglas de vigencia), Dominio (entidades e interfaces de repositorio) e Infraestructura (adaptadores de SQLAlchemy, Tesseract OCR 5 y cliente Ollama). Expone el puerto 8000 tanto para el consumo de clientes web como para la documentación OpenAPI.
+2. Contenedor postgres-db: Servidor relacional PostgreSQL 16 Alpine conectado a la red interna plurione_net. Mantiene un volumen de almacenamiento persistente denominado pgdata_compliance para proteger los datos frente al reinicio o actualización de contenedores. Su puerto 5432 está mapeado para permitir tareas de auditoría administrativa.
+3. Servidor de Inferencia Local Ollama: Servicio de inteligencia artificial que se ejecuta en el host local a través del puerto 11434, alojando el modelo de lenguaje de código abierto Qwen2.5:7b. Es invocado de forma asíncrona mediante el endpoint host.docker.internal para el parseo semántico de campos fiscales y el cálculo de la puntuación de confianza.
+4. Bóveda Criptográfica storage_vault: Directorio de almacenamiento en disco montado en el contenedor bajo /app/storage_vault. Almacena los archivos binarios originales clasificados por expediente, garantizando trazabilidad mediante su hash SHA-256 inmutable.
+4. Diseño del Catálogo de APIs RESTful
+La interfaz programática del sistema se adhiere a los principios REST estándar (Fielding, 2000), implementando versionado semántico en la URL (/api/v1/), autenticación basada en tokens JWT con algoritmo HMAC-SHA256, y formato de serialización JSON estricto.
+4.1 Endpoints del Sistema
+La Tabla 2 sintetiza los 11 endpoints que conforman el catálogo operativo de la versión 1.0 del motor, indicando el método HTTP, la URI, el rol mínimo requerido para su invocación y la acción técnica desempeñada.
+Tabla 2
+Catálogo completo de endpoints RESTful del Motor de Cumplimiento v1.0
+Nota. Los roles siguen jerarquía ADMIN > AUDITOR > OPERADOR. Respuestas de error implementadas bajo estándar RFC 7807.
+5. Diseño de la Base de Datos Relacional
+El modelo relacional fue normalizado en Tercera Forma Normal (3FN), eliminando redundancias y anomalías de actualización. La persistencia se gestiona en PostgreSQL 16 utilizando claves primarias universales (UUID v4) para evitar la inferencia de secuencias numéricas y columnas JSONB para estructurar metadatos dinámicos.
+Figura 2
+Diagrama Entidad-Relación (ERD) del Motor de Cumplimiento Documental
+Nota. Esquema normalizado 3FN compuesto por 7 tablas con llaves UUID, campos JSONB tipados y relaciones de clave foránea con eliminación controlada.
+5.1 Diccionario de Datos de Tablas Principales
+A continuación, se presentan las especificaciones técnicas de las tablas representativas del sistema, definiendo nombres de campo, tipos de datos PostgreSQL, restricciones y su función operativa.
+Tabla 3
+Diccionario de datos: Tabla usuarios
+Nota. Tabla de autenticación y control de acceso basado en roles (RBAC).
+Tabla 4
+Diccionario de datos: Tabla expedientes
+Nota. Agrupador lógico del estado de cumplimiento fiscal por persona moral o física.
+Tabla 5
+Diccionario de datos: Tabla dictamenes_auditoria
+Nota. Registro inmutable del resultado de auditoría emitido por el motor de validación.
+6. Pipeline de Validación Documental y Cumplimiento Normativo
+El proceso de inspección documental se ejecuta a través de un pipeline automatizado de 5 fases consecutivas y una bifurcación de decisión trifásica, asegurando el cumplimiento estricto del marco tributario mexicano (regla de los 90 días naturales y consistencia de RFC). La Figura 3 representa el flujo del proceso.
+Figura 3
+Flujo secuencial de validación documental y toma de decisiones del motor
+Nota. Detalle del ciclo de vida del documento desde su ingesta hasta la emisión del dictamen y clasificación en tres estados de auditoría.
+6.1 Fases Operativas del Pipeline
+1. Ingesta y Verificación de Carga: El archivo digitalizado (PDF, JPG, PNG) se recibe mediante una petición HTTP POST asíncrona. Se valida que el tamaño no sobrepase 50 MB y que el MIME-type corresponda a un formato soportado.
+2. Cálculo de Hash SHA-256 Inmutable: Inmediatamente tras la recepción en memoria y antes de cualquier manipulación, se computa la huella criptográfica SHA-256 de los bytes puros. El archivo se persiste en storage_vault bajo un nombre canónico irreversible, garantizando el no repudio y la cadena de custodia.
+3. Preprocesamiento y Extracción OCR: Se aplican filtros de binarización y rasterizado de alta definición. Tesseract OCR v5 extrae el contenido textual plano preservando la distribución espacial de caracteres.
+4. Inferencia Semántica con IA Local: El texto extraído se remite al modelo local Qwen2.5:7b ejecutándose en Ollama. Mediante prompts estructurados y validación PydanticAI, el modelo retorna un JSON estricto conteniendo: RFC emisor, Razón Social, Fecha de Emisión, Régimen Fiscal y presencia de Sello Digital SAT.
+5. Evaluación del Motor de Reglas Fiscales: La capa de dominio ejecuta la lógica de negocio paramétrica: calcula la antigüedad en días naturales contra la fecha actual (rechazando documentos con más de 90 días), verifica la concordancia exacta de caracteres del RFC contra el titular del expediente y valida la existencia de sellos digitales si la regla lo exige.
+6.2 Clasificación del Dictamen
+El dictamen concluye en uno de tres estados semánticos:
+• APROBADO (CONFORME): Emitido cuando el score de confianza es superior o igual a 0.85 y se cumplen el 100% de las reglas normativas. El porcentaje de completitud del expediente se incrementa automáticamente.
+• REQUIERE REVISION HUMANA: Emitido cuando el score de confianza oscila entre 0.70 y 0.84, o cuando se detecta una discrepancia no crítica en el OCR (ej. desgaste visual en un dígito de dirección). El documento se turna a la bandeja del auditor interno.
+• RECHAZADO (NO CONFORME): Emitido de forma terminante cuando el documento excede los 90 días de vigencia, el RFC no coincide con el expediente corporativo o el archivo presenta indicios de adulteración.
+7. Estrategia de Empaquetado y Despliegue Atómico
+Para dar cumplimiento estricto al objetivo de entrega de la residencia profesional, el sistema completo se configuró mediante Docker Compose v3.8. Esto permite a PluriOne S.A. de C.V. desplegar el entorno de producción en sus servidores locales o en la nube ejecutando un único comando.
+La orquestación contempla: (a) inicialización ordenada mediante comprobaciones de salud (healthcheck) de PostgreSQL antes del levantamiento del backend, (b) persistencia de datos mediante volúmenes con nombre inmunes a la recreación de contenedores, (c) aislamiento de red mediante el bridge privado plurione_net, y (d) inyección segura de secretos a través de archivos de variables de entorno (.env).
+8. Referencias
+Brown, S. (2024). The C4 model for visualising software architecture. Structurizr Press. https://c4model.com/
+Fielding, R. T. (2000). Architectural styles and the design of network-based software architectures (Tesis doctoral, University of California, Irvine). UCI Repositories.
+Fowler, M. (2015). MonolithFirst: Developing software with modular monolithic design patterns. Martin Fowler Blog. https://martinfowler.com/bliki/MonolithFirst.html
+Martin, R. C. (2017). Clean Architecture: A craftsman's guide to software structure and design. Prentice Hall.
+Nottingham, M. (2016). Problem Details for HTTP APIs (RFC 7807). Internet Engineering Task Force. https://datatracker.ietf.org/doc/html/rfc7807
+Servicio de Administración Tributaria. (2024). Criterios normativos y de vigencia para constancias de situación fiscal y comprobantes de domicilio comercial. Secretaría de Hacienda y Crédito Público.
+
+--- TABLA 1 (9 filas x 3 cols) ---
+Criterio de Evaluación | Microservicios | Monolito Modular
+Complejidad de despliegue | Alta (Orquestación K8s / Consul) | Baja (Atómico: docker compose up)
+Latencia inter-servicio | Presente (Serialización HTTP/gRPC) | Nula (Invocación directa en memoria)
+Curva de mantenimiento | Pronunciada (Monitoreo distribuido) | Moderada (Código centralizado)
+Escalabilidad requerida | Horizontal por componente | Vertical y concurrente (asyncpg)
+Consistencia transaccional | Eventual (Patrón Saga) | Nativa ACID (PostgreSQL 16)
+Costo de infraestructura | Alto (Múltiples contenedores/RAM) | Bajo (2 Contenedores ligeros)
+Tiempo de desarrollo | 16 a 20 semanas | 8 a 12 semanas (En cronograma)
+Requisito de entrega PluriOne | No satisface requerimiento atómico | Cumple al 100% (Handover zero-config)
+
+
+--- TABLA 2 (12 filas x 4 cols) ---
+Método | Ruta / Endpoint | Rol Mínimo | Descripción Funcional
+POST | /api/v1/auth/login | Público | Autentica credenciales y emite token Bearer JWT
+GET | /api/v1/auth/me | OPERADOR | Retorna perfil y rol del usuario en sesión
+POST | /api/v1/titulares | OPERADOR | Registra un titular (cliente o proveedor) con validación de RFC
+GET | /api/v1/titulares | OPERADOR | Lista titulares registrados con paginación y búsqueda
+POST | /api/v1/expedientes | OPERADOR | Crea un expediente documental vinculado a un titular
+GET | /api/v1/expedientes | OPERADOR | Lista expedientes con estatus y completitud porcentual
+GET | /api/v1/expedientes/{id} | OPERADOR | Obtiene el detalle de un expediente y sus documentos
+POST | /api/v1/expedientes/{id}/documentos | OPERADOR | Carga archivo, calcula SHA-256 y ejecuta validación
+GET | /api/v1/expedientes/{id}/documentos | OPERADOR | Consulta el historial de documentos y dictámenes emitidos
+GET | /api/v1/auditoria/logs | AUDITOR | Inspecciona la bitácora inmutable de eventos del sistema
+GET | /api/v1/health | Público | Diagnóstico de salud de base de datos, OCR y Ollama
+
+
+--- TABLA 3 (8 filas x 4 cols) ---
+Campo | Tipo SQL | Restricción | Descripción
+id | UUID | PK, Default uuid4 | Identificador único global del usuario
+email | VARCHAR(150) | UNIQUE, NOT NULL | Correo electrónico institucional
+password_hash | VARCHAR(255) | NOT NULL | Hash criptográfico seguro generado con bcrypt
+nombre_completo | VARCHAR(150) | NOT NULL | Nombre y apellidos del operador o auditor
+rol | VARCHAR(30) | NOT NULL | Rol en el sistema: ADMIN, AUDITOR u OPERADOR
+activo | BOOLEAN | NOT NULL, Default TRUE | Bandera de habilitación de acceso
+creado_en | TIMESTAMPTZ | NOT NULL, UTC | Fecha y hora de creación de la cuenta
+
+
+--- TABLA 4 (7 filas x 4 cols) ---
+Campo | Tipo SQL | Restricción | Descripción
+id | UUID | PK, Default uuid4 | Identificador único del expediente
+titular_id | UUID | FK → titulares, NOT NULL | Referencia al titular dueño del expediente
+codigo_expediente | VARCHAR(50) | UNIQUE, NOT NULL | Folio único de identificación comercial
+estado_cumplimiento | VARCHAR(30) | NOT NULL | CONFORME, EN_REVISION, NO_CONFORME, BLOQUEADO
+porcentaje_completitud | NUMERIC(5,2) | Default 0.00 | Avance porcentual de documentos válidos
+actualizado_en | TIMESTAMPTZ | NOT NULL, UTC | Marca de tiempo de la última modificación
+
+
+--- TABLA 5 (10 filas x 4 cols) ---
+Campo | Tipo SQL | Restricción | Descripción
+id | UUID | PK, Default uuid4 | Identificador único del dictamen
+documento_id | UUID | FK → documentos, NOT NULL | Documento evaluado por el motor
+evaluado_por_id | UUID | FK → usuarios, Nullable | Auditor supervisor (NULL si fue 100% IA)
+estado_dictamen | VARCHAR(30) | NOT NULL | APROBADO, RECHAZADO, REQUIERE_REVISION_HUMANA
+score_confianza | NUMERIC(5,4) | NOT NULL | Puntaje probabilístico de la IA (0.0000 a 1.0000)
+es_vigente | BOOLEAN | NOT NULL | Resultado de la regla temporal de 90 días naturales
+dias_calculados | INTEGER | Nullable | Días transcurridos entre emisión y validación
+metadatos_json | JSONB | NOT NULL | Datos extraídos: RFC, Razón Social, Sello, Folio
+observaciones | JSONB | NOT NULL | Lista de observaciones y motivos del dictamen
+
+
+================================================================================
+ARCHIVO: DOC-08 Diseño de Arquitectura, APIs y Base de datos.docx
+================================================================================
+
+INSTITUTO TECNOLÓGICO DE CHILPANCINGO
+Ingeniería en Sistemas Computacionales
+Proyecto de Desarrollo de un Motor de Validación de Cumplimiento Documental
+Diseño de Arquitectura de Software, APIs y Base de Datos
+Presenta:
+Villanueva Pelay Oliver
+Empresa:
+Develop Talent & Technology
+Chilpancingo, Guerrero
+Introducción
+El presente documento constituye el artefacto técnico central de la fase de diseño del Motor de Validación de Cumplimiento Documental. Su propósito es formalizar las decisiones de arquitectura de software, el catálogo de interfaces programáticas (APIs RESTful), los contratos de datos y el diseño relacional de la base de datos que sustentará las operaciones del sistema en producción.
+El alcance de este documento cubre tres dimensiones fundamentales del diseño: (a) la selección y justificación del patrón arquitectónico, (b) la especificación de los endpoints de la API con sus contratos de entrada y salida, y (c) el esquema relacional normalizado en Tercera Forma Normal (3FN) implementado sobre PostgreSQL 16.
+El contenido se sustenta en los requerimientos funcionales y no funcionales identificados en las fases previas de análisis, así como en las restricciones operativas definidas por PluriOne S.A. de C.V. para la entrega del producto final en formato dockerizado.
+Decisión Arquitectónica: Monolito Modular
+Análisis Comparativo de Patrones
+La selección del patrón arquitectónico se realizó mediante un análisis comparativo entre las dos alternativas viables identificadas durante la fase de diseño: Arquitectura de Microservicios y Monolito Modular con separación de capas.
+Tabla 1
+Comparación de patrones arquitectónicos evaluados para el Motor de Cumplimiento
+Nota. La evaluación se realizó considerando el contexto operativo de PluriOne S.A. de C.V., que requiere un sistema autocontenido desplegable sin dependencias externas de orquestación.
+Justificación de la Decisión
+Se seleccionó el patrón de Monolito Modular fundamentado en los siguientes argumentos técnicos:
+Requisito de entrega atómica. PluriOne requiere que el sistema completo se levante mediante un único comando docker compose up, sin necesidad de configurar orquestadores como Kubernetes o Docker Swarm. Un monolito modular se empaqueta en exactamente dos contenedores (motor + base de datos), satisfaciendo este requisito de forma directa.
+Consistencia transaccional ACID. Las operaciones del motor de cumplimiento (carga de documento, cálculo de hash SHA-256, emisión de dictamen, actualización de estado del expediente) deben ejecutarse dentro de una transacción atómica. PostgreSQL garantiza esta consistencia de forma nativa, eliminando la complejidad de patrones de consistencia eventual como sagas o eventos de compensación.
+Volumen operativo acotado. El sistema está diseñado para procesar entre 50 y 200 expedientes corporativos con un promedio de 4 a 6 documentos por expediente. Este volumen no justifica la sobrecarga operativa de una arquitectura distribuida.
+Separación lógica sin fragmentación física. El patrón de Monolito Modular permite mantener la separación de responsabilidades mediante capas (Dominio, Aplicación, Infraestructura, Presentación) sin incurrir en la complejidad de servicios independientes. Las fronteras entre módulos se definen a nivel de paquetes Python, no de procesos de red.
+Arquitectura del Sistema
+Diagrama de Contenedores (Modelo C4 — Nivel 2)
+El siguiente diagrama representa la vista de contenedores del sistema conforme al modelo C4 de Simon Brown, mostrando los componentes desplegados, sus tecnologías y las relaciones de comunicación entre ellos.
+Figura 1
+Diagrama de contenedores C4 del Motor de Validación de Cumplimiento Documental
+Nota. Representación de contenedores Docker, red interna bridge (plurione_net), puertos expuestos e interfaces de comunicación con el motor de inferencia local Ollama.
+Descripción de Contenedores y Componentes
+El sistema está conformado por dos contenedores Docker primarios y dos subsistemas auxiliares de almacenamiento e inteligencia artificial:
+Contenedor backend-engine: Ejecuta la aplicación monolítica modular construida sobre Python 3.12 y FastAPI. Implementa la arquitectura limpia dividida en cuatro capas: Presentación (routers REST y esquemas Pydantic v2), Aplicación (casos de uso y reglas de negocio), Dominio (entidades e interfaces) e Infraestructura (adaptadores SQLAlchemy, Tesseract OCR 5 y cliente Ollama). Expone el puerto 8000 para el consumo de clientes web y la documentación OpenAPI.
+Contenedor postgres-db: Servidor relacional PostgreSQL 16 Alpine conectado a la red interna plurione_net. Mantiene un volumen de almacenamiento persistente denominado pgdata_compliance para proteger los datos frente a reinicios. Su puerto 5432 está configurado para tareas de persistencia y auditoría.
+Servidor de Inferencia Local Ollama: Servicio de inteligencia artificial que se ejecuta en el host local a través del puerto 11434, alojando el modelo de lenguaje Qwen2.5:7b. Es invocado de forma asíncrona para el parseo semántico de campos fiscales y el cálculo de la puntuación de confianza
+Bóveda Criptográfica storage_vault: Directorio de almacenamiento montado bajo /app/storage_vault. Almacena los archivos binarios originales clasificados por expediente, garantizando trazabilidad mediante su hash SHA-256 inmutable.
+Capas del Monolito Modular
+La arquitectura interna del motor se organiza en cuatro capas con dependencias unidireccionales, siguiendo los principios de Arquitectura Limpia (Martin, 2017):
+Tabla 2
+Descripción de las capas del Monolito Modular y sus responsabilidades
+Nota. La regla de dependencia establece que las capas internas (Dominio) no conocen a las capas externas (Infraestructura). Las dependencias se invierten mediante interfaces.
+Diseño del Catálogo de APIs RESTful
+Convenciones Generales
+La API sigue las convenciones REST estándar (Fielding, 2000) con las siguientes directrices:
+Prefijo de versionado: Todos los endpoints operativos se sirven bajo /api/v1/.
+Formato de datos: Serialización estricta en JSON con encabezado application/json.
+Autenticación: Tokens Bearer JWT firmados con algoritmo HMAC-SHA256.
+Errores estructurados: Implementación del estándar RFC 7807 Problem Details.
+Documentación interactiva: Swagger UI en /docs y ReDoc en /redoc.
+Catálogo de Endpoints
+Tabla 3
+Catálogo completo de endpoints RESTful del Motor de Cumplimiento v1.0
+Nota. Los roles siguen la jerarquía: ADMIN > AUDITOR > OPERADOR.
+Diseño de la Base de Datos Relacional
+El modelo relacional fue normalizado en Tercera Forma Normal (3FN), eliminando redundancias y anomalías de actualización. La persistencia se gestiona en PostgreSQL 16 utilizando claves primarias universales (UUID v4) para evitar la inferencia de secuencias numéricas y columnas JSONB para estructurar metadatos dinámicos.
+Diagrama Entidad-Relación (ERD)
+Figura 2
+Diagrama Entidad-Relación (ERD) del Motor de Cumplimiento Documental
+Nota. Esquema normalizado 3FN compuesto por 7 tablas con llaves UUID, campos JSONB tipados y relaciones de clave foránea con eliminación controlada.
+Diccionario de Datos
+Tabla 4
+Diccionario de datos: Tabla usuarios
+Nota. Tabla de autenticación y control de acceso basado en roles (RBAC).
+Tabla 5
+Diccionario de datos: Tabla titulares_expediente
+Nota. Entidad central que representa a las empresas y personas físicas asociadas a PluriOne.
+Tabla 6
+Diccionario de datos: Tabla expedientes
+Nota. Agrupador lógico del estado de cumplimiento fiscal.
+Tabla 7
+Diccionario de datos: Tabla documentos
+Nota. Registro de archivos digitalizados con protección criptográfica de no repudio.
+Tabla 8
+Diccionario de datos: Tabla dictamenes_auditoria
+Nota. Registro inmutable del resultado de auditoría emitido por el motor.
+Pipeline de Validación Documental y Cumplimiento Normativo
+El proceso de inspección documental se ejecuta a través de un pipeline automatizado de 5 fases consecutivas y una bifurcación de decisión trifásica, asegurando el cumplimiento estricto del marco tributario mexicano (regla de los 90 días naturales y consistencia de RFC).
+Figura 3
+Flujo secuencial de validación documental y toma de decisiones del motor
+Nota. Detalle del ciclo de vida del documento desde su ingesta hasta la emisión del dictamen y clasificación en tres estados de auditoría.
+Fases Operativas del Pipeline
+Ingesta y Verificación de Carga: El archivo digitalizado (PDF, JPG, PNG) se recibe mediante una petición HTTP POST asíncrona. Se valida que el tamaño no sobrepase 50 MB y que el MIME-type corresponda a un formato soportado.
+Cálculo de Hash SHA-256 Inmutable: Inmediatamente tras la recepción en memoria y antes de cualquier manipulación, se computa la huella criptográfica SHA-256 de los bytes puros. El archivo se persiste en storage_vault bajo un nombre canónico irreversible, garantizando el no repudio y la cadena de custodia.
+Preprocesamiento y Extracción OCR: Se aplican filtros de binarización y rasterizado de alta definición. Tesseract OCR v5 extrae el contenido textual plano preservando la distribución espacial de caracteres.
+Inferencia Semántica con IA Local: El texto extraído se remite al modelo local Qwen2.5:7b ejecutándose en Ollama. Mediante prompts estructurados y validación PydanticAI, el modelo retorna un JSON estricto conteniendo: RFC emisor, Razón Social, Fecha de Emisión, Régimen Fiscal y presencia de Sello Digital SAT.
+Evaluación del Motor de Reglas Fiscales: La capa de dominio ejecuta la lógica de negocio paramétrica: calcula la antigüedad en días naturales contra la fecha actual (rechazando documentos con más de 90 días), verifica la concordancia exacta de caracteres del RFC contra el titular del expediente y valida la existencia de sellos digitales si la regla lo exige.
+Clasificación del Dictamen
+El dictamen concluye en uno de tres estados semánticos:
+APROBADO (CONFORME): Emitido cuando el score de confianza es superior o igual a 0.85 y se cumplen el 100% de las reglas normativas. El porcentaje de completitud del expediente se incrementa automáticamente.
+REQUIERE REVISIÓN HUMANA: Emitido cuando el score de confianza oscila entre 0.70 y 0.84, o cuando se detecta una discrepancia no crítica en el OCR (ej. desgaste visual en un dígito de dirección). El documento se turna a la bandeja del auditor interno.
+RECHAZADO (NO CONFORME): Emitido de forma terminante cuando el documento excede los 90 días de vigencia, el RFC no coincide con el expediente corporativo o el archivo presenta indicios de adulteración.
+Estrategia de Empaquetado y Despliegue Atómico
+Para dar cumplimiento estricto al objetivo de entrega de la residencia profesional, el sistema completo se configuró mediante Docker Compose v3.8. Esto permite a PluriOne S.A. de C.V. desplegar el entorno de producción en sus servidores locales o en la nube ejecutando un único comando.
+Tabla 9
+Servicios definidos en el archivo docker-compose.yml
+Nota. El servicio backend-engine depende de postgres-db con condición service_healthy.
+Comando de despliegue
+Referencias
+Brown, S. (2024). The C4 model for visualising software architecture. Structurizr Press. https://c4model.com/
+Fielding, R. T. (2000). Architectural styles and the design of network-based software architectures (Tesis doctoral, University of California, Irvine). UCI Repositories.
+Fowler, M. (2015). MonolithFirst: Developing software with modular monolithic design patterns. Martin Fowler Blog. https://martinfowler.com/bliki/MonolithFirst.html
+Martin, R. C. (2017). Clean Architecture: A craftsman's guide to software structure and design. Prentice Hall.
+Nottingham, M. (2016). Problem Details for HTTP APIs (RFC 7807). Internet Engineering Task Force. https://datatracker.ietf.org/doc/html/rfc7807
+Servicio de Administración Tributaria. (2024). Criterios normativos y de vigencia para constancias de situación fiscal y comprobantes de domicilio comercial. Secretaría de Hacienda y Crédito Público.
+
+--- TABLA 1 (9 filas x 3 cols) ---
+Criterio de evaluación | Microservicios | Monolito Modular
+Complejidad de despliegue | Alta (orquestación K8s) | Baja (docker compose up)
+Latencia inter-servicio | Presente (HTTP/gRPC) | Nula (invocación en proceso)
+Curva de aprendizaje para mantenimiento | Pronunciada | Moderada
+Escalabilidad horizontal | Nativa por servicio | Vertical (suficiente para scope)
+Consistencia transaccional | Eventual (sagas) | ACID nativa (PostgreSQL)
+Costo operativo (infraestructura) | Alto (múltiples contenedores) | Bajo (2 contenedores)
+Time-to-market | 16–20 semanas | 8–12 semanas
+Requisito de entrega PluriOne | No aplica | Cumple (docker compose up)
+
+
+--- TABLA 2 (5 filas x 3 cols) ---
+Capa | Paquete Python | Responsabilidad
+Dominio | src.domain.entities | Entidades puras del negocio, interfaces de repositorio, sin dependencias externas.
+Aplicación | src.application.use_cases | Orquestación de casos de uso: validar documento, crear expediente, emitir dictamen.
+Infraestructura | src.infrastructure.* | Implementaciones concretas: SQLAlchemy, Tesseract OCR, bóveda de archivos, Ollama.
+Presentación | src.api.v1.* | Routers FastAPI, esquemas Pydantic v2, middleware de autenticación JWT.
+
+
+--- TABLA 3 (12 filas x 4 cols) ---
+Método | Ruta / Endpoint | Rol Mínimo | Descripción Funcional
+POST | /api/v1/auth/login | Público | Autentica credenciales y emite token Bearer JWT
+GET | /api/v1/auth/me | OPERADOR | Retorna perfil y rol del usuario en sesión
+POST | /api/v1/titulares | OPERADOR | Registra un titular (cliente/proveedor) con validación de RFC
+GET | /api/v1/titulares | OPERADOR | Lista titulares registrados con paginación y búsqueda
+POST | /api/v1/expedientes | OPERADOR | Crea un expediente documental vinculado a un titular
+GET | /api/v1/expedientes | OPERADOR | Lista expedientes con estatus y completitud porcentual
+GET | /api/v1/expedientes/{id} | OPERADOR | Obtiene el detalle de un expediente y sus documentos
+POST | /api/v1/expedientes/{id}/documentos | OPERADOR | Carga archivo, calcula SHA-256 y ejecuta validación
+GET | /api/v1/expedientes/{id}/documentos | OPERADOR | Consulta historial de documentos y dictámenes emitidos
+GET | /api/v1/auditoria/logs | AUDITOR | Inspecciona la bitácora inmutable de eventos del sistema
+GET | /api/v1/health | Público | Diagnóstico de salud de base de datos, OCR y Ollama
+
+
+--- TABLA 4 (8 filas x 4 cols) ---
+Campo | Tipo SQL | Restricción | Descripción
+id | UUID | PK, Default uuid4 | Identificador único del usuario
+email | VARCHAR(150) | UNIQUE, NOT NULL | Correo electrónico institucional
+password_hash | VARCHAR(255) | NOT NULL | Hash criptográfico generado con bcrypt
+nombre_completo | VARCHAR(150) | NOT NULL | Nombre y apellidos del operador o auditor
+rol | VARCHAR(30) | NOT NULL | Rol asignado: ADMIN, AUDITOR u OPERADOR
+activo | BOOLEAN | NOT NULL, Default TRUE | Estado de la cuenta (habilitada/deshabilitada)
+creado_en | TIMESTAMPTZ | NOT NULL, UTC | Fecha y hora de creación de la cuenta
+
+
+--- TABLA 5 (7 filas x 4 cols) ---
+Campo | Tipo SQL | Restricción | Descripción
+id | UUID | PK, Default uuid4 | Identificador único del titular
+rfc | VARCHAR(13) | UNIQUE, NOT NULL | RFC del titular (12 o 13 caracteres)
+razon_social | VARCHAR(200) | NOT NULL | Razón social o nombre legal completo
+tipo_persona | VARCHAR(10) | NOT NULL | MORAL o FISICA
+categoria | VARCHAR(20) | NOT NULL | CLIENTE o PROVEEDOR
+creado_en | TIMESTAMPTZ | NOT NULL, UTC | Fecha y hora de registro
+
+
+--- TABLA 6 (7 filas x 4 cols) ---
+Campo | Tipo SQL | Restricción | Descripción
+id | UUID | PK, Default uuid4 | Identificador único del expediente
+titular_id | UUID | FK → titulares, NOT NULL | Titular al que pertenece el expediente
+codigo_expediente | VARCHAR(50) | UNIQUE, NOT NULL | Folio comercial único auto-generado
+estado_cumplimiento | VARCHAR(30) | NOT NULL | CONFORME, EN_REVISION, NO_CONFORME, BLOQUEADO
+porcentaje_completitud | NUMERIC(5,2) | Default 0.00 | Porcentaje de documentos validados (0–100%)
+actualizado_en | TIMESTAMPTZ | NOT NULL, UTC | Marca de tiempo de la última modificación
+
+
+--- TABLA 7 (10 filas x 4 cols) ---
+Campo | Tipo SQL | Restricción | Descripción
+id | UUID | PK, Default uuid4 | Identificador único del documento
+expediente_id | UUID | FK → expedientes, NOT NULL | Expediente al que pertenece el archivo
+tipo_documento | VARCHAR(50) | NOT NULL | Tipo: CSF_SAT, COMP_DOMICILIO, INE, ACTA_CONST
+nombre_archivo_original | VARCHAR(255) | NOT NULL | Nombre original del archivo cargado
+ruta_almacenamiento | VARCHAR(500) | NOT NULL | Ruta física relativa en el storage_vault
+hash_sha256 | VARCHAR(64) | NOT NULL, INDEX | Huella SHA-256 inmutable de los bytes
+tamanio_bytes | BIGINT | NOT NULL | Tamaño del archivo en bytes
+mime_type | VARCHAR(100) | NOT NULL | Tipo MIME (application/pdf, image/png)
+creado_en | TIMESTAMPTZ | NOT NULL, UTC | Fecha y hora de carga
+
+
+--- TABLA 8 (11 filas x 4 cols) ---
+Campo | Tipo SQL | Restricción | Descripción
+id | UUID | PK, Default uuid4 | Identificador único del dictamen
+documento_id | UUID | FK → documentos, NOT NULL | Documento evaluado por el motor
+evaluado_por_usuario_id | UUID | FK → usuarios, Nullable | Auditor supervisor (NULL si fue 100% IA)
+estado_dictamen | VARCHAR(30) | NOT NULL | APROBADO, RECHAZADO, REQUIERE_REVISION_HUMANA
+score_confianza | NUMERIC(5,4) | NOT NULL | Puntuación probabilística (0.0000 a 1.0000)
+es_vigente | BOOLEAN | NOT NULL | Resultado de la regla de 90 días naturales
+dias_calculados | INTEGER | Nullable | Días transcurridos desde la emisión
+metadatos_extraidos_json | JSONB | NOT NULL | RFC, Razón Social, Sello, Fecha detectados
+observaciones | JSONB | NOT NULL | Lista de observaciones y motivos del dictamen
+creado_en | TIMESTAMPTZ | NOT NULL, UTC | Fecha y hora de emisión del dictamen
+
+
+--- TABLA 9 (3 filas x 5 cols) ---
+Servicio | Imagen Base | Puerto Expuesto | Volumen Persistente | Función
+postgres-db | postgres:16-alpine | 5432 | pgdata_compliance | Base de datos relacional de alta integridad
+backend-engine | python:3.12-slim | 8000 | ./storage_vault | Motor monolítico FastAPI + OCR + Pipeline IA
+
+
+================================================================================
+ARCHIVO: VISITA ASESOR SEM-1.docx
+================================================================================
+
+Formato de registro de asesoría
+
+--- TABLA 1 (29 filas x 8 cols) ---
+ |  | Chilpancingo, Gro; a | Chilpancingo, Gro; a | O4 | de | SEPTIEMBRE | del 2026
+ |  |  |  |  |  |  | 
+Departamento Académico: | Departamento Académico: | DEPARTAMENTO DE SISTEMAS Y COMPUTACIÓN | DEPARTAMENTO DE SISTEMAS Y COMPUTACIÓN | DEPARTAMENTO DE SISTEMAS Y COMPUTACIÓN | DEPARTAMENTO DE SISTEMAS Y COMPUTACIÓN | DEPARTAMENTO DE SISTEMAS Y COMPUTACIÓN | DEPARTAMENTO DE SISTEMAS Y COMPUTACIÓN
+Nombre del Residente: | Nombre del Residente: | OLIVER VILLANUEVA PELAY | OLIVER VILLANUEVA PELAY | OLIVER VILLANUEVA PELAY | OLIVER VILLANUEVA PELAY | OLIVER VILLANUEVA PELAY | OLIVER VILLANUEVA PELAY
+Número de Control: | Número de Control: | 21520500 | 21520500 | Carrera: | INGENIERÍA EN SISTEMAS COMPUTACIONALES (ISIC-2010-224) | INGENIERÍA EN SISTEMAS COMPUTACIONALES (ISIC-2010-224) | INGENIERÍA EN SISTEMAS COMPUTACIONALES (ISIC-2010-224)
+Nombre del proyecto: | Nombre del proyecto: | DESARROLLO DE UN SISTEMA WEB PARA LA VALIDACIÓN DE | DESARROLLO DE UN SISTEMA WEB PARA LA VALIDACIÓN DE | DESARROLLO DE UN SISTEMA WEB PARA LA VALIDACIÓN DE | DESARROLLO DE UN SISTEMA WEB PARA LA VALIDACIÓN DE | DESARROLLO DE UN SISTEMA WEB PARA LA VALIDACIÓN DE | DESARROLLO DE UN SISTEMA WEB PARA LA VALIDACIÓN DE
+CUMPLIMIENTO DOCUMENTAL MEDIANTE INTELIGENCIA ARTIFICIAL PARA LA EMPRESA | CUMPLIMIENTO DOCUMENTAL MEDIANTE INTELIGENCIA ARTIFICIAL PARA LA EMPRESA | CUMPLIMIENTO DOCUMENTAL MEDIANTE INTELIGENCIA ARTIFICIAL PARA LA EMPRESA | CUMPLIMIENTO DOCUMENTAL MEDIANTE INTELIGENCIA ARTIFICIAL PARA LA EMPRESA | CUMPLIMIENTO DOCUMENTAL MEDIANTE INTELIGENCIA ARTIFICIAL PARA LA EMPRESA | CUMPLIMIENTO DOCUMENTAL MEDIANTE INTELIGENCIA ARTIFICIAL PARA LA EMPRESA | CUMPLIMIENTO DOCUMENTAL MEDIANTE INTELIGENCIA ARTIFICIAL PARA LA EMPRESA | CUMPLIMIENTO DOCUMENTAL MEDIANTE INTELIGENCIA ARTIFICIAL PARA LA EMPRESA
+PLURIONE S.A. DE C.V. | PLURIONE S.A. DE C.V. | PLURIONE S.A. DE C.V. | PLURIONE S.A. DE C.V. | PLURIONE S.A. DE C.V. | PLURIONE S.A. DE C.V. | PLURIONE S.A. DE C.V. | PLURIONE S.A. DE C.V.
+ |  |  |  |  |  |  | 
+Periodo de realización de la residencia profesional: | Periodo de realización de la residencia profesional: | Periodo de realización de la residencia profesional: | Periodo de realización de la residencia profesional: | AGOSTO-DICIEMBRE 2026 | AGOSTO-DICIEMBRE 2026 | AGOSTO-DICIEMBRE 2026 | AGOSTO-DICIEMBRE 2026
+Empresa, organismo o dependencia: | Empresa, organismo o dependencia: | Empresa, organismo o dependencia: | PLURIONE S.A. DE C.V. | PLURIONE S.A. DE C.V. | PLURIONE S.A. DE C.V. | PLURIONE S.A. DE C.V. | PLURIONE S.A. DE C.V.
+ |  |  |  |  |  |  | 
+Asesoría número: | Asesoría número: | 2 |  | Tipo de Asesoría: | Tipo de Asesoría: | SEMANAL | SEMANAL
+Temas a asesorar: | Temas a asesorar: |  |  |  |  |  | 
+ |  |  |  |  |  |  | 
+ |  |  |  |  |  |  | 
+ |  |  |  |  |  |  | 
+Solución recomendada: | Solución recomendada: |  |  |  |  |  | 
+ |  |  |  |  |  |  | 
+ |  |  |  |  |  |  | 
+ |  |  |  |  |  |  | 
+ |  |  |  |  |  |  | 
+ |  |  |  |  |  |  | 
+DR. WILFRIDO CAMPOS FRANCISCO | DR. WILFRIDO CAMPOS FRANCISCO | DR. WILFRIDO CAMPOS FRANCISCO |  |  |  |  | 
+Nombre y firma del asesor interno | Nombre y firma del asesor interno | Nombre y firma del asesor interno |  |  |  |  | 
+ |  |  |  |  |  |  | 
+ |  |  |  |  |  |  | 
+OLIVER VILLANUEVA PELAY | OLIVER VILLANUEVA PELAY | OLIVER VILLANUEVA PELAY |  |  |  |  | 
+Nombre y firma del residente | Nombre y firma del residente | Nombre y firma del residente |  |  |  |  | 
+

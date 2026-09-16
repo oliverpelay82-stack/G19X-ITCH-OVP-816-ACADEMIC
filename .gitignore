@@ -1,0 +1,18 @@
+# Entorno y secretos
+.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# Bóveda física de documentos (binarios, no versionados)
+storage_vault/*
+!storage_vault/.gitkeep
+
+# Editor / OS
+.vscode/
+.idea/
+Thumbs.db
