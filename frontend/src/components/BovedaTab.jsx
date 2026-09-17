@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react'
-import { UploadCloud, FileCheck2, AlertTriangle, Copy, Check, Loader2, Vault } from 'lucide-react'
+import { UploadCloud, FileCheck2, AlertTriangle, Copy, Check, Loader2, Vault, ShieldCheck } from 'lucide-react'
 import { uploadDocumento } from '../services/api.js'
 import { MAGIC_BYTES, MAX_FILE_SIZE_BYTES, TIPOS_DOCUMENTO } from '../constants.js'
 
@@ -35,7 +35,7 @@ function CopyHash({ hash }) {
   }
   return (
     <button type="button" className="copy-hash" onClick={copiar} title="Copiar hash SHA-256">
-      <span className="mono cell-code">{hash.slice(0, 16)}…{hash.slice(-8)}</span>
+      <span className="mono-chip">{hash.slice(0, 16)}…{hash.slice(-8)}</span>
       {copiado ? <Check size={14} color="var(--conforme-fg)" /> : <Copy size={14} />}
     </button>
   )
@@ -130,7 +130,9 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh 
             onDragLeave={() => setArrastrando(false)}
             onDrop={handleDrop}
           >
-            <UploadCloud size={28} strokeWidth={1.75} color="var(--boveda-fg)" />
+            <div className="dropzone-icon">
+              {arrastrando ? <UploadCloud size={26} strokeWidth={2} /> : <ShieldCheck size={26} strokeWidth={2} />}
+            </div>
             <p className="dropzone-title">Arrastra el archivo aquí</p>
             <p className="dropzone-hint">PDF, JPG o PNG · máx. 15 MB</p>
             <label className="btn btn-ghost dropzone-browse">
@@ -250,7 +252,13 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh 
                   <td>
                     <span className="tag">{doc.tipo_documento}</span>
                   </td>
-                  <td className="mono cell-code">{mapaExpedientes[doc.expediente_id] || '—'}</td>
+                  <td>
+                    {mapaExpedientes[doc.expediente_id] ? (
+                      <span className="mono-chip">{mapaExpedientes[doc.expediente_id]}</span>
+                    ) : (
+                      <span className="cell-muted">—</span>
+                    )}
+                  </td>
                   <td>
                     <CopyHash hash={doc.hash_sha256} />
                   </td>

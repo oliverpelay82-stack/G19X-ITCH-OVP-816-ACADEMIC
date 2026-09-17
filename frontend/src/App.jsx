@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Building2, FolderKanban, Vault, Scale } from 'lucide-react'
-import Navbar from './components/Navbar.jsx'
+import Sidebar from './components/Sidebar.jsx'
 import MetricsCards from './components/MetricsCards.jsx'
 import TitularesTab from './components/TitularesTab.jsx'
 import ExpedientesTab from './components/ExpedientesTab.jsx'
@@ -8,13 +7,6 @@ import BovedaTab from './components/BovedaTab.jsx'
 import ReglasTab from './components/ReglasTab.jsx'
 import { getStatus, getTitulares, getExpedientes, getDocumentos, getReglas } from './services/api.js'
 import './App.css'
-
-const TABS = [
-  { id: 'titulares', label: 'Empresas', icon: Building2 },
-  { id: 'expedientes', label: 'Expedientes', icon: FolderKanban },
-  { id: 'boveda', label: 'Bóveda', icon: Vault },
-  { id: 'reglas', label: 'Reglas de Validación', icon: Scale },
-]
 
 export default function App() {
   const [tabActiva, setTabActiva] = useState('titulares')
@@ -55,24 +47,10 @@ export default function App() {
 
   return (
     <div className="app-shell">
-      <Navbar backendOnline={backendOnline} />
+      <Sidebar tabActiva={tabActiva} onTabChange={setTabActiva} backendOnline={backendOnline} />
 
       <main className="app-main">
         <MetricsCards titulares={titulares} expedientes={expedientes} documentos={documentos} loading={loading} />
-
-        <nav className="tabs-nav">
-          {TABS.map((tab) => (
-            <button
-              key={tab.id}
-              type="button"
-              className={`tab-button ${tabActiva === tab.id ? 'tab-button--active' : ''}`}
-              onClick={() => setTabActiva(tab.id)}
-            >
-              <tab.icon size={16} strokeWidth={2.25} />
-              {tab.label}
-            </button>
-          ))}
-        </nav>
 
         <div className="tabs-content">
           {tabActiva === 'titulares' && (

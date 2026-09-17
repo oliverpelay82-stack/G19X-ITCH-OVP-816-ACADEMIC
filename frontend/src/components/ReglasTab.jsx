@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Plus, ToggleLeft, ToggleRight, Loader2, Scale, X } from 'lucide-react'
+import { Plus, Loader2, Scale, X } from 'lucide-react'
 import Modal from './Modal.jsx'
 import { createRegla, toggleRegla } from '../services/api.js'
 import { FAMILIAS_REGLA, SEVERIDADES, TIPOS_DOCUMENTO } from '../constants.js'
@@ -18,10 +18,33 @@ const FORM_INICIAL = {
 }
 
 const SEVERIDAD_BADGE = {
-  CRITICA: { fg: '#DC2626', bg: '#FEF2F2' },
-  ALTA: { fg: '#D97706', bg: '#FFFBEB' },
-  MEDIA_ALTA: { fg: '#D97706', bg: '#FFFBEB' },
+  CRITICA: { fg: '#EF4444', bg: '#FEE2E2' },
+  ALTA: { fg: '#F59E0B', bg: '#FEF3C7' },
+  MEDIA_ALTA: { fg: '#F59E0B', bg: '#FEF3C7' },
   MEDIA: { fg: '#2563EB', bg: '#EFF6FF' },
+}
+
+const FAMILIA_CLASS = {
+  RIE: 'family-chip--rie',
+  RCV: 'family-chip--rcv',
+  RSC: 'family-chip--rsc',
+  RDS: 'family-chip--rds',
+}
+
+/** Switch estilizado tipo iOS/macOS para activar/desactivar una regla. */
+function IosSwitch({ checked, onClick, loading }) {
+  return (
+    <button
+      type="button"
+      className={`ios-switch ${checked ? 'ios-switch--on' : ''}`}
+      onClick={onClick}
+      disabled={loading}
+      aria-pressed={checked}
+      title={checked ? 'Desactivar regla' : 'Activar regla'}
+    >
+      {loading ? <Loader2 className="spin ios-switch-spin" size={12} /> : <span className="ios-switch-thumb" />}
+    </button>
+  )
 }
 
 export default function ReglasTab({ reglas, loading, onRefresh }) {
@@ -138,75 +161,43 @@ export default function ReglasTab({ reglas, loading, onRefresh }) {
 
       {error && <p className="form-error" style={{ marginBottom: 12 }}>{error}</p>}
 
-      <div className="table-card">
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>Código</th>
-              <th>Regla</th>
-              <th>Familia</th>
-              <th>Documento</th>
-              <th>Severidad</th>
-              <th>Acción ante Incumplimiento</th>
-              <th>Estado</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading && (
-              <tr>
-                <td colSpan={7} className="table-empty">
-                  <Loader2 className="spin" size={16} /> Cargando catálogo…
-                </td>
-              </tr>
-            )}
-            {!loading && reglasFiltradas.length === 0 && (
-              <tr>
-                <td colSpan={7} className="table-empty">
-                  <Scale size={16} /> No hay reglas en esta familia.
-                </td>
-              </tr>
-            )}
-            {reglasFiltradas.map((r) => {
-              const sev = SEVERIDAD_BADGE[r.severidad] || { fg: '#475569', bg: '#F1F5F9' }
-              return (
-                <tr key={r.id} className={!r.activo ? 'row-muted' : ''}>
-                  <td className="mono cell-code">{r.codigo_regla}</td>
-                  <td>
-                    <div className="cell-strong">{r.nombre_regla}</div>
-                    <div className="cell-muted rule-desc">{r.descripcion}</div>
-                  </td>
-                  <td>
-                    <span className="tag">{r.familia_regla}</span>
-                  </td>
-                  <td className="cell-muted">{r.tipo_documento || 'Todos'}</td>
-                  <td>
-                    <span className="badge" style={{ color: sev.fg, background: sev.bg }}>
-                      {r.severidad}
-                    </span>
-                  </td>
-                  <td className="cell-muted">{r.accion}</td>
-                  <td>
-                    <button
-                      type="button"
-                      className="toggle-button"
-                      onClick={() => handleToggle(r)}
-                      disabled={togglingId === r.id}
-                      title={r.activo ? 'Desactivar regla' : 'Activar regla'}
-                    >
-                      {togglingId === r.id ? (
-                        <Loader2 className="spin" size={20} />
-                      ) : r.activo ? (
-                        <ToggleRight size={26} color="var(--conforme-fg)" />
-                      ) : (
-                        <ToggleLeft size={26} color="var(--text-muted)" />
-                      )}
-                    </button>
-                  </td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
+      {loading && (
+        <div className="table-empty standalone">
+          <Loader2 className="spin" size={16} /> Cargando catálogo…
+        </div>
+      )}
+
+      {!loading && reglasFiltradas.length === 0 && (
+        <div className="table-empty standalone">
+          <Scale size={16} /> No hay reglas en esta familia.
+        </div>
+      )}
+
+      <div className="rules-grid">
+        {reglasFiltradas.map((r) => {
+          const sev = SEVERIDAD_BADGE[r.severidad] || { fg: '#475569', bg: '#F1F5F9' }
+          return (
+            <div className={`rule-card ${!r.activo ? 'rule-card--inactive' : ''}`} key={r.id}>
+              <div className="rule-card-top">
+                <span className="mono-chip">{r.codigo_regla}</span>
+                <IosSwitch checked={r.activo} onClick={() => handleToggle(r)} loading={togglingId === r.id} />
+              </div>
+
+              <h3 className="rule-card-title">{r.nombre_regla}</h3>
+              <p className="rule-card-desc">{r.descripcion}</p>
+
+              <div className="rule-card-tags">
+                <span className={`family-chip ${FAMILIA_CLASS[r.familia_regla] || ''}`}>{r.familia_regla}</span>
+                <span className="badge" style={{ color: sev.fg, background: sev.bg }}>
+                  {r.severidad}
+                </span>
+                <span className="tag">{r.tipo_documento || 'Todos'}</span>
+              </div>
+
+              <div className="rule-card-action cell-muted">{r.accion}</div>
+            </div>
+          )
+        })}
       </div>
 
       {modalAbierto && (

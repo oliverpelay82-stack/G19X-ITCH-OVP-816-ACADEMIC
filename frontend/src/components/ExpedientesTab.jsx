@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Plus, FolderKanban, Loader2 } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { Plus, FolderKanban, Loader2, Search } from 'lucide-react'
 import Modal from './Modal.jsx'
 import { createExpediente } from '../services/api.js'
 import { getEstadoBadge } from '../constants.js'
@@ -9,6 +9,26 @@ export default function ExpedientesTab({ expedientes, titulares, loading, onRefr
   const [titularId, setTitularId] = useState('')
   const [enviando, setEnviando] = useState(false)
   const [error, setError] = useState('')
+  const [busqueda, setBusqueda] = useState('')
+  const [filtroEstado, setFiltroEstado] = useState('TODOS')
+
+  const estadosDisponibles = useMemo(
+    () => Array.from(new Set(expedientes.map((e) => e.estado_cumplimiento).filter(Boolean))),
+    [expedientes]
+  )
+
+  const expedientesFiltrados = useMemo(() => {
+    const q = busqueda.trim().toLowerCase()
+    return expedientes.filter((exp) => {
+      const coincideEstado = filtroEstado === 'TODOS' || exp.estado_cumplimiento === filtroEstado
+      const coincideBusqueda =
+        !q ||
+        exp.codigo_expediente.toLowerCase().includes(q) ||
+        exp.titular?.razon_social?.toLowerCase().includes(q) ||
+        exp.titular?.rfc?.toLowerCase().includes(q)
+      return coincideEstado && coincideBusqueda
+    })
+  }, [expedientes, busqueda, filtroEstado])
 
   const cerrarModal = () => {
     setModalAbierto(false)
@@ -51,27 +71,65 @@ export default function ExpedientesTab({ expedientes, titulares, loading, onRefr
         </button>
       </div>
 
+      <div className="toolbar">
+        <label className="search-box">
+          <Search size={15} />
+          <input
+            type="text"
+            placeholder="Buscar por RFC, razón social o folio…"
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+          />
+        </label>
+        {estadosDisponibles.length > 0 && (
+          <div className="toolbar-filters">
+            <button
+              type="button"
+              className={`chip ${filtroEstado === 'TODOS' ? 'chip--active' : ''}`}
+              onClick={() => setFiltroEstado('TODOS')}
+            >
+              Todos
+            </button>
+            {estadosDisponibles.map((estado) => (
+              <button
+                key={estado}
+                type="button"
+                className={`chip ${filtroEstado === estado ? 'chip--active' : ''}`}
+                onClick={() => setFiltroEstado(estado)}
+              >
+                {getEstadoBadge(estado).label}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
       {loading && (
         <div className="table-empty standalone">
           <Loader2 className="spin" size={16} /> Cargando expedientes…
         </div>
       )}
 
-      {!loading && expedientes.length === 0 && (
+      {!loading && expedientesFiltrados.length === 0 && (
         <div className="table-empty standalone">
-          <FolderKanban size={16} /> Aún no hay expedientes aperturados.
+          <FolderKanban size={16} />
+          {expedientes.length === 0 ? 'Aún no hay expedientes aperturados.' : 'Sin resultados para esta búsqueda.'}
         </div>
       )}
 
       <div className="folder-grid">
-        {expedientes.map((exp) => {
+        {expedientesFiltrados.map((exp) => {
           const badge = getEstadoBadge(exp.estado_cumplimiento)
           const progreso = Number(exp.porcentaje_completitud || 0)
           return (
             <div className="folder-card" key={exp.id}>
               <div className="folder-card-top">
-                <span className="folder-code mono">{exp.codigo_expediente}</span>
+                <span className="mono-chip">{exp.codigo_expediente}</span>
                 <span className="badge" style={{ color: badge.fg, background: badge.bg }}>
+                  <span
+                    className="badge-dot"
+                    style={{ background: badge.fg, boxShadow: `0 0 0 3px ${badge.bg}, 0 0 6px ${badge.fg}80` }}
+                  />
                   {badge.label}
                 </span>
               </div>

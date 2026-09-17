@@ -1,4 +1,4 @@
-import { Building2, FolderKanban, ShieldCheck, Vault } from 'lucide-react'
+import { Building2, FolderKanban, ShieldCheck, Vault, BadgeCheck, Activity, TrendingUp } from 'lucide-react'
 
 /**
  * 4 KPIs ejecutivos en tiempo real: Empresas, Expedientes, Documentos en
@@ -16,31 +16,43 @@ export default function MetricsCards({ titulares, expedientes, documentos, loadi
   const cards = [
     {
       icon: Building2,
+      iconClass: 'metric-icon--blue',
       label: 'Empresas Registradas',
       value: totalTitulares,
-      accent: 'var(--accent)',
-      accentBg: 'var(--accent-bg)',
+      accent: '#2563EB',
+      accentBg: '#EFF6FF',
+      badgeIcon: BadgeCheck,
+      badgeText: 'Registro Verificado',
     },
     {
       icon: FolderKanban,
+      iconClass: 'metric-icon--amber',
       label: 'Expedientes Activos',
       value: totalExpedientes,
-      accent: 'var(--revision-fg)',
-      accentBg: 'var(--revision-bg)',
+      accent: '#D97706',
+      accentBg: '#FFFBEB',
+      badgeIcon: Activity,
+      badgeText: 'Seguimiento en Vivo',
     },
     {
       icon: Vault,
+      iconClass: 'metric-icon--purple',
       label: 'Documentos en Bóveda',
       value: totalDocumentos,
-      accent: 'var(--boveda-fg)',
-      accentBg: 'var(--boveda-bg)',
+      accent: '#7C3AED',
+      accentBg: '#FAF5FF',
+      badgeIcon: ShieldCheck,
+      badgeText: 'Auditado NOM-151',
     },
     {
       icon: ShieldCheck,
+      iconClass: 'metric-icon--emerald',
       label: '% Cumplimiento General',
       value: `${cumplimientoGeneral.toFixed(1)}%`,
-      accent: 'var(--conforme-fg)',
-      accentBg: 'var(--conforme-bg)',
+      accent: '#059669',
+      accentBg: '#ECFDF5',
+      badgeIcon: TrendingUp,
+      badgeText: cumplimientoGeneral >= 100 ? '100% Verificado' : `${cumplimientoGeneral.toFixed(0)}% en Progreso`,
       isProgress: true,
       progress: cumplimientoGeneral,
     },
@@ -51,8 +63,8 @@ export default function MetricsCards({ titulares, expedientes, documentos, loadi
       {cards.map((card) => (
         <div className="metric-card" key={card.label}>
           <div className="metric-card-top">
-            <span className="metric-icon" style={{ color: card.accent, background: card.accentBg }}>
-              <card.icon size={18} strokeWidth={2.25} />
+            <span className={`metric-icon ${card.iconClass}`}>
+              <card.icon size={20} strokeWidth={2.25} />
             </span>
             <span className="metric-label">{card.label}</span>
           </div>
@@ -64,6 +76,12 @@ export default function MetricsCards({ titulares, expedientes, documentos, loadi
                 style={{ width: `${Math.min(100, card.progress)}%`, background: card.accent }}
               />
             </div>
+          )}
+          {!loading && (
+            <span className="metric-badge" style={{ color: card.accent, background: card.accentBg }}>
+              <card.badgeIcon size={12} strokeWidth={2.5} />
+              {card.badgeText}
+            </span>
           )}
         </div>
       ))}

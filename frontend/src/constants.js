@@ -14,15 +14,15 @@ export const FAMILIAS_REGLA = ['RIE', 'RCV', 'RSC', 'RDS']
 
 export const SEVERIDADES = ['CRITICA', 'ALTA', 'MEDIA', 'MEDIA_ALTA']
 
-/** Mapa de badges de estado de auditoría (paleta corporativa CLAUDE.md). */
+/** Mapa de badges de estado de auditoría (paleta corporativa, semáforos vivos). */
 export const ESTADO_BADGE = {
-  CONFORME: { fg: '#059669', bg: '#ECFDF5', label: 'Conforme' },
-  APROBADO: { fg: '#059669', bg: '#ECFDF5', label: 'Aprobado' },
-  EN_REVISION: { fg: '#D97706', bg: '#FFFBEB', label: 'En Revisión' },
-  REQUIERE_REVISION_HUMANA: { fg: '#D97706', bg: '#FFFBEB', label: 'Revisión Humana' },
-  NO_CONFORME: { fg: '#DC2626', bg: '#FEF2F2', label: 'No Conforme' },
-  RECHAZADO: { fg: '#DC2626', bg: '#FEF2F2', label: 'Rechazado' },
-  BLOQUEADO: { fg: '#DC2626', bg: '#FEF2F2', label: 'Bloqueado' },
+  CONFORME: { fg: '#10B981', bg: '#D1FAE5', label: 'Conforme' },
+  APROBADO: { fg: '#10B981', bg: '#D1FAE5', label: 'Aprobado' },
+  EN_REVISION: { fg: '#F59E0B', bg: '#FEF3C7', label: 'En Revisión' },
+  REQUIERE_REVISION_HUMANA: { fg: '#F59E0B', bg: '#FEF3C7', label: 'Revisión Humana' },
+  NO_CONFORME: { fg: '#EF4444', bg: '#FEE2E2', label: 'No Conforme' },
+  RECHAZADO: { fg: '#EF4444', bg: '#FEE2E2', label: 'Rechazado' },
+  BLOQUEADO: { fg: '#EF4444', bg: '#FEE2E2', label: 'Bloqueado' },
 }
 
 export const getEstadoBadge = (estado) =>
