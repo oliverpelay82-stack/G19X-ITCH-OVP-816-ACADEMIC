@@ -18,8 +18,8 @@ from schemas.documento_schema import DocumentoResponse, TipoDocumentoEnum
 
 router = APIRouter(prefix="/api/v1/documentos", tags=["Documentos"])
 
-# Directorio de almacenamiento seguro en disco (Bóveda física)
-STORAGE_VAULT = os.path.join(os.path.dirname(os.path.dirname(__file__)), "storage_vault")
+# Directorio de almacenamiento seguro en disco (Bóveda física, raíz del proyecto: ../storage_vault)
+STORAGE_VAULT = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "storage_vault")
 os.makedirs(STORAGE_VAULT, exist_ok=True)
 
 # Límite máximo de tamaño permitido (15 MB) - Nivel 1 Pipeline

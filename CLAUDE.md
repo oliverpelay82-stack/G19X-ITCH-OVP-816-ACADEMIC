@@ -30,15 +30,32 @@ Antes de implementar cualquier módulo, tabla o regla, debes consultar:
     * `NO_CONFORME` / `RECHAZADO`: Rojo carmesí (`#DC2626`, fondo `#FEF2F2`).
     * Criptografía / Bóveda: Púrpura auditor (`#7C3AED`, fondo `#FAF5FF`).
 * **Micro-interacciones:** Indicadores de estado en vivo (*status dots* animados), modales limpios, barras de progreso dinámicas y tablas responsivas con copiado de hashes al portapapeles.
-* **Evolución Frontend:** La vista actual en `views/panel.html` es provisional para validar el backend; la versión final se construirá en **React.js**.
+* **Interfaz Oficial:** La interfaz oficial del sistema es el proyecto **React 19** ubicado en `frontend/`. La vista legacy `views/panel.html` fue retirada.
 
-### ⚙️ Agente Backend & Arquitectura de Datos (FastAPI + MySQL)
-* **Patrón:** Arquitectura en capas limpia:
-  * `models/` → Entidades SQLAlchemy (tablas de MySQL).
-  * `schemas/` → DTOs y validación con Pydantic v2.
-  * `controllers/` → Enrutadores REST (`APIRouter`) con versionado `/api/v1/`.
-  * `config/` → Conexión MySQL (`plurione_compliance`) y variables `.env`.
-  * `storage_vault/` → Bóveda física desacoplada para almacenamiento de binarios.
+### ⚙️ Agente Backend & Arquitectura de Datos (FastAPI + PostgreSQL)
+* **Patrón:** Arquitectura en capas limpia, aislada dentro de `backend/`:
+  * `backend/models/` → Entidades SQLAlchemy (tablas de PostgreSQL).
+  * `backend/schemas/` → DTOs y validación con Pydantic v2.
+  * `backend/controllers/` → Enrutadores REST (`APIRouter`) con versionado `/api/v1/`.
+  * `backend/config/` → Conexión PostgreSQL (`plurione_compliance`) y variables `backend/.env`.
+  * `storage_vault/` → Bóveda física desacoplada para almacenamiento de binarios (raíz del proyecto, referenciada por `backend/controllers/documento_controller.py` como `../storage_vault`).
+
+---
+
+## 2.1 Estructura de Carpetas
+
+```
+motor de validacion/
+├── backend/            # API FastAPI + PostgreSQL (config/, controllers/, models/, schemas/, main.py, requirements.txt, .env)
+├── frontend/           # Interfaz oficial React 19 (Vite)
+├── scripts/            # Utilidades de BD: setup_postgres.py, crear_tablas.py, seed_reglas_validacion.py
+├── tests/              # Pruebas: test_conexion.py, test_pipeline_nivel1.py
+├── storage_vault/      # Bóveda física de binarios (desacoplada del backend)
+├── docs/               # Fuente oficial de la verdad (DOC-01 a DOC-08)
+└── CLAUDE.md
+```
+
+Los scripts de `scripts/` y las pruebas de `tests/` insertan `backend/` en `sys.path` al inicio del archivo para poder importar `config`, `models`, `schemas` y `main` sin necesidad de instalar el backend como paquete.
 
 ---
 
@@ -55,10 +72,13 @@ El motor opera en un pipeline estricto de 5 niveles:
 
 ## 4. Comandos de Referencia
 
-* **Levantar el servidor:** `python main.py` o `uvicorn main:app --reload`
-* **Correr suite de pruebas de integridad:** `python test_pipeline_nivel1.py`
-* **Probar conexión a MySQL:** `python test_conexion.py`
-* **Panel de pruebas local:** `http://127.0.0.1:8000`
+* **Backend:** `cd backend && python main.py` (o `uvicorn main:app --reload`) — Puerto `8000`, PostgreSQL `5432`.
+* **Frontend:** `cd frontend && npm run dev` — Puerto `5173`.
+* **Inicializar/sincronizar BD PostgreSQL:** `python scripts/setup_postgres.py` (desde la raíz del proyecto).
+* **Sincronizar solo tablas:** `python scripts/crear_tablas.py`
+* **Precargar catálogo de reglas (DOC-05):** `python scripts/seed_reglas_validacion.py`
+* **Correr suite de pruebas de integridad:** `python tests/test_pipeline_nivel1.py`
+* **Probar conexión a PostgreSQL:** `python tests/test_conexion.py`
 * **Documentación interactiva Swagger:** `http://127.0.0.1:8000/docs`
 
 ---

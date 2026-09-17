@@ -7,6 +7,11 @@ DOC-05 (Estrategia de Validación y Catálogo de Reglas de Negocio).
 Ejecuta: python seed_reglas_validacion.py
 Requiere que las tablas ya existan (ejecutar antes: python crear_tablas.py).
 """
+import os
+import sys
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "backend")))
+
 from config.database import SessionLocal, init_db
 from models.regla import Regla
 

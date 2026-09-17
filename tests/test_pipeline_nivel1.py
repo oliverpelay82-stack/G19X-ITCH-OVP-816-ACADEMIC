@@ -6,6 +6,11 @@ Prueba unitaria / integración rápida para verificar:
 4. Cálculo correcto de completitud por tipos distintos (no conteo ciego).
 5. Transición de estado del expediente a CONFORME al completar los 3 obligatorios.
 """
+import os
+import sys
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "backend")))
+
 from fastapi.testclient import TestClient
 from main import app
 from config.database import SessionLocal

@@ -41,19 +41,6 @@ app.include_router(documento_router)
 app.include_router(regla_router)
 
 
-from fastapi.responses import HTMLResponse
-import os
-
-@app.get("/", response_class=HTMLResponse, include_in_schema=False)
-def panel_vista():
-    """Vista básica (V de MVC) para visualizar y probar el sistema."""
-    ruta_vista = os.path.join("views", "panel.html")
-    if os.path.exists(ruta_vista):
-        with open(ruta_vista, "r", encoding="utf-8") as f:
-            return HTMLResponse(content=f.read())
-    return HTMLResponse(content="<h1>Cargando vista...</h1>")
-
-
 @app.get("/api/v1/status", tags=["General"])
 def root():
     return {
