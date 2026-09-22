@@ -1,0 +1,93 @@
+networks:
+  plurione-net:
+    driver: bridge
+
+volumes:
+  plurione_pgdata:
+
+services:
+  plurione-db:
+    image: postgres:17-alpine
+    container_name: plurione-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: plurione-demo
+      POSTGRES_DB: plurione_compliance
+    ports:
+      - "5433:5432"
+    volumes:
+      - plurione_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - plurione-net
+
+  plurione-core:
+    build:
+      context: ./services/core-service
+    container_name: plurione-core
+    ports:
+      - "8001:8001"
+    environment:
+      DB_DIALECT: postgresql
+      DB_HOST: plurione-db
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: plurione-demo
+      DB_NAME: plurione_compliance
+      STORAGE_VAULT_PATH: /app/storage_vault
+    volumes:
+      - ./storage_vault:/app/storage_vault
+    depends_on:
+      plurione-db:
+        condition: service_healthy
+    networks:
+      - plurione-net
+
+  plurione-rules:
+    build:
+      context: ./services/rules-service
+    container_name: plurione-rules
+    ports:
+      - "8002:8002"
+    environment:
+      DB_DIALECT: postgresql
+      DB_HOST: plurione-db
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: plurione-demo
+      DB_NAME: plurione_compliance
+    depends_on:
+      plurione-db:
+        condition: service_healthy
+    networks:
+      - plurione-net
+
+  plurione-ai:
+    build:
+      context: ./services/ai-service
+    container_name: plurione-ai
+    ports:
+      - "8003:8003"
+    networks:
+      - plurione-net
+
+  plurione-frontend:
+    build:
+      context: ./frontend
+    container_name: plurione-frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - plurione-core
+      - plurione-rules
+      - plurione-ai
+    networks:
+      - plurione-net
+

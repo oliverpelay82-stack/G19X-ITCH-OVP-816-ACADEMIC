@@ -1,119 +1,26 @@
 """
-Script de precarga del catálogo base de Reglas de Validación (DOC-05).
-Inserta en MySQL las reglas RIE-01, RIE-02, RIE-03 y RCV-01, tal como están
-definidas textualmente en el "Catálogo Formal de Reglas de Negocio" del
-DOC-05 (Estrategia de Validación y Catálogo de Reglas de Negocio).
+Wrapper de conveniencia: precarga el catálogo de Reglas de Validación (DOC-05)
+delegando en el script propio del rules-service, que es quien posee los
+modelos y la lógica de negocio de ese dominio.
 
-Ejecuta: python seed_reglas_validacion.py
-Requiere que las tablas ya existan (ejecutar antes: python crear_tablas.py).
+Ejecuta (desde la raíz del proyecto): python scripts/seed_reglas_validacion.py
+Requiere que las tablas ya existan (ejecutar antes: python scripts/crear_tablas.py).
 """
-import os
+import subprocess
 import sys
+from pathlib import Path
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "backend")))
-
-from config.database import SessionLocal, init_db
-from models.regla import Regla
-
-REGLAS_BASE = [
-    {
-        "codigo_regla": "RIE-01",
-        "nombre_regla": "Completitud de Expediente",
-        "familia_regla": "RIE",
-        "descripcion": (
-            "El sistema calcula el porcentaje de documentos obligatorios "
-            "presentes en el expediente respecto al total de documentos "
-            "obligatorios configurados para ese tipo de expediente. Si el "
-            "porcentaje es menor al 100%, el expediente no puede obtener "
-            "estatus de aprobado. El sistema indica claramente cuáles "
-            "documentos faltan."
-        ),
-        "severidad": "CRITICA",
-        "accion": "Semáforo Rojo y listado de documentos faltantes.",
-        "tipo_documento": None,
-        "documento_obligatorio": True,
-        "dias_maximos_vigencia": None,
-    },
-    {
-        "codigo_regla": "RIE-02",
-        "nombre_regla": "Vinculación Obligatoria de Anexos",
-        "familia_regla": "RIE",
-        "descripcion": (
-            "Si un documento principal (por ejemplo, un Contrato de "
-            "Prestación de Servicios) requiere anexos vinculados (como una "
-            "Propuesta Técnica o una Póliza de Fianza), la ausencia de "
-            "cualquiera de los anexos invalida el documento principal."
-        ),
-        "severidad": "ALTA",
-        "accion": "Semáforo Rojo con indicación específica del anexo ausente.",
-        "tipo_documento": None,
-        "documento_obligatorio": True,
-        "dias_maximos_vigencia": None,
-    },
-    {
-        "codigo_regla": "RIE-03",
-        "nombre_regla": "Integridad Criptográfica del Archivo",
-        "familia_regla": "RIE",
-        "descripcion": (
-            "Al consultar un documento previamente cargado, el sistema "
-            "recalcula su huella criptográfica SHA-256 y la compara con el "
-            "valor registrado en la base de datos al momento de la carga "
-            "inicial. Si los valores no coinciden, se ha detectado una "
-            "alteración no autorizada del archivo."
-        ),
-        "severidad": "CRITICA",
-        "accion": "Bloqueo inmediato del documento y registro en bitácora de auditoría.",
-        "tipo_documento": None,
-        "documento_obligatorio": True,
-        "dias_maximos_vigencia": None,
-    },
-    {
-        "codigo_regla": "RCV-01",
-        "nombre_regla": "Vigencia Mandatoria",
-        "familia_regla": "RCV",
-        "descripcion": (
-            "El sistema calcula la diferencia en días entre la fecha de "
-            "vencimiento del documento y la fecha actual. Si la diferencia "
-            "es negativa, el documento está vencido (Severidad Alta, "
-            "Semáforo Rojo). Si está entre 0 y 30 días, el documento está "
-            "próximo a vencer (Severidad Media, Semáforo Amarillo). Si es "
-            "mayor a 30 días, el documento está vigente (Semáforo Verde)."
-        ),
-        "severidad": "ALTA",
-        "accion": (
-            "Vencido: Semáforo Rojo. Próximo a vencer (0-30 días): Semáforo "
-            "Amarillo. Vigente (>30 días): Semáforo Verde."
-        ),
-        "tipo_documento": None,
-        "documento_obligatorio": True,
-        "dias_maximos_vigencia": 30,
-    },
-]
+ROOT = Path(__file__).resolve().parent.parent
+RULES_SERVICE_DIR = ROOT / "services" / "rules-service"
 
 
-def precargar_reglas():
-    print("=" * 60)
-    print("Sincronizando tablas y precargando catálogo de reglas (DOC-05)...")
-    init_db()
-
-    db = SessionLocal()
-    try:
-        for datos in REGLAS_BASE:
-            existente = db.query(Regla).filter(Regla.codigo_regla == datos["codigo_regla"]).first()
-            if existente:
-                print(f"[SKIP] La regla '{datos['codigo_regla']}' ya existe. No se duplica.")
-                continue
-
-            nueva_regla = Regla(**datos)
-            db.add(nueva_regla)
-            print(f"[OK] Regla '{datos['codigo_regla']}' - {datos['nombre_regla']} precargada.")
-
-        db.commit()
-        print("=" * 60)
-        print("Precarga de reglas_validacion finalizada con éxito.")
-    finally:
-        db.close()
+def main():
+    subprocess.run(
+        [sys.executable, "seed_reglas_validacion.py"],
+        cwd=RULES_SERVICE_DIR,
+        check=True,
+    )
 
 
 if __name__ == "__main__":
-    precargar_reglas()
+    main()

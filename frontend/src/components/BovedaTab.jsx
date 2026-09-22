@@ -1,274 +1,321 @@
-import { useCallback, useState } from 'react'
-import { UploadCloud, FileCheck2, AlertTriangle, Copy, Check, Loader2, Vault, ShieldCheck } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import {
+  BadgeCheck,
+  Check,
+  Copy,
+  FileText,
+  Fingerprint,
+  Lock,
+  Search,
+  Vault,
+  X,
+} from 'lucide-react'
+import Modal from './Modal.jsx'
+import DropZone from './DropZone.jsx'
+import { SkeletonRows } from './Skeleton.jsx'
+import useToast from '../hooks/useToast.js'
+import useDebounce from '../hooks/useDebounce.js'
 import { uploadDocumento } from '../services/api.js'
-import { MAGIC_BYTES, MAX_FILE_SIZE_BYTES, TIPOS_DOCUMENTO } from '../constants.js'
+import { TIPO_DOCUMENTO_CORTO, TIPO_DOCUMENTO_LABEL, TIPOS_DOCUMENTO } from '../constants.js'
+import { copiarAlPortapapeles, formatBytes, formatFecha, hashCorto } from '../utils/format.js'
 
-function bytesToHex(buffer) {
-  return Array.from(new Uint8Array(buffer))
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('')
+/** Etiqueta de la firma binaria a partir del MIME devuelto por el backend. */
+function firmaDeMime(mime) {
+  if (mime === 'application/pdf') return { label: 'PDF', firma: '%PDF-' }
+  if (mime === 'image/png') return { label: 'PNG', firma: '89 50 4E 47' }
+  if (mime === 'image/jpeg') return { label: 'JPEG', firma: 'FF D8 FF' }
+  return { label: mime || 'Desconocido', firma: '—' }
 }
 
-async function calcularSha256(file) {
-  const buffer = await file.arrayBuffer()
-  const digest = await crypto.subtle.digest('SHA-256', buffer)
-  return bytesToHex(digest)
-}
-
-async function detectarMagicBytes(file) {
-  const cabecera = new Uint8Array(await file.slice(0, 8).arrayBuffer())
-  return MAGIC_BYTES.find((firma) =>
-    firma.signature.every((byte, i) => cabecera[i] === byte)
-  )
-}
-
-function CopyHash({ hash }) {
+/** Hash en tipografía monoespaciada con copiado de un clic. */
+function HashCell({ hash, completo = false }) {
   const [copiado, setCopiado] = useState(false)
-  const copiar = async () => {
-    try {
-      await navigator.clipboard.writeText(hash)
+  const toast = useToast()
+
+  const copiar = async (e) => {
+    e.stopPropagation()
+    const ok = await copiarAlPortapapeles(hash)
+    if (ok) {
       setCopiado(true)
+      toast.exito('Hash SHA-256 copiado', hashCorto(hash, 16, 10))
       setTimeout(() => setCopiado(false), 1500)
-    } catch {
-      /* portapapeles no disponible: se ignora silenciosamente */
+    } else {
+      toast.error('No se pudo copiar', 'El navegador bloqueó el portapapeles.')
     }
   }
+
   return (
-    <button type="button" className="copy-hash" onClick={copiar} title="Copiar hash SHA-256">
-      <span className="mono-chip">{hash.slice(0, 16)}…{hash.slice(-8)}</span>
-      {copiado ? <Check size={14} color="var(--conforme-fg)" /> : <Copy size={14} />}
+    <button
+      type="button"
+      className={`hash-chip ${copiado ? 'hash-chip--copiado' : ''}`}
+      onClick={copiar}
+      data-tooltip={copiado ? '¡Copiado!' : 'Copiar hash SHA-256'}
+    >
+      <Fingerprint size={12} strokeWidth={2.3} className="hash-chip-icon" />
+      <span className="mono">{completo ? hash : hashCorto(hash, 8, 6)}</span>
+      {copiado ? <Check size={12} strokeWidth={3} className="hash-chip-ok" /> : <Copy size={12} strokeWidth={2.2} />}
     </button>
   )
 }
 
-export default function BovedaTab({ documentos, expedientes, loading, onRefresh }) {
-  const [arrastrando, setArrastrando] = useState(false)
-  const [archivo, setArchivo] = useState(null)
-  const [analizando, setAnalizando] = useState(false)
-  const [analisis, setAnalisis] = useState(null) // { hash, magic, sizeOk }
+export default function BovedaTab({ documentos, expedientes, loading, onRefresh, isOnline = true }) {
+  const toast = useToast()
   const [expedienteId, setExpedienteId] = useState('')
-  const [tipoDocumento, setTipoDocumento] = useState(TIPOS_DOCUMENTO[0].value)
   const [subiendo, setSubiendo] = useState(false)
-  const [error, setError] = useState('')
+  const [busqueda, setBusqueda] = useState('')
+  const [detalle, setDetalle] = useState(null)
 
-  const analizarArchivo = useCallback(async (file) => {
-    setArchivo(file)
-    setAnalisis(null)
-    setError('')
-    setAnalizando(true)
-    try {
-      const [hash, magic] = await Promise.all([calcularSha256(file), detectarMagicBytes(file)])
-      setAnalisis({
-        hash,
-        magic,
-        sizeOk: file.size > 0 && file.size <= MAX_FILE_SIZE_BYTES,
-      })
-    } finally {
-      setAnalizando(false)
-    }
-  }, [])
+  const consulta = useDebounce(busqueda, 220)
 
-  const handleDrop = (e) => {
-    e.preventDefault()
-    setArrastrando(false)
-    const file = e.dataTransfer.files?.[0]
-    if (file) analizarArchivo(file)
-  }
+  const mapaExpedientes = useMemo(
+    () => Object.fromEntries(expedientes.map((e) => [e.id, e])),
+    [expedientes]
+  )
 
-  const handleInputChange = (e) => {
-    const file = e.target.files?.[0]
-    if (file) analizarArchivo(file)
-  }
+  const filtrados = useMemo(() => {
+    const q = consulta.trim().toLowerCase()
+    if (!q) return documentos
+    return documentos.filter(
+      (d) =>
+        d.nombre_archivo_original?.toLowerCase().includes(q) ||
+        d.hash_sha256?.toLowerCase().includes(q) ||
+        d.tipo_documento?.toLowerCase().includes(q) ||
+        mapaExpedientes[d.expediente_id]?.codigo_expediente?.toLowerCase().includes(q)
+    )
+  }, [documentos, consulta, mapaExpedientes])
 
-  const limpiar = () => {
-    setArchivo(null)
-    setAnalisis(null)
-    setError('')
-  }
+  const totalBytes = useMemo(
+    () => documentos.reduce((acc, d) => acc + Number(d.tamanio_bytes || 0), 0),
+    [documentos]
+  )
 
-  const handleUpload = async () => {
-    if (!archivo || !expedienteId) return
+  const subir = async (archivo, tipo) => {
     setSubiendo(true)
-    setError('')
     try {
       const formData = new FormData()
       formData.append('expediente_id', expedienteId)
-      formData.append('tipo_documento', tipoDocumento)
+      formData.append('tipo_documento', tipo)
       formData.append('file', archivo)
       await uploadDocumento(formData)
-      limpiar()
+      toast.exito('Documento custodiado', `${archivo.name} · huella registrada en la bóveda`)
       onRefresh()
     } catch (err) {
-      setError(err.message)
+      toast.error('Carga rechazada', err.message)
+      throw err
     } finally {
       setSubiendo(false)
     }
   }
 
-  const mapaExpedientes = Object.fromEntries(expedientes.map((e) => [e.id, e.codigo_expediente]))
-  const listo = analisis && analisis.magic && analisis.sizeOk && expedienteId
-
   return (
     <div className="tab-panel">
-      <div className="tab-panel-header">
-        <div>
-          <h2 className="tab-panel-title">Bóveda Criptográfica</h2>
-          <p className="tab-panel-desc">
-            Carga de documentos con validación Nivel 1: Magic Bytes, tamaño y huella SHA-256 (NOM-151-SCFI-2016).
-          </p>
-        </div>
-      </div>
-
       <div className="vault-layout">
-        <div className="vault-upload-card">
-          <div
-            className={`dropzone ${arrastrando ? 'dropzone--active' : ''}`}
-            onDragOver={(e) => {
-              e.preventDefault()
-              setArrastrando(true)
-            }}
-            onDragLeave={() => setArrastrando(false)}
-            onDrop={handleDrop}
+        <section className="surface-card vault-upload">
+          <header className="card-head">
+            <span className="card-head-icon card-head-icon--vault">
+              <Lock size={15} strokeWidth={2.4} />
+            </span>
+            <div>
+              <h3 className="card-title">Ingesta custodiada</h3>
+              <p className="card-desc">Nivel 1 del pipeline: firma binaria, límite de tamaño y huella SHA-256.</p>
+            </div>
+          </header>
+
+          <DropZone
+            tipos={TIPOS_DOCUMENTO}
+            onArchivo={subir}
+            subiendo={subiendo}
+            listoExtra={Boolean(expedienteId)}
+            deshabilitado={!isOnline}
+            motivoDeshabilitado="El core-service (:8001) no responde"
           >
-            <div className="dropzone-icon">
-              {arrastrando ? <UploadCloud size={26} strokeWidth={2} /> : <ShieldCheck size={26} strokeWidth={2} />}
-            </div>
-            <p className="dropzone-title">Arrastra el archivo aquí</p>
-            <p className="dropzone-hint">PDF, JPG o PNG · máx. 15 MB</p>
-            <label className="btn btn-ghost dropzone-browse">
-              Elegir archivo
-              <input type="file" accept=".pdf,.jpg,.jpeg,.png" hidden onChange={handleInputChange} />
-            </label>
-          </div>
-
-          {analizando && (
-            <div className="analysis-box">
-              <Loader2 className="spin" size={16} /> Calculando huella SHA-256 y leyendo Magic Bytes…
-            </div>
-          )}
-
-          {archivo && analisis && !analizando && (
-            <div className="analysis-box">
-              <div className="analysis-row">
-                <span className="analysis-label">Archivo</span>
-                <span className="cell-strong">{archivo.name}</span>
-              </div>
-              <div className="analysis-row">
-                <span className="analysis-label">Magic Bytes</span>
-                {analisis.magic ? (
-                  <span className="badge" style={{ color: 'var(--boveda-fg)', background: 'var(--boveda-bg)' }}>
-                    <FileCheck2 size={13} /> {analisis.magic.label} válido
-                  </span>
-                ) : (
-                  <span className="badge" style={{ color: 'var(--rechazado-fg)', background: 'var(--rechazado-bg)' }}>
-                    <AlertTriangle size={13} /> Firma no reconocida
-                  </span>
-                )}
-              </div>
-              <div className="analysis-row">
-                <span className="analysis-label">Tamaño</span>
-                <span className={analisis.sizeOk ? 'cell-muted' : 'form-error inline'}>
-                  {(archivo.size / 1024).toFixed(1)} KB {!analisis.sizeOk && '(excede 15 MB o está vacío)'}
-                </span>
-              </div>
-              <div className="analysis-row analysis-row--hash">
-                <span className="analysis-label">SHA-256</span>
-                <span className="mono hash-preview">{analisis.hash}</span>
-              </div>
-            </div>
-          )}
-
-          <div className="form-grid" style={{ marginTop: 16 }}>
-            <label className="field">
-              <span>Expediente Destino</span>
-              <select value={expedienteId} onChange={(e) => setExpedienteId(e.target.value)}>
+            <label className="field field--inline">
+              <span className="field-label">Expediente destino</span>
+              <select value={expedienteId} onChange={(e) => setExpedienteId(e.target.value)} required>
                 <option value="" disabled>
                   Selecciona un expediente…
                 </option>
                 {expedientes.map((e) => (
                   <option key={e.id} value={e.id}>
-                    {e.codigo_expediente}
+                    {e.codigo_expediente} — {e.titular?.razon_social || 'Sin titular'}
                   </option>
                 ))}
               </select>
             </label>
+          </DropZone>
 
-            <label className="field">
-              <span>Tipo de Documento</span>
-              <select value={tipoDocumento} onChange={(e) => setTipoDocumento(e.target.value)}>
-                {TIPOS_DOCUMENTO.map((t) => (
-                  <option key={t.value} value={t.value}>
-                    {t.label}
-                  </option>
-                ))}
-              </select>
-            </label>
+          {!expedienteId && (
+            <p className="field-hint field-hint--warn">
+              Elige el expediente destino para habilitar la custodia.
+            </p>
+          )}
+        </section>
 
-            {error && <p className="form-error">{error}</p>}
-
-            <div className="modal-footer" style={{ padding: 0 }}>
-              {archivo && (
-                <button type="button" className="btn btn-ghost" onClick={limpiar}>
-                  Descartar
+        <section className="surface-card vault-console">
+          <header className="card-head">
+            <span className="card-head-icon card-head-icon--vault">
+              <Vault size={15} strokeWidth={2.4} />
+            </span>
+            <div>
+              <h3 className="card-title">Consola de custodia</h3>
+              <p className="card-desc">
+                {documentos.length} {documentos.length === 1 ? 'documento' : 'documentos'} · {formatBytes(totalBytes)} bajo
+                resguardo NOM-151-SCFI-2016
+              </p>
+            </div>
+            <label className="search-box search-box--sm">
+              <Search size={14} strokeWidth={2.3} />
+              <input
+                type="search"
+                placeholder="Archivo, folio o hash…"
+                value={busqueda}
+                onChange={(e) => setBusqueda(e.target.value)}
+                aria-label="Buscar en la bóveda"
+              />
+              {busqueda && (
+                <button type="button" className="search-clear" onClick={() => setBusqueda('')} aria-label="Limpiar">
+                  <X size={12} strokeWidth={2.6} />
                 </button>
               )}
-              <button type="button" className="btn btn-primary" disabled={!listo || subiendo} onClick={handleUpload}>
-                {subiendo ? <Loader2 className="spin" size={16} /> : <UploadCloud size={16} />}
-                Subir a la Bóveda
-              </button>
-            </div>
-          </div>
-        </div>
+            </label>
+          </header>
 
-        <div className="table-card vault-table-card">
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>Documento</th>
-                <th>Tipo</th>
-                <th>Expediente</th>
-                <th>Hash SHA-256</th>
-                <th>Tamaño</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading && (
+          <div className="table-scroll">
+            <table className="data-table data-table--console">
+              <thead>
                 <tr>
-                  <td colSpan={5} className="table-empty">
-                    <Loader2 className="spin" size={16} /> Cargando bóveda…
-                  </td>
+                  <th>Documento</th>
+                  <th>Tipo</th>
+                  <th>Expediente</th>
+                  <th>Huella SHA-256</th>
+                  <th className="col-center">Integridad</th>
+                  <th className="col-right">Tamaño</th>
                 </tr>
-              )}
-              {!loading && documentos.length === 0 && (
-                <tr>
-                  <td colSpan={5} className="table-empty">
-                    <Vault size={16} /> La bóveda no tiene documentos aún.
-                  </td>
-                </tr>
-              )}
-              {documentos.map((doc) => (
-                <tr key={doc.id}>
-                  <td className="cell-strong">{doc.nombre_archivo_original}</td>
-                  <td>
-                    <span className="tag">{doc.tipo_documento}</span>
-                  </td>
-                  <td>
-                    {mapaExpedientes[doc.expediente_id] ? (
-                      <span className="mono-chip">{mapaExpedientes[doc.expediente_id]}</span>
-                    ) : (
-                      <span className="cell-muted">—</span>
-                    )}
-                  </td>
-                  <td>
-                    <CopyHash hash={doc.hash_sha256} />
-                  </td>
-                  <td className="cell-muted">{(doc.tamanio_bytes / 1024).toFixed(1)} KB</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {loading && <SkeletonRows rows={6} cols={6} />}
+
+                {!loading && filtrados.length === 0 && (
+                  <tr>
+                    <td colSpan={6}>
+                      <div className="empty-state">
+                        <span className="empty-icon empty-icon--vault">
+                          <Vault size={20} strokeWidth={2} />
+                        </span>
+                        <p className="empty-title">
+                          {documentos.length === 0 ? 'La bóveda está vacía' : 'Sin coincidencias'}
+                        </p>
+                        <p className="empty-desc">
+                          {documentos.length === 0
+                            ? 'Carga el primer documento para generar su huella criptográfica inmutable.'
+                            : 'Ningún documento coincide con la búsqueda.'}
+                        </p>
+                      </div>
+                    </td>
+                  </tr>
+                )}
+
+                {!loading &&
+                  filtrados.map((doc) => {
+                    const exp = mapaExpedientes[doc.expediente_id]
+                    const firma = firmaDeMime(doc.mime_type)
+                    return (
+                      <tr key={doc.id} className="row-clickable" onClick={() => setDetalle(doc)}>
+                        <td>
+                          <div className="identity">
+                            <span className="file-icon">
+                              <FileText size={14} strokeWidth={2.2} />
+                            </span>
+                            <span className="identity-body">
+                              <span className="identity-name">{doc.nombre_archivo_original}</span>
+                              <span className="identity-sub">{formatFecha(doc.creado_en)}</span>
+                            </span>
+                          </div>
+                        </td>
+                        <td>
+                          <span className="tag" title={TIPO_DOCUMENTO_LABEL[doc.tipo_documento]}>
+                            {TIPO_DOCUMENTO_CORTO[doc.tipo_documento] || doc.tipo_documento}
+                          </span>
+                        </td>
+                        <td>
+                          {exp ? (
+                            <span className="mono folder-folio">{exp.codigo_expediente}</span>
+                          ) : (
+                            <span className="cell-muted">—</span>
+                          )}
+                        </td>
+                        <td>
+                          <HashCell hash={doc.hash_sha256} />
+                        </td>
+                        <td className="col-center">
+                          <span className="badge badge--vault" data-tooltip={`Magic Bytes ${firma.firma}`}>
+                            <BadgeCheck size={11} strokeWidth={2.6} />
+                            {firma.label}
+                          </span>
+                        </td>
+                        <td className="col-right cell-muted mono-tabular">{formatBytes(doc.tamanio_bytes)}</td>
+                      </tr>
+                    )
+                  })}
+              </tbody>
+            </table>
+          </div>
+        </section>
       </div>
+
+      {detalle && (
+        <Modal
+          title={detalle.nombre_archivo_original}
+          subtitle="Metadatos de custodia criptográfica"
+          icon={FileText}
+          onClose={() => setDetalle(null)}
+          width={620}
+        >
+          <dl className="detail-grid">
+            <div className="detail-row">
+              <dt>Tipo documental</dt>
+              <dd>{TIPO_DOCUMENTO_LABEL[detalle.tipo_documento] || detalle.tipo_documento}</dd>
+            </div>
+            <div className="detail-row">
+              <dt>Expediente</dt>
+              <dd className="mono">{mapaExpedientes[detalle.expediente_id]?.codigo_expediente || '—'}</dd>
+            </div>
+            <div className="detail-row">
+              <dt>Titular</dt>
+              <dd>{mapaExpedientes[detalle.expediente_id]?.titular?.razon_social || '—'}</dd>
+            </div>
+            <div className="detail-row">
+              <dt>Firma binaria</dt>
+              <dd>
+                <span className="badge badge--vault">
+                  <BadgeCheck size={11} strokeWidth={2.6} />
+                  {firmaDeMime(detalle.mime_type).label} · {firmaDeMime(detalle.mime_type).firma}
+                </span>
+              </dd>
+            </div>
+            <div className="detail-row">
+              <dt>Tamaño</dt>
+              <dd className="mono-tabular">{formatBytes(detalle.tamanio_bytes)}</dd>
+            </div>
+            <div className="detail-row">
+              <dt>Ingesta</dt>
+              <dd>{formatFecha(detalle.creado_en)}</dd>
+            </div>
+            <div className="detail-row detail-row--full">
+              <dt>Huella SHA-256</dt>
+              <dd>
+                <HashCell hash={detalle.hash_sha256} completo />
+              </dd>
+            </div>
+          </dl>
+
+          <p className="detail-note">
+            <Lock size={13} strokeWidth={2.4} />
+            La huella se calculó al ingresar el archivo y es inmutable. Cualquier modificación posterior del binario
+            produciría un hash distinto y sería detectada por la regla RIE-03.
+          </p>
+        </Modal>
+      )}
     </div>
   )
 }

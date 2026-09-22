@@ -32,13 +32,14 @@ Antes de implementar cualquier módulo, tabla o regla, debes consultar:
 * **Micro-interacciones:** Indicadores de estado en vivo (*status dots* animados), modales limpios, barras de progreso dinámicas y tablas responsivas con copiado de hashes al portapapeles.
 * **Interfaz Oficial:** La interfaz oficial del sistema es el proyecto **React 19** ubicado en `frontend/`. La vista legacy `views/panel.html` fue retirada.
 
-### ⚙️ Agente Backend & Arquitectura de Datos (FastAPI + PostgreSQL)
-* **Patrón:** Arquitectura en capas limpia, aislada dentro de `backend/`:
-  * `backend/models/` → Entidades SQLAlchemy (tablas de PostgreSQL).
-  * `backend/schemas/` → DTOs y validación con Pydantic v2.
-  * `backend/controllers/` → Enrutadores REST (`APIRouter`) con versionado `/api/v1/`.
-  * `backend/config/` → Conexión PostgreSQL (`plurione_compliance`) y variables `backend/.env`.
-  * `storage_vault/` → Bóveda física desacoplada para almacenamiento de binarios (raíz del proyecto, referenciada por `backend/controllers/documento_controller.py` como `../storage_vault`).
+### ⚙️ Agente Backend & Arquitectura de Datos (FastAPI + PostgreSQL + Microservicios)
+* **Patrón (desde Sprint 0 / Semana 4):** Arquitectura de **microservicios desacoplados**, orquestados con Docker Compose, dentro de `services/`. Cada microservicio replica internamente la misma capa limpia que antes vivía en `backend/`:
+  * `services/core-service/` (**puerto 8001**) → Titulares, Expedientes y Documentos (ingesta, magic bytes, hash SHA-256, bóveda física).
+  * `services/rules-service/` (**puerto 8002**) → Catálogo de Reglas de Validación (DOC-05: familias RIE, RCV, RSC, RDS).
+  * `services/ai-service/` (**puerto 8003**) → Esqueleto vivo (solo health check); alojará desde la Semana 5 el Nivel 3 (extracción de texto) y Nivel 4 (análisis semántico con IA) del pipeline.
+  * Cada servicio mantiene su propia carpeta `models/`, `schemas/`, `controllers/`, `config/database.py`, `main.py`, `requirements.txt`, `Dockerfile` y `.env`. Todos los servicios con base de datos comparten la misma PostgreSQL física `plurione_compliance` (cada uno gestiona su propio subconjunto de tablas vía `Base.metadata` independiente).
+  * Todo controlador expone `GET /api/v1/health` (status, servicio, puerto, y `conexion_bd` cuando aplica) para health checks de Docker Compose y del frontend.
+  * `storage_vault/` → Bóveda física desacoplada, en la raíz del proyecto. En local la referencia `core-service/controllers/documento_controller.py` por ruta relativa; en Docker se monta como volumen y se apunta vía la variable `STORAGE_VAULT_PATH`.
 
 ---
 
@@ -46,16 +47,24 @@ Antes de implementar cualquier módulo, tabla o regla, debes consultar:
 
 ```
 motor de validacion/
-├── backend/            # API FastAPI + PostgreSQL (config/, controllers/, models/, schemas/, main.py, requirements.txt, .env)
-├── frontend/           # Interfaz oficial React 19 (Vite)
-├── scripts/            # Utilidades de BD: setup_postgres.py, crear_tablas.py, seed_reglas_validacion.py
-├── tests/              # Pruebas: test_conexion.py, test_pipeline_nivel1.py
-├── storage_vault/      # Bóveda física de binarios (desacoplada del backend)
-├── docs/               # Fuente oficial de la verdad (DOC-01 a DOC-08)
+├── services/
+│   ├── core-service/     # API FastAPI :8001 — Titulares, Expedientes, Documentos
+│   │   ├── config/ controllers/ models/ schemas/ main.py requirements.txt Dockerfile .env
+│   ├── rules-service/    # API FastAPI :8002 — Reglas de Validación (DOC-05)
+│   │   ├── config/ controllers/ models/ schemas/ main.py requirements.txt Dockerfile .env
+│   └── ai-service/       # API FastAPI :8003 — Esqueleto (Semana 5)
+│       ├── controllers/ main.py requirements.txt Dockerfile
+├── docker-compose.yml   # Orquesta plurione-db, plurione-core, plurione-rules, plurione-ai, plurione-frontend
+├── frontend/            # Interfaz oficial React 19 (Vite), apunta a los 3 microservicios
+├── scripts/             # Utilidades de BD: setup_postgres.py, crear_tablas.py, seed_reglas_validacion.py
+│                        # (orquestan subprocesos por servicio; ver comentarios en cada script)
+├── tests/               # Pruebas: test_conexion.py, test_pipeline_nivel1.py (contra core-service)
+├── storage_vault/       # Bóveda física de binarios (desacoplada de los servicios)
+├── docs/                # Fuente oficial de la verdad (DOC-01 a DOC-08)
 └── CLAUDE.md
 ```
 
-Los scripts de `scripts/` y las pruebas de `tests/` insertan `backend/` en `sys.path` al inicio del archivo para poder importar `config`, `models`, `schemas` y `main` sin necesidad de instalar el backend como paquete.
+`core-service` y `rules-service` definen cada uno su propio módulo `config.database` con nombre idéntico pero contenido distinto (una Base de SQLAlchemy por servicio); por eso **no se importan en el mismo proceso de Python**. Los scripts de `scripts/` que necesitan tocar ambos servicios (p. ej. `crear_tablas.py`, `setup_postgres.py`) invocan cada servicio en un subproceso aislado con su propio directorio como `cwd`. Los scripts/pruebas que solo tocan un servicio (`seed_reglas_validacion.py` de rules-service, `tests/test_pipeline_nivel1.py` y `tests/test_conexion.py` contra core-service) insertan la carpeta de ese servicio en `sys.path` igual que antes.
 
 ---
 
@@ -72,14 +81,18 @@ El motor opera en un pipeline estricto de 5 niveles:
 
 ## 4. Comandos de Referencia
 
-* **Backend:** `cd backend && python main.py` (o `uvicorn main:app --reload`) — Puerto `8000`, PostgreSQL `5432`.
+* **Core Service:** `cd services/core-service && python main.py` (o `uvicorn main:app --reload --port 8001`) — Puerto `8001`.
+* **Rules Service:** `cd services/rules-service && python main.py` (o `uvicorn main:app --reload --port 8002`) — Puerto `8002`.
+* **AI Service:** `cd services/ai-service && python main.py` (o `uvicorn main:app --reload --port 8003`) — Puerto `8003`.
 * **Frontend:** `cd frontend && npm run dev` — Puerto `5173`.
-* **Inicializar/sincronizar BD PostgreSQL:** `python scripts/setup_postgres.py` (desde la raíz del proyecto).
-* **Sincronizar solo tablas:** `python scripts/crear_tablas.py`
+* **Levantar todo con Docker Compose:** `docker compose up -d --build` (desde la raíz del proyecto) — PostgreSQL `5432`, Core `8001`, Rules `8002`, AI `8003`, Frontend `5173`.
+* **Inicializar/sincronizar BD PostgreSQL (todos los servicios + seed):** `python scripts/setup_postgres.py` (desde la raíz del proyecto).
+* **Sincronizar solo tablas (todos los servicios):** `python scripts/crear_tablas.py`
 * **Precargar catálogo de reglas (DOC-05):** `python scripts/seed_reglas_validacion.py`
-* **Correr suite de pruebas de integridad:** `python tests/test_pipeline_nivel1.py`
+* **Correr suite de pruebas de integridad (core-service):** `python tests/test_pipeline_nivel1.py`
 * **Probar conexión a PostgreSQL:** `python tests/test_conexion.py`
-* **Documentación interactiva Swagger:** `http://127.0.0.1:8000/docs`
+* **Documentación interactiva Swagger:** `http://127.0.0.1:8001/docs` (Core), `http://127.0.0.1:8002/docs` (Rules), `http://127.0.0.1:8003/docs` (AI).
+* **Health checks:** `GET http://127.0.0.1:8001/api/v1/health`, `:8002/api/v1/health`, `:8003/api/v1/health`.
 
 ---
 

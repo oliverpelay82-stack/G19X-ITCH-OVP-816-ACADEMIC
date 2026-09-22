@@ -1,70 +1,225 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Sidebar from './components/Sidebar.jsx'
+import Header from './components/Header.jsx'
 import MetricsCards from './components/MetricsCards.jsx'
 import TitularesTab from './components/TitularesTab.jsx'
 import ExpedientesTab from './components/ExpedientesTab.jsx'
 import BovedaTab from './components/BovedaTab.jsx'
 import ReglasTab from './components/ReglasTab.jsx'
-import { getStatus, getTitulares, getExpedientes, getDocumentos, getReglas } from './services/api.js'
+import useToast from './hooks/useToast.js'
+import useTheme from './hooks/useTheme.js'
+import {
+  getDocumentos,
+  getExpedientes,
+  getHealthAi,
+  getHealthCore,
+  getHealthRules,
+  getReglas,
+  getTitulares,
+} from './services/api.js'
 import './App.css'
 
+const SECCIONES = {
+  titulares: {
+    titulo: 'Directorio de Empresas',
+    descripcion: 'Titulares de expediente evaluados por el motor de cumplimiento.',
+  },
+  expedientes: {
+    titulo: 'Fólders de Cumplimiento',
+    descripcion: 'Expedientes agrupados por titular, con su completitud documental en vivo.',
+  },
+  boveda: {
+    titulo: 'Bóveda Criptográfica',
+    descripcion: 'Custodia de binarios con huella SHA-256 inmutable (NOM-151-SCFI-2016).',
+  },
+  reglas: {
+    titulo: 'Catálogo de Reglas',
+    descripcion: 'Motor determinista de Nivel 2 (DOC-05): familias RIE, RCV, RSC y RDS.',
+  },
+}
+
+const INTERVALO_REFRESCO = 15000
+
+/** Mide la latencia de un health check sin alterar el cliente HTTP. */
+async function sondear(fn) {
+  const inicio = performance.now()
+  try {
+    const payload = await fn()
+    return { online: true, latencia: Math.round(performance.now() - inicio), payload }
+  } catch {
+    return { online: false, latencia: null, payload: null }
+  }
+}
+
+const HEALTH_INICIAL = {
+  core: { online: false, latencia: null, payload: null },
+  rules: { online: false, latencia: null, payload: null },
+  ai: { online: false, latencia: null, payload: null },
+}
+
 export default function App() {
+  const toast = useToast()
+  const { isDark, toggleTheme } = useTheme()
+
   const [tabActiva, setTabActiva] = useState('titulares')
-  const [backendOnline, setBackendOnline] = useState(false)
+  const [health, setHealth] = useState(HEALTH_INICIAL)
   const [loading, setLoading] = useState(true)
+  const [refrescando, setRefrescando] = useState(false)
 
   const [titulares, setTitulares] = useState([])
   const [expedientes, setExpedientes] = useState([])
   const [documentos, setDocumentos] = useState([])
   const [reglas, setReglas] = useState([])
 
+  // Evita avisar de la misma caída en cada ciclo de sondeo.
+  const caidasAvisadas = useRef(new Set())
+  const primeraCarga = useRef(true)
+
   const cargarTodo = useCallback(async () => {
-    try {
-      const [status, t, e, d, r] = await Promise.all([
-        getStatus(),
-        getTitulares(),
-        getExpedientes(),
-        getDocumentos(),
-        getReglas(),
-      ])
-      setBackendOnline(Boolean(status))
-      setTitulares(t || [])
-      setExpedientes(e || [])
-      setDocumentos(d || [])
-      setReglas(r || [])
-    } catch {
-      setBackendOnline(false)
-    } finally {
-      setLoading(false)
-    }
+    const [t, e, d, r] = await Promise.allSettled([
+      getTitulares(),
+      getExpedientes(),
+      getDocumentos(),
+      getReglas(),
+    ])
+    if (t.status === 'fulfilled') setTitulares(t.value || [])
+    if (e.status === 'fulfilled') setExpedientes(e.value || [])
+    if (d.status === 'fulfilled') setDocumentos(d.value || [])
+    setReglas(r.status === 'fulfilled' ? r.value || [] : [])
+    setLoading(false)
   }, [])
 
+  const chequearSalud = useCallback(async () => {
+    const [core, rules, ai] = await Promise.all([
+      sondear(getHealthCore),
+      sondear(getHealthRules),
+      sondear(getHealthAi),
+    ])
+    const siguiente = { core, rules, ai }
+    setHealth(siguiente)
+
+    if (!primeraCarga.current) {
+      for (const [clave, estado] of Object.entries(siguiente)) {
+        if (!estado.online && !caidasAvisadas.current.has(clave)) {
+          caidasAvisadas.current.add(clave)
+          toast.alerta(
+            `Microservicio ${clave} sin respuesta`,
+            'El resto del sistema sigue operando con normalidad.'
+          )
+        }
+        if (estado.online && caidasAvisadas.current.has(clave)) {
+          caidasAvisadas.current.delete(clave)
+          toast.exito(`Microservicio ${clave} restablecido`, `Latencia ${estado.latencia} ms`)
+        }
+      }
+    }
+    primeraCarga.current = false
+  }, [toast])
+
+  const refrescar = useCallback(async () => {
+    setRefrescando(true)
+    try {
+      await Promise.all([cargarTodo(), chequearSalud()])
+    } finally {
+      setRefrescando(false)
+    }
+  }, [cargarTodo, chequearSalud])
+
   useEffect(() => {
-    cargarTodo()
-    const interval = setInterval(cargarTodo, 15000)
-    return () => clearInterval(interval)
-  }, [cargarTodo])
+    let montado = true
+
+    // Un solo ciclo de sondeo, reutilizado por la carga inicial y el intervalo.
+    // Al ser asíncrono, ningún setState ocurre durante el propio efecto.
+    const ciclo = async () => {
+      await Promise.all([cargarTodo(), chequearSalud()])
+    }
+
+    ciclo()
+    const id = setInterval(() => {
+      if (montado) ciclo()
+    }, INTERVALO_REFRESCO)
+
+    return () => {
+      montado = false
+      clearInterval(id)
+    }
+  }, [cargarTodo, chequearSalud])
+
+  const contadores = useMemo(
+    () => ({
+      titulares: titulares.length,
+      expedientes: expedientes.length,
+      boveda: documentos.length,
+      reglas: reglas.length,
+    }),
+    [titulares, expedientes, documentos, reglas]
+  )
+
+  const seccion = SECCIONES[tabActiva]
 
   return (
     <div className="app-shell">
-      <Sidebar tabActiva={tabActiva} onTabChange={setTabActiva} backendOnline={backendOnline} />
+      <Sidebar tabActiva={tabActiva} onTabChange={setTabActiva} health={health} contadores={contadores} />
 
-      <main className="app-main">
-        <MetricsCards titulares={titulares} expedientes={expedientes} documentos={documentos} loading={loading} />
+      <div className="app-main">
+        <Header
+          titulo={seccion.titulo}
+          descripcion={seccion.descripcion}
+          health={health}
+          onRefresh={refrescar}
+          refrescando={refrescando}
+          isDark={isDark}
+          onToggleTheme={toggleTheme}
+        />
 
-        <div className="tabs-content">
-          {tabActiva === 'titulares' && (
-            <TitularesTab titulares={titulares} loading={loading} onRefresh={cargarTodo} />
-          )}
-          {tabActiva === 'expedientes' && (
-            <ExpedientesTab expedientes={expedientes} titulares={titulares} loading={loading} onRefresh={cargarTodo} />
-          )}
-          {tabActiva === 'boveda' && (
-            <BovedaTab documentos={documentos} expedientes={expedientes} loading={loading} onRefresh={cargarTodo} />
-          )}
-          {tabActiva === 'reglas' && <ReglasTab reglas={reglas} loading={loading} onRefresh={cargarTodo} />}
-        </div>
-      </main>
+        <main className="app-content">
+          <MetricsCards
+            titulares={titulares}
+            expedientes={expedientes}
+            documentos={documentos}
+            health={health}
+            loading={loading}
+          />
+
+          <div className="tab-region" key={tabActiva}>
+            {tabActiva === 'titulares' && (
+              <TitularesTab
+                titulares={titulares}
+                loading={loading}
+                onRefresh={refrescar}
+                isOnline={health.core.online}
+              />
+            )}
+            {tabActiva === 'expedientes' && (
+              <ExpedientesTab
+                expedientes={expedientes}
+                titulares={titulares}
+                documentos={documentos}
+                loading={loading}
+                onRefresh={refrescar}
+                isOnline={health.core.online}
+              />
+            )}
+            {tabActiva === 'boveda' && (
+              <BovedaTab
+                documentos={documentos}
+                expedientes={expedientes}
+                loading={loading}
+                onRefresh={refrescar}
+                isOnline={health.core.online}
+              />
+            )}
+            {tabActiva === 'reglas' && (
+              <ReglasTab
+                reglas={reglas}
+                loading={loading}
+                onRefresh={refrescar}
+                isOnline={health.rules.online}
+              />
+            )}
+          </div>
+        </main>
+      </div>
     </div>
   )
 }

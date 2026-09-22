@@ -1,8 +1,18 @@
 import { useMemo, useState } from 'react'
-import { Plus, Loader2, Scale, X } from 'lucide-react'
+import { Loader2, Plus, Scale, Search, WifiOff, X } from 'lucide-react'
 import Modal from './Modal.jsx'
+import { SkeletonCards } from './Skeleton.jsx'
+import useToast from '../hooks/useToast.js'
+import useDebounce from '../hooks/useDebounce.js'
 import { createRegla, toggleRegla } from '../services/api.js'
-import { FAMILIAS_REGLA, SEVERIDADES, TIPOS_DOCUMENTO } from '../constants.js'
+import {
+  FAMILIA_META,
+  FAMILIAS_REGLA,
+  getSeveridadMeta,
+  SEVERIDADES,
+  TIPO_DOCUMENTO_CORTO,
+  TIPOS_DOCUMENTO,
+} from '../constants.js'
 
 const FORM_INICIAL = {
   codigo_regla: '',
@@ -17,48 +27,74 @@ const FORM_INICIAL = {
   tiposSeleccionados: [],
 }
 
-const SEVERIDAD_BADGE = {
-  CRITICA: { fg: '#EF4444', bg: '#FEE2E2' },
-  ALTA: { fg: '#F59E0B', bg: '#FEF3C7' },
-  MEDIA_ALTA: { fg: '#F59E0B', bg: '#FEF3C7' },
-  MEDIA: { fg: '#2563EB', bg: '#EFF6FF' },
-}
-
-const FAMILIA_CLASS = {
-  RIE: 'family-chip--rie',
-  RCV: 'family-chip--rcv',
-  RSC: 'family-chip--rsc',
-  RDS: 'family-chip--rds',
-}
-
-/** Switch estilizado tipo iOS/macOS para activar/desactivar una regla. */
-function IosSwitch({ checked, onClick, loading }) {
+/** Interruptor tipo iOS para activar o pausar una regla del catálogo. */
+function Switch({ checked, onClick, loading, label }) {
   return (
     <button
       type="button"
-      className={`ios-switch ${checked ? 'ios-switch--on' : ''}`}
+      className={`switch ${checked ? 'switch--on' : ''}`}
       onClick={onClick}
       disabled={loading}
-      aria-pressed={checked}
-      title={checked ? 'Desactivar regla' : 'Activar regla'}
+      role="switch"
+      aria-checked={checked}
+      aria-label={label}
+      data-tooltip={checked ? 'Pausar regla' : 'Activar regla'}
     >
-      {loading ? <Loader2 className="spin ios-switch-spin" size={12} /> : <span className="ios-switch-thumb" />}
+      <span className="switch-thumb">
+        {loading && <Loader2 className="spin" size={10} strokeWidth={3} />}
+      </span>
     </button>
   )
 }
 
-export default function ReglasTab({ reglas, loading, onRefresh }) {
+export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true }) {
+  const toast = useToast()
   const [filtroFamilia, setFiltroFamilia] = useState('TODAS')
+  const [filtroSeveridad, setFiltroSeveridad] = useState('TODAS')
+  const [busqueda, setBusqueda] = useState('')
   const [modalAbierto, setModalAbierto] = useState(false)
   const [form, setForm] = useState(FORM_INICIAL)
   const [enviando, setEnviando] = useState(false)
   const [error, setError] = useState('')
   const [togglingId, setTogglingId] = useState(null)
 
-  const reglasFiltradas = useMemo(
-    () => (filtroFamilia === 'TODAS' ? reglas : reglas.filter((r) => r.familia_regla === filtroFamilia)),
-    [reglas, filtroFamilia]
-  )
+  const consulta = useDebounce(busqueda, 220)
+
+  const filtradas = useMemo(() => {
+    const q = consulta.trim().toLowerCase()
+    return reglas.filter((r) => {
+      const familiaOk = filtroFamilia === 'TODAS' || r.familia_regla === filtroFamilia
+      const severidadOk = filtroSeveridad === 'TODAS' || r.severidad === filtroSeveridad
+      const busquedaOk =
+        !q ||
+        r.codigo_regla?.toLowerCase().includes(q) ||
+        r.nombre_regla?.toLowerCase().includes(q) ||
+        r.descripcion?.toLowerCase().includes(q) ||
+        r.accion?.toLowerCase().includes(q)
+      return familiaOk && severidadOk && busquedaOk
+    })
+  }, [reglas, filtroFamilia, filtroSeveridad, consulta])
+
+  /** Agrupadas por familia normativa, en el orden oficial del DOC-05. */
+  const porFamilia = useMemo(() => {
+    const grupos = FAMILIAS_REGLA.map((f) => ({
+      familia: f,
+      meta: FAMILIA_META[f],
+      items: filtradas.filter((r) => r.familia_regla === f),
+    })).filter((g) => g.items.length > 0)
+
+    const otras = filtradas.filter((r) => !FAMILIAS_REGLA.includes(r.familia_regla))
+    if (otras.length > 0) {
+      grupos.push({ familia: 'OTRAS', meta: { nombre: 'Sin familia asignada', nivel: '—', clase: 'neutral' }, items: otras })
+    }
+    return grupos
+  }, [filtradas])
+
+  const conteoFamilia = useMemo(() => {
+    const base = { TODAS: reglas.length }
+    for (const f of FAMILIAS_REGLA) base[f] = reglas.filter((r) => r.familia_regla === f).length
+    return base
+  }, [reglas])
 
   const cerrarModal = () => {
     setModalAbierto(false)
@@ -70,15 +106,19 @@ export default function ReglasTab({ reglas, loading, onRefresh }) {
     setTogglingId(regla.id)
     try {
       await toggleRegla(regla.id, !regla.activo)
+      toast.exito(
+        regla.activo ? 'Regla pausada' : 'Regla activada',
+        `${regla.codigo_regla} · ${regla.nombre_regla}`
+      )
       onRefresh()
     } catch (err) {
-      setError(err.message)
+      toast.error('No se pudo cambiar el estado', err.message)
     } finally {
       setTogglingId(null)
     }
   }
 
-  const toggleTipoSeleccionado = (tipo) => {
+  const toggleTipo = (tipo) => {
     setForm((prev) => ({
       ...prev,
       tiposSeleccionados: prev.tiposSeleccionados.includes(tipo)
@@ -104,125 +144,230 @@ export default function ReglasTab({ reglas, loading, onRefresh }) {
 
     try {
       if (form.aplicaTodos || form.tiposSeleccionados.length === 0) {
-        // Regla de alcance general (sin tipo de documento específico)
         await createRegla({ ...base, codigo_regla: form.codigo_regla, tipo_documento: null })
       } else {
-        // Soporte multi-documento: una fila por cada tipo seleccionado,
-        // manteniendo único el codigo_regla exigido por el backend.
+        // Una fila por tipo seleccionado, manteniendo único el codigo_regla
+        // que exige el backend.
         for (const tipo of form.tiposSeleccionados) {
-          await createRegla({
-            ...base,
-            codigo_regla: `${form.codigo_regla}-${tipo}`,
-            tipo_documento: tipo,
-          })
+          await createRegla({ ...base, codigo_regla: `${form.codigo_regla}-${tipo}`, tipo_documento: tipo })
         }
       }
+      toast.exito('Regla registrada', `${form.codigo_regla} · familia ${form.familia_regla}`)
       cerrarModal()
       onRefresh()
     } catch (err) {
       setError(err.message)
+      toast.error('No se pudo guardar la regla', err.message)
     } finally {
       setEnviando(false)
     }
   }
 
+  if (!isOnline) {
+    return (
+      <div className="tab-panel">
+        <div className="offline-banner">
+          <span className="offline-icon">
+            <WifiOff size={24} strokeWidth={2} />
+          </span>
+          <div className="offline-body">
+            <h3>Microservicio de reglas (:8002) sin respuesta</h3>
+            <p>
+              El <code>rules-service</code> está temporalmente fuera de línea, así que no es posible consultar,
+              evaluar ni modificar el catálogo normativo en este momento.
+            </p>
+            <p className="offline-note">
+              El resto del sistema —Empresas, Expedientes y Bóveda Criptográfica— sigue operando con normalidad
+              gracias a la arquitectura de microservicios desacoplados.
+            </p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="tab-panel">
-      <div className="tab-panel-header">
-        <div>
-          <h2 className="tab-panel-title">Catálogo de Reglas de Validación</h2>
-          <p className="tab-panel-desc">Motor determinista Nivel 2 (DOC-05): RIE, RCV, RSC y RDS.</p>
-        </div>
-        <button type="button" className="btn btn-primary" onClick={() => setModalAbierto(true)}>
-          <Plus size={16} strokeWidth={2.5} />
-          Nueva Regla
-        </button>
-      </div>
+      <div className="toolbar">
+        <label className="search-box">
+          <Search size={15} strokeWidth={2.3} />
+          <input
+            type="search"
+            placeholder="Buscar por código, nombre, criterio o acción…"
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+            aria-label="Buscar reglas"
+          />
+          {busqueda && (
+            <button type="button" className="search-clear" onClick={() => setBusqueda('')} aria-label="Limpiar búsqueda">
+              <X size={13} strokeWidth={2.6} />
+            </button>
+          )}
+        </label>
 
-      <div className="chip-filter-row">
-        <button
-          type="button"
-          className={`chip ${filtroFamilia === 'TODAS' ? 'chip--active' : ''}`}
-          onClick={() => setFiltroFamilia('TODAS')}
-        >
-          Todas
-        </button>
-        {FAMILIAS_REGLA.map((f) => (
+        <div className="segmented" role="group" aria-label="Filtrar por familia normativa">
           <button
-            key={f}
             type="button"
-            className={`chip ${filtroFamilia === f ? 'chip--active' : ''}`}
-            onClick={() => setFiltroFamilia(f)}
+            className={`segmented-item ${filtroFamilia === 'TODAS' ? 'segmented-item--active' : ''}`}
+            onClick={() => setFiltroFamilia('TODAS')}
+            aria-pressed={filtroFamilia === 'TODAS'}
           >
-            {f}
+            Todas
+            <span className="segmented-count mono">{conteoFamilia.TODAS}</span>
           </button>
-        ))}
+          {FAMILIAS_REGLA.map((f) => (
+            <button
+              key={f}
+              type="button"
+              className={`segmented-item ${filtroFamilia === f ? 'segmented-item--active' : ''}`}
+              onClick={() => setFiltroFamilia(f)}
+              aria-pressed={filtroFamilia === f}
+              data-tooltip={`${FAMILIA_META[f].nombre} · ${FAMILIA_META[f].nivel}`}
+            >
+              {f}
+              <span className="segmented-count mono">{conteoFamilia[f]}</span>
+            </button>
+          ))}
+        </div>
+
+        <div className="segmented" role="group" aria-label="Filtrar por severidad">
+          <button
+            type="button"
+            className={`segmented-item ${filtroSeveridad === 'TODAS' ? 'segmented-item--active' : ''}`}
+            onClick={() => setFiltroSeveridad('TODAS')}
+            aria-pressed={filtroSeveridad === 'TODAS'}
+          >
+            Toda severidad
+          </button>
+          {SEVERIDADES.map((s) => {
+            const meta = getSeveridadMeta(s)
+            return (
+              <button
+                key={s}
+                type="button"
+                className={`segmented-item ${filtroSeveridad === s ? 'segmented-item--active' : ''}`}
+                onClick={() => setFiltroSeveridad(s)}
+                aria-pressed={filtroSeveridad === s}
+              >
+                <span className={`dot dot--${meta.tono}`} aria-hidden="true" />
+                {meta.label}
+              </button>
+            )
+          })}
+        </div>
+
+        <button type="button" className="btn btn-primary" onClick={() => setModalAbierto(true)}>
+          <Plus size={15} strokeWidth={2.6} />
+          Nueva regla
+        </button>
       </div>
 
-      {error && <p className="form-error" style={{ marginBottom: 12 }}>{error}</p>}
+      {loading && <SkeletonCards count={6} height={186} />}
 
-      {loading && (
-        <div className="table-empty standalone">
-          <Loader2 className="spin" size={16} /> Cargando catálogo…
+      {!loading && filtradas.length === 0 && (
+        <div className="surface-card">
+          <div className="empty-state">
+            <span className="empty-icon">
+              <Scale size={20} strokeWidth={2} />
+            </span>
+            <p className="empty-title">{reglas.length === 0 ? 'El catálogo está vacío' : 'Sin coincidencias'}</p>
+            <p className="empty-desc">
+              {reglas.length === 0
+                ? 'Precarga el catálogo del DOC-05 o da de alta una regla dinámica (RDS-01).'
+                : 'Ajusta la búsqueda o relaja los filtros de familia y severidad.'}
+            </p>
+          </div>
         </div>
       )}
 
-      {!loading && reglasFiltradas.length === 0 && (
-        <div className="table-empty standalone">
-          <Scale size={16} /> No hay reglas en esta familia.
-        </div>
-      )}
-
-      <div className="rules-grid">
-        {reglasFiltradas.map((r) => {
-          const sev = SEVERIDAD_BADGE[r.severidad] || { fg: '#475569', bg: '#F1F5F9' }
-          return (
-            <div className={`rule-card ${!r.activo ? 'rule-card--inactive' : ''}`} key={r.id}>
-              <div className="rule-card-top">
-                <span className="mono-chip">{r.codigo_regla}</span>
-                <IosSwitch checked={r.activo} onClick={() => handleToggle(r)} loading={togglingId === r.id} />
+      {!loading &&
+        porFamilia.map((grupo) => (
+          <section className="rule-family" key={grupo.familia}>
+            <header className="rule-family-head">
+              <span className={`family-chip family-chip--${grupo.meta.clase}`}>{grupo.familia}</span>
+              <div className="rule-family-titles">
+                <h3 className="rule-family-name">{grupo.meta.nombre}</h3>
+                <span className="rule-family-level">{grupo.meta.nivel}</span>
               </div>
+              <span className="rule-family-count mono">
+                {grupo.items.filter((r) => r.activo).length}/{grupo.items.length} activas
+              </span>
+            </header>
 
-              <h3 className="rule-card-title">{r.nombre_regla}</h3>
-              <p className="rule-card-desc">{r.descripcion}</p>
+            <div className="rules-grid">
+              {grupo.items.map((r) => {
+                const sev = getSeveridadMeta(r.severidad)
+                return (
+                  <article className={`rule-card ${!r.activo ? 'rule-card--paused' : ''}`} key={r.id}>
+                    <div className="rule-card-head">
+                      <span className="mono rule-code">{r.codigo_regla}</span>
+                      <Switch
+                        checked={r.activo}
+                        onClick={() => handleToggle(r)}
+                        loading={togglingId === r.id}
+                        label={`${r.activo ? 'Pausar' : 'Activar'} ${r.codigo_regla}`}
+                      />
+                    </div>
 
-              <div className="rule-card-tags">
-                <span className={`family-chip ${FAMILIA_CLASS[r.familia_regla] || ''}`}>{r.familia_regla}</span>
-                <span className="badge" style={{ color: sev.fg, background: sev.bg }}>
-                  {r.severidad}
-                </span>
-                <span className="tag">{r.tipo_documento || 'Todos'}</span>
-              </div>
+                    <h4 className="rule-title">{r.nombre_regla}</h4>
+                    <p className="rule-desc">{r.descripcion}</p>
 
-              <div className="rule-card-action cell-muted">{r.accion}</div>
+                    <div className="rule-tags">
+                      <span className={`badge badge--${sev.tono}`}>
+                        <span className={`dot dot--${sev.tono}`} aria-hidden="true" />
+                        {sev.label}
+                      </span>
+                      <span className="tag">
+                        {r.tipo_documento ? TIPO_DOCUMENTO_CORTO[r.tipo_documento] || r.tipo_documento : 'Todo el expediente'}
+                      </span>
+                      {r.dias_maximos_vigencia != null && (
+                        <span className="tag tag--mono">{r.dias_maximos_vigencia} días</span>
+                      )}
+                      {r.documento_obligatorio && <span className="tag">Obligatorio</span>}
+                    </div>
+
+                    <footer className="rule-action">
+                      <span className="rule-action-label">Acción</span>
+                      {r.accion}
+                    </footer>
+                  </article>
+                )
+              })}
             </div>
-          )
-        })}
-      </div>
+          </section>
+        ))}
 
       {modalAbierto && (
-        <Modal title="Nueva Regla de Validación" subtitle="Alta dinámica de requisitos (RDS-01)" onClose={cerrarModal} width={620}>
+        <Modal
+          title="Nueva regla de validación"
+          subtitle="Alta dinámica de requisitos (RDS-01 / RDS-02)"
+          icon={Scale}
+          onClose={cerrarModal}
+          width={660}
+        >
           <form className="form-grid" onSubmit={handleSubmit}>
             <div className="field-row">
               <label className="field">
-                <span>Código Base</span>
+                <span className="field-label">Código base</span>
                 <input
                   className="mono"
                   required
+                  minLength={3}
+                  maxLength={20}
                   placeholder="RDS-04"
                   value={form.codigo_regla}
                   onChange={(e) => setForm({ ...form, codigo_regla: e.target.value.toUpperCase() })}
                 />
               </label>
               <label className="field">
-                <span>Familia</span>
+                <span className="field-label">Familia normativa</span>
                 <select
                   value={form.familia_regla}
                   onChange={(e) => setForm({ ...form, familia_regla: e.target.value })}
                 >
                   {FAMILIAS_REGLA.map((f) => (
                     <option key={f} value={f}>
-                      {f}
+                      {f} — {FAMILIA_META[f].nombre}
                     </option>
                   ))}
                 </select>
@@ -230,18 +375,19 @@ export default function ReglasTab({ reglas, loading, onRefresh }) {
             </div>
 
             <label className="field">
-              <span>Nombre de la Regla</span>
+              <span className="field-label">Nombre de la regla</span>
               <input
                 required
                 minLength={3}
-                placeholder="Ej. Vigencia de Opinión de Cumplimiento"
+                maxLength={150}
+                placeholder="Ej. Vigencia de la opinión de cumplimiento"
                 value={form.nombre_regla}
                 onChange={(e) => setForm({ ...form, nombre_regla: e.target.value })}
               />
             </label>
 
             <label className="field">
-              <span>Descripción / Criterio</span>
+              <span className="field-label">Descripción / criterio</span>
               <textarea
                 required
                 minLength={10}
@@ -254,17 +400,17 @@ export default function ReglasTab({ reglas, loading, onRefresh }) {
 
             <div className="field-row">
               <label className="field">
-                <span>Severidad</span>
+                <span className="field-label">Severidad</span>
                 <select value={form.severidad} onChange={(e) => setForm({ ...form, severidad: e.target.value })}>
                   {SEVERIDADES.map((s) => (
                     <option key={s} value={s}>
-                      {s}
+                      {getSeveridadMeta(s).label}
                     </option>
                   ))}
                 </select>
               </label>
               <label className="field">
-                <span>Vigencia Máxima (días)</span>
+                <span className="field-label">Vigencia máxima (días)</span>
                 <input
                   type="number"
                   min={0}
@@ -276,10 +422,11 @@ export default function ReglasTab({ reglas, loading, onRefresh }) {
             </div>
 
             <label className="field">
-              <span>Acción ante Incumplimiento</span>
+              <span className="field-label">Acción ante incumplimiento</span>
               <input
                 required
-                placeholder="Ej. Semáforo Rojo y bloqueo del expediente"
+                maxLength={255}
+                placeholder="Ej. Semáforo rojo y bloqueo del expediente"
                 value={form.accion}
                 onChange={(e) => setForm({ ...form, accion: e.target.value })}
               />
@@ -291,11 +438,11 @@ export default function ReglasTab({ reglas, loading, onRefresh }) {
                 checked={form.documento_obligatorio}
                 onChange={(e) => setForm({ ...form, documento_obligatorio: e.target.checked })}
               />
-              <span>Completitud obligatoria (RIE-01 / HU-09)</span>
+              <span>Completitud obligatoria (RIE-01)</span>
             </label>
 
             <div className="field">
-              <span>Alcance de la Regla</span>
+              <span className="field-label">Alcance de la regla</span>
               <label className="checkbox-field">
                 <input
                   type="checkbox"
@@ -306,7 +453,7 @@ export default function ReglasTab({ reglas, loading, onRefresh }) {
               </label>
 
               {!form.aplicaTodos && (
-                <div className="doc-type-picker">
+                <div className="type-picker">
                   {TIPOS_DOCUMENTO.map((t) => {
                     const activo = form.tiposSeleccionados.includes(t.value)
                     return (
@@ -314,14 +461,16 @@ export default function ReglasTab({ reglas, loading, onRefresh }) {
                         type="button"
                         key={t.value}
                         className={`chip ${activo ? 'chip--active' : ''}`}
-                        onClick={() => toggleTipoSeleccionado(t.value)}
+                        onClick={() => toggleTipo(t.value)}
+                        aria-pressed={activo}
                       >
-                        {activo && <X size={12} />} {t.value}
+                        {activo && <X size={11} strokeWidth={2.8} />}
+                        {t.corto}
                       </button>
                     )
                   })}
                   <p className="field-hint">
-                    Se creará una regla por cada tipo seleccionado (código sufijado por documento).
+                    Se creará una regla por cada tipo seleccionado, con el código sufijado por documento.
                   </p>
                 </div>
               )}
@@ -334,8 +483,8 @@ export default function ReglasTab({ reglas, loading, onRefresh }) {
                 Cancelar
               </button>
               <button type="submit" className="btn btn-primary" disabled={enviando}>
-                {enviando ? <Loader2 className="spin" size={16} /> : <Plus size={16} strokeWidth={2.5} />}
-                Guardar Regla
+                {enviando ? <Loader2 className="spin" size={15} /> : <Plus size={15} strokeWidth={2.6} />}
+                Guardar regla
               </button>
             </div>
           </form>

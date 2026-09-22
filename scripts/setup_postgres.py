@@ -1,19 +1,29 @@
 """
-Script de inicialización de Base de Datos PostgreSQL.
+Script de inicialización de Base de Datos PostgreSQL para la arquitectura de
+microservicios desacoplados.
 1. Crea la base de datos 'plurione_compliance' si no existe.
-2. Importa todos los modelos para que Base.metadata contenga las 4 tablas.
-3. Sincroniza todas las tablas en PostgreSQL.
-4. Inserta las reglas de validación y un titular de prueba.
+2. Sincroniza las tablas de 'core-service' (titulares_expediente, expedientes,
+   documentos) y de 'rules-service' (reglas_validacion), cada uno en su
+   propio subproceso (ver scripts/crear_tablas.py para el porqué).
+3. Precarga el catálogo de reglas de validación (DOC-05) vía rules-service.
+4. Crea un titular y expediente de demostración vía core-service.
+
+Ejecuta (desde la raíz del proyecto): python scripts/setup_postgres.py
 """
 import os
+import subprocess
 import sys
+from pathlib import Path
+
 import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from dotenv import load_dotenv
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "backend")))
+ROOT = Path(__file__).resolve().parent.parent
+CORE_SERVICE_DIR = ROOT / "services" / "core-service"
+RULES_SERVICE_DIR = ROOT / "services" / "rules-service"
 
-load_dotenv(os.path.join(os.path.dirname(__file__), "..", "backend", ".env"))
+load_dotenv(CORE_SERVICE_DIR / ".env")
 
 DB_HOST = os.getenv("DB_HOST", "127.0.0.1")
 DB_PORT = os.getenv("DB_PORT", "5432")
@@ -48,51 +58,21 @@ except Exception as e:
     print(f"[!] Error conectando a PostgreSQL inicial: {e}")
     exit(1)
 
-# Paso 2: Importar TODOS los modelos para registrar las entidades en SQLAlchemy
-import models.titular
-import models.expediente
-import models.documento
-import models.regla
-from config.database import init_db, SessionLocal, engine, Base
+# Paso 2: Sincronizar tablas de cada microservicio (subproceso aislado por servicio)
+print("\n[*] Sincronizando tablas de los microservicios...")
+INIT_DB_SNIPPET = "from config.database import init_db; init_db()"
+for nombre, carpeta in [("core-service", CORE_SERVICE_DIR), ("rules-service", RULES_SERVICE_DIR)]:
+    print(f"  -> {nombre}")
+    subprocess.run([sys.executable, "-c", INIT_DB_SNIPPET], cwd=carpeta, check=True)
+print("[OK] Tablas (titulares_expediente, expedientes, documentos, reglas_validacion) sincronizadas.")
 
-print("[*] Sincronizando tablas en PostgreSQL con SQLAlchemy...")
-Base.metadata.create_all(bind=engine)
-print("[OK] Tablas (titulares_expediente, expedientes, documentos, reglas_validacion) sincronizadas con éxito.")
+# Paso 3: Precargar el catálogo de reglas de negocio DOC-05 (rules-service)
+print("\n[*] Precargando catálogo de reglas de validación (DOC-05)...")
+subprocess.run([sys.executable, "seed_reglas_validacion.py"], cwd=RULES_SERVICE_DIR, check=True)
 
-# Paso 3: Precargar el catálogo de reglas de negocio DOC-05
-from seed_reglas_validacion import precargar_reglas
-precargar_reglas()
-
-# Paso 4: Crear un titular inicial de prueba si no existe ninguno
-db = SessionLocal()
-try:
-    from models.titular import TitularExpediente
-    from models.expediente import Expediente
-
-    titular_existente = db.query(TitularExpediente).first()
-    if not titular_existente:
-        titular = TitularExpediente(
-            rfc="BIM980101XYZ",
-            razon_social="GRUPO BIMBO S.A.B. DE C.V.",
-            tipo_persona="MORAL",
-            categoria="PROVEEDOR_CRITICO",
-        )
-        db.add(titular)
-        db.flush()
-
-        expediente = Expediente(
-            titular_id=titular.id,
-            codigo_expediente=f"EXP-{titular.rfc}-001",
-            estado_cumplimiento="EN_REVISION",
-            porcentaje_completitud=0.0,
-        )
-        db.add(expediente)
-        db.commit()
-        print(f"[+] Titular y Expediente demo inicial creados: {titular.razon_social} ({expediente.codigo_expediente})")
-    else:
-        print("[i] Ya existen titulares en la base de datos.")
-finally:
-    db.close()
+# Paso 4: Crear un titular y expediente de demostración si no existe ninguno (core-service)
+print("\n[*] Creando titular y expediente de demostración (core-service)...")
+subprocess.run([sys.executable, "seed_demo.py"], cwd=CORE_SERVICE_DIR, check=True)
 
 print("\n" + "=" * 60)
 print("[EXITO] Base de datos PostgreSQL 'plurione_compliance' 100% lista y poblada.")

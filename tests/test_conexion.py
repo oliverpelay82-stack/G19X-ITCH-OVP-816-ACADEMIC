@@ -1,28 +1,30 @@
 """
-Script simple de verificación de conexión a MySQL.
+Script simple de verificación de conexión a PostgreSQL, usando la
+configuración del core-service (ambos microservicios apuntan a la misma
+base de datos física 'plurione_compliance').
 Ejecuta: python test_conexion.py
 """
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "backend")))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "services", "core-service")))
 
 from config.database import engine
 from sqlalchemy import text
 
 def probar():
     print("=" * 60)
-    print("Probando conexión a MySQL (plurione_compliance)...")
+    print("Probando conexión a PostgreSQL (plurione_compliance)...")
     try:
         with engine.connect() as conn:
             result = conn.execute(text("SELECT VERSION();"))
             version = result.scalar()
-            print(f"[OK] Conexión exitosa a MySQL!")
+            print(f"[OK] Conexión exitosa a PostgreSQL!")
             print(f"[OK] Versión detectada: {version}")
         print("=" * 60)
         return True
     except Exception as e:
-        print("[ERROR] No se pudo conectar a MySQL.")
+        print("[ERROR] No se pudo conectar a PostgreSQL.")
         print(f"Detalle del error: {e}")
         print("\nSugerencia: Revisa que la contraseña en el archivo .env sea la correcta.")
         print("=" * 60)
