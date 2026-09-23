@@ -93,6 +93,10 @@ export { ApiError }
 export const extraerTextoDocumento = (formData) =>
   request(AI_BASE_URL, '/ai/extraer-texto', { method: 'POST', body: formData, isFormData: true })
 
+/** Resuelve el texto del documento (Nivel 3) sin llamar al modelo: primera etapa de la auditoría. */
+export const prepararDocumento = (documentoId) =>
+  request(AI_BASE_URL, `/ai/documentos/${documentoId}/preparar`, { method: 'POST' })
+
 export const analizarDocumento = (data) =>
   request(AI_BASE_URL, '/ai/analisis-semantico', { method: 'POST', body: data })
 

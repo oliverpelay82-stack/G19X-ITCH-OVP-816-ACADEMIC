@@ -14,9 +14,10 @@ temporalmente (hasta 30 días) solo para diagnosticar fallas o investigar abuso,
 salvo que la organización active Zero Data Retention en Data Controls.
 """
 import json
+import time
 from typing import Any
 
-from openai import OpenAI, APIError, APIConnectionError, APITimeoutError
+from openai import OpenAI, APIError, APIConnectionError, APITimeoutError, RateLimitError
 
 from config import settings
 
@@ -84,29 +85,37 @@ def generar_json(prompt: str, system: str) -> dict[str, Any]:
     JSON sintácticamente válido, lo que elimina el preámbulo conversacional que
     de otro modo rompería el parseo.
     """
-    try:
-        client = _client()
-        respuesta = client.chat.completions.create(
-            model=settings.GROQ_MODEL,
-            messages=[
-                {"role": "system", "content": system},
-                {"role": "user", "content": prompt},
-            ],
-            response_format={"type": "json_object"},
-            max_tokens=settings.GROQ_MAX_TOKENS,
-            temperature=settings.GROQ_TEMPERATURE,
-            top_p=1.0,
-            seed=42,
-        )
-        crudo = respuesta.choices[0].message.content or ""
-    except (APIConnectionError, APITimeoutError) as exc:
-        raise GroqNoDisponibleError(
-            f"No fue posible contactar a Groq ({settings.GROQ_BASE_URL}): {exc}"
-        ) from exc
-    except APIError as exc:
-        raise GroqNoDisponibleError(
-            f"Error de la API de Groq: {exc}"
-        ) from exc
+    crudo = ""
+    for intento in range(3):
+        try:
+            client = _client()
+            respuesta = client.chat.completions.create(
+                model=settings.GROQ_MODEL,
+                messages=[
+                    {"role": "system", "content": system},
+                    {"role": "user", "content": prompt},
+                ],
+                response_format={"type": "json_object"},
+                max_tokens=settings.GROQ_MAX_TOKENS,
+                temperature=settings.GROQ_TEMPERATURE,
+                top_p=1.0,
+                seed=42,
+            )
+            crudo = respuesta.choices[0].message.content or ""
+            break
+        except (RateLimitError, APIError) as exc:
+            msg = str(exc).lower()
+            if ("rate_limit" in msg or "too large" in msg or "413" in msg or "429" in msg) and intento < 2:
+                time.sleep(3 * (intento + 1))
+                continue
+            raise GroqNoDisponibleError(f"Error de la API de Groq: {exc}") from exc
+        except (APIConnectionError, APITimeoutError) as exc:
+            if intento < 2:
+                time.sleep(2)
+                continue
+            raise GroqNoDisponibleError(
+                f"No fue posible contactar a Groq ({settings.GROQ_BASE_URL}): {exc}"
+            ) from exc
 
     try:
         return json.loads(crudo)
@@ -123,17 +132,27 @@ def conversar(mensajes: list[dict[str, str]], temperatura: float | None = None) 
     Se usa en el endpoint de chat documental, donde la respuesta es para lectura
     humana y no debe forzarse a JSON.
     """
-    try:
-        client = _client()
-        respuesta = client.chat.completions.create(
-            model=settings.GROQ_MODEL,
-            messages=mensajes,
-            max_tokens=settings.GROQ_MAX_TOKENS,
-            temperature=settings.GROQ_TEMPERATURE if temperatura is None else temperatura,
-            top_p=1.0,
-        )
-        return (respuesta.choices[0].message.content or "").strip()
-    except (APIConnectionError, APITimeoutError, APIError) as exc:
-        raise GroqNoDisponibleError(
-            f"No fue posible contactar a Groq ({settings.GROQ_BASE_URL}): {exc}"
-        ) from exc
+    for intento in range(3):
+        try:
+            client = _client()
+            respuesta = client.chat.completions.create(
+                model=settings.GROQ_MODEL,
+                messages=mensajes,
+                max_tokens=settings.GROQ_MAX_TOKENS,
+                temperature=settings.GROQ_TEMPERATURE if temperatura is None else temperatura,
+                top_p=1.0,
+            )
+            return (respuesta.choices[0].message.content or "").strip()
+        except (RateLimitError, APIError) as exc:
+            msg = str(exc).lower()
+            if ("rate_limit" in msg or "too large" in msg or "413" in msg or "429" in msg) and intento < 2:
+                time.sleep(3 * (intento + 1))
+                continue
+            raise GroqNoDisponibleError(f"Error de la API de Groq: {exc}") from exc
+        except (APIConnectionError, APITimeoutError) as exc:
+            if intento < 2:
+                time.sleep(2)
+                continue
+            raise GroqNoDisponibleError(
+                f"No fue posible contactar a Groq ({settings.GROQ_BASE_URL}): {exc}"
+            ) from exc

@@ -73,8 +73,54 @@ UMBRAL_CONFIANZA_HITL: float = float(os.getenv("UMBRAL_CONFIANZA_HITL", "0.70"))
 # Límite de carga alineado con el Nivel 1 del core-service.
 MAX_FILE_SIZE_BYTES: int = 15 * 1024 * 1024
 
-# Recorte del contexto enviado al LLM (protege la ventana de contexto del modelo).
-MAX_CARACTERES_CONTEXTO: int = int(os.getenv("MAX_CARACTERES_CONTEXTO", "12000"))
+# Recorte del contexto enviado al LLM (protege la ventana de contexto y los límites de Groq).
+MAX_CARACTERES_CONTEXTO: int = int(os.getenv("MAX_CARACTERES_CONTEXTO", "6500"))
+
+# Corte temprano del OCR. El texto que excede MAX_CARACTERES_CONTEXTO se trunca
+# antes de llegar al LLM, así que rasterizar y reconocer las páginas siguientes
+# es cómputo desperdiciado: el OCR se detiene al alcanzar ese volumen de texto
+# o tras MAX_PAGINAS_OCR páginas escaneadas, lo que ocurra primero. Las páginas
+# con capa vectorial se siguen leyendo porque su costo es despreciable.
+MAX_PAGINAS_OCR: int = int(os.getenv("MAX_PAGINAS_OCR", "6"))
+
+# Páginas escaneadas que se reconocen en paralelo. Tesseract es CPU-intensivo y
+# no gana con SMT, así que el valor por defecto son los núcleos físicos
+# (la mitad de los procesadores lógicos que reporta el sistema).
+OCR_WORKERS: int = max(1, int(os.getenv("OCR_WORKERS", str((os.cpu_count() or 2) // 2))))
+
+# Cada proceso de Tesseract abriría por defecto varios hilos OpenMP; con varias
+# páginas en paralelo eso sobresuscribe el CPU y lo vuelve más lento. Un hilo
+# por proceso deja que el paralelismo lo aporten los workers.
+if OCR_WORKERS > 1:
+    os.environ.setdefault("OMP_THREAD_LIMIT", "1")
+
+# Documentos cuyo texto extraído se conserva en memoria (caché LRU) para que la
+# auditoría y los turnos del chat no repitan el Nivel 3 sobre el mismo archivo.
+CACHE_MAX_DOCUMENTOS: int = int(os.getenv("CACHE_MAX_DOCUMENTOS", "64"))
+
+# Persistencia permanente del texto extraído (SQLite), indexada por la huella
+# SHA-256 del binario: un documento ya leído no vuelve a pasar por OCR aunque se
+# reinicie el servicio. En Docker el archivo vive en un volumen.
+EXTRACCIONES_DB_PATH: str = os.getenv(
+    "EXTRACCIONES_DB_PATH",
+    os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "extracciones.sqlite3"),
+)
+
+# Cuando el corte temprano deja páginas sin leer, el documento completo se
+# reconoce en segundo plano; al terminar, la búsqueda de fragmentos abarca todas
+# las páginas. La respuesta inicial no espera a esa lectura completa.
+COMPLETAR_LECTURA_EN_SEGUNDO_PLANO: bool = os.getenv("COMPLETAR_LECTURA_EN_SEGUNDO_PLANO", "true").lower() in (
+    "1", "true", "si", "sí", "yes",
+)
+
+# Búsqueda de fragmentos relevantes (Nivel 4). En lugar de enviar solo el inicio
+# del documento, se envía su encabezado y los fragmentos que mejor responden a la
+# consulta, dentro del mismo presupuesto de MAX_CARACTERES_CONTEXTO.
+FRAGMENTO_CARACTERES: int = int(os.getenv("FRAGMENTO_CARACTERES", "1200"))
+# El encabezado cubre la identidad del documento: en un acta, el fedatario, la
+# denominación y los otorgantes que comparecen (≈1,300 caracteres en la prueba).
+ENCABEZADO_CARACTERES: int = int(os.getenv("ENCABEZADO_CARACTERES", "1500"))
+MAX_FRAGMENTOS_CHAT: int = int(os.getenv("MAX_FRAGMENTOS_CHAT", "4"))
 
 # ── Integración con el core-service (:8001) ─────────────────────────
 CORE_BASE_URL: str = os.getenv("CORE_BASE_URL", "http://127.0.0.1:8001").rstrip("/")

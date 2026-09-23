@@ -44,10 +44,10 @@ Groq no está configurado y el Nivel 3 (OCR) sigue operando.
 
 > **Límite de tokens por minuto.** El plan gratuito de Groq admite 8,000 tokens
 > por minuto para este modelo, contando entrada y salida. Cada consulta envía
-> hasta `MAX_CARACTERES_CONTEXTO` (12,000) caracteres del documento, unos 4,000
-> tokens, así que dos consultas seguidas agotan el cupo y la librería reintenta
-> hasta que se libera (la respuesta pasa de ~1 s a 15–25 s). Un plan de pago
-> elimina esa espera.
+> hasta `MAX_CARACTERES_CONTEXTO` (6,500 por defecto) caracteres del documento
+> más el historial del chat, así que varias consultas seguidas agotan el cupo y
+> el cliente reintenta hasta que se libera (la respuesta pasa de ~2 s a
+> 10–18 s). Un plan de pago elimina esa espera.
 
 ### Tesseract OCR (motor de reconocimiento óptico)
 
@@ -99,6 +99,7 @@ Invoke-RestMethod http://127.0.0.1:8003/api/v1/health
 | `GET`  | `/api/v1/health` | — | Estado del servicio, de Groq Cloud y del motor OCR. Responde 200 aunque falte una dependencia. |
 | `POST` | `/api/v1/ai/extraer-texto` | 3 | Extracción híbrida: capa vectorial con PyMuPDF y OCR con preprocesamiento OpenCV. |
 | `GET`  | `/api/v1/ai/configuracion-ocr` | 3 | Parámetros activos del motor OCR y umbrales vigentes. |
+| `POST` | `/api/v1/ai/documentos/{id}/preparar` | 3 | Resuelve el texto de un documento de la bóveda (memoria, disco u OCR) sin llamar al modelo. |
 | `POST` | `/api/v1/ai/analisis-semantico` | 4 | Dictamen estructurado: tipo documental, RFC, vigencia y estatus preliminar. |
 | `POST` | `/api/v1/ai/chat-documento` | 4 | Consulta en lenguaje natural sobre un documento concreto. |
 
@@ -125,6 +126,69 @@ reserva a hechos del documento (vigencia expirada o RFC ajeno al expediente).
 **La confianza del Nivel 4 se acota por la del Nivel 3.** Por sólida que sea la
 lectura del modelo, no puede ser más fiable que el texto que se le entregó.
 
+**Corte temprano del OCR.** Para responder rápido la primera vez, el OCR se
+detiene al reunir `MAX_CARACTERES_CONTEXTO` caracteres o tras `MAX_PAGINAS_OCR`
+(6) páginas escaneadas; el resto se lee en segundo plano. La traza
+informa `paginas_omitidas_ocr` y `extraccion_parcial`, y el endpoint
+`/ai/extraer-texto` acepta `texto_completo=true` para reconocer todas las
+páginas.
+
+**OCR en paralelo.** Las páginas escaneadas se reconocen en tandas de
+`OCR_WORKERS` páginas simultáneas (por defecto, los núcleos físicos). La
+rasterización ocurre en el hilo principal, porque PyMuPDF no es seguro entre
+hilos. Cada Tesseract se limita a un hilo interno (`OMP_THREAD_LIMIT=1`) para no
+sobresuscribir el CPU, y el corte temprano se evalúa al terminar cada tanda.
+Mediciones en un Ryzen 5 3500U (4 núcleos) con un acta escaneada de 26 páginas:
+
+| Escenario | Tiempo |
+|---|---|
+| Secuencial, sin corte temprano (26 páginas) | 224.8 s |
+| Secuencial, con corte temprano (4 páginas) | 34.5 s |
+| **4 workers, con corte temprano (4 páginas)** | **11.5 s** |
+| 8 workers, con corte temprano (6 páginas) | 17.0 s |
+| 4 workers, sin corte temprano (26 páginas) | 92.1 s |
+
+Con 8 workers empeora: SMT no acelera a Tesseract, y una tanda mayor reconoce
+páginas que no hacían falta.
+
+**Fragmentos relevantes en lugar del inicio del documento.** Al modelo llegan
+como máximo `MAX_CARACTERES_CONTEXTO` caracteres. Si el documento no cabe, se
+envía su encabezado (`ENCABEZADO_CARACTERES`: fedatario, denominación y
+otorgantes) más los fragmentos de `FRAGMENTO_CARACTERES` que mejor responden a
+la consulta según BM25 (`pipelines/fragmentos.py`). La recuperación es léxica y
+determinista: normaliza acentos, descarta palabras vacías, aplica un stemming
+ligero en español, da un bono a las frases de dos palabras ("capital social") y
+expande preguntas legales frecuentes ("¿quién…?" también busca "designa" o
+"nombramiento"). La auditoría usa una consulta fija con los datos que extrae y
+las cláusulas de un acta (capital social, acciones, comisario, facultades y
+firmas). El chat usa la pregunta del analista con hasta `MAX_FRAGMENTOS_CHAT`
+fragmentos. En un acta de 26 páginas (133,636 caracteres), el chat encuentra el
+capital social (al 12 % del documento) y la designación del comisario (al 82 %).
+
+**Persistencia del texto extraído.** Además del caché LRU en memoria, cada
+extracción se guarda en SQLite (`EXTRACCIONES_DB_PATH`, por defecto
+`data/extracciones.sqlite3`; en Docker, el volumen `plurione_ai_data`), indexada
+por la huella SHA-256 del binario. Un documento ya leído no vuelve a pasar por
+OCR aunque se reinicie el servicio: el acta de 26 páginas se sirve desde disco en
+0.2 s en lugar de 89 s. Cuando el corte temprano deja páginas sin leer, la
+lectura completa se hace en segundo plano (`COMPLETAR_LECTURA_EN_SEGUNDO_PLANO`)
+y reemplaza a la parcial al terminar.
+
+**Preprocesamiento de fotos.** Las imágenes de menos de 1,800 px de ancho se
+amplían antes del OCR. Si la binarización de Otsu deja más del 25 % de la página
+en negro (una foto con sombra), se repite con corrección de contraste CLAHE y
+umbral adaptativo. Sobre una foto sintética de recibo a 110 ppp con sombra, la
+exactitud pasa de 0 % a 94-97 %; en escaneos con iluminación pareja el resultado
+es idéntico al anterior (98.0 % en la constancia de prueba).
+
+**Caché del texto extraído.** El texto de cada `documento_id` se guarda en un
+caché LRU en memoria (`CACHE_MAX_DOCUMENTOS`, 64 por defecto). La auditoría y
+los turnos del chat lo reutilizan sin repetir el OCR, y si dos peticiones piden
+el mismo documento a la vez, la extracción corre una sola vez. Las respuestas
+del Nivel 4 incluyen `fuente_texto` (`cliente`, `cache` o `extraccion`) y
+`tiempos_ms` con el desglose de cada fase. El caché se vacía al reiniciar el
+servicio.
+
 ---
 
 ## 5. Pruebas
@@ -132,6 +196,7 @@ lectura del modelo, no puede ser más fiable que el texto que se le entregó.
 ```powershell
 python tests/generar_fixtures.py     # genera los documentos de prueba
 python tests/test_niveles_3_4.py     # suite contra el servicio levantado
+python tests/test_optimizaciones.py  # fragmentos, persistencia, caché, corte temprano y preprocesamiento (sin servidor)
 ```
 
 `generar_fixtures.py` produce dos versiones del mismo documento ficticio: una

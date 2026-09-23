@@ -5,11 +5,18 @@ Expone el pipeline híbrido (lectura vectorial con PyMuPDF + OCR con
 preprocesamiento OpenCV/Tesseract) como un endpoint de carga directa, de modo
 que pueda auditarse un archivo suelto sin necesidad de haberlo registrado antes
 en la bóveda del core-service.
+
+El resultado se persiste por huella SHA-256: un archivo que ya se procesó no
+vuelve a pasar por OCR aunque se reinicie el servicio (``usar_cache=false`` lo
+fuerza). El OCR corre en el pool de hilos y no en el event loop, para que el
+servicio siga respondiendo (health check, chat) mientras se reconoce un
+documento largo.
 """
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile, status
+from fastapi.concurrency import run_in_threadpool
 
 from config import settings
-from pipelines import extraccion_pipeline
+from pipelines import extraccion_pipeline, repositorio_texto
 from pipelines.extraccion_pipeline import FormatoNoSoportadoError, MotorOcrNoDisponibleError
 
 router = APIRouter(prefix="/api/v1/ai", tags=["Nivel 3 — Extracción de Texto"])
@@ -30,6 +37,17 @@ async def extraer_texto(
         True,
         description="Devuelve el texto completo. Desactívelo para obtener solo las métricas.",
     ),
+    texto_completo: bool = Form(
+        False,
+        description=(
+            "Desactiva el corte temprano del OCR y reconoce todas las páginas escaneadas, "
+            "aunque el excedente no quepa en el contexto del LLM."
+        ),
+    ),
+    usar_cache: bool = Form(
+        True,
+        description="Reutiliza una extracción previa del mismo archivo (misma huella SHA-256).",
+    ),
 ):
     """
     Resuelve el Nivel 3 del pipeline y devuelve el texto junto con su
@@ -39,10 +57,13 @@ async def extraer_texto(
     contenido = await file.read()
 
     try:
-        resultado = extraccion_pipeline.extraer_texto(
-            contenido=contenido,
-            nombre_archivo=file.filename or "documento",
-            forzar_ocr=forzar_ocr,
+        texto, traza, fuente = await run_in_threadpool(
+            repositorio_texto.obtener_por_contenido,
+            contenido,
+            file.filename or "documento",
+            forzar_ocr,
+            texto_completo,
+            usar_cache,
         )
     except FormatoNoSoportadoError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"[Nivel 3] {exc}") from exc
@@ -51,7 +72,7 @@ async def extraer_texto(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=f"[Nivel 3] {exc}"
         ) from exc
 
-    respuesta = resultado.a_dict()
+    respuesta = {"texto_extraido": texto, **traza, "fuente_texto": fuente}
     respuesta["archivo"] = file.filename
     respuesta["tamanio_bytes"] = len(contenido)
     if not incluir_texto:
@@ -68,6 +89,10 @@ def configuracion_ocr():
     return {
         "motor": extraccion_pipeline.diagnostico_ocr(),
         "umbral_caracteres_pagina": settings.UMBRAL_CARACTERES_PAGINA,
+        "max_caracteres_contexto": settings.MAX_CARACTERES_CONTEXTO,
+        "max_paginas_ocr": settings.MAX_PAGINAS_OCR,
+        "ocr_workers": settings.OCR_WORKERS,
+        "persistencia": repositorio_texto.estadisticas(),
         "umbral_confianza_conforme": settings.UMBRAL_CONFIANZA_CONFORME,
         "umbral_confianza_hitl": settings.UMBRAL_CONFIANZA_HITL,
         "tamanio_maximo_mb": settings.MAX_FILE_SIZE_BYTES // (1024 * 1024),

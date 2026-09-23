@@ -26,3 +26,6 @@ frontend/.vite/
 # despliegue (ver services/ai-service/README.md). El Dockerfile los
 # instala desde los paquetes del sistema.
 services/ai-service/tessdata/*.traineddata
+
+# Texto extraído persistido por el ai-service (SQLite local, regenerable).
+services/ai-service/data/

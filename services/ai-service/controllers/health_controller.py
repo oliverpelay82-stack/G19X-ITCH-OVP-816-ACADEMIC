@@ -15,6 +15,7 @@ from fastapi import APIRouter
 from clients import groq_client
 from config import settings
 from pipelines import extraccion_pipeline
+from pipelines import repositorio_texto
 
 router = APIRouter(prefix="/api/v1", tags=["Salud"])
 
@@ -47,4 +48,5 @@ def health_check():
             "revision_humana_desde": settings.UMBRAL_CONFIANZA_HITL,
         },
         "umbral_confianza_hitl": settings.UMBRAL_CONFIANZA_HITL,
+        "cache_extracciones": repositorio_texto.estadisticas(),
     }

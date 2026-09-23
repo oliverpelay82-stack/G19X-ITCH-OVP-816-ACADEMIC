@@ -16,13 +16,14 @@ acotada a una tarea de lectura, que es donde su desempeño es fiable.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date, datetime
 from typing import Any
 import re
 
 from clients import groq_client
 from config import settings
+from pipelines import fragmentos
 
 # Catálogo cerrado de tipos documentales, con el rasgo que distingue a cada uno.
 #
@@ -64,6 +65,18 @@ TIPOS_DOCUMENTALES: dict[str, str] = {
     "OTRO":
         "no encaja con claridad en ninguna de las categorías anteriores",
 }
+
+# Consulta fija con la que la auditoría elige qué fragmentos de un documento
+# extenso ve el modelo, además del encabezado: los datos de identificación que
+# extrae (RFC, razón social, fechas) y, para actas y poderes, las cláusulas que
+# un auditor revisa (capital social, acciones, comisario, facultades y firmas).
+CONSULTA_AUDITORIA = (
+    "RFC registro federal de contribuyentes razón social denominación "
+    "fecha de emisión fecha de expedición lugar y fecha vigencia vencimiento válido hasta "
+    "capital social acciones serie valor nominal comisario consejo de administración "
+    "administrador único facultades poder apoderado firma firmas notario corredor público "
+    "escritura pública instrumento fe"
+)
 
 # RFC mexicano: 3 caracteres para persona moral o 4 para persona física,
 # seguidos de la fecha AAMMDD y la homoclave de 3 posiciones.
@@ -167,6 +180,7 @@ class ResultadoAnalisis:
     requiere_revision_humana: bool
     observaciones: list[str]
     modelo_utilizado: str
+    contexto_llm: dict[str, Any] = field(default_factory=dict)
 
     def a_dict(self) -> dict[str, Any]:
         return {
@@ -186,6 +200,7 @@ class ResultadoAnalisis:
             "umbral_confianza_hitl": settings.UMBRAL_CONFIANZA_HITL,
             "observaciones": self.observaciones,
             "modelo_utilizado": self.modelo_utilizado,
+            "contexto_llm": self.contexto_llm,
         }
 
 
@@ -253,16 +268,17 @@ def analizar(
         no puede estar más seguro que la calidad del texto que se le entregó.
     """
     hoy = fecha_referencia or date.today()
-    texto_recortado = texto.strip()[: settings.MAX_CARACTERES_CONTEXTO]
-
-    if not texto_recortado:
+    if not texto.strip():
         raise ValueError(
             "No hay texto que analizar: ejecute primero el Nivel 3 (extracción) "
             "o envíe el contenido del documento."
         )
 
+    # Documento extenso: encabezado + fragmentos relevantes, no solo el inicio.
+    seleccion = fragmentos.seleccionar(texto, CONSULTA_AUDITORIA)
+
     crudo = groq_client.generar_json(
-        prompt=_plantilla_prompt(texto_recortado, rfc_titular, razon_social_titular),
+        prompt=_plantilla_prompt(seleccion.texto, rfc_titular, razon_social_titular),
         system=SYSTEM_PROMPT,
     )
 
@@ -338,6 +354,7 @@ def analizar(
         requiere_revision_humana=requiere_hitl,
         observaciones=observaciones,
         modelo_utilizado=settings.GROQ_MODEL,
+        contexto_llm=seleccion.traza(),
     )
 
 

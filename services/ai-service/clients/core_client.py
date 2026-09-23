@@ -45,6 +45,12 @@ def obtener_metadatos(documento_id: str) -> dict[str, Any]:
 def obtener_binario(documento_id: str) -> tuple[bytes, dict[str, Any]]:
     """Devuelve el contenido binario del documento junto con sus metadatos."""
     metadatos = obtener_metadatos(documento_id)
+    return leer_binario(metadatos), metadatos
+
+
+def leer_binario(metadatos: dict[str, Any]) -> bytes:
+    """Lee de la bóveda el binario descrito por una ficha del catálogo."""
+    documento_id = metadatos.get("id", "")
     hash_sha256 = metadatos.get("hash_sha256", "")
     nombre_original = metadatos.get("nombre_archivo_original", "")
 
@@ -58,5 +64,4 @@ def obtener_binario(documento_id: str) -> tuple[bytes, dict[str, Any]]:
         )
 
     with open(ruta, "rb") as archivo:
-        contenido = archivo.read()
-    return contenido, metadatos
+        return archivo.read()

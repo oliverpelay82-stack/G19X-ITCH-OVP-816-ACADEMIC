@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { ArrowUp, Loader2 } from 'lucide-react'
 import { Skeleton } from './Skeleton.jsx'
 import useToast from '../hooks/useToast.js'
-import { analizarDocumento, preguntarSobreDocumento } from '../services/api.js'
+import { analizarDocumento, prepararDocumento, preguntarSobreDocumento } from '../services/api.js'
 import { formatFechaCorta } from '../utils/format.js'
 
 const MODELO_POR_DEFECTO = 'Groq Qwen 27B'
@@ -32,6 +32,13 @@ const PREGUNTAS_SUGERIDAS = [
   '¿Cuándo vence este documento?',
   '¿A qué empresa o persona pertenece?',
   '¿Resume los datos clave de este archivo?',
+]
+
+/** Etapas visibles de la auditoría; cada una corresponde a una petición real. */
+const ETAPAS = [
+  { id: 'leyendo', label: 'Leyendo documento…' },
+  { id: 'analizando', label: 'Analizando con Groq…' },
+  { id: 'listo', label: 'Dictamen listo' },
 ]
 
 /** Cuántos turnos previos viajan como historial para no inflar el contexto. */
@@ -81,6 +88,68 @@ async function cronometrar(peticion) {
 
 function formatDuracion(ms) {
   return ms < 1000 ? `${Math.round(ms)} ms` : `${(ms / 1000).toFixed(1)} s`
+}
+
+/**
+ * Badges discretos sobre qué leyó el modelo: si faltan páginas por reconocer
+ * (lectura parcial por el corte temprano del OCR) y si el contexto se armó con
+ * fragmentos relevantes o se recortó.
+ */
+function EstadoLectura({ lectura, contexto }) {
+  const pendientes = lectura && !lectura.lectura_completa ? lectura.paginas_omitidas_ocr : 0
+  const fragmentos = contexto?.estrategia_contexto === 'fragmentos' ? contexto.fragmentos_relevantes?.length : 0
+  const recortado = contexto?.estrategia_contexto === 'inicio'
+  if (!pendientes && !fragmentos && !recortado) return null
+
+  return (
+    <div className="badge-row">
+      {pendientes > 0 && (
+        <span
+          className="badge"
+          title={`El OCR leyó ${lectura.total_paginas - pendientes} de ${lectura.total_paginas} páginas. ${
+            lectura.lectura_completa_en_curso
+              ? 'El resto se está reconociendo en segundo plano; vuelve a auditar o preguntar en unos momentos.'
+              : 'El resto se reconocerá en la próxima consulta.'
+          }`}
+        >
+          Lectura parcial · {pendientes} págs. pendientes{lectura.lectura_completa_en_curso ? ' (completándose)' : ''}
+        </span>
+      )}
+      {fragmentos > 0 && (
+        <span
+          className="badge badge--brand"
+          title={`El documento tiene ${contexto.caracteres_documento.toLocaleString('es-MX')} caracteres: el modelo vio el encabezado y los ${fragmentos} fragmentos más relevantes.`}
+        >
+          {fragmentos} fragmentos relevantes
+        </span>
+      )}
+      {recortado && (
+        <span className="badge" title="Ningún fragmento coincidió con la consulta: el modelo vio el inicio del documento.">
+          Contexto recortado
+        </span>
+      )}
+    </div>
+  )
+}
+
+/** Indicador de etapas de la auditoría. */
+function Etapas({ actual }) {
+  const indice = ETAPAS.findIndex((e) => e.id === actual)
+  return (
+    <ol className="stepper" role="status" aria-live="polite">
+      {ETAPAS.map((etapa, i) => {
+        const estado = i < indice || actual === 'listo' ? 'is-done' : i === indice ? 'is-active' : ''
+        return (
+          <li key={etapa.id} className={`stepper-item ${estado}`}>
+            <span className="stepper-dot" aria-hidden="true">
+              {estado === 'is-active' && <Loader2 className="spin" size={10} />}
+            </span>
+            {etapa.label}
+          </li>
+        )
+      })}
+    </ol>
+  )
 }
 
 /** Dato del dictamen: etiqueta tenue arriba, valor debajo. */
@@ -184,6 +253,8 @@ function DictamenIa({ dictamen, rfcTitular, duracion }) {
         </div>
       )}
 
+      <EstadoLectura lectura={dictamen.extraccion_nivel_3} contexto={dictamen.contexto_llm} />
+
       <p className="verdict-foot">
         <span>{nombreModelo(dictamen.modelo_utilizado)} · temperatura 0.0</span>
         {dictamen.extraccion_nivel_3?.metodo_extraccion && (
@@ -199,29 +270,34 @@ function DictamenIa({ dictamen, rfcTitular, duracion }) {
 /* ── Auditoría ──────────────────────────────────────────────────── */
 function AuditoriaIa({ doc, expediente, iaOnline }) {
   const toast = useToast()
-  const [analizando, setAnalizando] = useState(false)
+  const [etapa, setEtapa] = useState(null)
+  const analizando = etapa === 'leyendo' || etapa === 'analizando'
   const [dictamen, setDictamen] = useState(null)
   const [duracion, setDuracion] = useState(null)
   const rfcTitular = expediente?.titular?.rfc || null
 
   const auditar = async () => {
-    setAnalizando(true)
+    const inicio = performance.now()
     try {
-      const { resultado, duracion: ms } = await cronometrar(() =>
-        analizarDocumento({
-          documento_id: doc.id,
-          rfc_titular: rfcTitular || undefined,
-          razon_social_titular: expediente?.titular?.razon_social || undefined,
-        })
-      )
+      // Etapa 1: el texto queda resuelto (memoria, disco u OCR) antes de llamar al modelo.
+      setEtapa('leyendo')
+      await prepararDocumento(doc.id)
+      // Etapa 2: el análisis reutiliza ese texto sin volver a extraerlo.
+      setEtapa('analizando')
+      const resultado = await analizarDocumento({
+        documento_id: doc.id,
+        rfc_titular: rfcTitular || undefined,
+        razon_social_titular: expediente?.titular?.razon_social || undefined,
+      })
       setDictamen(resultado)
-      setDuracion(ms)
+      setDuracion(performance.now() - inicio)
+      setEtapa('listo')
+      setTimeout(() => setEtapa((actual) => (actual === 'listo' ? null : actual)), 1200)
       const meta = ESTATUS_IA[resultado?.estatus_preliminar]
       toast.info('Dictamen de IA generado', `${doc.nombre_archivo_original} · ${meta?.label || resultado?.estatus_preliminar}`)
     } catch (err) {
+      setEtapa(null)
       avisarFallo(toast, err, 'No se pudo auditar el documento')
-    } finally {
-      setAnalizando(false)
     }
   }
 
@@ -240,7 +316,11 @@ function AuditoriaIa({ doc, expediente, iaOnline }) {
           title={iaOnline ? undefined : 'El ai-service (:8003) no responde'}
         >
           {analizando && <Loader2 className="spin" size={14} />}
-          {dictamen ? 'Volver a auditar' : `Auditar con ${MODELO_POR_DEFECTO}`}
+          {analizando
+            ? ETAPAS.find((e) => e.id === etapa).label
+            : dictamen
+              ? 'Volver a auditar'
+              : `Auditar con ${MODELO_POR_DEFECTO}`}
         </button>
       </div>
 
@@ -248,10 +328,10 @@ function AuditoriaIa({ doc, expediente, iaOnline }) {
         <p className="field-hint">El ai-service (:8003) no responde; la auditoría no está disponible.</p>
       )}
 
+      {etapa && <Etapas actual={etapa} />}
+
       {analizando && (
-        <div className="ai-loading" role="status" aria-live="polite">
-          <p className="ai-loading-title">Groq analizando contenido y cotejando RFC…</p>
-          <p className="field-hint">Extracción de texto (Nivel 3) → inferencia en Groq Cloud (Nivel 4).</p>
+        <div className="ai-loading" aria-hidden="true">
           <Skeleton w="82%" />
           <Skeleton w="64%" />
           <Skeleton w="46%" />
@@ -289,6 +369,9 @@ function ChatDocumento({ doc, iaOnline }) {
     setBorrador('')
     setPensando(true)
     try {
+      // Solo viaja el documento_id: el servidor sirve el texto desde memoria o
+      // disco (nunca repite el OCR) y, si la lectura completa terminó en segundo
+      // plano, busca fragmentos en todas las páginas y no solo en las primeras.
       const { resultado: r, duracion } = await cronometrar(() =>
         preguntarSobreDocumento({ documento_id: doc.id, pregunta, historial })
       )
@@ -300,7 +383,8 @@ function ChatDocumento({ doc, iaOnline }) {
           contenido: r?.respuesta || 'El modelo no devolvió contenido.',
           modelo: r?.modelo_utilizado,
           duracion,
-          truncado: Boolean(r?.contexto_truncado),
+          lectura: r?.extraccion_nivel_3,
+          contexto: r?.contexto_llm,
         },
       ])
     } catch (err) {
@@ -349,10 +433,12 @@ function ChatDocumento({ doc, iaOnline }) {
             <div key={m.id} className={`bubble ${m.error ? 'bubble--error' : 'bubble--bot'}`}>
               <p className="bubble-text">{m.contenido}</p>
               {!m.error && (
-                <p className="bubble-meta">
-                  {nombreModelo(m.modelo)} · {formatDuracion(m.duracion)}
-                  {m.truncado && ' · contexto truncado'}
-                </p>
+                <>
+                  <p className="bubble-meta">
+                    {nombreModelo(m.modelo)} · {formatDuracion(m.duracion)}
+                  </p>
+                  <EstadoLectura lectura={m.lectura} contexto={m.contexto} />
+                </>
               )}
             </div>
           )

@@ -4,6 +4,8 @@ networks:
 
 volumes:
   plurione_pgdata:
+  # Texto extraído por el Nivel 3 (SQLite): evita repetir el OCR tras reiniciar.
+  plurione_ai_data:
 
 services:
   plurione-db:
@@ -82,6 +84,7 @@ services:
       STORAGE_VAULT_PATH: /app/storage_vault
     volumes:
       - ./storage_vault:/app/storage_vault
+      - plurione_ai_data:/app/data
     depends_on:
       - plurione-core
     networks:

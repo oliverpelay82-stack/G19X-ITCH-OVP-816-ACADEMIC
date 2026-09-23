@@ -1432,6 +1432,65 @@ input.input--invalido {
   font-weight: 500;
 }
 
+/* Etapas de la auditoría */
+.stepper {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2) var(--s-5);
+  font-size: 13px;
+  color: var(--text-3);
+}
+
+.stepper-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  transition: color var(--dur) var(--ease);
+}
+
+.stepper-item.is-active {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.stepper-item.is-done {
+  color: var(--text-2);
+}
+
+.stepper-dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px solid var(--border-hover);
+  color: var(--accent);
+  transition: background-color var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+
+.stepper-item.is-active .stepper-dot {
+  border-color: var(--accent);
+}
+
+.stepper-item.is-done .stepper-dot {
+  background: var(--ok);
+  border-color: var(--ok);
+}
+
+.badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-1);
+}
+
+.bubble .badge-row {
+  margin-top: var(--s-2);
+}
+
 .verdict {
   display: flex;
   flex-direction: column;
