@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Sidebar from './components/Sidebar.jsx'
 import Header from './components/Header.jsx'
 import MetricsCards from './components/MetricsCards.jsx'
+import MotorIaPanel from './components/MotorIaPanel.jsx'
 import TitularesTab from './components/TitularesTab.jsx'
 import ExpedientesTab from './components/ExpedientesTab.jsx'
 import BovedaTab from './components/BovedaTab.jsx'
@@ -20,22 +21,10 @@ import {
 import './App.css'
 
 const SECCIONES = {
-  titulares: {
-    titulo: 'Directorio de Empresas',
-    descripcion: 'Titulares de expediente evaluados por el motor de cumplimiento.',
-  },
-  expedientes: {
-    titulo: 'Fólders de Cumplimiento',
-    descripcion: 'Expedientes agrupados por titular, con su completitud documental en vivo.',
-  },
-  boveda: {
-    titulo: 'Bóveda Criptográfica',
-    descripcion: 'Custodia de binarios con huella SHA-256 inmutable (NOM-151-SCFI-2016).',
-  },
-  reglas: {
-    titulo: 'Catálogo de Reglas',
-    descripcion: 'Motor determinista de Nivel 2 (DOC-05): familias RIE, RCV, RSC y RDS.',
-  },
+  titulares: { titulo: 'Empresas' },
+  expedientes: { titulo: 'Expedientes' },
+  boveda: { titulo: 'Bóveda criptográfica' },
+  reglas: { titulo: 'Catálogo de reglas' },
 }
 
 const INTERVALO_REFRESCO = 15000
@@ -164,8 +153,6 @@ export default function App() {
       <div className="app-main">
         <Header
           titulo={seccion.titulo}
-          descripcion={seccion.descripcion}
-          health={health}
           onRefresh={refrescar}
           refrescando={refrescando}
           isDark={isDark}
@@ -177,9 +164,10 @@ export default function App() {
             titulares={titulares}
             expedientes={expedientes}
             documentos={documentos}
-            health={health}
             loading={loading}
           />
+
+          <MotorIaPanel estado={health.ai} loading={loading} />
 
           <div className="tab-region" key={tabActiva}>
             {tabActiva === 'titulares' && (
@@ -207,6 +195,7 @@ export default function App() {
                 loading={loading}
                 onRefresh={refrescar}
                 isOnline={health.core.online}
+                iaOnline={health.ai.online}
               />
             )}
             {tabActiva === 'reglas' && (

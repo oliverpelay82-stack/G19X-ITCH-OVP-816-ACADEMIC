@@ -72,6 +72,18 @@ services:
     container_name: plurione-ai
     ports:
       - "8003:8003"
+    environment:
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      GROQ_MODEL: qwen/qwen3.8-27b
+      OCR_LANG: spa+eng
+      TESSERACT_CMD: /usr/bin/tesseract
+      TESSDATA_PREFIX: /usr/share/tesseract-ocr/5/tessdata
+      CORE_BASE_URL: http://plurione-core:8001
+      STORAGE_VAULT_PATH: /app/storage_vault
+    volumes:
+      - ./storage_vault:/app/storage_vault
+    depends_on:
+      - plurione-core
     networks:
       - plurione-net
 

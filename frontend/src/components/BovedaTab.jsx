@@ -1,17 +1,8 @@
 import { useMemo, useState } from 'react'
-import {
-  BadgeCheck,
-  Check,
-  Copy,
-  FileText,
-  Fingerprint,
-  Lock,
-  Search,
-  Vault,
-  X,
-} from 'lucide-react'
+import { Check, Copy, Search, X } from 'lucide-react'
 import Modal from './Modal.jsx'
 import DropZone from './DropZone.jsx'
+import DocumentoIaPanel from './DocumentoIaPanel.jsx'
 import { SkeletonRows } from './Skeleton.jsx'
 import useToast from '../hooks/useToast.js'
 import useDebounce from '../hooks/useDebounce.js'
@@ -47,18 +38,17 @@ function HashCell({ hash, completo = false }) {
   return (
     <button
       type="button"
-      className={`hash-chip ${copiado ? 'hash-chip--copiado' : ''}`}
+      className={`copy-chip ${completo ? 'copy-chip--full' : ''}`}
       onClick={copiar}
-      data-tooltip={copiado ? '¡Copiado!' : 'Copiar hash SHA-256'}
+      data-tooltip={copiado ? 'Copiado' : 'Copiar hash SHA-256'}
     >
-      <Fingerprint size={12} strokeWidth={2.3} className="hash-chip-icon" />
       <span className="mono">{completo ? hash : hashCorto(hash, 8, 6)}</span>
-      {copiado ? <Check size={12} strokeWidth={3} className="hash-chip-ok" /> : <Copy size={12} strokeWidth={2.2} />}
+      {copiado ? <Check size={12} strokeWidth={2.4} className="copy-ok" /> : <Copy size={12} strokeWidth={2} />}
     </button>
   )
 }
 
-export default function BovedaTab({ documentos, expedientes, loading, onRefresh, isOnline = true }) {
+export default function BovedaTab({ documentos, expedientes, loading, onRefresh, isOnline = true, iaOnline = true }) {
   const toast = useToast()
   const [expedienteId, setExpedienteId] = useState('')
   const [subiendo, setSubiendo] = useState(false)
@@ -110,14 +100,11 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
   return (
     <div className="tab-panel">
       <div className="vault-layout">
-        <section className="surface-card vault-upload">
-          <header className="card-head">
-            <span className="card-head-icon card-head-icon--vault">
-              <Lock size={15} strokeWidth={2.4} />
-            </span>
+        <section className="card vault-upload">
+          <header className="section-head">
             <div>
-              <h3 className="card-title">Ingesta custodiada</h3>
-              <p className="card-desc">Nivel 1 del pipeline: firma binaria, límite de tamaño y huella SHA-256.</p>
+              <h2 className="section-title">Ingesta custodiada</h2>
+              <p className="section-desc">Nivel 1: firma binaria, límite de tamaño y huella SHA-256.</p>
             </div>
           </header>
 
@@ -129,7 +116,7 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
             deshabilitado={!isOnline}
             motivoDeshabilitado="El core-service (:8001) no responde"
           >
-            <label className="field field--inline">
+            <label className="field">
               <span className="field-label">Expediente destino</span>
               <select value={expedienteId} onChange={(e) => setExpedienteId(e.target.value)} required>
                 <option value="" disabled>
@@ -144,27 +131,20 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
             </label>
           </DropZone>
 
-          {!expedienteId && (
-            <p className="field-hint field-hint--warn">
-              Elige el expediente destino para habilitar la custodia.
-            </p>
-          )}
+          {!expedienteId && <p className="field-hint">Elige el expediente destino para habilitar la custodia.</p>}
         </section>
 
-        <section className="surface-card vault-console">
-          <header className="card-head">
-            <span className="card-head-icon card-head-icon--vault">
-              <Vault size={15} strokeWidth={2.4} />
-            </span>
+        <section className="card table-card vault-console">
+          <header className="section-head section-head--padded">
             <div>
-              <h3 className="card-title">Consola de custodia</h3>
-              <p className="card-desc">
-                {documentos.length} {documentos.length === 1 ? 'documento' : 'documentos'} · {formatBytes(totalBytes)} bajo
-                resguardo NOM-151-SCFI-2016
+              <h2 className="section-title">Consola de custodia</h2>
+              <p className="section-desc">
+                {documentos.length} {documentos.length === 1 ? 'documento' : 'documentos'} · {formatBytes(totalBytes)} ·
+                NOM-151-SCFI-2016
               </p>
             </div>
             <label className="search-box search-box--sm">
-              <Search size={14} strokeWidth={2.3} />
+              <Search size={14} strokeWidth={2} />
               <input
                 type="search"
                 placeholder="Archivo, folio o hash…"
@@ -174,21 +154,21 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
               />
               {busqueda && (
                 <button type="button" className="search-clear" onClick={() => setBusqueda('')} aria-label="Limpiar">
-                  <X size={12} strokeWidth={2.6} />
+                  <X size={12} strokeWidth={2} />
                 </button>
               )}
             </label>
           </header>
 
           <div className="table-scroll">
-            <table className="data-table data-table--console">
+            <table className="data-table">
               <thead>
                 <tr>
                   <th>Documento</th>
                   <th>Tipo</th>
                   <th>Expediente</th>
-                  <th>Huella SHA-256</th>
-                  <th className="col-center">Integridad</th>
+                  <th>SHA-256</th>
+                  <th>Firma</th>
                   <th className="col-right">Tamaño</th>
                 </tr>
               </thead>
@@ -199,9 +179,6 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
                   <tr>
                     <td colSpan={6}>
                       <div className="empty-state">
-                        <span className="empty-icon empty-icon--vault">
-                          <Vault size={20} strokeWidth={2} />
-                        </span>
                         <p className="empty-title">
                           {documentos.length === 0 ? 'La bóveda está vacía' : 'Sin coincidencias'}
                         </p>
@@ -222,14 +199,9 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
                     return (
                       <tr key={doc.id} className="row-clickable" onClick={() => setDetalle(doc)}>
                         <td>
-                          <div className="identity">
-                            <span className="file-icon">
-                              <FileText size={14} strokeWidth={2.2} />
-                            </span>
-                            <span className="identity-body">
-                              <span className="identity-name">{doc.nombre_archivo_original}</span>
-                              <span className="identity-sub">{formatFecha(doc.creado_en)}</span>
-                            </span>
+                          <div className="cell-stack">
+                            <span className="identity-name">{doc.nombre_archivo_original}</span>
+                            <span className="cell-sub">{formatFecha(doc.creado_en)}</span>
                           </div>
                         </td>
                         <td>
@@ -237,23 +209,16 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
                             {TIPO_DOCUMENTO_CORTO[doc.tipo_documento] || doc.tipo_documento}
                           </span>
                         </td>
-                        <td>
-                          {exp ? (
-                            <span className="mono folder-folio">{exp.codigo_expediente}</span>
-                          ) : (
-                            <span className="cell-muted">—</span>
-                          )}
-                        </td>
+                        <td className="mono cell-mono">{exp ? exp.codigo_expediente : <span className="cell-muted">—</span>}</td>
                         <td>
                           <HashCell hash={doc.hash_sha256} />
                         </td>
-                        <td className="col-center">
+                        <td>
                           <span className="badge badge--vault" data-tooltip={`Magic Bytes ${firma.firma}`}>
-                            <BadgeCheck size={11} strokeWidth={2.6} />
                             {firma.label}
                           </span>
                         </td>
-                        <td className="col-right cell-muted mono-tabular">{formatBytes(doc.tamanio_bytes)}</td>
+                        <td className="col-right cell-muted tabular">{formatBytes(doc.tamanio_bytes)}</td>
                       </tr>
                     )
                   })}
@@ -267,41 +232,38 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
         <Modal
           title={detalle.nombre_archivo_original}
           subtitle="Metadatos de custodia criptográfica"
-          icon={FileText}
           onClose={() => setDetalle(null)}
-          width={620}
         >
           <dl className="detail-grid">
-            <div className="detail-row">
+            <div className="detail-item">
               <dt>Tipo documental</dt>
               <dd>{TIPO_DOCUMENTO_LABEL[detalle.tipo_documento] || detalle.tipo_documento}</dd>
             </div>
-            <div className="detail-row">
+            <div className="detail-item">
               <dt>Expediente</dt>
               <dd className="mono">{mapaExpedientes[detalle.expediente_id]?.codigo_expediente || '—'}</dd>
             </div>
-            <div className="detail-row">
+            <div className="detail-item">
               <dt>Titular</dt>
               <dd>{mapaExpedientes[detalle.expediente_id]?.titular?.razon_social || '—'}</dd>
             </div>
-            <div className="detail-row">
+            <div className="detail-item">
               <dt>Firma binaria</dt>
               <dd>
                 <span className="badge badge--vault">
-                  <BadgeCheck size={11} strokeWidth={2.6} />
                   {firmaDeMime(detalle.mime_type).label} · {firmaDeMime(detalle.mime_type).firma}
                 </span>
               </dd>
             </div>
-            <div className="detail-row">
+            <div className="detail-item">
               <dt>Tamaño</dt>
-              <dd className="mono-tabular">{formatBytes(detalle.tamanio_bytes)}</dd>
+              <dd className="tabular">{formatBytes(detalle.tamanio_bytes)}</dd>
             </div>
-            <div className="detail-row">
+            <div className="detail-item">
               <dt>Ingesta</dt>
               <dd>{formatFecha(detalle.creado_en)}</dd>
             </div>
-            <div className="detail-row detail-row--full">
+            <div className="detail-item detail-item--full">
               <dt>Huella SHA-256</dt>
               <dd>
                 <HashCell hash={detalle.hash_sha256} completo />
@@ -310,10 +272,16 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
           </dl>
 
           <p className="detail-note">
-            <Lock size={13} strokeWidth={2.4} />
             La huella se calculó al ingresar el archivo y es inmutable. Cualquier modificación posterior del binario
             produciría un hash distinto y sería detectada por la regla RIE-03.
           </p>
+
+          <DocumentoIaPanel
+            key={detalle.id}
+            doc={detalle}
+            expediente={mapaExpedientes[detalle.expediente_id]}
+            iaOnline={iaOnline}
+          />
         </Modal>
       )}
     </div>

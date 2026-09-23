@@ -6,12 +6,11 @@ import { X } from 'lucide-react'
  * Modal genérico: cierra con Escape o clic en el velo, bloquea el scroll
  * de fondo y lleva el foco al panel al abrirse.
  *
- * Se monta en un portal sobre <body> a propósito. Las pestañas se animan con
- * `fade-up`, y un ancestro con una animación de transform establece un bloque
- * contenedor que dejaría el velo `position: fixed` recortado al tamaño de la
- * pestaña en vez de cubrir toda la ventana.
+ * Se monta en un portal sobre <body> a propósito: un ancestro animado con
+ * transform establecería un bloque contenedor que dejaría el velo
+ * `position: fixed` recortado al tamaño de la pestaña.
  */
-export default function Modal({ title, subtitle, icon: Icon, onClose, children, width = 540, footer }) {
+export default function Modal({ title, subtitle, onClose, children, footer }) {
   const panel = useRef(null)
 
   useEffect(() => {
@@ -31,8 +30,7 @@ export default function Modal({ title, subtitle, icon: Icon, onClose, children, 
   return createPortal(
     <div className="modal-overlay" onMouseDown={onClose}>
       <div
-        className="modal-panel"
-        style={{ maxWidth: width }}
+        className="modal"
         onMouseDown={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
@@ -41,17 +39,12 @@ export default function Modal({ title, subtitle, icon: Icon, onClose, children, 
         ref={panel}
       >
         <header className="modal-header">
-          {Icon && (
-            <span className="modal-icon">
-              <Icon size={17} strokeWidth={2.3} />
-            </span>
-          )}
           <div className="modal-heading">
             <h3 className="modal-title">{title}</h3>
             {subtitle && <p className="modal-subtitle">{subtitle}</p>}
           </div>
-          <button type="button" className="icon-button" onClick={onClose} aria-label="Cerrar">
-            <X size={16} strokeWidth={2.4} />
+          <button type="button" className="icon-button icon-button--sm" onClick={onClose} aria-label="Cerrar">
+            <X size={15} strokeWidth={2} />
           </button>
         </header>
 

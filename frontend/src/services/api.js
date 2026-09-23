@@ -4,7 +4,8 @@
  * su propio servicio FastAPI independiente.
  *   - Core Service  (:8001) → Titulares, Expedientes, Documentos.
  *   - Rules Service (:8002) → Reglas de Validación.
- *   - AI Service    (:8003) → Análisis inteligente (esqueleto, Semana 5).
+ *   - AI Service    (:8003) → Extracción de texto/OCR (Nivel 3) y análisis
+ *                            semántico con LLM vía Groq Cloud (Nivel 4).
  */
 export const CORE_BASE_URL = 'http://127.0.0.1:8001/api/v1'
 export const RULES_BASE_URL = 'http://127.0.0.1:8002/api/v1'
@@ -86,3 +87,14 @@ export const toggleRegla = (id, activo) =>
   request(RULES_BASE_URL, `/reglas/${id}/activo`, { method: 'PATCH', params: { activo } })
 
 export { ApiError }
+
+
+/* ── Nivel 3 y 4: Análisis con IA (AI Service :8003) ────────────── */
+export const extraerTextoDocumento = (formData) =>
+  request(AI_BASE_URL, '/ai/extraer-texto', { method: 'POST', body: formData, isFormData: true })
+
+export const analizarDocumento = (data) =>
+  request(AI_BASE_URL, '/ai/analisis-semantico', { method: 'POST', body: data })
+
+export const preguntarSobreDocumento = (data) =>
+  request(AI_BASE_URL, '/ai/chat-documento', { method: 'POST', body: data })

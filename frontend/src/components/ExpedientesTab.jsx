@@ -1,23 +1,15 @@
-import { useMemo, useState } from 'react'
-import {
-  CheckCircle2,
-  ChevronDown,
-  CircleDashed,
-  FolderKanban,
-  Loader2,
-  Plus,
-  Search,
-  UploadCloud,
-  X,
-} from 'lucide-react'
+import { Fragment, useMemo, useState } from 'react'
+import { Check, ChevronDown, Loader2, Plus, Search, X } from 'lucide-react'
 import Modal from './Modal.jsx'
-import { SkeletonCards } from './Skeleton.jsx'
+import { SkeletonRows } from './Skeleton.jsx'
 import useToast from '../hooks/useToast.js'
 import DropZone from './DropZone.jsx'
 import useDebounce from '../hooks/useDebounce.js'
 import { createExpediente, uploadDocumento } from '../services/api.js'
 import { getEstadoBadge, TIPOS_DOCUMENTO, tonoPorPorcentaje } from '../constants.js'
-import { formatRelativo, iniciales, tonoDesdeTexto } from '../utils/format.js'
+import { formatRelativo, iniciales } from '../utils/format.js'
+
+const COLUMNAS = 6
 
 export default function ExpedientesTab({
   expedientes,
@@ -113,7 +105,7 @@ export default function ExpedientesTab({
     <div className="tab-panel">
       <div className="toolbar">
         <label className="search-box">
-          <Search size={15} strokeWidth={2.3} />
+          <Search size={14} strokeWidth={2} />
           <input
             type="search"
             placeholder="Buscar por folio, razón social o RFC…"
@@ -123,7 +115,7 @@ export default function ExpedientesTab({
           />
           {busqueda && (
             <button type="button" className="search-clear" onClick={() => setBusqueda('')} aria-label="Limpiar búsqueda">
-              <X size={13} strokeWidth={2.6} />
+              <X size={12} strokeWidth={2} />
             </button>
           )}
         </label>
@@ -132,7 +124,7 @@ export default function ExpedientesTab({
           <div className="segmented" role="group" aria-label="Filtrar por estado de cumplimiento">
             <button
               type="button"
-              className={`segmented-item ${filtroEstado === 'TODOS' ? 'segmented-item--active' : ''}`}
+              className={`segmented-item ${filtroEstado === 'TODOS' ? 'is-active' : ''}`}
               onClick={() => setFiltroEstado('TODOS')}
               aria-pressed={filtroEstado === 'TODOS'}
             >
@@ -145,11 +137,11 @@ export default function ExpedientesTab({
                 <button
                   key={estado}
                   type="button"
-                  className={`segmented-item ${filtroEstado === estado ? 'segmented-item--active' : ''}`}
+                  className={`segmented-item ${filtroEstado === estado ? 'is-active' : ''}`}
                   onClick={() => setFiltroEstado(estado)}
                   aria-pressed={filtroEstado === estado}
                 >
-                  <span className={`dot dot--${meta.tono}`} aria-hidden="true" />
+                  <span className={`status-dot status-dot--${meta.tono}`} aria-hidden="true" />
                   {meta.label}
                 </button>
               )
@@ -159,142 +151,154 @@ export default function ExpedientesTab({
 
         <button
           type="button"
-          className="btn btn-primary"
+          className="btn btn-primary toolbar-action"
           onClick={() => setModalAbierto(true)}
           disabled={titulares.length === 0 || !isOnline}
           title={titulares.length === 0 ? 'Primero registra una empresa' : undefined}
         >
-          <Plus size={15} strokeWidth={2.6} />
+          <Plus size={14} strokeWidth={2} />
           Aperturar expediente
         </button>
       </div>
 
-      {loading && <SkeletonCards count={4} height={196} />}
+      <div className="card table-card">
+        <div className="table-scroll">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Titular</th>
+                <th>Folio</th>
+                <th>Estado</th>
+                <th>Completitud</th>
+                <th className="col-right">Actualizado</th>
+                <th aria-label="Detalle" />
+              </tr>
+            </thead>
+            <tbody>
+              {loading && <SkeletonRows rows={4} cols={COLUMNAS} />}
 
-      {!loading && filtrados.length === 0 && (
-        <div className="surface-card">
-          <div className="empty-state">
-            <span className="empty-icon">
-              <FolderKanban size={20} strokeWidth={2} />
-            </span>
-            <p className="empty-title">
-              {expedientes.length === 0 ? 'Aún no hay expedientes aperturados' : 'Sin resultados'}
-            </p>
-            <p className="empty-desc">
-              {expedientes.length === 0
-                ? 'Apertura un expediente para empezar a custodiar la documentación de un titular.'
-                : 'Ajusta la búsqueda o el filtro de estado.'}
-            </p>
-          </div>
-        </div>
-      )}
-
-      <div className="folder-grid">
-        {!loading &&
-          filtrados.map((exp) => {
-            const meta = getEstadoBadge(exp.estado_cumplimiento)
-            const progreso = Math.max(0, Math.min(100, Number(exp.porcentaje_completitud || 0)))
-            const tono = tonoPorPorcentaje(progreso)
-            const abierto = expandido === exp.id
-            const docs = docsPorExpediente.get(exp.id) || []
-            const tiposCargados = new Set(docs.map((d) => d.tipo_documento))
-            const entregados = TIPOS_DOCUMENTO.filter((t) => tiposCargados.has(t.value))
-            const faltantes = TIPOS_DOCUMENTO.filter((t) => !tiposCargados.has(t.value))
-
-            return (
-              <article className={`folder-card ${abierto ? 'folder-card--open' : ''}`} key={exp.id}>
-                <div className="folder-head">
-                  <span
-                    className="avatar avatar--sm"
-                    style={{ '--avatar-h': tonoDesdeTexto(exp.titular?.rfc || exp.codigo_expediente) }}
-                    aria-hidden="true"
-                  >
-                    {iniciales(exp.titular?.razon_social || exp.codigo_expediente)}
-                  </span>
-                  <div className="folder-head-body">
-                    <h3 className="folder-titular">{exp.titular?.razon_social || 'Titular no disponible'}</h3>
-                    <span className="mono folder-folio">{exp.codigo_expediente}</span>
-                  </div>
-                  <span className={`badge badge--${meta.tono}`}>
-                    <span className={`dot dot--${meta.tono}`} aria-hidden="true" />
-                    {meta.label}
-                  </span>
-                </div>
-
-                <div className="meter">
-                  <div className="meter-head">
-                    <span className="meter-label">Completitud documental</span>
-                    <span className="meter-value mono-tabular">{progreso.toFixed(0)}%</span>
-                  </div>
-                  <div className={`meter-track meter-track--${tono}`}>
-                    <span className={`meter-fill meter-fill--${tono}`} style={{ width: `${progreso}%` }} />
-                  </div>
-                  <p className="meter-foot">
-                    {entregados.length} de {TIPOS_DOCUMENTO.length} tipos obligatorios entregados
-                    {docs.length > entregados.length && ` · ${docs.length} archivos en bóveda`}
-                  </p>
-                </div>
-
-                <button
-                  type="button"
-                  className="folder-toggle"
-                  onClick={() => setExpandido(abierto ? null : exp.id)}
-                  aria-expanded={abierto}
-                >
-                  <ChevronDown size={14} strokeWidth={2.4} className="folder-toggle-chevron" />
-                  {abierto ? 'Ocultar detalle' : 'Ver detalle y cargar documentos'}
-                </button>
-
-                {abierto && (
-                  <div className="folder-detail">
-                    <div className="checklist">
-                      {TIPOS_DOCUMENTO.map((t) => {
-                        const ok = tiposCargados.has(t.value)
-                        return (
-                          <div className={`checklist-item ${ok ? 'checklist-item--ok' : ''}`} key={t.value}>
-                            {ok ? (
-                              <CheckCircle2 size={14} strokeWidth={2.4} />
-                            ) : (
-                              <CircleDashed size={14} strokeWidth={2.2} />
-                            )}
-                            <span className="checklist-label">{t.label}</span>
-                            <span className={`checklist-state ${ok ? 'checklist-state--ok' : ''}`}>
-                              {ok ? 'Aprobado' : 'Pendiente'}
-                            </span>
-                          </div>
-                        )
-                      })}
-                    </div>
-
-                    {faltantes.length > 0 ? (
-                      <DropZone
-                        compacto
-                        subiendo={subiendoEn === exp.id}
-                        tipos={faltantes}
-                        onArchivo={(archivo, tipo) => subirDocumento(exp.id, archivo, tipo)}
-                      />
-                    ) : (
-                      <p className="folder-complete">
-                        <CheckCircle2 size={14} strokeWidth={2.4} />
-                        Expediente completo: los {TIPOS_DOCUMENTO.length} tipos obligatorios están custodiados.
+              {!loading && filtrados.length === 0 && (
+                <tr>
+                  <td colSpan={COLUMNAS}>
+                    <div className="empty-state">
+                      <p className="empty-title">
+                        {expedientes.length === 0 ? 'Aún no hay expedientes aperturados' : 'Sin resultados'}
                       </p>
-                    )}
-                  </div>
-                )}
+                      <p className="empty-desc">
+                        {expedientes.length === 0
+                          ? 'Apertura un expediente para empezar a custodiar la documentación de un titular.'
+                          : 'Ajusta la búsqueda o el filtro de estado.'}
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              )}
 
-                <footer className="folder-foot cell-muted">
-                  Actualizado {formatRelativo(exp.actualizado_en)}
-                </footer>
-              </article>
-            )
-          })}
+              {!loading &&
+                filtrados.map((exp) => {
+                  const meta = getEstadoBadge(exp.estado_cumplimiento)
+                  const progreso = Math.max(0, Math.min(100, Number(exp.porcentaje_completitud || 0)))
+                  const tono = tonoPorPorcentaje(progreso)
+                  const abierto = expandido === exp.id
+                  const docs = docsPorExpediente.get(exp.id) || []
+                  const tiposCargados = new Set(docs.map((d) => d.tipo_documento))
+                  const entregados = TIPOS_DOCUMENTO.filter((t) => tiposCargados.has(t.value))
+                  const faltantes = TIPOS_DOCUMENTO.filter((t) => !tiposCargados.has(t.value))
+                  const alternar = () => setExpandido(abierto ? null : exp.id)
+
+                  return (
+                    <Fragment key={exp.id}>
+                      <tr className={`row-clickable ${abierto ? 'is-open' : ''}`} onClick={alternar}>
+                        <td>
+                          <div className="identity">
+                            <span className="avatar" aria-hidden="true">
+                              {iniciales(exp.titular?.razon_social || exp.codigo_expediente)}
+                            </span>
+                            <span className="identity-name">{exp.titular?.razon_social || 'Titular no disponible'}</span>
+                          </div>
+                        </td>
+                        <td className="mono cell-mono">{exp.codigo_expediente}</td>
+                        <td>
+                          <span className={`badge badge--${meta.tono}`}>{meta.label}</span>
+                        </td>
+                        <td>
+                          <div className="progress" title={`${entregados.length} de ${TIPOS_DOCUMENTO.length} tipos obligatorios`}>
+                            <span className="progress-track">
+                              <span className={`progress-fill progress-fill--${tono}`} style={{ width: `${progreso}%` }} />
+                            </span>
+                            <span className="progress-value tabular">{progreso.toFixed(0)}%</span>
+                          </div>
+                        </td>
+                        <td className="col-right cell-muted">{formatRelativo(exp.actualizado_en)}</td>
+                        <td className="col-action">
+                          <button
+                            type="button"
+                            className="icon-button icon-button--sm"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              alternar()
+                            }}
+                            aria-expanded={abierto}
+                            aria-label={abierto ? 'Ocultar detalle' : 'Ver detalle y cargar documentos'}
+                          >
+                            <ChevronDown size={14} strokeWidth={2} className="chevron" />
+                          </button>
+                        </td>
+                      </tr>
+
+                      {abierto && (
+                        <tr className="row-detail">
+                          <td colSpan={COLUMNAS}>
+                            <div className="folder-detail">
+                              <div>
+                                <p className="field-label">
+                                  Documentos obligatorios · {entregados.length}/{TIPOS_DOCUMENTO.length}
+                                  {docs.length > entregados.length && ` · ${docs.length} archivos en bóveda`}
+                                </p>
+                                <ul className="checklist">
+                                  {TIPOS_DOCUMENTO.map((t) => {
+                                    const ok = tiposCargados.has(t.value)
+                                    return (
+                                      <li className={`checklist-item ${ok ? 'is-done' : ''}`} key={t.value}>
+                                        <span className="checklist-mark" aria-hidden="true">
+                                          {ok && <Check size={11} strokeWidth={2.5} />}
+                                        </span>
+                                        <span className="checklist-label">{t.label}</span>
+                                        <span className="checklist-state">{ok ? 'Aprobado' : 'Pendiente'}</span>
+                                      </li>
+                                    )
+                                  })}
+                                </ul>
+                              </div>
+
+                              {faltantes.length > 0 ? (
+                                <DropZone
+                                  compacto
+                                  subiendo={subiendoEn === exp.id}
+                                  tipos={faltantes}
+                                  onArchivo={(archivo, tipo) => subirDocumento(exp.id, archivo, tipo)}
+                                />
+                              ) : (
+                                <p className="folder-complete">
+                                  Expediente completo: los {TIPOS_DOCUMENTO.length} tipos obligatorios están custodiados.
+                                </p>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </Fragment>
+                  )
+                })}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {modalAbierto && (
         <Modal
           title="Aperturar expediente"
           subtitle="Vincula un nuevo fólder de cumplimiento a un titular existente"
-          icon={FolderKanban}
           onClose={cerrarModal}
         >
           <form className="form-grid" onSubmit={handleSubmit}>
@@ -312,18 +316,16 @@ export default function ExpedientesTab({
               </select>
             </label>
 
-            <p className="field-hint">
-              El folio del expediente lo genera el core-service (:8001) al momento del alta.
-            </p>
+            <p className="field-hint">El folio del expediente lo genera el core-service (:8001) al momento del alta.</p>
 
             {error && <p className="form-error">{error}</p>}
 
             <div className="modal-footer">
-              <button type="button" className="btn btn-ghost" onClick={cerrarModal}>
+              <button type="button" className="btn btn-secondary" onClick={cerrarModal}>
                 Cancelar
               </button>
               <button type="submit" className="btn btn-primary" disabled={enviando || !titularId}>
-                {enviando ? <Loader2 className="spin" size={15} /> : <UploadCloud size={15} strokeWidth={2.4} />}
+                {enviando && <Loader2 className="spin" size={14} />}
                 Crear expediente
               </button>
             </div>

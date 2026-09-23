@@ -3,7 +3,7 @@
  * para que la interfaz conserve su silueta mientras llegan los datos.
  */
 
-export function Skeleton({ w = '100%', h = 14, r = 'var(--r-xs)', className = '', style }) {
+export function Skeleton({ w = '100%', h = 12, r = 'var(--r-xs)', className = '', style }) {
   return (
     <span
       className={`skeleton ${className}`}
@@ -19,7 +19,7 @@ export function SkeletonRows({ rows = 5, cols = 5 }) {
     <tr key={i} className="skeleton-row">
       {Array.from({ length: cols }, (_, j) => (
         <td key={j}>
-          <Skeleton w={j === 0 ? '72%' : `${42 + ((i + j) % 4) * 11}%`} />
+          <Skeleton w={j === 0 ? '64%' : `${40 + ((i + j) % 4) * 10}%`} />
         </td>
       ))}
     </tr>
@@ -27,19 +27,15 @@ export function SkeletonRows({ rows = 5, cols = 5 }) {
 }
 
 /** Rejilla de tarjetas fantasma para las vistas que no son tabla. */
-export function SkeletonCards({ count = 6, height = 168 }) {
+export function SkeletonCards({ count = 6, height = 160 }) {
   return (
-    <div className="skeleton-card-grid">
+    <div className="card-grid">
       {Array.from({ length: count }, (_, i) => (
-        <div className="skeleton-card" key={i} style={{ minHeight: height }}>
-          <div className="skeleton-card-top">
-            <Skeleton w={104} h={22} r="var(--r-full)" />
-            <Skeleton w={40} h={22} r="var(--r-full)" />
-          </div>
-          <Skeleton w="76%" h={17} />
-          <Skeleton w="94%" h={12} />
-          <Skeleton w="58%" h={12} />
-          <Skeleton w="100%" h={8} r="var(--r-full)" style={{ marginTop: 'auto' }} />
+        <div className="card skeleton-card" key={i} style={{ minHeight: height }}>
+          <Skeleton w="40%" h={12} />
+          <Skeleton w="72%" h={16} />
+          <Skeleton w="92%" h={12} />
+          <Skeleton w="100%" h={4} r="var(--r-full)" style={{ marginTop: 'auto' }} />
         </div>
       ))}
     </div>

@@ -1,29 +1,18 @@
 import { useMemo, useState } from 'react'
-import {
-  Building2,
-  Check,
-  CircleAlert,
-  CircleCheck,
-  Copy,
-  Loader2,
-  Plus,
-  Search,
-  User,
-  X,
-} from 'lucide-react'
+import { Check, Copy, Loader2, Plus, Search, X } from 'lucide-react'
 import Modal from './Modal.jsx'
 import { SkeletonRows } from './Skeleton.jsx'
 import useToast from '../hooks/useToast.js'
 import useDebounce from '../hooks/useDebounce.js'
 import { createTitular } from '../services/api.js'
-import { copiarAlPortapapeles, formatFecha, iniciales, tonoDesdeTexto, validarRfc } from '../utils/format.js'
+import { copiarAlPortapapeles, formatFecha, iniciales, validarRfc } from '../utils/format.js'
 
 const FORM_INICIAL = { rfc: '', razon_social: '', tipo_persona: 'MORAL', categoria: 'PROVEEDOR' }
 
 const FILTROS_TIPO = [
-  { id: 'TODOS', label: 'Todas', icon: Building2 },
-  { id: 'MORAL', label: 'Persona Moral', icon: Building2 },
-  { id: 'FISICA', label: 'Persona Física', icon: User },
+  { id: 'TODOS', label: 'Todas' },
+  { id: 'MORAL', label: 'Moral' },
+  { id: 'FISICA', label: 'Física' },
 ]
 
 /** Botón de copiado con confirmación visual y aviso flotante. */
@@ -43,9 +32,9 @@ function CopyRfc({ rfc }) {
   }
 
   return (
-    <button type="button" className="mono-copy" onClick={copiar} data-tooltip="Copiar RFC">
+    <button type="button" className="copy-chip" onClick={copiar} data-tooltip="Copiar RFC">
       <span className="mono">{rfc}</span>
-      {copiado ? <Check size={13} strokeWidth={2.8} className="mono-copy-ok" /> : <Copy size={13} strokeWidth={2.2} />}
+      {copiado ? <Check size={12} strokeWidth={2.4} className="copy-ok" /> : <Copy size={12} strokeWidth={2} />}
     </button>
   )
 }
@@ -115,7 +104,7 @@ export default function TitularesTab({ titulares, loading, onRefresh, isOnline =
     <div className="tab-panel">
       <div className="toolbar">
         <label className="search-box">
-          <Search size={15} strokeWidth={2.3} />
+          <Search size={14} strokeWidth={2} />
           <input
             type="search"
             placeholder="Buscar por razón social, RFC o categoría…"
@@ -125,7 +114,7 @@ export default function TitularesTab({ titulares, loading, onRefresh, isOnline =
           />
           {busqueda && (
             <button type="button" className="search-clear" onClick={() => setBusqueda('')} aria-label="Limpiar búsqueda">
-              <X size={13} strokeWidth={2.6} />
+              <X size={12} strokeWidth={2} />
             </button>
           )}
         </label>
@@ -135,11 +124,10 @@ export default function TitularesTab({ titulares, loading, onRefresh, isOnline =
             <button
               key={f.id}
               type="button"
-              className={`segmented-item ${filtroTipo === f.id ? 'segmented-item--active' : ''}`}
+              className={`segmented-item ${filtroTipo === f.id ? 'is-active' : ''}`}
               onClick={() => setFiltroTipo(f.id)}
               aria-pressed={filtroTipo === f.id}
             >
-              <f.icon size={13} strokeWidth={2.3} />
               {f.label}
               <span className="segmented-count mono">{conteos[f.id]}</span>
             </button>
@@ -148,101 +136,80 @@ export default function TitularesTab({ titulares, loading, onRefresh, isOnline =
 
         <button
           type="button"
-          className="btn btn-primary"
+          className="btn btn-primary toolbar-action"
           onClick={() => setModalAbierto(true)}
           disabled={!isOnline}
           title={!isOnline ? 'El core-service (:8001) no responde' : undefined}
         >
-          <Plus size={15} strokeWidth={2.6} />
+          <Plus size={14} strokeWidth={2} />
           Alta de empresa
         </button>
       </div>
 
-      <div className="surface-card">
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>Titular</th>
-              <th>RFC</th>
-              <th className="col-center">Tipo</th>
-              <th className="col-center">Categoría</th>
-              <th className="col-right">Alta en sistema</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading && <SkeletonRows rows={5} cols={5} />}
-
-            {!loading && filtrados.length === 0 && (
+      <div className="card table-card">
+        <div className="table-scroll">
+          <table className="data-table">
+            <thead>
               <tr>
-                <td colSpan={5}>
-                  <div className="empty-state">
-                    <span className="empty-icon">
-                      <Building2 size={20} strokeWidth={2} />
-                    </span>
-                    <p className="empty-title">
-                      {titulares.length === 0 ? 'Aún no hay empresas registradas' : 'Sin resultados'}
-                    </p>
-                    <p className="empty-desc">
-                      {titulares.length === 0
-                        ? 'Da de alta el primer titular para abrir su expediente de cumplimiento.'
-                        : 'Prueba con otro término o cambia el filtro de tipo de persona.'}
-                    </p>
-                  </div>
-                </td>
+                <th>Titular</th>
+                <th>RFC</th>
+                <th>Tipo</th>
+                <th>Categoría</th>
+                <th className="col-right">Alta en sistema</th>
               </tr>
-            )}
+            </thead>
+            <tbody>
+              {loading && <SkeletonRows rows={5} cols={5} />}
 
-            {!loading &&
-              filtrados.map((t) => {
-                const tono = tonoDesdeTexto(t.rfc || t.razon_social)
-                return (
+              {!loading && filtrados.length === 0 && (
+                <tr>
+                  <td colSpan={5}>
+                    <div className="empty-state">
+                      <p className="empty-title">
+                        {titulares.length === 0 ? 'Aún no hay empresas registradas' : 'Sin resultados'}
+                      </p>
+                      <p className="empty-desc">
+                        {titulares.length === 0
+                          ? 'Da de alta el primer titular para abrir su expediente de cumplimiento.'
+                          : 'Prueba con otro término o cambia el filtro de tipo de persona.'}
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              )}
+
+              {!loading &&
+                filtrados.map((t) => (
                   <tr key={t.id}>
                     <td>
                       <div className="identity">
-                        <span
-                          className="avatar"
-                          style={{
-                            '--avatar-h': tono,
-                          }}
-                          aria-hidden="true"
-                        >
+                        <span className="avatar" aria-hidden="true">
                           {iniciales(t.razon_social)}
                         </span>
-                        <span className="identity-body">
-                          <span className="identity-name">{t.razon_social}</span>
-                          <span className="identity-sub">
-                            {t.tipo_persona === 'FISICA' ? 'Persona física' : 'Persona moral'}
-                          </span>
-                        </span>
+                        <span className="identity-name">{t.razon_social}</span>
                       </div>
                     </td>
                     <td>
                       <CopyRfc rfc={t.rfc} />
                     </td>
-                    <td className="col-center">
+                    <td>
                       <span className={`badge badge--${t.tipo_persona === 'FISICA' ? 'vault' : 'brand'}`}>
-                        {t.tipo_persona === 'FISICA' ? <User size={11} strokeWidth={2.6} /> : <Building2 size={11} strokeWidth={2.6} />}
                         {t.tipo_persona === 'FISICA' ? 'Física' : 'Moral'}
                       </span>
                     </td>
-                    <td className="col-center">
+                    <td>
                       <span className="tag">{t.categoria}</span>
                     </td>
-                    <td className="col-right cell-muted mono-tabular">{formatFecha(t.creado_en)}</td>
+                    <td className="col-right cell-muted tabular">{formatFecha(t.creado_en)}</td>
                   </tr>
-                )
-              })}
-          </tbody>
-        </table>
+                ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {modalAbierto && (
-        <Modal
-          title="Alta de empresa"
-          subtitle="Registra un nuevo titular de expediente"
-          icon={Building2}
-          onClose={cerrarModal}
-        >
+        <Modal title="Alta de empresa" subtitle="Registra un nuevo titular de expediente" onClose={cerrarModal}>
           <form className="form-grid" onSubmit={handleSubmit}>
             <div className="field-row">
               <label className="field">
@@ -273,7 +240,7 @@ export default function TitularesTab({ titulares, loading, onRefresh, isOnline =
                 </span>
               </span>
               <input
-                className={`mono input-validated input-validated--${rfcCheck.estado}`}
+                className={`mono input--${rfcCheck.estado}`}
                 required
                 maxLength={13}
                 placeholder={form.tipo_persona === 'FISICA' ? 'PEPJ850101H23' : 'PLU200115AB1'}
@@ -283,14 +250,7 @@ export default function TitularesTab({ titulares, loading, onRefresh, isOnline =
                 spellCheck="false"
               />
               {rfcCheck.estado !== 'vacio' && (
-                <span className={`field-feedback field-feedback--${rfcCheck.estado}`}>
-                  {rfcCheck.estado === 'valido' ? (
-                    <CircleCheck size={13} strokeWidth={2.5} />
-                  ) : (
-                    <CircleAlert size={13} strokeWidth={2.5} />
-                  )}
-                  {rfcCheck.mensaje}
-                </span>
+                <span className={`field-feedback field-feedback--${rfcCheck.estado}`}>{rfcCheck.mensaje}</span>
               )}
             </label>
 
@@ -306,26 +266,14 @@ export default function TitularesTab({ titulares, loading, onRefresh, isOnline =
               />
             </label>
 
-            {form.razon_social.trim().length >= 3 && (
-              <div className="preview-row">
-                <span className="avatar" style={{ '--avatar-h': tonoDesdeTexto(form.rfc || form.razon_social) }}>
-                  {iniciales(form.razon_social)}
-                </span>
-                <span className="identity-body">
-                  <span className="identity-name">{form.razon_social}</span>
-                  <span className="identity-sub mono">{form.rfc || '—'}</span>
-                </span>
-              </div>
-            )}
-
             {error && <p className="form-error">{error}</p>}
 
             <div className="modal-footer">
-              <button type="button" className="btn btn-ghost" onClick={cerrarModal}>
+              <button type="button" className="btn btn-secondary" onClick={cerrarModal}>
                 Cancelar
               </button>
               <button type="submit" className="btn btn-primary" disabled={enviando || rfcCheck.estado !== 'valido'}>
-                {enviando ? <Loader2 className="spin" size={15} /> : <Plus size={15} strokeWidth={2.6} />}
+                {enviando && <Loader2 className="spin" size={14} />}
                 Registrar titular
               </button>
             </div>

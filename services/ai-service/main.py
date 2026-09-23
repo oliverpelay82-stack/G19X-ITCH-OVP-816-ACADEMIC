@@ -1,19 +1,36 @@
 """
 AI Service — Motor de Validación de Cumplimiento Documental.
-Sprint 0 (Semana 4): esqueleto vivo con únicamente su health check.
-A partir de la Semana 5 alojará el Nivel 3 (extracción de texto / OCR) y el
-Nivel 4 (análisis semántico con IA) del pipeline de validación (DOC-05).
+
+Aloja los Niveles 3 y 4 del pipeline de validación (DOC-05):
+
+  * **Nivel 3 — Extracción de texto.** Pipeline híbrido que lee la capa
+    vectorial del PDF con PyMuPDF y deriva a OCR (Tesseract, con
+    preprocesamiento OpenCV) únicamente las páginas escaneadas.
+  * **Nivel 4 — Análisis semántico.** Inferencia contra un modelo de lenguaje
+    servido por Groq Cloud (qwen/qwen3.8-27b, sobre la LPU de Groq). Se
+    conserva la minimización de datos: solo viaja el texto que extrajo el
+    Nivel 3, nunca el documento original, y Groq no retiene por defecto las
+    entradas ni las salidas de inferencia.
+
 Puerto: 8003.
 """
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from clients import groq_client
+from config import settings
 from controllers.health_controller import router as health_router
+from controllers.extraccion_controller import router as extraccion_router
+from controllers.analisis_controller import router as analisis_router
 
 app = FastAPI(
     title="AI Service — Motor de Validación de Cumplimiento Documental",
-    description="Microservicio de análisis inteligente de documentos (esqueleto, Sprint 0 / Semana 4).",
-    version="0.1.0",
+    description=(
+        "Microservicio de análisis inteligente de documentos (API RESTful /api/v1). "
+        "Implementa el Nivel 3 (extracción de texto con OCR) y el Nivel 4 (análisis "
+        "semántico con LLM vía Groq Cloud) del pipeline de validación del DOC-05."
+    ),
+    version="1.0.0",
 )
 
 # Permitir llamadas CORS desde el frontend
@@ -25,7 +42,43 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+@app.on_event("startup")
+def on_startup():
+    """
+    Diagnóstico de arranque.
+
+    El servicio levanta aunque sus dependencias externas no estén listas: de esa
+    forma el operador puede consultar `/api/v1/health` y ver exactamente qué
+    falta, en lugar de enfrentarse a un contenedor que no arranca.
+    """
+    print(f"[ai-service] Motor de inferencia: Groq Cloud ({settings.GROQ_BASE_URL})")
+    estado = groq_client.verificar_estado()
+    if estado["modelo_disponible"]:
+        print(f"[ai-service] Modelo '{settings.GROQ_MODEL}' disponible y listo para inferencia.")
+    else:
+        print(f"[ai-service] AVISO: {estado['detalle']}")
+
+    diagnostico = {}
+    try:
+        from pipelines import extraccion_pipeline
+
+        diagnostico = extraccion_pipeline.diagnostico_ocr()
+    except Exception as exc:  # pragma: no cover - solo afecta al mensaje de arranque
+        print(f"[ai-service] AVISO: no fue posible inicializar el motor OCR: {exc}")
+
+    if diagnostico.get("disponible"):
+        print(
+            f"[ai-service] Tesseract {diagnostico['version']} activo "
+            f"(idiomas: {', '.join(diagnostico['idiomas_disponibles'])})."
+        )
+    elif diagnostico:
+        print(f"[ai-service] AVISO: {diagnostico.get('detalle')}")
+
+
 app.include_router(health_router)
+app.include_router(extraccion_router)
+app.include_router(analisis_router)
 
 
 if __name__ == "__main__":

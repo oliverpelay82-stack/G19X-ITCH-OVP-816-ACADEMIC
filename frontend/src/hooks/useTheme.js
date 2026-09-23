@@ -4,16 +4,16 @@ const STORAGE_KEY = 'plurione-theme'
 
 /** Lee el tema ya resuelto por el script de arranque de index.html. */
 function temaInicial() {
-  if (typeof document === 'undefined') return 'light'
+  if (typeof document === 'undefined') return 'dark'
   const actual = document.documentElement.getAttribute('data-theme')
   if (actual === 'dark' || actual === 'light') return actual
   try {
     const guardado = localStorage.getItem(STORAGE_KEY)
     if (guardado === 'dark' || guardado === 'light') return guardado
   } catch {
-    /* almacenamiento bloqueado: se cae al tema del sistema */
+    /* almacenamiento bloqueado: se usa el tema por defecto */
   }
-  return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+  return 'dark'
 }
 
 /**

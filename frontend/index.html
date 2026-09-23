@@ -8,31 +8,26 @@
       name="description"
       content="Motor de Validación de Cumplimiento Documental — PluriOne S.A. de C.V."
     />
-    <meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)" />
-    <meta name="theme-color" content="#f1f5f9" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#09090b" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
     <title>Motor de Validación de Cumplimiento Documental</title>
     <script>
       /* Resuelve el tema antes del primer pintado para que no haya destello
-         blanco al recargar en modo oscuro. */
+         al recargar. El tema oscuro es el predeterminado. */
       (function () {
+        var tema = 'dark'
         try {
           var guardado = localStorage.getItem('plurione-theme')
-          var tema =
-            guardado === 'dark' || guardado === 'light'
-              ? guardado
-              : window.matchMedia('(prefers-color-scheme: dark)').matches
-                ? 'dark'
-                : 'light'
-          document.documentElement.setAttribute('data-theme', tema)
+          if (guardado === 'dark' || guardado === 'light') tema = guardado
         } catch (e) {
-          document.documentElement.setAttribute('data-theme', 'light')
+          /* almacenamiento bloqueado: se queda el tema por defecto */
         }
+        document.documentElement.setAttribute('data-theme', tema)
       })()
     </script>
   </head>

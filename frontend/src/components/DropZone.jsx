@@ -1,14 +1,5 @@
 import { useCallback, useRef, useState } from 'react'
-import {
-  AlertTriangle,
-  FileCheck2,
-  FileText,
-  Fingerprint,
-  Loader2,
-  ShieldCheck,
-  Trash2,
-  UploadCloud,
-} from 'lucide-react'
+import { Loader2, Upload, X } from 'lucide-react'
 import { MAX_FILE_SIZE_BYTES } from '../constants.js'
 import { analizarNivel1 } from '../utils/nivel1.js'
 import { formatBytes } from '../utils/format.js'
@@ -69,7 +60,7 @@ export default function DropZone({
   return (
     <div className={`dropzone-wrap ${compacto ? 'dropzone-wrap--compact' : ''}`}>
       <div
-        className={`dropzone ${arrastrando ? 'dropzone--active' : ''} ${archivo ? 'dropzone--filled' : ''}`}
+        className={`dropzone ${arrastrando ? 'is-dragging' : ''}`}
         onDragEnter={(e) => {
           e.preventDefault()
           contador.current += 1
@@ -101,20 +92,9 @@ export default function DropZone({
         tabIndex={0}
         aria-label="Seleccionar o arrastrar un documento"
       >
-        <span className="dropzone-ring" aria-hidden="true" />
-        <span className="dropzone-icon">
-          {arrastrando ? (
-            <UploadCloud size={compacto ? 19 : 24} strokeWidth={2} />
-          ) : (
-            <ShieldCheck size={compacto ? 19 : 24} strokeWidth={2} />
-          )}
-        </span>
-        <p className="dropzone-title">
-          {arrastrando ? 'Suelta para analizar' : 'Arrastra el documento o haz clic aquí'}
-        </p>
-        <p className="dropzone-hint">
-          PDF, JPG o PNG · máximo {formatBytes(MAX_FILE_SIZE_BYTES)} · se calcula el SHA-256 en tu equipo
-        </p>
+        <Upload size={18} strokeWidth={1.75} className="dropzone-icon" />
+        <p className="dropzone-title">{arrastrando ? 'Suelta para analizar' : 'Arrastra un archivo o haz clic'}</p>
+        <p className="dropzone-hint">PDF, JPG o PNG · máx. {formatBytes(MAX_FILE_SIZE_BYTES)}</p>
         <input
           ref={inputRef}
           type="file"
@@ -125,51 +105,41 @@ export default function DropZone({
       </div>
 
       {analizando && (
-        <div className="analysis">
-          <Loader2 className="spin" size={15} />
-          <span>Leyendo firma binaria y calculando la huella SHA-256…</span>
+        <div className="analysis analysis--loading">
+          <Loader2 className="spin" size={14} />
+          <span>Calculando huella SHA-256…</span>
         </div>
       )}
 
       {archivo && analisis && !analizando && (
-        <div className="analysis analysis--result">
+        <div className="analysis">
           <div className="analysis-file">
-            <span className="analysis-file-icon">
-              <FileText size={15} strokeWidth={2.2} />
-            </span>
-            <span className="analysis-file-body">
-              <span className="analysis-file-name">{archivo.name}</span>
-              <span className="analysis-file-meta mono">{formatBytes(archivo.size)}</span>
-            </span>
+            <span className="analysis-file-name">{archivo.name}</span>
+            <span className="analysis-file-size mono">{formatBytes(archivo.size)}</span>
             <button type="button" className="icon-button icon-button--sm" onClick={limpiar} aria-label="Descartar archivo">
-              <Trash2 size={14} strokeWidth={2.2} />
+              <X size={14} strokeWidth={2} />
             </button>
           </div>
 
           <div className="analysis-checks">
             <span className={`badge badge--${analisis.magic ? 'vault' : 'bad'}`}>
-              {analisis.magic ? <FileCheck2 size={11} strokeWidth={2.6} /> : <AlertTriangle size={11} strokeWidth={2.6} />}
               {analisis.magic ? `${analisis.magic.label} verificado` : 'Firma no reconocida'}
             </span>
             <span className={`badge badge--${analisis.tamanioOk ? 'ok' : 'bad'}`}>
-              {analisis.tamanioOk ? <FileCheck2 size={11} strokeWidth={2.6} /> : <AlertTriangle size={11} strokeWidth={2.6} />}
               {analisis.tamanioOk ? 'Tamaño admitido' : 'Fuera del límite'}
             </span>
           </div>
 
           <div className="analysis-hash">
-            <span className="analysis-hash-label">
-              <Fingerprint size={12} strokeWidth={2.4} />
-              SHA-256
-            </span>
-            <code className="analysis-hash-value">{analisis.hash}</code>
+            <span className="field-label">SHA-256</span>
+            <code className="mono">{analisis.hash}</code>
           </div>
         </div>
       )}
 
       <div className="dropzone-controls">
         {tipos?.length > 1 && (
-          <label className="field field--inline">
+          <label className="field">
             <span className="field-label">Tipo de documento</span>
             <select value={tipoActivo} onChange={(e) => setTipo(e.target.value)}>
               {tipos.map((t) => (
@@ -190,7 +160,7 @@ export default function DropZone({
           disabled={!listo || subiendo}
           title={deshabilitado ? motivoDeshabilitado : undefined}
         >
-          {subiendo ? <Loader2 className="spin" size={15} /> : <UploadCloud size={15} strokeWidth={2.4} />}
+          {subiendo && <Loader2 className="spin" size={14} />}
           Custodiar en bóveda
         </button>
       </div>

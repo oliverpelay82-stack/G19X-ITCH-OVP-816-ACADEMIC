@@ -1,163 +1,104 @@
 /* ===================================================================
    Motor de Validación de Cumplimiento Documental — PluriOne S.A. de C.V.
-   Sistema de diseño "Premium Enterprise".
+   Design system minimalista (referencias: Linear, Vercel, Stripe).
 
-   Dos temas seleccionados a mano (el oscuro no es una inversión automática
-   del claro: cada paso se eligió contra su propia superficie).
-
-   Nota sobre los colores de estado: en modo claro el esmeralda #10B981 y el
-   ámbar #F59E0B quedan por debajo de 3:1 sobre blanco, así que se usan solo
-   como MARCA (puntos, rellenos de medidor) y el texto usa pasos más oscuros
-   (--ok-ink, --warn-ink). En modo oscuro los pasos claros sí superan 3:1.
-   Ningún estado se comunica solo con color: siempre lleva icono y etiqueta.
+   · Profundidad por contraste de superficie; sombras solo en modales,
+     dropdowns y tooltips.
+   · Transiciones de 150 ms ease-out, sin rebotes ni escalados.
+   · Espaciado en rejilla de 4 px. Ningún estado se comunica solo con
+     color: siempre viaja con su etiqueta.
    =================================================================== */
 
 :root {
   /* ── Tipografía ─────────────────────────────────────────────── */
-  --font-display: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-mono: 'JetBrains Mono', 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 
-  /* ── Escala tipográfica ─────────────────────────────────────── */
-  --text-2xs: 0.6875rem;
-  --text-xs: 0.75rem;
-  --text-sm: 0.8125rem;
-  --text-base: 0.875rem;
-  --text-md: 0.9375rem;
-  --text-lg: 1.0625rem;
-  --text-xl: 1.375rem;
-  --text-2xl: 1.75rem;
-  --text-hero: 2.25rem;
+  /* ── Espaciado (4 px) ───────────────────────────────────────── */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 20px;
+  --s-6: 24px;
+  --s-8: 32px;
+  --s-10: 40px;
+  --s-12: 48px;
 
-  /* ── Radios y transiciones ──────────────────────────────────── */
-  --r-xs: 6px;
-  --r-sm: 8px;
-  --r-md: 11px;
-  --r-lg: 14px;
-  --r-xl: 18px;
+  /* ── Radios ─────────────────────────────────────────────────── */
+  --r-xs: 4px;
+  --r-sm: 6px; /* botones, inputs */
+  --r-md: 8px; /* cards */
+  --r-lg: 12px; /* modales */
   --r-full: 999px;
 
-  --ease: cubic-bezier(0.32, 0.72, 0, 1);
-  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-  --t-fast: 120ms var(--ease);
-  --t-base: 200ms var(--ease);
-  --t-slow: 380ms var(--ease-out);
+  /* ── Movimiento ─────────────────────────────────────────────── */
+  --dur: 150ms;
+  --ease: ease-out;
 
-  --sidebar-w: 268px;
-  --header-h: 68px;
+  --sidebar-w: 220px;
 
-  /* ── Marcas de estado (iguales en ambos temas) ──────────────── */
-  --brand: #2563eb;
-  --brand-bright: #3b82f6;
-  --ok: #10b981;
-  --warn: #f59e0b;
-  --bad: #ef4444;
-  --vault: #8b5cf6;
+  /* ── Acento y estados (idénticos en ambos temas) ────────────── */
+  --accent: #3b82f6;
+  --accent-hover: #2563eb;
+  --accent-soft: rgba(59, 130, 246, 0.1);
+  --accent-ring: rgba(59, 130, 246, 0.25);
+
+  --ok: #059669;
+  --ok-soft: rgba(5, 150, 105, 0.1);
+  --warn: #d97706;
+  --warn-soft: rgba(217, 119, 6, 0.1);
+  --bad: #dc2626;
+  --bad-soft: rgba(220, 38, 38, 0.1);
+  --vault: #7c3aed;
+  --vault-soft: rgba(124, 58, 237, 0.1);
 }
 
-/* ══════════════════════ TEMA CLARO ══════════════════════════════ */
+/* ══════════════════════ TEMA OSCURO (por defecto) ═══════════════ */
 :root,
-[data-theme='light'] {
-  color-scheme: light;
-
-  --canvas: #f1f5f9;
-  --canvas-tint: radial-gradient(1200px 600px at 15% -10%, #e0e7ff 0%, transparent 55%),
-    radial-gradient(1000px 500px at 100% 0%, #dbeafe 0%, transparent 50%);
-  --surface: #ffffff;
-  --surface-2: #f8fafc;
-  --surface-3: #f1f5f9;
-  --surface-glass: rgba(255, 255, 255, 0.78);
-  --surface-inset: #f8fafc;
-
-  --border: #e2e8f0;
-  --border-strong: #cbd5e1;
-  --border-hair: #eef2f6;
-
-  --ink: #0f172a;
-  --ink-2: #475569;
-  --ink-3: #64748b;
-  --ink-4: #94a3b8;
-
-  --brand-ink: #1d4ed8;
-  --brand-soft: #eff6ff;
-  --brand-line: #bfdbfe;
-
-  /* Tinta de estado: pasos oscuros, legibles sobre fondos suaves. */
-  --ok-ink: #047857;
-  --ok-soft: #ecfdf5;
-  --ok-line: #a7f3d0;
-  --warn-ink: #b45309;
-  --warn-soft: #fffbeb;
-  --warn-line: #fde68a;
-  --bad-ink: #b91c1c;
-  --bad-soft: #fef2f2;
-  --bad-line: #fecaca;
-  --vault-ink: #6d28d9;
-  --vault-soft: #f5f3ff;
-  --vault-line: #ddd6fe;
-
-  --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
-  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05), 0 2px 6px rgba(15, 23, 42, 0.04);
-  --shadow-md: 0 2px 4px rgba(15, 23, 42, 0.04), 0 8px 20px rgba(15, 23, 42, 0.07);
-  --shadow-lg: 0 4px 8px rgba(15, 23, 42, 0.05), 0 18px 44px rgba(15, 23, 42, 0.11);
-  --shadow-xl: 0 8px 16px rgba(15, 23, 42, 0.06), 0 32px 72px rgba(15, 23, 42, 0.16);
-  --shadow-ring: 0 0 0 1px rgba(15, 23, 42, 0.04);
-
-  --skeleton-a: #eef2f7;
-  --skeleton-b: #e2e8f0;
-  --scroll-thumb: #cbd5e1;
-}
-
-/* ══════════════════════ TEMA OSCURO ═════════════════════════════ */
 [data-theme='dark'] {
   color-scheme: dark;
 
-  --canvas: #090d16;
-  --canvas-tint: radial-gradient(1200px 620px at 12% -12%, rgba(37, 99, 235, 0.16) 0%, transparent 55%),
-    radial-gradient(900px 480px at 100% 0%, rgba(139, 92, 246, 0.12) 0%, transparent 52%);
-  --surface: #0f172a;
-  --surface-2: #131c30;
-  --surface-3: #1e293b;
-  --surface-glass: rgba(15, 23, 42, 0.72);
-  --surface-inset: #0b1220;
+  --bg: #09090b;
+  --surface-1: #111113;
+  --surface-2: #18181b;
+  --surface-3: #27272a;
+  --border: rgba(255, 255, 255, 0.06);
+  --border-hover: rgba(255, 255, 255, 0.12);
 
-  --border: #263349;
-  --border-strong: #334155;
-  --border-hair: rgba(255, 255, 255, 0.06);
+  --text: #fafafa;
+  --text-2: #a1a1aa;
+  --text-3: #71717a;
 
-  --ink: #f1f5f9;
-  --ink-2: #cbd5e1;
-  --ink-3: #94a3b8;
-  --ink-4: #64748b;
+  --sidebar-bg: #09090b;
+  --hover: rgba(255, 255, 255, 0.03);
+  --active: rgba(255, 255, 255, 0.05);
+  --overlay: rgba(0, 0, 0, 0.6);
+  --shadow-pop: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.06);
+  --shadow-modal: 0 24px 64px rgba(0, 0, 0, 0.6);
+}
 
-  --brand-ink: #93c5fd;
-  --brand-soft: rgba(59, 130, 246, 0.14);
-  --brand-line: rgba(59, 130, 246, 0.34);
+/* ══════════════════════ TEMA CLARO ══════════════════════════════ */
+[data-theme='light'] {
+  color-scheme: light;
 
-  /* En oscuro los pasos claros superan 3:1 contra #0f172a. */
-  --ok-ink: #34d399;
-  --ok-soft: rgba(16, 185, 129, 0.14);
-  --ok-line: rgba(16, 185, 129, 0.34);
-  --warn-ink: #fbbf24;
-  --warn-soft: rgba(245, 158, 11, 0.14);
-  --warn-line: rgba(245, 158, 11, 0.34);
-  --bad-ink: #f87171;
-  --bad-soft: rgba(239, 68, 68, 0.14);
-  --bad-line: rgba(239, 68, 68, 0.34);
-  --vault-ink: #a78bfa;
-  --vault-soft: rgba(139, 92, 246, 0.14);
-  --vault-line: rgba(139, 92, 246, 0.34);
+  --bg: #fafafa;
+  --surface-1: #ffffff;
+  --surface-2: #f4f4f5;
+  --surface-3: #ffffff;
+  --border: #e4e4e7;
+  --border-hover: #d4d4d8;
 
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.45), 0 2px 8px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.45), 0 10px 24px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 6px 14px rgba(0, 0, 0, 0.5), 0 22px 52px rgba(0, 0, 0, 0.5);
-  --shadow-xl: 0 10px 22px rgba(0, 0, 0, 0.55), 0 36px 80px rgba(0, 0, 0, 0.6);
-  --shadow-ring: 0 0 0 1px rgba(255, 255, 255, 0.06);
+  --text: #09090b;
+  --text-2: #52525b;
+  --text-3: #a1a1aa;
 
-  --skeleton-a: #172033;
-  --skeleton-b: #223049;
-  --scroll-thumb: #334155;
+  --sidebar-bg: #ffffff;
+  --hover: rgba(0, 0, 0, 0.02);
+  --active: rgba(0, 0, 0, 0.04);
+  --overlay: rgba(0, 0, 0, 0.6);
+  --shadow-pop: 0 8px 24px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.04);
+  --shadow-modal: 0 24px 64px rgba(0, 0, 0, 0.16);
 }
 
 /* ══════════════════════ BASE ════════════════════════════════════ */
@@ -168,77 +109,70 @@
 }
 
 html,
-body,
-#root {
-  height: 100%;
+body {
+  margin: 0;
+  padding: 0;
 }
 
 body {
-  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
   font-family: var(--font-sans);
-  font-size: var(--text-base);
-  line-height: 1.55;
-  background-color: var(--canvas);
-  background-image: var(--canvas-tint);
-  background-attachment: fixed;
-  color: var(--ink);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
-  transition: background-color var(--t-base), color var(--t-base);
+  font-feature-settings: 'cv11', 'ss01';
 }
 
 h1,
 h2,
 h3,
-h4 {
-  font-family: var(--font-display);
+h4,
+p,
+dl,
+dd,
+ul {
   margin: 0;
-  letter-spacing: -0.018em;
-  color: var(--ink);
 }
 
-p {
-  margin: 0;
+ul {
+  padding: 0;
 }
 
 button,
 input,
 select,
 textarea {
-  font-family: inherit;
-  font-size: inherit;
+  font: inherit;
   color: inherit;
 }
 
 button {
   cursor: pointer;
+  background: none;
+  border: 0;
+  padding: 0;
 }
 
 button:disabled {
   cursor: not-allowed;
 }
 
-a {
-  color: inherit;
-}
-
-code,
-.mono {
+code {
   font-family: var(--font-mono);
-  font-variant-ligatures: none;
 }
 
-/* El foco siempre es visible, pero solo por teclado. */
 :focus-visible {
-  outline: 2px solid var(--brand-bright);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
-  border-radius: var(--r-xs);
 }
 
 ::selection {
-  background: var(--brand);
-  color: #fff;
+  background: var(--accent-soft);
 }
 
 ::-webkit-scrollbar {
@@ -247,108 +181,49 @@ code,
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--scroll-thumb);
+  background: var(--surface-3);
+  border: 3px solid transparent;
   border-radius: var(--r-full);
-  border: 2px solid transparent;
-  background-clip: content-box;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--ink-4);
-  background-clip: content-box;
+  background-clip: padding-box;
 }
 
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 
-/* ══════════════════════ ANIMACIONES ═════════════════════════════ */
+.mono {
+  font-family: var(--font-mono);
+  font-feature-settings: normal;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 @keyframes spin {
   to {
     transform: rotate(360deg);
   }
 }
 
-/* Halo latente de los puntos de salud de microservicio. */
-@keyframes pulse-glow {
-  0% {
-    box-shadow: 0 0 0 0 var(--pulse-color, rgba(16, 185, 129, 0.55));
-  }
-  70% {
-    box-shadow: 0 0 0 7px rgba(0, 0, 0, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
-  }
-}
-
-@keyframes shimmer {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
-}
-
-@keyframes fade-up {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-@keyframes toast-in {
-  from {
-    opacity: 0;
-    transform: translateX(28px) scale(0.96);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-@keyframes toast-out {
-  to {
-    opacity: 0;
-    transform: translateX(28px) scale(0.96);
-  }
-}
-
-@keyframes overlay-in {
+@keyframes fade-in {
   from {
     opacity: 0;
   }
   to {
     opacity: 1;
-  }
-}
-
-@keyframes modal-in {
-  from {
-    opacity: 0;
-    transform: translateY(14px) scale(0.97);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-@keyframes ring-draw {
-  from {
-    stroke-dashoffset: var(--ring-circumference);
-  }
-}
-
-@keyframes bar-grow {
-  from {
-    transform: scaleX(0);
   }
 }
 
@@ -356,7 +231,6 @@ code,
   animation: spin 0.8s linear infinite;
 }
 
-/* Quien pide menos movimiento recibe la interfaz sin animaciones. */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -364,6 +238,5 @@ code,
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
   }
 }

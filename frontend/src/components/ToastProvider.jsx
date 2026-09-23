@@ -1,15 +1,12 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
-import { AlertTriangle, CheckCircle2, Info, X, XCircle } from 'lucide-react'
+import { X } from 'lucide-react'
 import { ToastContext } from './toast-context.js'
 
-const ICONOS = {
-  exito: CheckCircle2,
-  error: XCircle,
-  alerta: AlertTriangle,
-  info: Info,
-}
+/** Todas las notificaciones se retiran solas a los 4 segundos. */
+const DURACION = 4000
 
-const DURACION = { exito: 3200, info: 3200, alerta: 4600, error: 5600 }
+/** Duración del fundido de salida; debe coincidir con --dur en el CSS. */
+const SALIDA = 150
 
 /**
  * Notificaciones flotantes de la esquina inferior derecha.
@@ -27,9 +24,9 @@ export function ToastProvider({ children }) {
       clearTimeout(t)
       temporizadores.current.delete(id)
     }
-    // Se marca como saliente para dejar correr la animación antes de quitarlo.
+    // Se marca como saliente para dejar correr el fundido antes de quitarlo.
     setToasts((prev) => prev.map((x) => (x.id === id ? { ...x, saliendo: true } : x)))
-    setTimeout(() => setToasts((prev) => prev.filter((x) => x.id !== id)), 220)
+    setTimeout(() => setToasts((prev) => prev.filter((x) => x.id !== id)), SALIDA)
   }, [])
 
   const mostrar = useCallback(
@@ -37,7 +34,7 @@ export function ToastProvider({ children }) {
       siguienteId.current += 1
       const id = siguienteId.current
       setToasts((prev) => [...prev.slice(-3), { id, tipo, titulo, detalle, saliendo: false }])
-      const temporizador = setTimeout(() => cerrar(id), DURACION[tipo] || 3600)
+      const temporizador = setTimeout(() => cerrar(id), DURACION)
       temporizadores.current.set(id, temporizador)
       return id
     },
@@ -59,27 +56,22 @@ export function ToastProvider({ children }) {
     <ToastContext.Provider value={api}>
       {children}
       <div className="toast-stack" role="region" aria-label="Notificaciones">
-        {toasts.map((t) => {
-          const Icono = ICONOS[t.tipo] || Info
-          return (
-            <div
-              key={t.id}
-              className={`toast toast--${t.tipo} ${t.saliendo ? 'toast--saliendo' : ''}`}
-              role={t.tipo === 'error' ? 'alert' : 'status'}
-            >
-              <span className="toast-icon">
-                <Icono size={17} strokeWidth={2.4} />
-              </span>
-              <div className="toast-body">
-                <p className="toast-title">{t.titulo}</p>
-                {t.detalle && <p className="toast-detail">{t.detalle}</p>}
-              </div>
-              <button type="button" className="toast-close" onClick={() => cerrar(t.id)} aria-label="Cerrar aviso">
-                <X size={14} strokeWidth={2.5} />
-              </button>
+        {toasts.map((t) => (
+          <div
+            key={t.id}
+            className={`toast toast--${t.tipo} ${t.saliendo ? 'is-leaving' : ''}`}
+            role={t.tipo === 'error' ? 'alert' : 'status'}
+          >
+            <span className="toast-dot" aria-hidden="true" />
+            <div className="toast-body">
+              <p className="toast-title">{t.titulo}</p>
+              {t.detalle && <p className="toast-detail">{t.detalle}</p>}
             </div>
-          )
-        })}
+            <button type="button" className="toast-close" onClick={() => cerrar(t.id)} aria-label="Cerrar aviso">
+              <X size={13} strokeWidth={2} />
+            </button>
+          </div>
+        ))}
       </div>
     </ToastContext.Provider>
   )

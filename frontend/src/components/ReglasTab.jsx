@@ -1,7 +1,7 @@
-import { useMemo, useState } from 'react'
-import { Loader2, Plus, Scale, Search, WifiOff, X } from 'lucide-react'
+import { Fragment, useMemo, useState } from 'react'
+import { Loader2, Plus, Search, X } from 'lucide-react'
 import Modal from './Modal.jsx'
-import { SkeletonCards } from './Skeleton.jsx'
+import { SkeletonRows } from './Skeleton.jsx'
 import useToast from '../hooks/useToast.js'
 import useDebounce from '../hooks/useDebounce.js'
 import { createRegla, toggleRegla } from '../services/api.js'
@@ -27,12 +27,14 @@ const FORM_INICIAL = {
   tiposSeleccionados: [],
 }
 
-/** Interruptor tipo iOS para activar o pausar una regla del catálogo. */
+const COLUMNAS = 6
+
+/** Interruptor para activar o pausar una regla del catálogo. */
 function Switch({ checked, onClick, loading, label }) {
   return (
     <button
       type="button"
-      className={`switch ${checked ? 'switch--on' : ''}`}
+      className={`switch ${checked ? 'is-on' : ''}`}
       onClick={onClick}
       disabled={loading}
       role="switch"
@@ -40,9 +42,7 @@ function Switch({ checked, onClick, loading, label }) {
       aria-label={label}
       data-tooltip={checked ? 'Pausar regla' : 'Activar regla'}
     >
-      <span className="switch-thumb">
-        {loading && <Loader2 className="spin" size={10} strokeWidth={3} />}
-      </span>
+      <span className="switch-thumb">{loading && <Loader2 className="spin" size={9} strokeWidth={3} />}</span>
     </button>
   )
 }
@@ -166,21 +166,14 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
   if (!isOnline) {
     return (
       <div className="tab-panel">
-        <div className="offline-banner">
-          <span className="offline-icon">
-            <WifiOff size={24} strokeWidth={2} />
-          </span>
-          <div className="offline-body">
-            <h3>Microservicio de reglas (:8002) sin respuesta</h3>
-            <p>
-              El <code>rules-service</code> está temporalmente fuera de línea, así que no es posible consultar,
-              evaluar ni modificar el catálogo normativo en este momento.
-            </p>
-            <p className="offline-note">
-              El resto del sistema —Empresas, Expedientes y Bóveda Criptográfica— sigue operando con normalidad
-              gracias a la arquitectura de microservicios desacoplados.
-            </p>
-          </div>
+        <div className="card offline-card">
+          <span className="badge badge--bad">Sin respuesta</span>
+          <h2 className="section-title">Microservicio de reglas (:8002) fuera de línea</h2>
+          <p className="section-desc">
+            El <code className="mono">rules-service</code> no responde, así que no es posible consultar, evaluar ni
+            modificar el catálogo normativo en este momento. Empresas, Expedientes y Bóveda siguen operando con
+            normalidad gracias a la arquitectura de microservicios desacoplados.
+          </p>
         </div>
       </div>
     )
@@ -190,7 +183,7 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
     <div className="tab-panel">
       <div className="toolbar">
         <label className="search-box">
-          <Search size={15} strokeWidth={2.3} />
+          <Search size={14} strokeWidth={2} />
           <input
             type="search"
             placeholder="Buscar por código, nombre, criterio o acción…"
@@ -200,7 +193,7 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
           />
           {busqueda && (
             <button type="button" className="search-clear" onClick={() => setBusqueda('')} aria-label="Limpiar búsqueda">
-              <X size={13} strokeWidth={2.6} />
+              <X size={12} strokeWidth={2} />
             </button>
           )}
         </label>
@@ -208,7 +201,7 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
         <div className="segmented" role="group" aria-label="Filtrar por familia normativa">
           <button
             type="button"
-            className={`segmented-item ${filtroFamilia === 'TODAS' ? 'segmented-item--active' : ''}`}
+            className={`segmented-item ${filtroFamilia === 'TODAS' ? 'is-active' : ''}`}
             onClick={() => setFiltroFamilia('TODAS')}
             aria-pressed={filtroFamilia === 'TODAS'}
           >
@@ -219,7 +212,7 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
             <button
               key={f}
               type="button"
-              className={`segmented-item ${filtroFamilia === f ? 'segmented-item--active' : ''}`}
+              className={`segmented-item ${filtroFamilia === f ? 'is-active' : ''}`}
               onClick={() => setFiltroFamilia(f)}
               aria-pressed={filtroFamilia === f}
               data-tooltip={`${FAMILIA_META[f].nombre} · ${FAMILIA_META[f].nivel}`}
@@ -230,120 +223,126 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
           ))}
         </div>
 
-        <div className="segmented" role="group" aria-label="Filtrar por severidad">
-          <button
-            type="button"
-            className={`segmented-item ${filtroSeveridad === 'TODAS' ? 'segmented-item--active' : ''}`}
-            onClick={() => setFiltroSeveridad('TODAS')}
-            aria-pressed={filtroSeveridad === 'TODAS'}
-          >
-            Toda severidad
-          </button>
-          {SEVERIDADES.map((s) => {
-            const meta = getSeveridadMeta(s)
-            return (
-              <button
-                key={s}
-                type="button"
-                className={`segmented-item ${filtroSeveridad === s ? 'segmented-item--active' : ''}`}
-                onClick={() => setFiltroSeveridad(s)}
-                aria-pressed={filtroSeveridad === s}
-              >
-                <span className={`dot dot--${meta.tono}`} aria-hidden="true" />
-                {meta.label}
-              </button>
-            )
-          })}
-        </div>
+        <label className="select-inline">
+          <span className="sr-only">Filtrar por severidad</span>
+          <select value={filtroSeveridad} onChange={(e) => setFiltroSeveridad(e.target.value)}>
+            <option value="TODAS">Toda severidad</option>
+            {SEVERIDADES.map((s) => (
+              <option key={s} value={s}>
+                {getSeveridadMeta(s).label}
+              </option>
+            ))}
+          </select>
+        </label>
 
-        <button type="button" className="btn btn-primary" onClick={() => setModalAbierto(true)}>
-          <Plus size={15} strokeWidth={2.6} />
+        <button type="button" className="btn btn-primary toolbar-action" onClick={() => setModalAbierto(true)}>
+          <Plus size={14} strokeWidth={2} />
           Nueva regla
         </button>
       </div>
 
-      {loading && <SkeletonCards count={6} height={186} />}
+      <div className="card table-card">
+        <div className="table-scroll">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Regla</th>
+                <th>Severidad</th>
+                <th>Alcance</th>
+                <th>Acción</th>
+                <th className="col-right">Activa</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading && <SkeletonRows rows={6} cols={COLUMNAS} />}
 
-      {!loading && filtradas.length === 0 && (
-        <div className="surface-card">
-          <div className="empty-state">
-            <span className="empty-icon">
-              <Scale size={20} strokeWidth={2} />
-            </span>
-            <p className="empty-title">{reglas.length === 0 ? 'El catálogo está vacío' : 'Sin coincidencias'}</p>
-            <p className="empty-desc">
-              {reglas.length === 0
-                ? 'Precarga el catálogo del DOC-05 o da de alta una regla dinámica (RDS-01).'
-                : 'Ajusta la búsqueda o relaja los filtros de familia y severidad.'}
-            </p>
-          </div>
+              {!loading && filtradas.length === 0 && (
+                <tr>
+                  <td colSpan={COLUMNAS}>
+                    <div className="empty-state">
+                      <p className="empty-title">{reglas.length === 0 ? 'El catálogo está vacío' : 'Sin coincidencias'}</p>
+                      <p className="empty-desc">
+                        {reglas.length === 0
+                          ? 'Precarga el catálogo del DOC-05 o da de alta una regla dinámica (RDS-01).'
+                          : 'Ajusta la búsqueda o relaja los filtros de familia y severidad.'}
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              )}
+
+              {!loading &&
+                porFamilia.map((grupo) => (
+                  <Fragment key={grupo.familia}>
+                    <tr className="group-row">
+                      <td colSpan={COLUMNAS}>
+                        <span className="mono group-code">{grupo.familia}</span>
+                        <span className="group-name">{grupo.meta.nombre}</span>
+                        <span className="group-meta">{grupo.meta.nivel}</span>
+                        <span className="group-count mono">
+                          {grupo.items.filter((r) => r.activo).length}/{grupo.items.length} activas
+                        </span>
+                      </td>
+                    </tr>
+
+                    {grupo.items.map((r) => {
+                      const sev = getSeveridadMeta(r.severidad)
+                      return (
+                        <tr className={!r.activo ? 'is-paused' : ''} key={r.id}>
+                          <td className="mono cell-mono">{r.codigo_regla}</td>
+                          <td className="cell-wide">
+                            <div className="cell-stack">
+                              <span className="identity-name">{r.nombre_regla}</span>
+                              <span className="cell-sub cell-clamp" title={r.descripcion}>
+                                {r.descripcion}
+                              </span>
+                            </div>
+                          </td>
+                          <td>
+                            <span className={`badge badge--${sev.tono}`}>{sev.label}</span>
+                          </td>
+                          <td>
+                            <div className="tag-row">
+                              <span className="tag">
+                                {r.tipo_documento
+                                  ? TIPO_DOCUMENTO_CORTO[r.tipo_documento] || r.tipo_documento
+                                  : 'Todo el expediente'}
+                              </span>
+                              {r.dias_maximos_vigencia != null && (
+                                <span className="tag mono">{r.dias_maximos_vigencia} días</span>
+                              )}
+                              {r.documento_obligatorio && <span className="tag">Obligatorio</span>}
+                            </div>
+                          </td>
+                          <td className="cell-muted cell-action-text">
+                            <span className="cell-clamp" title={r.accion}>
+                              {r.accion}
+                            </span>
+                          </td>
+                          <td className="col-right">
+                            <Switch
+                              checked={r.activo}
+                              onClick={() => handleToggle(r)}
+                              loading={togglingId === r.id}
+                              label={`${r.activo ? 'Pausar' : 'Activar'} ${r.codigo_regla}`}
+                            />
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </Fragment>
+                ))}
+            </tbody>
+          </table>
         </div>
-      )}
-
-      {!loading &&
-        porFamilia.map((grupo) => (
-          <section className="rule-family" key={grupo.familia}>
-            <header className="rule-family-head">
-              <span className={`family-chip family-chip--${grupo.meta.clase}`}>{grupo.familia}</span>
-              <div className="rule-family-titles">
-                <h3 className="rule-family-name">{grupo.meta.nombre}</h3>
-                <span className="rule-family-level">{grupo.meta.nivel}</span>
-              </div>
-              <span className="rule-family-count mono">
-                {grupo.items.filter((r) => r.activo).length}/{grupo.items.length} activas
-              </span>
-            </header>
-
-            <div className="rules-grid">
-              {grupo.items.map((r) => {
-                const sev = getSeveridadMeta(r.severidad)
-                return (
-                  <article className={`rule-card ${!r.activo ? 'rule-card--paused' : ''}`} key={r.id}>
-                    <div className="rule-card-head">
-                      <span className="mono rule-code">{r.codigo_regla}</span>
-                      <Switch
-                        checked={r.activo}
-                        onClick={() => handleToggle(r)}
-                        loading={togglingId === r.id}
-                        label={`${r.activo ? 'Pausar' : 'Activar'} ${r.codigo_regla}`}
-                      />
-                    </div>
-
-                    <h4 className="rule-title">{r.nombre_regla}</h4>
-                    <p className="rule-desc">{r.descripcion}</p>
-
-                    <div className="rule-tags">
-                      <span className={`badge badge--${sev.tono}`}>
-                        <span className={`dot dot--${sev.tono}`} aria-hidden="true" />
-                        {sev.label}
-                      </span>
-                      <span className="tag">
-                        {r.tipo_documento ? TIPO_DOCUMENTO_CORTO[r.tipo_documento] || r.tipo_documento : 'Todo el expediente'}
-                      </span>
-                      {r.dias_maximos_vigencia != null && (
-                        <span className="tag tag--mono">{r.dias_maximos_vigencia} días</span>
-                      )}
-                      {r.documento_obligatorio && <span className="tag">Obligatorio</span>}
-                    </div>
-
-                    <footer className="rule-action">
-                      <span className="rule-action-label">Acción</span>
-                      {r.accion}
-                    </footer>
-                  </article>
-                )
-              })}
-            </div>
-          </section>
-        ))}
+      </div>
 
       {modalAbierto && (
         <Modal
           title="Nueva regla de validación"
           subtitle="Alta dinámica de requisitos (RDS-01 / RDS-02)"
-          icon={Scale}
           onClose={cerrarModal}
-          width={660}
         >
           <form className="form-grid" onSubmit={handleSubmit}>
             <div className="field-row">
@@ -460,11 +459,10 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
                       <button
                         type="button"
                         key={t.value}
-                        className={`chip ${activo ? 'chip--active' : ''}`}
+                        className={`chip ${activo ? 'is-active' : ''}`}
                         onClick={() => toggleTipo(t.value)}
                         aria-pressed={activo}
                       >
-                        {activo && <X size={11} strokeWidth={2.8} />}
                         {t.corto}
                       </button>
                     )
@@ -479,11 +477,11 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
             {error && <p className="form-error">{error}</p>}
 
             <div className="modal-footer">
-              <button type="button" className="btn btn-ghost" onClick={cerrarModal}>
+              <button type="button" className="btn btn-secondary" onClick={cerrarModal}>
                 Cancelar
               </button>
               <button type="submit" className="btn btn-primary" disabled={enviando}>
-                {enviando ? <Loader2 className="spin" size={15} /> : <Plus size={15} strokeWidth={2.6} />}
+                {enviando && <Loader2 className="spin" size={14} />}
                 Guardar regla
               </button>
             </div>

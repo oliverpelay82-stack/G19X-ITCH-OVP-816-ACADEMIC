@@ -1,0 +1,413 @@
+"""
+Nivel 4 del pipeline de validación (DOC-05) — Análisis semántico asistido por IA.
+
+El nivel recibe el texto que produjo el Nivel 3 y lo somete a un modelo de
+lenguaje servido por Groq Cloud (qwen/qwen3.8-27b). Solo viaja el texto
+extraído, nunca el documento original. El modelo
+actúa como extractor estructurado: su única tarea es localizar en el texto el
+tipo documental, el RFC, la razón social y las fechas de emisión y vigencia, y
+devolverlas en un objeto JSON de forma estricta.
+
+Una decisión de diseño deliberada es que **el veredicto no lo emite el modelo**.
+El LLM extrae; el dictamen (coincidencia de titular, vigencia y estatus
+preliminar) lo calcula código determinista de este módulo. Así el resultado es
+reproducible y auditable ante un revisor, y la responsabilidad del modelo queda
+acotada a una tarea de lectura, que es donde su desempeño es fiable.
+"""
+from __future__ import annotations
+
+from dataclasses import dataclass
+from datetime import date, datetime
+from typing import Any
+import re
+
+from clients import groq_client
+from config import settings
+
+# Catálogo cerrado de tipos documentales, con el rasgo que distingue a cada uno.
+#
+# El discriminador no es decorativo: un catálogo enumerado a secas obliga al
+# modelo a elegir por parecido léxico, y basta un encabezado como "DATOS DE
+# IDENTIFICACIÓN DEL CONTRIBUYENTE" para que una constancia fiscal se confunda
+# con una identificación oficial. Describir qué caracteriza a cada categoría
+# convierte la elección en una comprobación de rasgos y no en una asociación de
+# palabras, que es justamente lo que se degrada cuando el texto llega con ruido.
+TIPOS_DOCUMENTALES: dict[str, str] = {
+    "CONSTANCIA_SITUACION_FISCAL":
+        "emitida por el SAT a un contribuyente; trae RFC, régimen fiscal, "
+        "domicilio fiscal y cadena original del sello digital",
+    "OPINION_CUMPLIMIENTO":
+        "emitida por el SAT conforme al artículo 32-D; declara el sentido "
+        "positivo o negativo de la opinión de cumplimiento de obligaciones",
+    "COMPROBANTE_DOMICILIO":
+        "recibo de un servicio (luz, agua, teléfono, predial) con domicilio y "
+        "periodo facturado",
+    "ACTA_CONSTITUTIVA":
+        "instrumento notarial de constitución de una sociedad; menciona "
+        "notario, número de escritura, socios y objeto social",
+    "ESTADO_CUENTA":
+        "carátula bancaria con número de cuenta o CLABE, periodo y saldos",
+    "CONTRATO":
+        "acuerdo entre dos o más partes con cláusulas, obligaciones y firmas",
+    "POLIZA":
+        "contrato de seguro con número de póliza, suma asegurada, coberturas y "
+        "periodo de vigencia",
+    "LICENCIA":
+        "autorización administrativa para operar o ejercer una actividad, "
+        "expedida por una autoridad",
+    "CERTIFICACION":
+        "certificado que acredita el cumplimiento de una norma o estándar",
+    "IDENTIFICACION_OFICIAL":
+        "credencial de una PERSONA FÍSICA con fotografía (INE, pasaporte, "
+        "licencia de conducir, cédula profesional). No lo uses solo porque el "
+        "texto contenga la palabra identificación",
+    "OTRO":
+        "no encaja con claridad en ninguna de las categorías anteriores",
+}
+
+# RFC mexicano: 3 caracteres para persona moral o 4 para persona física,
+# seguidos de la fecha AAMMDD y la homoclave de 3 posiciones.
+PATRON_RFC = re.compile(r"^[A-ZÑ&]{3,4}\d{6}[A-Z0-9]{3}$")
+
+ESTATUS_CONFORME = "CONFORME"
+ESTATUS_EN_REVISION = "EN_REVISION"
+ESTATUS_NO_CONFORME = "NO_CONFORME"
+
+SYSTEM_PROMPT = (
+    "Eres un auditor documental especializado en expedientes corporativos mexicanos "
+    "(SAT, CNBV, normatividad PLD). Tu única función es LEER el texto de un documento "
+    "y extraer datos verificables.\n"
+    "\n"
+    "EL TEXTO PROVIENE DE UN RECONOCIMIENTO ÓPTICO Y PUEDE LLEGAR DEGRADADO. "
+    "Es normal encontrar acentos perdidos, mayúsculas y minúsculas mezcladas, "
+    "caracteres confundidos entre sí (O por 0, I por 1 o l, S por 5, B por 8), "
+    "palabras partidas o unidas, espacios dentro de un número y renglones "
+    "desordenados o fundidos en uno solo. Interpreta el documento pese a ese "
+    "ruido: no lo trates como ilegible ni cambies tu lectura por esos defectos. "
+    "Refleja la degradación en el nivel de confianza y en las observaciones, "
+    "no en los campos extraídos.\n"
+    "\n"
+    "Reglas inviolables:\n"
+    "1. No inventes ningún dato. Si un campo no aparece de forma explícita en el "
+    "texto, devuélvelo como null. No rellenes un hueco con una suposición "
+    "verosímil.\n"
+    "2. No infieras el RFC a partir del nombre ni completes homoclaves. "
+    "Transcríbelo tal como aparece, en mayúsculas y sin espacios ni guiones.\n"
+    "3. Las fechas se devuelven siempre en formato ISO 8601 (AAAA-MM-DD).\n"
+    "4. Para clasificar el documento decide por el conjunto de rasgos que lo "
+    "caracterizan (quién lo emite, qué acredita y qué campos contiene), no por "
+    "una palabra suelta del texto. Un encabezado de apartado no determina el "
+    "tipo de documento; el título y la autoridad emisora, sí.\n"
+    "5. Respondes exclusivamente con un objeto JSON válido, sin texto adicional, "
+    "sin explicaciones y sin bloques de código."
+)
+
+
+def _plantilla_prompt(texto: str, rfc_titular: str | None, razon_social_titular: str | None) -> str:
+    contexto_titular = "No se proporcionó el titular esperado."
+    if rfc_titular or razon_social_titular:
+        contexto_titular = (
+            f"RFC del titular en el expediente: {rfc_titular or 'no proporcionado'}\n"
+            f"Razón social del titular en el expediente: {razon_social_titular or 'no proporcionada'}"
+        )
+
+    catalogo = "\n".join(f"  - {clave}: {rasgo}." for clave, rasgo in TIPOS_DOCUMENTALES.items())
+
+    return f"""Analiza el siguiente documento y extrae sus datos de identificación.
+
+=== DATOS DEL TITULAR REGISTRADO EN EL EXPEDIENTE ===
+{contexto_titular}
+
+=== TEXTO DEL DOCUMENTO (procedente de reconocimiento óptico) ===
+{texto}
+=== FIN DEL TEXTO ===
+
+=== CATÁLOGO DE TIPOS DOCUMENTALES ===
+Elige exactamente una clave de esta lista. Junto a cada una se indica el rasgo
+que la distingue; compara el documento contra esos rasgos antes de decidir.
+{catalogo}
+
+Para clasificar, localiza primero el TÍTULO del documento y la AUTORIDAD que lo
+emite. Los encabezados de los apartados interiores describen secciones, no el
+documento: no decidas a partir de ellos.
+
+Devuelve EXACTAMENTE este objeto JSON, respetando nombres y tipos de cada campo:
+
+{{
+  "tipo_documento_detectado": "una clave del catálogo anterior",
+  "rfc_detectado": "el RFC que aparece en el documento, en mayúsculas y sin espacios, o null",
+  "razon_social_detectada": "el nombre o razón social del titular del documento, o null",
+  "fecha_emision": "fecha en que se expidió el documento, AAAA-MM-DD o null. Búscala bajo etiquetas como 'Fecha de emisión', 'Fecha de expedición' o 'Lugar y fecha'. NO la confundas con la fecha de inicio de operaciones, la de alta en el régimen ni la de constitución de la sociedad",
+  "fecha_vencimiento": "fecha hasta la que el documento es válido, AAAA-MM-DD o null. Búscala bajo etiquetas como 'Fecha de vencimiento', 'Vigencia hasta' o 'Válido hasta'. Devuelve null solo si el documento no declara vigencia alguna",
+  "nivel_confianza": 0.0,
+  "observaciones": "una o dos frases en español sobre la legibilidad del texto y cualquier dato faltante o ambiguo"
+}}
+
+El campo nivel_confianza es un número entre 0.0 y 1.0 que expresa qué tan seguro
+estás de la extracción. Bájalo cuando falten campos clave, cuando el texto llegue
+tan degradado que dudes de lo que lees o cuando el tipo documental no sea claro.
+Un texto con erratas de reconocimiento pero legible no justifica por sí solo una
+confianza baja."""
+
+
+@dataclass
+class ResultadoAnalisis:
+    """Dictamen consolidado del Nivel 4."""
+    tipo_documento_detectado: str
+    rfc_detectado: str | None
+    rfc_valido: bool
+    match_titular: bool
+    razon_social_detectada: str | None
+    fecha_emision: str | None
+    fecha_vencimiento: str | None
+    vigente: bool | None
+    dias_para_vencimiento: int | None
+    nivel_confianza: float
+    estatus_preliminar: str
+    requiere_revision_humana: bool
+    observaciones: list[str]
+    modelo_utilizado: str
+
+    def a_dict(self) -> dict[str, Any]:
+        return {
+            "tipo_documento_detectado": self.tipo_documento_detectado,
+            "rfc_detectado": self.rfc_detectado,
+            "rfc_estructura_valida": self.rfc_valido,
+            "match_titular": self.match_titular,
+            "razon_social_detectada": self.razon_social_detectada,
+            "fecha_emision": self.fecha_emision,
+            "fecha_vencimiento": self.fecha_vencimiento,
+            "vigente": self.vigente,
+            "dias_para_vencimiento": self.dias_para_vencimiento,
+            "nivel_confianza": round(self.nivel_confianza, 4),
+            "estatus_preliminar": self.estatus_preliminar,
+            "requiere_revision_humana": self.requiere_revision_humana,
+            "umbral_confianza_conforme": settings.UMBRAL_CONFIANZA_CONFORME,
+            "umbral_confianza_hitl": settings.UMBRAL_CONFIANZA_HITL,
+            "observaciones": self.observaciones,
+            "modelo_utilizado": self.modelo_utilizado,
+        }
+
+
+# ── Normalizadores deterministas ────────────────────────────────────
+def normalizar_rfc(valor: Any) -> str | None:
+    """Deja el RFC en mayúsculas sin espacios, guiones ni puntos."""
+    if not isinstance(valor, str):
+        return None
+    limpio = re.sub(r"[\s\-.]", "", valor).upper()
+    return limpio or None
+
+
+def normalizar_fecha(valor: Any) -> str | None:
+    """Acepta las variantes que suele emitir el modelo y las lleva a ISO 8601."""
+    if not isinstance(valor, str) or not valor.strip():
+        return None
+    texto = valor.strip()
+    for formato in ("%Y-%m-%d", "%d/%m/%Y", "%d-%m-%Y", "%Y/%m/%d"):
+        try:
+            return datetime.strptime(texto, formato).date().isoformat()
+        except ValueError:
+            continue
+    return None
+
+
+def _normalizar_confianza(valor: Any) -> float:
+    try:
+        numero = float(valor)
+    except (TypeError, ValueError):
+        return 0.0
+    # Algunos modelos devuelven la confianza en escala porcentual.
+    if numero > 1.0:
+        numero = numero / 100.0
+    return max(0.0, min(1.0, numero))
+
+
+def _normalizar_tipo(valor: Any) -> str:
+    if not isinstance(valor, str):
+        return "OTRO"
+    candidato = re.sub(r"[\s\-]", "_", valor.strip().upper())
+    return candidato if candidato in TIPOS_DOCUMENTALES else "OTRO"
+
+
+def _texto_a_lista(valor: Any) -> list[str]:
+    if isinstance(valor, list):
+        return [str(v).strip() for v in valor if str(v).strip()]
+    if isinstance(valor, str) and valor.strip():
+        return [valor.strip()]
+    return []
+
+
+# ── Orquestador del Nivel 4 ─────────────────────────────────────────
+def analizar(
+    texto: str,
+    rfc_titular: str | None = None,
+    razon_social_titular: str | None = None,
+    confianza_extraccion: float | None = None,
+    fecha_referencia: date | None = None,
+) -> ResultadoAnalisis:
+    """
+    Somete el texto al modelo local y calcula el dictamen preliminar.
+
+    :param confianza_extraccion: score del Nivel 3. Cuando se recibe, acota por
+        arriba la confianza final: por sólido que sea el razonamiento del modelo,
+        no puede estar más seguro que la calidad del texto que se le entregó.
+    """
+    hoy = fecha_referencia or date.today()
+    texto_recortado = texto.strip()[: settings.MAX_CARACTERES_CONTEXTO]
+
+    if not texto_recortado:
+        raise ValueError(
+            "No hay texto que analizar: ejecute primero el Nivel 3 (extracción) "
+            "o envíe el contenido del documento."
+        )
+
+    crudo = groq_client.generar_json(
+        prompt=_plantilla_prompt(texto_recortado, rfc_titular, razon_social_titular),
+        system=SYSTEM_PROMPT,
+    )
+
+    observaciones = _texto_a_lista(crudo.get("observaciones"))
+
+    tipo = _normalizar_tipo(crudo.get("tipo_documento_detectado"))
+    rfc_detectado = normalizar_rfc(crudo.get("rfc_detectado"))
+    razon_social = crudo.get("razon_social_detectada")
+    razon_social = razon_social.strip() if isinstance(razon_social, str) and razon_social.strip() else None
+    fecha_emision = normalizar_fecha(crudo.get("fecha_emision"))
+    fecha_vencimiento = normalizar_fecha(crudo.get("fecha_vencimiento"))
+    confianza = _normalizar_confianza(crudo.get("nivel_confianza"))
+
+    if confianza_extraccion is not None:
+        confianza = min(confianza, confianza_extraccion)
+
+    # Coincidencia de titular: comparación determinista, no delegada al modelo.
+    rfc_valido = bool(rfc_detectado and PATRON_RFC.match(rfc_detectado))
+    rfc_esperado = normalizar_rfc(rfc_titular)
+    if rfc_esperado is None:
+        match_titular = False
+        observaciones.append(
+            "No se proporcionó el RFC del titular: la coincidencia no pudo verificarse."
+        )
+    elif rfc_detectado is None:
+        match_titular = False
+        observaciones.append("No se localizó ningún RFC en el documento.")
+    else:
+        match_titular = rfc_detectado == rfc_esperado
+        if not match_titular:
+            observaciones.append(
+                f"El RFC del documento ({rfc_detectado}) no coincide con el del "
+                f"titular registrado ({rfc_esperado})."
+            )
+
+    if rfc_detectado and not rfc_valido:
+        observaciones.append(
+            f"El RFC extraído ({rfc_detectado}) no respeta la estructura oficial del SAT."
+        )
+
+    # Vigencia temporal.
+    vigente: bool | None = None
+    dias_restantes: int | None = None
+    if fecha_vencimiento:
+        vencimiento = date.fromisoformat(fecha_vencimiento)
+        dias_restantes = (vencimiento - hoy).days
+        vigente = dias_restantes >= 0
+        if not vigente:
+            observaciones.append(
+                f"El documento venció el {fecha_vencimiento} ({abs(dias_restantes)} días atrás)."
+            )
+
+    estatus, requiere_hitl, motivos = _dictaminar(
+        confianza=confianza,
+        match_titular=match_titular,
+        rfc_esperado=rfc_esperado,
+        vigente=vigente,
+    )
+    observaciones.extend(motivos)
+
+    return ResultadoAnalisis(
+        tipo_documento_detectado=tipo,
+        rfc_detectado=rfc_detectado,
+        rfc_valido=rfc_valido,
+        match_titular=match_titular,
+        razon_social_detectada=razon_social,
+        fecha_emision=fecha_emision,
+        fecha_vencimiento=fecha_vencimiento,
+        vigente=vigente,
+        dias_para_vencimiento=dias_restantes,
+        nivel_confianza=confianza,
+        estatus_preliminar=estatus,
+        requiere_revision_humana=requiere_hitl,
+        observaciones=observaciones,
+        modelo_utilizado=settings.GROQ_MODEL,
+    )
+
+
+def _dictaminar(
+    confianza: float, match_titular: bool, rfc_esperado: str | None, vigente: bool | None
+) -> tuple[str, bool, list[str]]:
+    """
+    Reglas deterministas que convierten la extracción en un estatus preliminar.
+
+    Reproduce la clasificación en tres estados del DOC-08 §6.2. El orden importa:
+    un hecho que descalifica el documento —RFC ajeno o vigencia expirada— pesa
+    más que cualquier confianza, mientras que una confianza insuficiente nunca
+    produce un rechazo automático. La duda del modelo es una duda sobre la
+    lectura, no sobre el documento, y por eso deriva al Nivel 5 de gobernanza
+    humana en lugar de resolverse en contra del expediente.
+    """
+    motivos: list[str] = []
+
+    if vigente is False:
+        return (
+            ESTATUS_NO_CONFORME,
+            False,
+            motivos + ["Dictamen NO_CONFORME: la vigencia del documento ya expiró."],
+        )
+
+    if rfc_esperado is not None and not match_titular:
+        return (
+            ESTATUS_NO_CONFORME,
+            False,
+            motivos + ["Dictamen NO_CONFORME: el documento no pertenece al titular del expediente."],
+        )
+
+    if rfc_esperado is None:
+        return (
+            ESTATUS_EN_REVISION,
+            True,
+            motivos
+            + [
+                "Dictamen EN_REVISION: sin RFC de referencia no es posible cerrar la "
+                "verificación de titularidad en automático."
+            ],
+        )
+
+    if confianza < settings.UMBRAL_CONFIANZA_HITL:
+        return (
+            ESTATUS_EN_REVISION,
+            True,
+            motivos
+            + [
+                f"Dictamen EN_REVISION: la confianza ({confianza:.2f}) queda por debajo "
+                f"de la banda de revisión ({settings.UMBRAL_CONFIANZA_HITL:.2f}); la "
+                "lectura no es fiable y el caso se turna al Nivel 5."
+            ],
+        )
+
+    if confianza < settings.UMBRAL_CONFIANZA_CONFORME:
+        return (
+            ESTATUS_EN_REVISION,
+            True,
+            motivos
+            + [
+                f"Dictamen EN_REVISION: la confianza ({confianza:.2f}) se sitúa en la "
+                f"banda de ratificación humana "
+                f"({settings.UMBRAL_CONFIANZA_HITL:.2f} a "
+                f"{settings.UMBRAL_CONFIANZA_CONFORME - 0.01:.2f}) definida en el DOC-08."
+            ],
+        )
+
+    return (
+        ESTATUS_CONFORME,
+        False,
+        motivos + ["Dictamen CONFORME: titularidad y vigencia verificadas con confianza suficiente."],
+    )

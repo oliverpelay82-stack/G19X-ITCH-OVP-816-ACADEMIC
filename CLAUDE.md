@@ -21,23 +21,25 @@ Antes de implementar cualquier módulo, tabla o regla, debes consultar:
 ### 🎨 Agente de Diseño y Experiencia de Usuario (UI/UX Specialist)
 * **Estándar Visual:** Prohibido usar interfaces genéricas o diseños tipo plantilla básica. La interfaz debe transmitir calidad corporativa de grado enterprise (estilo Stripe, Linear, Vercel).
 * **Tipografía:** Utilizar fuentes modernas como `Inter` para texto base y `JetBrains Mono` para hashes criptográficos, códigos de folio y RFCs.
-* **Paleta de Color de Compliance:**
-  * Fondo/Superficie: Slate neutro (`#F8FAFC`, `#FFFFFF`), bordes sutiles (`#E2E8F0`).
-  * Primario Corporativo: Azul profundo / Índigo (`#2563EB`, `#1D4ED8`).
+* **Design system minimalista (tokens en `frontend/src/index.css`):**
+  * Tema oscuro por defecto: fondo `#09090B`, superficies `#111113` / `#18181B`, borde `rgba(255,255,255,0.06)` (hover `0.12`), texto `#FAFAFA` / `#A1A1AA` / `#71717A`.
+  * Tema claro: fondo `#FAFAFA`, superficies `#FFFFFF` / `#F4F4F5`, borde `#E4E4E7` (hover `#D4D4D8`), texto `#09090B` / `#52525B` / `#A1A1AA`.
+  * Acento primario: `#3B82F6`.
   * Estados de Auditoría:
-    * `CONFORME`: Verde esmeralda (`#059669`, fondo `#ECFDF5`).
-    * `EN_REVISION`: Ámbar preventivo (`#D97706`, fondo `#FFFBEB`).
-    * `NO_CONFORME` / `RECHAZADO`: Rojo carmesí (`#DC2626`, fondo `#FEF2F2`).
-    * Criptografía / Bóveda: Púrpura auditor (`#7C3AED`, fondo `#FAF5FF`).
-* **Micro-interacciones:** Indicadores de estado en vivo (*status dots* animados), modales limpios, barras de progreso dinámicas y tablas responsivas con copiado de hashes al portapapeles.
+    * `CONFORME`: `#059669`, fondo `rgba(5,150,105,0.1)`.
+    * `EN_REVISION`: `#D97706`, fondo `rgba(217,119,6,0.1)`.
+    * `NO_CONFORME` / `RECHAZADO`: `#DC2626`, fondo `rgba(220,38,38,0.1)`.
+    * Criptografía / Bóveda: `#7C3AED`, fondo `rgba(124,58,237,0.1)`.
+  * Espaciado en rejilla de 4 px; radios 6 px (botones, inputs), 8 px (cards), 12 px (modales).
+* **Micro-interacciones:** Transiciones de 150 ms ease-out, sin rebotes ni escalados. Sombras solo en modales, dropdowns y tooltips; las cards ganan profundidad por contraste de superficie. Status dots de 6 px sin pulso, tablas sin zebra-striping y copiado de hashes al portapapeles.
 * **Interfaz Oficial:** La interfaz oficial del sistema es el proyecto **React 19** ubicado en `frontend/`. La vista legacy `views/panel.html` fue retirada.
 
 ### ⚙️ Agente Backend & Arquitectura de Datos (FastAPI + PostgreSQL + Microservicios)
 * **Patrón (desde Sprint 0 / Semana 4):** Arquitectura de **microservicios desacoplados**, orquestados con Docker Compose, dentro de `services/`. Cada microservicio replica internamente la misma capa limpia que antes vivía en `backend/`:
   * `services/core-service/` (**puerto 8001**) → Titulares, Expedientes y Documentos (ingesta, magic bytes, hash SHA-256, bóveda física).
   * `services/rules-service/` (**puerto 8002**) → Catálogo de Reglas de Validación (DOC-05: familias RIE, RCV, RSC, RDS).
-  * `services/ai-service/` (**puerto 8003**) → Esqueleto vivo (solo health check); alojará desde la Semana 5 el Nivel 3 (extracción de texto) y Nivel 4 (análisis semántico con IA) del pipeline.
-  * Cada servicio mantiene su propia carpeta `models/`, `schemas/`, `controllers/`, `config/database.py`, `main.py`, `requirements.txt`, `Dockerfile` y `.env`. Todos los servicios con base de datos comparten la misma PostgreSQL física `plurione_compliance` (cada uno gestiona su propio subconjunto de tablas vía `Base.metadata` independiente).
+  * `services/ai-service/` (**puerto 8003**) → Nivel 3 (extracción de texto híbrida: capa vectorial con PyMuPDF + OCR con Tesseract y preprocesamiento OpenCV) y Nivel 4 (análisis semántico con un modelo de lenguaje servido por Groq Cloud sobre su LPU, `qwen/qwen3.8-27b`, API compatible con OpenAI en `https://api.groq.com/openai/v1`). No usa base de datos; sus dependencias externas son Groq Cloud (requiere `GROQ_API_KEY`, prefijo `gsk_`) y el binario de Tesseract. Al modelo solo viaja el texto extraído por el Nivel 3, nunca el documento original. Por defecto Groq no retiene entradas ni salidas de inferencia ni entrena con ellas; puede registrarlas hasta 30 días para diagnóstico o abuso, salvo que se active Zero Data Retention en Data Controls. El plan gratuito limita a 8,000 tokens por minuto. Ver `services/ai-service/README.md`.
+  * Cada servicio mantiene su propia carpeta `schemas/`, `controllers/`, `main.py`, `requirements.txt`, `Dockerfile` y `.env`. Los dos servicios con base de datos (`core` y `rules`) añaden `models/` y `config/database.py`, y comparten la misma PostgreSQL física `plurione_compliance` (cada uno gestiona su propio subconjunto de tablas vía `Base.metadata` independiente). El `ai-service` no persiste nada: en lugar de `models/` tiene `clients/` (integraciones salientes) y `pipelines/` (los algoritmos de los Niveles 3 y 4).
   * Todo controlador expone `GET /api/v1/health` (status, servicio, puerto, y `conexion_bd` cuando aplica) para health checks de Docker Compose y del frontend.
   * `storage_vault/` → Bóveda física desacoplada, en la raíz del proyecto. En local la referencia `core-service/controllers/documento_controller.py` por ruta relativa; en Docker se monta como volumen y se apunta vía la variable `STORAGE_VAULT_PATH`.
 
@@ -52,8 +54,12 @@ motor de validacion/
 │   │   ├── config/ controllers/ models/ schemas/ main.py requirements.txt Dockerfile .env
 │   ├── rules-service/    # API FastAPI :8002 — Reglas de Validación (DOC-05)
 │   │   ├── config/ controllers/ models/ schemas/ main.py requirements.txt Dockerfile .env
-│   └── ai-service/       # API FastAPI :8003 — Esqueleto (Semana 5)
-│       ├── controllers/ main.py requirements.txt Dockerfile
+│   └── ai-service/       # API FastAPI :8003 — Niveles 3 y 4 del pipeline
+│       ├── config/settings.py      # Groq Cloud, Tesseract y umbrales del pipeline
+│       ├── clients/                # groq_client.py, core_client.py
+│       ├── pipelines/              # extraccion_pipeline.py, analisis_semantico.py
+│       ├── controllers/ schemas/ tests/ tessdata/
+│       ├── main.py requirements.txt Dockerfile .env README.md
 ├── docker-compose.yml   # Orquesta plurione-db, plurione-core, plurione-rules, plurione-ai, plurione-frontend
 ├── frontend/            # Interfaz oficial React 19 (Vite), apunta a los 3 microservicios
 ├── scripts/             # Utilidades de BD: setup_postgres.py, crear_tablas.py, seed_reglas_validacion.py
@@ -73,9 +79,9 @@ motor de validacion/
 El motor opera en un pipeline estricto de 5 niveles:
 1. **Nivel 1 - Integridad Estructural y Criptográfica:** Validación de Magic Bytes (PDF `%PDF-`, JPEG, PNG), límite de 15 MB y generación inmutable de hash SHA-256 (NOM-151-SCFI-2016).
 2. **Nivel 2 - Reglas Deterministas en BD:** Consulta contra la tabla `reglas_validacion` para verificar vigencia temporal (días máximos) y completitud obligatoria.
-3. **Nivel 3 - Extracción de Texto:** Parseo y extracción OCR de contenido documental.
-4. **Nivel 4 - Análisis Semántico con IA:** Cruce semántico asistido por LLM (RFC y Razón Social contra el titular).
-5. **Nivel 5 - Gobernanza Humana (Human-in-the-Loop):** Flujo de revisión manual para casos de baja confianza.
+3. **Nivel 3 - Extracción de Texto:** Lectura directa de la capa vectorial del PDF con PyMuPDF y, para páginas escaneadas, OCR con Tesseract (`spa+eng`) previo preprocesamiento con OpenCV (escala de grises, filtro bilateral y binarización de Otsu). Devuelve el texto y un *confidence score* en [0.0, 1.0].
+4. **Nivel 4 - Análisis Semántico con IA:** Inferencia vía Groq Cloud (`qwen/qwen3.8-27b`) a temperatura 0.0 con salida JSON estricta (`response_format={"type": "json_object"}`). Solo se envía el texto extraído (minimización de datos). **El modelo solo extrae**; el dictamen (coincidencia de RFC, vigencia y estatus preliminar) lo calculan reglas deterministas del servicio, de modo que sea reproducible y auditable.
+5. **Nivel 5 - Gobernanza Humana (Human-in-the-Loop):** Bandas de confianza del DOC-08 §6.2 — `>= 0.85` CONFORME, `0.70 a 0.84` revisión humana, `< 0.70` revisión humana por lectura no fiable. Una confianza baja **nunca** produce rechazo automático: el rechazo se reserva a hechos del documento (vigencia expirada o RFC ajeno).
 
 ---
 
@@ -90,6 +96,10 @@ El motor opera en un pipeline estricto de 5 niveles:
 * **Sincronizar solo tablas (todos los servicios):** `python scripts/crear_tablas.py`
 * **Precargar catálogo de reglas (DOC-05):** `python scripts/seed_reglas_validacion.py`
 * **Correr suite de pruebas de integridad (core-service):** `python tests/test_pipeline_nivel1.py`
+* **Generar los documentos de prueba del ai-service:** `cd services/ai-service && python tests/generar_fixtures.py`
+* **Correr la suite de los Niveles 3 y 4:** `cd services/ai-service && python tests/test_niveles_3_4.py` (requiere el servicio en :8003 y `GROQ_API_KEY` configurada)
+* **Verificar el motor de inferencia (Groq Cloud):** `GET http://127.0.0.1:8003/api/v1/health` → bloque `motor_inferencia`.
+* **Variables del ai-service (`services/ai-service/.env`):** `GROQ_API_KEY` (generarla en https://console.groq.com/keys), `GROQ_MODEL=qwen/qwen3.8-27b`, `GROQ_TEMPERATURE=0.0`, `GROQ_TIMEOUT=30`, `GROQ_MAX_TOKENS=1000`, más `TESSERACT_CMD`, `OCR_LANG`, `OCR_DPI`, umbrales del pipeline y `CORE_BASE_URL`. En Docker Compose, `GROQ_API_KEY` se toma del `.env` de la raíz del proyecto.
 * **Probar conexión a PostgreSQL:** `python tests/test_conexion.py`
 * **Documentación interactiva Swagger:** `http://127.0.0.1:8001/docs` (Core), `http://127.0.0.1:8002/docs` (Rules), `http://127.0.0.1:8003/docs` (AI).
 * **Health checks:** `GET http://127.0.0.1:8001/api/v1/health`, `:8002/api/v1/health`, `:8003/api/v1/health`.

@@ -21,3 +21,8 @@ Thumbs.db
 frontend/node_modules/
 frontend/dist/
 frontend/.vite/
+
+# Modelos de idioma de Tesseract: binarios de ~16 MB que se descargan en el
+# despliegue (ver services/ai-service/README.md). El Dockerfile los
+# instala desde los paquetes del sistema.
+services/ai-service/tessdata/*.traineddata

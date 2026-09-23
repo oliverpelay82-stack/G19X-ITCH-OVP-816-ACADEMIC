@@ -1,0 +1,130 @@
+{
+  "health": {
+    "status": "online",
+    "servicio": "ai-service",
+    "puerto": 8003,
+    "modo_despliegue": "local-zero-cloud",
+    "capacidades_operativas": true,
+    "motor_inferencia": {
+      "proveedor": "Ollama",
+      "endpoint": "http://127.0.0.1:11434",
+      "temperatura_auditoria": 0.0,
+      "disponible": true,
+      "modelos_instalados": [
+        "qwen2.5:3b",
+        "qwen2.5:7b"
+      ],
+      "modelo_requerido": "qwen2.5:3b",
+      "modelo_disponible": true,
+      "detalle": "Demonio Ollama operativo."
+    },
+    "motor_ocr": {
+      "proveedor": "Tesseract",
+      "disponible": true,
+      "version": "5.4.0.20240606",
+      "idiomas_disponibles": [
+        "eng",
+        "osd",
+        "spa"
+      ],
+      "idioma_configurado": "spa+eng",
+      "tessdata_prefix": "C:\\Users\\HP\\Desktop\\RESIDENCIA PLURIONE\\motor de validacion\\services\\ai-service\\tessdata",
+      "dpi_rasterizado": 300
+    },
+    "bandas_confianza": {
+      "conforme_desde": 0.85,
+      "revision_humana_desde": 0.7
+    },
+    "umbral_confianza_hitl": 0.7
+  },
+  "extraccion_vectorial": {
+    "metodo_extraccion": "VECTORIAL",
+    "confidence_score": 0.9879,
+    "total_paginas": 1,
+    "total_caracteres": 818,
+    "paginas_procesadas_con_ocr": 0,
+    "requiere_revision_humana": false,
+    "umbral_confianza_hitl": 0.7,
+    "observaciones": [],
+    "detalle_paginas": [
+      {
+        "pagina": 1,
+        "metodo": "VECTORIAL",
+        "caracteres": 818,
+        "confianza": 0.9879
+      }
+    ],
+    "archivo": "constancia_vectorial.pdf",
+    "tamanio_bytes": 5322
+  },
+  "extraccion_ocr": {
+    "metodo_extraccion": "OCR",
+    "confidence_score": 0.9396,
+    "total_paginas": 1,
+    "total_caracteres": 811,
+    "paginas_procesadas_con_ocr": 1,
+    "requiere_revision_humana": false,
+    "umbral_confianza_hitl": 0.7,
+    "observaciones": [],
+    "detalle_paginas": [
+      {
+        "pagina": 1,
+        "metodo": "OCR",
+        "caracteres": 811,
+        "confianza": 0.9396
+      }
+    ],
+    "archivo": "constancia_escaneada.pdf",
+    "tamanio_bytes": 323801
+  },
+  "analisis_conforme": {
+    "tipo_documento_detectado": "CONSTANCIA_SITUACION_FISCAL",
+    "rfc_detectado": "PLU180514AB3",
+    "rfc_estructura_valida": true,
+    "match_titular": true,
+    "razon_social_detectada": "PLURIONE S.A. DE C.V.",
+    "fecha_emision": null,
+    "fecha_vencimiento": "2027-01-15",
+    "vigente": true,
+    "dias_para_vencimiento": 115,
+    "nivel_confianza": 0.9,
+    "estatus_preliminar": "CONFORME",
+    "requiere_revision_humana": false,
+    "umbral_confianza_conforme": 0.85,
+    "umbral_confianza_hitl": 0.7,
+    "observaciones": [
+      "El documento contiene erratas de reconocimiento óptico, como mayúsculas y minúsculas mezcladas, pero la información es clara y completa. La fecha de emisión no está presente en el texto, lo que reduce la confianza en la extracción de esta información.",
+      "Dictamen CONFORME: titularidad y vigencia verificadas con confianza suficiente."
+    ],
+    "modelo_utilizado": "qwen2.5:3b"
+  },
+  "analisis_no_conforme": {
+    "tipo_documento_detectado": "CONSTANCIA_SITUACION_FISCAL",
+    "rfc_detectado": "PLU180514AB3",
+    "rfc_estructura_valida": true,
+    "match_titular": false,
+    "razon_social_detectada": "PLURIONE S.A. DE C.V.",
+    "fecha_emision": null,
+    "fecha_vencimiento": "2027-01-15",
+    "vigente": true,
+    "dias_para_vencimiento": 115,
+    "nivel_confianza": 0.8,
+    "estatus_preliminar": "NO_CONFORME",
+    "requiere_revision_humana": false,
+    "umbral_confianza_conforme": 0.85,
+    "umbral_confianza_hitl": 0.7,
+    "observaciones": [
+      "El documento contiene erratas de reconocimiento óptico, como mayúsculas y minúsculas mezcladas y caracteres confundidos. La fecha de emisión no está claramente marcada, solo se menciona la fecha de vencimiento. La razón social está completa y legible, pero el RFC está confundido con el número de la cadena original del sello digital.",
+      "El RFC del documento (PLU180514AB3) no coincide con el del titular registrado (XAXX010101000).",
+      "Dictamen NO_CONFORME: el documento no pertenece al titular del expediente."
+    ],
+    "modelo_utilizado": "qwen2.5:3b"
+  },
+  "chat": {
+    "pregunta": "Cual es el codigo postal del domicilio fiscal registrado?",
+    "respuesta": "31200",
+    "modelo_utilizado": "qwen2.5:3b",
+    "caracteres_de_contexto": 811,
+    "contexto_truncado": false
+  }
+}
