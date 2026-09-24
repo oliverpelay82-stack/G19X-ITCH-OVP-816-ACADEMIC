@@ -20,12 +20,18 @@ import {
 } from './services/api.js'
 import './App.css'
 
+/**
+ * Título de cada sección y sus migas: la jerarquía del dominio es
+ * Empresa › Expediente › Documento en bóveda; las reglas son configuración.
+ */
 const SECCIONES = {
-  titulares: { titulo: 'Empresas' },
-  expedientes: { titulo: 'Expedientes' },
-  boveda: { titulo: 'Bóveda criptográfica' },
-  reglas: { titulo: 'Catálogo de reglas' },
+  titulares: { titulo: 'Empresas', raiz: 'Cumplimiento', ruta: ['titulares'] },
+  expedientes: { titulo: 'Expedientes', raiz: 'Cumplimiento', ruta: ['titulares', 'expedientes'] },
+  boveda: { titulo: 'Bóveda criptográfica', raiz: 'Cumplimiento', ruta: ['titulares', 'expedientes', 'boveda'] },
+  reglas: { titulo: 'Catálogo de reglas', raiz: 'Configuración', ruta: ['reglas'] },
 }
+
+const MIGA_LABEL = { titulares: 'Empresas', expedientes: 'Expedientes', boveda: 'Bóveda', reglas: 'Reglas' }
 
 const INTERVALO_REFRESCO = 15000
 
@@ -145,14 +151,18 @@ export default function App() {
   )
 
   const seccion = SECCIONES[tabActiva]
+  const migas = [{ id: null, label: seccion.raiz }, ...seccion.ruta.map((id) => ({ id, label: MIGA_LABEL[id] }))]
 
   return (
     <div className="app-shell">
-      <Sidebar tabActiva={tabActiva} onTabChange={setTabActiva} health={health} contadores={contadores} />
+      <Sidebar tabActiva={tabActiva} onTabChange={setTabActiva} contadores={contadores} />
 
       <div className="app-main">
         <Header
           titulo={seccion.titulo}
+          migas={migas}
+          onNavigate={setTabActiva}
+          health={health}
           onRefresh={refrescar}
           refrescando={refrescando}
           isDark={isDark}
@@ -167,7 +177,7 @@ export default function App() {
             loading={loading}
           />
 
-          <MotorIaPanel estado={health.ai} loading={loading} />
+          <MotorIaPanel estado={health.ai} reglas={reglas} loading={loading} />
 
           <div className="tab-region" key={tabActiva}>
             {tabActiva === 'titulares' && (

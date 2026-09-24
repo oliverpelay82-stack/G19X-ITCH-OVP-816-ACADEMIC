@@ -1,11 +1,12 @@
 import { useMemo, useState } from 'react'
-import { Check, Copy, Loader2, Plus, Search, X } from 'lucide-react'
+import { Building2, Loader2, Plus, SearchX } from 'lucide-react'
 import Modal from './Modal.jsx'
 import { SkeletonRows } from './Skeleton.jsx'
+import { CopyChip, EmptyRow, Segmented, SearchBox } from './ui.jsx'
 import useToast from '../hooks/useToast.js'
 import useDebounce from '../hooks/useDebounce.js'
 import { createTitular } from '../services/api.js'
-import { copiarAlPortapapeles, formatFecha, iniciales, validarRfc } from '../utils/format.js'
+import { formatFechaCorta, iniciales, validarRfc } from '../utils/format.js'
 
 const FORM_INICIAL = { rfc: '', razon_social: '', tipo_persona: 'MORAL', categoria: 'PROVEEDOR' }
 
@@ -14,30 +15,6 @@ const FILTROS_TIPO = [
   { id: 'MORAL', label: 'Moral' },
   { id: 'FISICA', label: 'Física' },
 ]
-
-/** Botón de copiado con confirmación visual y aviso flotante. */
-function CopyRfc({ rfc }) {
-  const [copiado, setCopiado] = useState(false)
-  const toast = useToast()
-
-  const copiar = async () => {
-    const ok = await copiarAlPortapapeles(rfc)
-    if (ok) {
-      setCopiado(true)
-      toast.exito('RFC copiado', rfc)
-      setTimeout(() => setCopiado(false), 1400)
-    } else {
-      toast.error('No se pudo copiar', 'El navegador bloqueó el portapapeles.')
-    }
-  }
-
-  return (
-    <button type="button" className="copy-chip" onClick={copiar} data-tooltip="Copiar RFC">
-      <span className="mono">{rfc}</span>
-      {copiado ? <Check size={12} strokeWidth={2.4} className="copy-ok" /> : <Copy size={12} strokeWidth={2} />}
-    </button>
-  )
-}
 
 export default function TitularesTab({ titulares, loading, onRefresh, isOnline = true }) {
   const toast = useToast()
@@ -103,36 +80,18 @@ export default function TitularesTab({ titulares, loading, onRefresh, isOnline =
   return (
     <div className="tab-panel">
       <div className="toolbar">
-        <label className="search-box">
-          <Search size={14} strokeWidth={2} />
-          <input
-            type="search"
-            placeholder="Buscar por razón social, RFC o categoría…"
-            value={busqueda}
-            onChange={(e) => setBusqueda(e.target.value)}
-            aria-label="Buscar empresas"
-          />
-          {busqueda && (
-            <button type="button" className="search-clear" onClick={() => setBusqueda('')} aria-label="Limpiar búsqueda">
-              <X size={12} strokeWidth={2} />
-            </button>
-          )}
-        </label>
-
-        <div className="segmented" role="group" aria-label="Filtrar por tipo de persona">
-          {FILTROS_TIPO.map((f) => (
-            <button
-              key={f.id}
-              type="button"
-              className={`segmented-item ${filtroTipo === f.id ? 'is-active' : ''}`}
-              onClick={() => setFiltroTipo(f.id)}
-              aria-pressed={filtroTipo === f.id}
-            >
-              {f.label}
-              <span className="segmented-count mono">{conteos[f.id]}</span>
-            </button>
-          ))}
-        </div>
+        <SearchBox
+          value={busqueda}
+          onChange={setBusqueda}
+          placeholder="Buscar por razón social, RFC o categoría…"
+          label="Buscar empresas"
+        />
+        <Segmented
+          label="Filtrar por tipo de persona"
+          valor={filtroTipo}
+          onChange={setFiltroTipo}
+          opciones={FILTROS_TIPO.map((f) => ({ ...f, conteo: conteos[f.id] }))}
+        />
 
         <button
           type="button"
@@ -149,33 +108,36 @@ export default function TitularesTab({ titulares, loading, onRefresh, isOnline =
       <div className="card table-card">
         <div className="table-scroll">
           <table className="data-table">
+            <colgroup>
+              <col style={{ width: '38%' }} />
+              <col style={{ width: '20%' }} />
+              <col style={{ width: '12%' }} />
+              <col style={{ width: '14%' }} />
+              <col style={{ width: '16%' }} />
+            </colgroup>
             <thead>
               <tr>
                 <th>Titular</th>
                 <th>RFC</th>
                 <th>Tipo</th>
                 <th>Categoría</th>
-                <th className="col-right">Alta en sistema</th>
+                <th className="col-right">Alta</th>
               </tr>
             </thead>
             <tbody>
               {loading && <SkeletonRows rows={5} cols={5} />}
 
               {!loading && filtrados.length === 0 && (
-                <tr>
-                  <td colSpan={5}>
-                    <div className="empty-state">
-                      <p className="empty-title">
-                        {titulares.length === 0 ? 'Aún no hay empresas registradas' : 'Sin resultados'}
-                      </p>
-                      <p className="empty-desc">
-                        {titulares.length === 0
-                          ? 'Da de alta el primer titular para abrir su expediente de cumplimiento.'
-                          : 'Prueba con otro término o cambia el filtro de tipo de persona.'}
-                      </p>
-                    </div>
-                  </td>
-                </tr>
+                <EmptyRow
+                  columnas={5}
+                  icon={titulares.length === 0 ? Building2 : SearchX}
+                  titulo={titulares.length === 0 ? 'Aún no hay empresas registradas' : 'Sin resultados'}
+                  descripcion={
+                    titulares.length === 0
+                      ? 'Da de alta el primer titular para abrir su expediente de cumplimiento.'
+                      : 'Prueba con otro término o cambia el filtro de tipo de persona.'
+                  }
+                />
               )}
 
               {!loading &&
@@ -190,17 +152,17 @@ export default function TitularesTab({ titulares, loading, onRefresh, isOnline =
                       </div>
                     </td>
                     <td>
-                      <CopyRfc rfc={t.rfc} />
+                      <CopyChip valor={t.rfc} etiqueta="RFC" />
                     </td>
                     <td>
-                      <span className={`badge badge--${t.tipo_persona === 'FISICA' ? 'vault' : 'brand'}`}>
+                      <span className={`badge badge--${t.tipo_persona === 'FISICA' ? 'vault' : 'neutral'}`}>
                         {t.tipo_persona === 'FISICA' ? 'Física' : 'Moral'}
                       </span>
                     </td>
                     <td>
                       <span className="tag">{t.categoria}</span>
                     </td>
-                    <td className="col-right cell-muted tabular">{formatFecha(t.creado_en)}</td>
+                    <td className="col-right cell-muted tabular">{formatFechaCorta(t.creado_en)}</td>
                   </tr>
                 ))}
             </tbody>

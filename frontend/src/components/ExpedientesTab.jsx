@@ -1,15 +1,19 @@
 import { Fragment, useMemo, useState } from 'react'
-import { Check, ChevronDown, Loader2, Plus, Search, X } from 'lucide-react'
+import { Check, ChevronDown, FolderKanban, Loader2, Plus, SearchX } from 'lucide-react'
 import Modal from './Modal.jsx'
 import { SkeletonRows } from './Skeleton.jsx'
 import useToast from '../hooks/useToast.js'
 import DropZone from './DropZone.jsx'
 import useDebounce from '../hooks/useDebounce.js'
+import { EmptyRow, Segmented, SearchBox } from './ui.jsx'
 import { createExpediente, uploadDocumento } from '../services/api.js'
 import { getEstadoBadge, TIPOS_DOCUMENTO, tonoPorPorcentaje } from '../constants.js'
 import { formatRelativo, iniciales } from '../utils/format.js'
 
 const COLUMNAS = 6
+
+/** Estados de cumplimiento del expediente, en el orden del semáforo. */
+const ESTADOS_FILTRO = ['CONFORME', 'EN_REVISION', 'NO_CONFORME']
 
 export default function ExpedientesTab({
   expedientes,
@@ -41,8 +45,16 @@ export default function ExpedientesTab({
     return mapa
   }, [documentos])
 
-  const estadosDisponibles = useMemo(
-    () => Array.from(new Set(expedientes.map((e) => e.estado_cumplimiento).filter(Boolean))),
+  const opcionesEstado = useMemo(
+    () => [
+      { id: 'TODOS', label: 'Todos', conteo: expedientes.length },
+      ...ESTADOS_FILTRO.map((estado) => ({
+        id: estado,
+        label: getEstadoBadge(estado).label,
+        tono: getEstadoBadge(estado).tono,
+        conteo: expedientes.filter((e) => e.estado_cumplimiento === estado).length,
+      })),
+    ],
     [expedientes]
   )
 
@@ -104,50 +116,18 @@ export default function ExpedientesTab({
   return (
     <div className="tab-panel">
       <div className="toolbar">
-        <label className="search-box">
-          <Search size={14} strokeWidth={2} />
-          <input
-            type="search"
-            placeholder="Buscar por folio, razón social o RFC…"
-            value={busqueda}
-            onChange={(e) => setBusqueda(e.target.value)}
-            aria-label="Buscar expedientes"
-          />
-          {busqueda && (
-            <button type="button" className="search-clear" onClick={() => setBusqueda('')} aria-label="Limpiar búsqueda">
-              <X size={12} strokeWidth={2} />
-            </button>
-          )}
-        </label>
-
-        {estadosDisponibles.length > 0 && (
-          <div className="segmented" role="group" aria-label="Filtrar por estado de cumplimiento">
-            <button
-              type="button"
-              className={`segmented-item ${filtroEstado === 'TODOS' ? 'is-active' : ''}`}
-              onClick={() => setFiltroEstado('TODOS')}
-              aria-pressed={filtroEstado === 'TODOS'}
-            >
-              Todos
-              <span className="segmented-count mono">{expedientes.length}</span>
-            </button>
-            {estadosDisponibles.map((estado) => {
-              const meta = getEstadoBadge(estado)
-              return (
-                <button
-                  key={estado}
-                  type="button"
-                  className={`segmented-item ${filtroEstado === estado ? 'is-active' : ''}`}
-                  onClick={() => setFiltroEstado(estado)}
-                  aria-pressed={filtroEstado === estado}
-                >
-                  <span className={`status-dot status-dot--${meta.tono}`} aria-hidden="true" />
-                  {meta.label}
-                </button>
-              )
-            })}
-          </div>
-        )}
+        <SearchBox
+          value={busqueda}
+          onChange={setBusqueda}
+          placeholder="Buscar por folio, razón social o RFC…"
+          label="Buscar expedientes"
+        />
+        <Segmented
+          label="Filtrar por estado de cumplimiento"
+          valor={filtroEstado}
+          onChange={setFiltroEstado}
+          opciones={opcionesEstado}
+        />
 
         <button
           type="button"
@@ -164,12 +144,20 @@ export default function ExpedientesTab({
       <div className="card table-card">
         <div className="table-scroll">
           <table className="data-table">
+            <colgroup>
+              <col style={{ width: '34%' }} />
+              <col style={{ width: '16%' }} />
+              <col style={{ width: '14%' }} />
+              <col style={{ width: '18%' }} />
+              <col style={{ width: '13%' }} />
+              <col style={{ width: 48 }} />
+            </colgroup>
             <thead>
               <tr>
                 <th>Titular</th>
                 <th>Folio</th>
                 <th>Estado</th>
-                <th>Completitud</th>
+                <th className="col-right">Completitud</th>
                 <th className="col-right">Actualizado</th>
                 <th aria-label="Detalle" />
               </tr>
@@ -178,20 +166,16 @@ export default function ExpedientesTab({
               {loading && <SkeletonRows rows={4} cols={COLUMNAS} />}
 
               {!loading && filtrados.length === 0 && (
-                <tr>
-                  <td colSpan={COLUMNAS}>
-                    <div className="empty-state">
-                      <p className="empty-title">
-                        {expedientes.length === 0 ? 'Aún no hay expedientes aperturados' : 'Sin resultados'}
-                      </p>
-                      <p className="empty-desc">
-                        {expedientes.length === 0
-                          ? 'Apertura un expediente para empezar a custodiar la documentación de un titular.'
-                          : 'Ajusta la búsqueda o el filtro de estado.'}
-                      </p>
-                    </div>
-                  </td>
-                </tr>
+                <EmptyRow
+                  columnas={COLUMNAS}
+                  icon={expedientes.length === 0 ? FolderKanban : SearchX}
+                  titulo={expedientes.length === 0 ? 'Aún no hay expedientes aperturados' : 'Sin resultados'}
+                  descripcion={
+                    expedientes.length === 0
+                      ? 'Apertura un expediente para empezar a custodiar la documentación de un titular.'
+                      : 'Ajusta la búsqueda o el filtro de estado.'
+                  }
+                />
               )}
 
               {!loading &&
@@ -219,9 +203,12 @@ export default function ExpedientesTab({
                         </td>
                         <td className="mono cell-mono">{exp.codigo_expediente}</td>
                         <td>
-                          <span className={`badge badge--${meta.tono}`}>{meta.label}</span>
+                          <span className={`badge badge--${meta.tono}`}>
+                            <span className={`status-dot status-dot--${meta.tono}`} aria-hidden="true" />
+                            {meta.label}
+                          </span>
                         </td>
-                        <td>
+                        <td className="col-right">
                           <div className="progress" title={`${entregados.length} de ${TIPOS_DOCUMENTO.length} tipos obligatorios`}>
                             <span className="progress-track">
                               <span className={`progress-fill progress-fill--${tono}`} style={{ width: `${progreso}%` }} />

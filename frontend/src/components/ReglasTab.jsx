@@ -1,9 +1,10 @@
 import { Fragment, useMemo, useState } from 'react'
-import { Loader2, Plus, Search, X } from 'lucide-react'
+import { Loader2, Plus, Scale, SearchX, ServerOff } from 'lucide-react'
 import Modal from './Modal.jsx'
 import { SkeletonRows } from './Skeleton.jsx'
 import useToast from '../hooks/useToast.js'
 import useDebounce from '../hooks/useDebounce.js'
+import { EmptyRow, EmptyState, Segmented, SearchBox } from './ui.jsx'
 import { createRegla, toggleRegla } from '../services/api.js'
 import {
   FAMILIA_META,
@@ -51,6 +52,7 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
   const toast = useToast()
   const [filtroFamilia, setFiltroFamilia] = useState('TODAS')
   const [filtroSeveridad, setFiltroSeveridad] = useState('TODAS')
+  const [filtroEstado, setFiltroEstado] = useState('TODAS')
   const [busqueda, setBusqueda] = useState('')
   const [modalAbierto, setModalAbierto] = useState(false)
   const [form, setForm] = useState(FORM_INICIAL)
@@ -65,15 +67,16 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
     return reglas.filter((r) => {
       const familiaOk = filtroFamilia === 'TODAS' || r.familia_regla === filtroFamilia
       const severidadOk = filtroSeveridad === 'TODAS' || r.severidad === filtroSeveridad
+      const estadoOk = filtroEstado === 'TODAS' || (filtroEstado === 'ACTIVAS') === Boolean(r.activo)
       const busquedaOk =
         !q ||
         r.codigo_regla?.toLowerCase().includes(q) ||
         r.nombre_regla?.toLowerCase().includes(q) ||
         r.descripcion?.toLowerCase().includes(q) ||
         r.accion?.toLowerCase().includes(q)
-      return familiaOk && severidadOk && busquedaOk
+      return familiaOk && severidadOk && estadoOk && busquedaOk
     })
-  }, [reglas, filtroFamilia, filtroSeveridad, consulta])
+  }, [reglas, filtroFamilia, filtroSeveridad, filtroEstado, consulta])
 
   /** Agrupadas por familia normativa, en el orden oficial del DOC-05. */
   const porFamilia = useMemo(() => {
@@ -90,10 +93,26 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
     return grupos
   }, [filtradas])
 
-  const conteoFamilia = useMemo(() => {
-    const base = { TODAS: reglas.length }
-    for (const f of FAMILIAS_REGLA) base[f] = reglas.filter((r) => r.familia_regla === f).length
-    return base
+  const opcionesFamilia = useMemo(
+    () => [
+      { id: 'TODAS', label: 'Todas', conteo: reglas.length },
+      ...FAMILIAS_REGLA.map((f) => ({
+        id: f,
+        label: f,
+        conteo: reglas.filter((r) => r.familia_regla === f).length,
+        tooltip: `${FAMILIA_META[f].nombre} · ${FAMILIA_META[f].nivel}`,
+      })),
+    ],
+    [reglas]
+  )
+
+  const opcionesEstado = useMemo(() => {
+    const activas = reglas.filter((r) => r.activo).length
+    return [
+      { id: 'TODAS', label: 'Todas' },
+      { id: 'ACTIVAS', label: 'Activas', tono: 'ok', conteo: activas },
+      { id: 'PAUSADAS', label: 'Pausadas', tono: 'off', conteo: reglas.length - activas },
+    ]
   }, [reglas])
 
   const cerrarModal = () => {
@@ -166,14 +185,12 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
   if (!isOnline) {
     return (
       <div className="tab-panel">
-        <div className="card offline-card">
-          <span className="badge badge--bad">Sin respuesta</span>
-          <h2 className="section-title">Microservicio de reglas (:8002) fuera de línea</h2>
-          <p className="section-desc">
-            El <code className="mono">rules-service</code> no responde, así que no es posible consultar, evaluar ni
-            modificar el catálogo normativo en este momento. Empresas, Expedientes y Bóveda siguen operando con
-            normalidad gracias a la arquitectura de microservicios desacoplados.
-          </p>
+        <div className="card">
+          <EmptyState
+            icon={ServerOff}
+            titulo="Microservicio de reglas (:8002) fuera de línea"
+            descripcion="El rules-service no responde: no es posible consultar, evaluar ni modificar el catálogo normativo. Empresas, Expedientes y Bóveda siguen operando gracias a la arquitectura de microservicios desacoplados."
+          />
         </div>
       </div>
     )
@@ -182,46 +199,14 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
   return (
     <div className="tab-panel">
       <div className="toolbar">
-        <label className="search-box">
-          <Search size={14} strokeWidth={2} />
-          <input
-            type="search"
-            placeholder="Buscar por código, nombre, criterio o acción…"
-            value={busqueda}
-            onChange={(e) => setBusqueda(e.target.value)}
-            aria-label="Buscar reglas"
-          />
-          {busqueda && (
-            <button type="button" className="search-clear" onClick={() => setBusqueda('')} aria-label="Limpiar búsqueda">
-              <X size={12} strokeWidth={2} />
-            </button>
-          )}
-        </label>
-
-        <div className="segmented" role="group" aria-label="Filtrar por familia normativa">
-          <button
-            type="button"
-            className={`segmented-item ${filtroFamilia === 'TODAS' ? 'is-active' : ''}`}
-            onClick={() => setFiltroFamilia('TODAS')}
-            aria-pressed={filtroFamilia === 'TODAS'}
-          >
-            Todas
-            <span className="segmented-count mono">{conteoFamilia.TODAS}</span>
-          </button>
-          {FAMILIAS_REGLA.map((f) => (
-            <button
-              key={f}
-              type="button"
-              className={`segmented-item ${filtroFamilia === f ? 'is-active' : ''}`}
-              onClick={() => setFiltroFamilia(f)}
-              aria-pressed={filtroFamilia === f}
-              data-tooltip={`${FAMILIA_META[f].nombre} · ${FAMILIA_META[f].nivel}`}
-            >
-              {f}
-              <span className="segmented-count mono">{conteoFamilia[f]}</span>
-            </button>
-          ))}
-        </div>
+        <SearchBox
+          value={busqueda}
+          onChange={setBusqueda}
+          placeholder="Código, nombre, criterio o acción…"
+          label="Buscar reglas"
+        />
+        <Segmented label="Filtrar por familia normativa" valor={filtroFamilia} onChange={setFiltroFamilia} opciones={opcionesFamilia} />
+        <Segmented label="Filtrar por estado" valor={filtroEstado} onChange={setFiltroEstado} opciones={opcionesEstado} />
 
         <label className="select-inline">
           <span className="sr-only">Filtrar por severidad</span>
@@ -244,6 +229,14 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
       <div className="card table-card">
         <div className="table-scroll">
           <table className="data-table">
+            <colgroup>
+              <col style={{ width: '10%' }} />
+              <col style={{ width: '34%' }} />
+              <col style={{ width: '11%' }} />
+              <col style={{ width: '20%' }} />
+              <col style={{ width: '17%' }} />
+              <col style={{ width: '8%' }} />
+            </colgroup>
             <thead>
               <tr>
                 <th>Código</th>
@@ -258,18 +251,16 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
               {loading && <SkeletonRows rows={6} cols={COLUMNAS} />}
 
               {!loading && filtradas.length === 0 && (
-                <tr>
-                  <td colSpan={COLUMNAS}>
-                    <div className="empty-state">
-                      <p className="empty-title">{reglas.length === 0 ? 'El catálogo está vacío' : 'Sin coincidencias'}</p>
-                      <p className="empty-desc">
-                        {reglas.length === 0
-                          ? 'Precarga el catálogo del DOC-05 o da de alta una regla dinámica (RDS-01).'
-                          : 'Ajusta la búsqueda o relaja los filtros de familia y severidad.'}
-                      </p>
-                    </div>
-                  </td>
-                </tr>
+                <EmptyRow
+                  columnas={COLUMNAS}
+                  icon={reglas.length === 0 ? Scale : SearchX}
+                  titulo={reglas.length === 0 ? 'El catálogo está vacío' : 'Sin coincidencias'}
+                  descripcion={
+                    reglas.length === 0
+                      ? 'Precarga el catálogo del DOC-05 o da de alta una regla dinámica (RDS-01).'
+                      : 'Ajusta la búsqueda o relaja los filtros de familia, estado y severidad.'
+                  }
+                />
               )}
 
               {!loading &&
@@ -280,7 +271,7 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
                         <span className="mono group-code">{grupo.familia}</span>
                         <span className="group-name">{grupo.meta.nombre}</span>
                         <span className="group-meta">{grupo.meta.nivel}</span>
-                        <span className="group-count mono">
+                        <span className="group-count tabular">
                           {grupo.items.filter((r) => r.activo).length}/{grupo.items.length} activas
                         </span>
                       </td>
@@ -300,7 +291,10 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
                             </div>
                           </td>
                           <td>
-                            <span className={`badge badge--${sev.tono}`}>{sev.label}</span>
+                            <span className={`badge badge--${sev.tono}`}>
+                              <span className={`status-dot status-dot--${sev.tono}`} aria-hidden="true" />
+                              {sev.label}
+                            </span>
                           </td>
                           <td>
                             <div className="tag-row">
@@ -310,7 +304,7 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
                                   : 'Todo el expediente'}
                               </span>
                               {r.dias_maximos_vigencia != null && (
-                                <span className="tag mono">{r.dias_maximos_vigencia} días</span>
+                                <span className="tag tabular">{r.dias_maximos_vigencia} días</span>
                               )}
                               {r.documento_obligatorio && <span className="tag">Obligatorio</span>}
                             </div>

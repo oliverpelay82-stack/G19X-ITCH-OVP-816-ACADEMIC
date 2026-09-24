@@ -9,8 +9,10 @@ import { X } from 'lucide-react'
  * Se monta en un portal sobre <body> a propósito: un ancestro animado con
  * transform establecería un bloque contenedor que dejaría el velo
  * `position: fixed` recortado al tamaño de la pestaña.
+ *
+ * `size`: 'md' para formularios, 'lg' para el detalle de un documento.
  */
-export default function Modal({ title, subtitle, onClose, children, footer }) {
+export default function Modal({ title, subtitle, onClose, children, footer, size = 'md' }) {
   const panel = useRef(null)
 
   useEffect(() => {
@@ -30,7 +32,7 @@ export default function Modal({ title, subtitle, onClose, children, footer }) {
   return createPortal(
     <div className="modal-overlay" onMouseDown={onClose}>
       <div
-        className="modal"
+        className={`modal modal--${size}`}
         onMouseDown={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"

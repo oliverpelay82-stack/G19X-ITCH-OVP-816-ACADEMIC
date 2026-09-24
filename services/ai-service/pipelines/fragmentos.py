@@ -81,6 +81,51 @@ _EXPANSIONES: dict[str, str] = {
 }
 
 
+# Encabezados de estatutos o de un instrumento notarial, en MAYÚSCULAS al inicio
+# de un renglón: «ARTÍCULO SEXTO. - CAPITAL SOCIAL», «CLÁUSULA TERCERA. - OBJETO»
+# o las cláusulas transitorias «CUARTA.- Se designa…». Las referencias en el
+# cuerpo del texto («el artículo 132 de la Ley…») no cuentan como encabezado.
+_ENCABEZADO_LEGAL = re.compile(
+    r"^\s*("
+    r"(?:ART[IÍ]CULO|CL[AÁ]USULA|CAP[IÍ]TULO)\s+[^\n.]{1,40}\.\s*-?\s*[A-ZÁÉÍÓÚÑ][A-ZÁÉÍÓÚÑ ,]{2,60}"
+    r"|(?:PRIMER|SEGUND|TERCER|CUART|QUINT|SEXT|S[ÉE]PTIM|OCTAV|NOVEN|D[ÉE]CIM)[AO]\s*\.\s*-?\s*[^\n]{0,80}"
+    r")"
+)
+_INICIO_CLAUSULA = re.compile(r"^\s*(?:ART[IÍ]CULO|CL[AÁ]USULA|CAP[IÍ]TULO)\b")
+
+
+def _recortar(texto: str, largo: int = 60) -> str:
+    texto = " ".join(texto.split())
+    return texto if len(texto) <= largo else texto[:largo].rsplit(" ", 1)[0] + "…"
+
+
+def titulo_fragmento(texto: str, terminos: list[str]) -> str:
+    """
+    Etiqueta legible de un fragmento para citarlo en la interfaz: el encabezado
+    legal bajo el que está el renglón que mejor coincide con la consulta o, si el
+    fragmento no incluye ese encabezado, el propio renglón.
+    """
+    buscados = set(terminos)
+    renglones = texto.splitlines()
+    tokens = [buscados & set(tokenizar(r)) for r in renglones]
+    # Un término raro en el fragmento pesa más que uno que se repite en cada renglón.
+    frecuencia = {t: sum(t in ts for ts in tokens) for t in buscados}
+    vigente, mejor, coincidencias = None, None, 0.0
+    for renglon, presentes in zip(renglones, tokens):
+        m = _ENCABEZADO_LEGAL.match(renglon)
+        if m:
+            vigente = re.sub(r"[\s\-–—.:,]+$", "", m.group(1))
+        elif _INICIO_CLAUSULA.match(renglon):
+            vigente = None  # cláusula sin rubro: el encabezado anterior ya no aplica
+        n = sum(1 / frecuencia[t] for t in presentes)
+        if n > coincidencias:
+            mejor, coincidencias = (vigente or renglon), n
+    if mejor:
+        return _recortar(mejor)
+    m = next((_ENCABEZADO_LEGAL.match(r) for r in texto.splitlines() if _ENCABEZADO_LEGAL.match(r)), None)
+    return _recortar(m.group(1)) if m else _recortar(texto)
+
+
 def terminos_consulta(consulta: str) -> list[str]:
     """Tokeniza la consulta y le suma las expansiones de las palabras interrogativas."""
     crudos = re.findall(r"[a-z0-9]+", _normalizar(consulta))
@@ -236,6 +281,7 @@ def seleccionar(
             "caracteres": len(v.texto.strip()),
             "puntaje": round(v.puntaje, 2),
             "inicio": v.texto.strip()[:80],
+            "titulo": titulo_fragmento(v.texto, terminos),
         }
         for v in elegidas
     ]

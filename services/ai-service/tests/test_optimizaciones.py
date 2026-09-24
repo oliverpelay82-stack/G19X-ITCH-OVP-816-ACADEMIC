@@ -63,6 +63,9 @@ def prueba_fragmentos() -> None:
         "El contexto respeta el presupuesto de caracteres",
         f"{len(seleccion.texto)}/{settings.MAX_CARACTERES_CONTEXTO} de {len(texto)}",
     )
+    titulos = [f["titulo"] for f in seleccion.fragmentos]
+    verificar(any("CAPITAL SOCIAL" in t or "$50,000.00" in t for t in titulos),
+              "Cada fragmento lleva un título citable", " | ".join(titulos)[:80])
     corto = fragmentos.seleccionar("Constancia breve con RFC PLU180514AB3.", "rfc")
     verificar(corto.estrategia == "completo", "Un documento corto se envía completo")
 

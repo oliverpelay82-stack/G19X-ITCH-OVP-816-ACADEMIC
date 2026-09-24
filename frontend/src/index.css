@@ -1,12 +1,13 @@
 /* ===================================================================
    Motor de Validación de Cumplimiento Documental — PluriOne S.A. de C.V.
-   Design system minimalista (referencias: Linear, Vercel, Stripe).
+   Design system (referencias: Linear, Vercel, Stripe).
 
-   · Profundidad por contraste de superficie; sombras solo en modales,
-     dropdowns y tooltips.
-   · Transiciones de 150 ms ease-out, sin rebotes ni escalados.
-   · Espaciado en rejilla de 4 px. Ningún estado se comunica solo con
-     color: siempre viaja con su etiqueta.
+   · Profundidad por contraste de superficie; la única sombra de las
+     tarjetas es 0 1px 2px, y los modales usan 0 8px 24px.
+   · Escala tipográfica fija: 11 px etiquetas · 13 px cuerpo y tablas ·
+     15 px títulos · 20 px encabezados. Inter en 400 / 500 / 600.
+   · Rejilla de 4 / 8 px y transiciones de 0.15 s.
+   · Ningún estado se comunica solo con color: siempre viaja con su etiqueta.
    =================================================================== */
 
 :root {
@@ -14,7 +15,12 @@
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 
-  /* ── Espaciado (4 px) ───────────────────────────────────────── */
+  --fs-label: 11px;
+  --fs-body: 13px;
+  --fs-title: 15px;
+  --fs-header: 20px;
+
+  /* ── Espaciado (4 / 8 px) ───────────────────────────────────── */
   --s-1: 4px;
   --s-2: 8px;
   --s-3: 12px;
@@ -33,25 +39,17 @@
   --r-full: 999px;
 
   /* ── Movimiento ─────────────────────────────────────────────── */
-  --dur: 150ms;
-  --ease: ease-out;
+  --dur: 0.15s;
+  --ease: ease;
 
-  --sidebar-w: 220px;
+  --sidebar-w: 212px;
+  --header-h: 64px;
 
-  /* ── Acento y estados (idénticos en ambos temas) ────────────── */
+  /* ── Acento ─────────────────────────────────────────────────── */
   --accent: #3b82f6;
   --accent-hover: #2563eb;
   --accent-soft: rgba(59, 130, 246, 0.1);
   --accent-ring: rgba(59, 130, 246, 0.25);
-
-  --ok: #059669;
-  --ok-soft: rgba(5, 150, 105, 0.1);
-  --warn: #d97706;
-  --warn-soft: rgba(217, 119, 6, 0.1);
-  --bad: #dc2626;
-  --bad-soft: rgba(220, 38, 38, 0.1);
-  --vault: #7c3aed;
-  --vault-soft: rgba(124, 58, 237, 0.1);
 }
 
 /* ══════════════════════ TEMA OSCURO (por defecto) ═══════════════ */
@@ -60,45 +58,71 @@
   color-scheme: dark;
 
   --bg: #09090b;
-  --surface-1: #111113;
+  --surface-1: #0f0f12;
   --surface-2: #18181b;
   --surface-3: #27272a;
-  --border: rgba(255, 255, 255, 0.06);
-  --border-hover: rgba(255, 255, 255, 0.12);
+  --border: rgba(255, 255, 255, 0.08);
+  --border-hover: rgba(255, 255, 255, 0.14);
+  --divider: rgba(255, 255, 255, 0.05);
 
   --text: #fafafa;
   --text-2: #a1a1aa;
   --text-3: #71717a;
 
-  --sidebar-bg: #09090b;
-  --hover: rgba(255, 255, 255, 0.03);
+  --hover: rgba(255, 255, 255, 0.02);
   --active: rgba(255, 255, 255, 0.05);
   --overlay: rgba(0, 0, 0, 0.6);
-  --shadow-pop: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.06);
-  --shadow-modal: 0 24px 64px rgba(0, 0, 0, 0.6);
+
+  /* Estados: color pleno sobre fondo al 10 %. */
+  --ok: #10b981;
+  --ok-soft: rgba(16, 185, 129, 0.1);
+  --warn: #f59e0b;
+  --warn-soft: rgba(245, 158, 11, 0.1);
+  --bad: #f43f5e;
+  --bad-soft: rgba(244, 63, 94, 0.1);
+  --vault: #a78bfa;
+  --vault-soft: rgba(167, 139, 250, 0.1);
+  --off: #52525b;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-pop: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --shadow-modal: 0 8px 24px rgba(0, 0, 0, 0.5);
 }
 
 /* ══════════════════════ TEMA CLARO ══════════════════════════════ */
+/* Los tonos de estado se oscurecen para conservar el contraste AA sobre blanco. */
 [data-theme='light'] {
   color-scheme: light;
 
   --bg: #fafafa;
   --surface-1: #ffffff;
   --surface-2: #f4f4f5;
-  --surface-3: #ffffff;
-  --border: #e4e4e7;
-  --border-hover: #d4d4d8;
+  --surface-3: #e4e4e7;
+  --border: rgba(9, 9, 11, 0.09);
+  --border-hover: rgba(9, 9, 11, 0.16);
+  --divider: rgba(9, 9, 11, 0.06);
 
   --text: #09090b;
   --text-2: #52525b;
-  --text-3: #a1a1aa;
+  --text-3: #71717a;
 
-  --sidebar-bg: #ffffff;
-  --hover: rgba(0, 0, 0, 0.02);
-  --active: rgba(0, 0, 0, 0.04);
-  --overlay: rgba(0, 0, 0, 0.6);
-  --shadow-pop: 0 8px 24px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.04);
-  --shadow-modal: 0 24px 64px rgba(0, 0, 0, 0.16);
+  --hover: rgba(9, 9, 11, 0.02);
+  --active: rgba(9, 9, 11, 0.05);
+  --overlay: rgba(9, 9, 11, 0.4);
+
+  --ok: #047857;
+  --ok-soft: rgba(16, 185, 129, 0.1);
+  --warn: #b45309;
+  --warn-soft: rgba(245, 158, 11, 0.12);
+  --bad: #e11d48;
+  --bad-soft: rgba(244, 63, 94, 0.1);
+  --vault: #6d28d9;
+  --vault-soft: rgba(124, 58, 237, 0.08);
+  --off: #a1a1aa;
+
+  --shadow-sm: 0 1px 2px rgba(9, 9, 11, 0.06);
+  --shadow-pop: 0 8px 24px rgba(9, 9, 11, 0.1);
+  --shadow-modal: 0 8px 24px rgba(9, 9, 11, 0.14);
 }
 
 /* ══════════════════════ BASE ════════════════════════════════════ */
@@ -119,7 +143,7 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-sans);
-  font-size: 14px;
+  font-size: var(--fs-body);
   font-weight: 400;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
@@ -210,6 +234,16 @@ code {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
 }
 
 @keyframes spin {

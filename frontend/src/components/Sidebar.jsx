@@ -1,60 +1,63 @@
-import { SERVICIOS } from '../constants.js'
+import { Building2, FolderKanban, Scale, ShieldCheck, Vault } from 'lucide-react'
 
-const NAV_ITEMS = [
-  { id: 'titulares', label: 'Empresas' },
-  { id: 'expedientes', label: 'Expedientes' },
-  { id: 'boveda', label: 'Bóveda' },
-  { id: 'reglas', label: 'Reglas' },
+const GRUPOS = [
+  {
+    label: 'Cumplimiento',
+    items: [
+      { id: 'titulares', label: 'Empresas', icon: Building2 },
+      { id: 'expedientes', label: 'Expedientes', icon: FolderKanban },
+      { id: 'boveda', label: 'Bóveda', icon: Vault },
+    ],
+  },
+  {
+    label: 'Configuración',
+    items: [{ id: 'reglas', label: 'Reglas', icon: Scale }],
+  },
 ]
 
-/** Tono del punto de salud: apagado, degradado (sin BD) o en línea. */
-function tonoServicio(estado) {
-  if (!estado?.online) return 'off'
-  return estado.payload?.conexion_bd === false ? 'warn' : 'ok'
-}
-
 /**
- * Barra lateral fija: marca, navegación principal y estado en vivo de los
- * tres microservicios con su latencia medida.
+ * Barra lateral delgada: marca y navegación agrupada con iconos discretos,
+ * indicador de sección activa y el conteo de registros de cada vista.
  */
-export default function Sidebar({ tabActiva, onTabChange, health, contadores }) {
+export default function Sidebar({ tabActiva, onTabChange, contadores }) {
   return (
     <aside className="sidebar">
-      <div className="sidebar-brand">PluriOne</div>
+      <div className="sidebar-brand">
+        <span className="brand-mark" aria-hidden="true">
+          <ShieldCheck size={14} strokeWidth={2} />
+        </span>
+        <div className="brand-text">
+          <span className="brand-name">PluriOne</span>
+          <span className="brand-sub">Motor de validación</span>
+        </div>
+      </div>
 
       <nav className="sidebar-nav" aria-label="Navegación principal">
-        {NAV_ITEMS.map((item) => {
-          const activo = tabActiva === item.id
-          const total = contadores?.[item.id]
-          return (
-            <button
-              key={item.id}
-              type="button"
-              className={`nav-item ${activo ? 'is-active' : ''}`}
-              onClick={() => onTabChange(item.id)}
-              aria-current={activo ? 'page' : undefined}
-            >
-              <span>{item.label}</span>
-              {total !== undefined && <span className="nav-count mono">{total}</span>}
-            </button>
-          )
-        })}
+        {GRUPOS.map((grupo) => (
+          <div className="nav-group" key={grupo.label}>
+            <p className="sidebar-label">{grupo.label}</p>
+            {grupo.items.map(({ id, label, icon: Icono }) => {
+              const activo = tabActiva === id
+              const total = contadores?.[id]
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  className={`nav-item ${activo ? 'is-active' : ''}`}
+                  onClick={() => onTabChange(id)}
+                  aria-current={activo ? 'page' : undefined}
+                >
+                  <Icono size={15} strokeWidth={1.75} className="nav-icon" aria-hidden="true" />
+                  <span className="nav-label">{label}</span>
+                  {total !== undefined && <span className="nav-count tabular">{total}</span>}
+                </button>
+              )
+            })}
+          </div>
+        ))}
       </nav>
 
-      <div className="sidebar-services">
-        <p className="sidebar-label">Servicios</p>
-        {SERVICIOS.map((s) => {
-          const estado = health[s.key]
-          const tono = tonoServicio(estado)
-          return (
-            <div className="service-row" key={s.key} title={`${s.nombre} (:${s.puerto}) · ${s.alcance}`}>
-              <span className={`status-dot status-dot--${tono}`} aria-hidden="true" />
-              <span className="service-name">{s.corto}</span>
-              <span className="service-latency mono">{estado?.online ? `${estado.latencia}ms` : 'offline'}</span>
-            </div>
-          )
-        })}
-      </div>
+      <p className="sidebar-foot">DOC-05 · Pipeline de 5 niveles</p>
     </aside>
   )
 }

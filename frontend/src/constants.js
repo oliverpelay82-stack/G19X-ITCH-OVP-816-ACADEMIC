@@ -38,9 +38,9 @@ export const getSeveridadMeta = (severidad) =>
 
 /** Los tres microservicios del DOC-08, tal como los expone docker-compose. */
 export const SERVICIOS = [
-  { key: 'core', nombre: 'Core Service', corto: 'Core', puerto: 8001, alcance: 'Titulares · Expedientes · Bóveda' },
-  { key: 'rules', nombre: 'Rules Service', corto: 'Rules', puerto: 8002, alcance: 'Catálogo de reglas (Nivel 2)' },
-  { key: 'ai', nombre: 'AI Service', corto: 'AI', puerto: 8003, alcance: 'Extracción y análisis semántico' },
+  { key: 'core', nombre: 'Core Service', etiqueta: 'Core', puerto: 8001, alcance: 'Titulares · Expedientes · Bóveda' },
+  { key: 'rules', nombre: 'Rules Service', etiqueta: 'Rules', puerto: 8002, alcance: 'Catálogo de reglas (Nivel 2)' },
+  { key: 'ai', nombre: 'AI Service', etiqueta: 'AI · Groq', puerto: 8003, alcance: 'Extracción y análisis semántico' },
 ]
 
 /**
