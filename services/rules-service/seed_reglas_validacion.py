@@ -2,7 +2,10 @@
 Script de precarga del catálogo base de Reglas de Validación (DOC-05).
 Inserta en PostgreSQL las reglas RIE-01, RIE-02, RIE-03 y RCV-01, tal como
 están definidas textualmente en el "Catálogo Formal de Reglas de Negocio"
-del DOC-05 (Estrategia de Validación y Catálogo de Reglas de Negocio).
+del DOC-05 (Estrategia de Validación y Catálogo de Reglas de Negocio), y
+RCV-02: la "Caducidad Estricta de Documentos con Vigencia Legal Fija" del
+mismo catálogo, aplicada al comprobante de domicilio fiscal con el límite
+"no mayor a 3 meses" del DOC-02 (90 días naturales, DOC-08).
 
 Ejecuta (desde services/rules-service/): python seed_reglas_validacion.py
 """
@@ -81,6 +84,29 @@ REGLAS_BASE = [
         "tipo_documento": None,
         "documento_obligatorio": True,
         "dias_maximos_vigencia": 30,
+    },
+    {
+        "codigo_regla": "RCV-02",
+        "nombre_regla": "Caducidad Estricta del Comprobante de Domicilio Fiscal",
+        "familia_regla": "RCV",
+        "descripcion": (
+            "El comprobante de domicilio fiscal tiene una vigencia legal "
+            "predeterminada: no puede tener más de 90 días naturales de "
+            "antigüedad. El sistema calcula la diferencia entre la fecha de "
+            "evaluación y la fecha de emisión del documento; si supera los 90 "
+            "días, el documento se marca automáticamente como vencido y "
+            "requiere actualización inmediata. Si el documento no declara "
+            "fecha de emisión, la antigüedad no puede verificarse y el caso "
+            "se turna a revisión humana."
+        ),
+        "severidad": "ALTA",
+        "accion": (
+            "Más de 90 días desde la emisión: documento vencido, Semáforo Rojo "
+            "y solicitud de un comprobante actualizado."
+        ),
+        "tipo_documento": "COMP_DOMICILIO",
+        "documento_obligatorio": True,
+        "dias_maximos_vigencia": 90,
     },
 ]
 

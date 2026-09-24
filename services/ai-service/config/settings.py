@@ -124,6 +124,12 @@ MAX_FRAGMENTOS_CHAT: int = int(os.getenv("MAX_FRAGMENTOS_CHAT", "4"))
 
 # ── Integración con el core-service (:8001) ─────────────────────────
 CORE_BASE_URL: str = os.getenv("CORE_BASE_URL", "http://127.0.0.1:8001").rstrip("/")
+
+# ── Integración con el rules-service (:8002) ────────────────────────
+# El dictamen del Nivel 4 consulta ahí las reglas de vigencia (familia RCV):
+# RCV-01 (días para el vencimiento) y RCV-02 (antigüedad máxima del comprobante
+# de domicilio fiscal, 90 días naturales desde su emisión).
+RULES_BASE_URL: str = os.getenv("RULES_BASE_URL", "http://127.0.0.1:8002").rstrip("/")
 _DEFAULT_VAULT = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))), "storage_vault"
 )

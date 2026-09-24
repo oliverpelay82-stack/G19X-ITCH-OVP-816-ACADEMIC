@@ -21,7 +21,8 @@ from datetime import date, datetime
 from typing import Any
 import re
 
-from clients import groq_client
+from clients import groq_client, rules_client
+from clients.rules_client import ReglasNoDisponiblesError
 from config import settings
 from pipelines import fragmentos
 
@@ -77,6 +78,16 @@ CONSULTA_AUDITORIA = (
     "administrador único facultades poder apoderado firma firmas notario corredor público "
     "escritura pública instrumento fe"
 )
+
+# Equivalencia entre el catálogo del Nivel 4 y el catálogo oficial de tipos del
+# core-service (TipoDocumentoEnum), que es el que usan las reglas de vigencia.
+TIPO_A_CATALOGO_CORE: dict[str, str] = {
+    "CONSTANCIA_SITUACION_FISCAL": "CSF_SAT",
+    "COMPROBANTE_DOMICILIO": "COMP_DOMICILIO",
+    "ACTA_CONSTITUTIVA": "ACTA_CONSTITUTIVA",
+    "OPINION_CUMPLIMIENTO": "OPINION_CUMPLIMIENTO",
+    "ESTADO_CUENTA": "ESTADO_CUENTA",
+}
 
 # RFC mexicano: 3 caracteres para persona moral o 4 para persona física,
 # seguidos de la fecha AAMMDD y la homoclave de 3 posiciones.
@@ -181,6 +192,7 @@ class ResultadoAnalisis:
     observaciones: list[str]
     modelo_utilizado: str
     contexto_llm: dict[str, Any] = field(default_factory=dict)
+    vigencia_nivel_2: dict[str, Any] = field(default_factory=dict)
 
     def a_dict(self) -> dict[str, Any]:
         return {
@@ -201,6 +213,7 @@ class ResultadoAnalisis:
             "observaciones": self.observaciones,
             "modelo_utilizado": self.modelo_utilizado,
             "contexto_llm": self.contexto_llm,
+            "vigencia_nivel_2": self.vigencia_nivel_2,
         }
 
 
@@ -259,6 +272,7 @@ def analizar(
     razon_social_titular: str | None = None,
     confianza_extraccion: float | None = None,
     fecha_referencia: date | None = None,
+    tipo_documento_registrado: str | None = None,
 ) -> ResultadoAnalisis:
     """
     Somete el texto al modelo local y calcula el dictamen preliminar.
@@ -266,6 +280,9 @@ def analizar(
     :param confianza_extraccion: score del Nivel 3. Cuando se recibe, acota por
         arriba la confianza final: por sólido que sea el razonamiento del modelo,
         no puede estar más seguro que la calidad del texto que se le entregó.
+    :param tipo_documento_registrado: tipo con el que el documento se registró
+        en el expediente (catálogo del core-service). Determina qué reglas de
+        vigencia aplican; si falta, se usa el tipo que detectó el modelo.
     """
     hoy = fecha_referencia or date.today()
     if not texto.strip():
@@ -319,23 +336,31 @@ def analizar(
             f"El RFC extraído ({rfc_detectado}) no respeta la estructura oficial del SAT."
         )
 
-    # Vigencia temporal.
-    vigente: bool | None = None
+    # Vigencia temporal. Los plazos no se deciden aquí: se consultan las reglas
+    # RCV activas del rules-service (Nivel 2). El cálculo local contra la fecha
+    # de vencimiento solo se usa como respaldo si ese servicio no responde.
     dias_restantes: int | None = None
+    vigente_local: bool | None = None
     if fecha_vencimiento:
-        vencimiento = date.fromisoformat(fecha_vencimiento)
-        dias_restantes = (vencimiento - hoy).days
-        vigente = dias_restantes >= 0
-        if not vigente:
-            observaciones.append(
-                f"El documento venció el {fecha_vencimiento} ({abs(dias_restantes)} días atrás)."
-            )
+        dias_restantes = (date.fromisoformat(fecha_vencimiento) - hoy).days
+        vigente_local = dias_restantes >= 0
+    vigente, vigencia_pendiente, vigencia_nivel_2, notas_vigencia = _evaluar_vigencia(
+        tipo_registrado=tipo_documento_registrado,
+        tipo_detectado=tipo,
+        fecha_emision=fecha_emision,
+        fecha_vencimiento=fecha_vencimiento,
+        hoy=hoy,
+        vigente_local=vigente_local,
+        dias_restantes=dias_restantes,
+    )
+    observaciones.extend(notas_vigencia)
 
     estatus, requiere_hitl, motivos = _dictaminar(
         confianza=confianza,
         match_titular=match_titular,
         rfc_esperado=rfc_esperado,
         vigente=vigente,
+        vigencia_pendiente=vigencia_pendiente,
     )
     observaciones.extend(motivos)
 
@@ -355,11 +380,64 @@ def analizar(
         observaciones=observaciones,
         modelo_utilizado=settings.GROQ_MODEL,
         contexto_llm=seleccion.traza(),
+        vigencia_nivel_2=vigencia_nivel_2,
     )
 
 
+def _evaluar_vigencia(
+    tipo_registrado: str | None,
+    tipo_detectado: str,
+    fecha_emision: str | None,
+    fecha_vencimiento: str | None,
+    hoy: date,
+    vigente_local: bool | None,
+    dias_restantes: int | None,
+) -> tuple[bool | None, bool, dict[str, Any], list[str]]:
+    """
+    Consulta las reglas de vigencia del rules-service.
+
+    Devuelve (vigente, vigencia_pendiente, traza, observaciones). ``vigente`` es
+    False solo ante un vencimiento comprobado; ``vigencia_pendiente`` obliga a la
+    revisión humana cuando la vigencia no pudo verificarse (faltan fechas o el
+    rules-service no respondió), porque aprobar sin esa verificación podría dar
+    por bueno un comprobante con más antigüedad de la permitida.
+    """
+    tipo_regla = (tipo_registrado or TIPO_A_CATALOGO_CORE.get(tipo_detectado) or tipo_detectado).upper()
+    traza: dict[str, Any] = {
+        "tipo_evaluado": tipo_regla,
+        "origen_tipo": "registrado" if tipo_registrado else "detectado",
+    }
+    notas: list[str] = []
+    try:
+        respuesta = rules_client.evaluar_vigencia(tipo_regla, fecha_emision, fecha_vencimiento, hoy)
+    except ReglasNoDisponiblesError as exc:
+        traza.update(disponible=False, detalle=str(exc))
+        notas.append("No fue posible consultar las reglas de vigencia del rules-service (:8002); la antigüedad "
+                     "máxima del documento no se verificó y el caso se turna a revisión humana.")
+        if vigente_local is False:
+            notas.append(f"El documento venció el {fecha_vencimiento} ({abs(dias_restantes)} días atrás).")
+        return vigente_local, vigente_local is not False, traza, notas
+
+    traza.update(disponible=True, **respuesta)
+    resultado = respuesta.get("resultado")
+    for evaluacion in respuesta.get("evaluaciones", []):
+        if evaluacion.get("resultado") in ("VENCIDO", "INDETERMINADO"):
+            notas.append(f"{evaluacion['codigo_regla']} ({evaluacion['nombre_regla']}): {evaluacion['detalle']}")
+    if resultado == "VENCIDO":
+        return False, False, traza, notas
+    if resultado == "INDETERMINADO":
+        return None, True, traza, notas
+    if resultado in ("VIGENTE", "PROXIMO_A_VENCER"):
+        return True, False, traza, notas
+    return vigente_local, False, traza, notas   # SIN_REGLAS: ninguna regla de vigencia cubre el documento
+
+
 def _dictaminar(
-    confianza: float, match_titular: bool, rfc_esperado: str | None, vigente: bool | None
+    confianza: float,
+    match_titular: bool,
+    rfc_esperado: str | None,
+    vigente: bool | None,
+    vigencia_pendiente: bool = False,
 ) -> tuple[str, bool, list[str]]:
     """
     Reglas deterministas que convierten la extracción en un estatus preliminar.
@@ -395,6 +473,17 @@ def _dictaminar(
             + [
                 "Dictamen EN_REVISION: sin RFC de referencia no es posible cerrar la "
                 "verificación de titularidad en automático."
+            ],
+        )
+
+    if vigencia_pendiente:
+        return (
+            ESTATUS_EN_REVISION,
+            True,
+            motivos
+            + [
+                "Dictamen EN_REVISION: la vigencia del documento no pudo verificarse contra las "
+                "reglas RCV; un analista debe confirmarla antes de aprobarlo."
             ],
         )
 

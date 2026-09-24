@@ -2,15 +2,47 @@
 Controlador de Reglas de Validación.
 Equivalente a @RestController @RequestMapping("/api/v1/reglas") en Spring Boot.
 """
+from dataclasses import asdict
+from datetime import date
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from config.database import get_db
 from models.regla import Regla
-from schemas.regla_schema import ReglaCreate, ReglaResponse
+from motor import vigencia
+from schemas.regla_schema import (
+    EvaluacionVigenciaRequest,
+    EvaluacionVigenciaResponse,
+    ReglaCreate,
+    ReglaResponse,
+)
 
 router = APIRouter(prefix="/api/v1/reglas", tags=["Reglas de Validación"])
+
+
+@router.post(
+    "/evaluar-vigencia",
+    response_model=EvaluacionVigenciaResponse,
+    summary="Evaluar la vigencia de un documento contra las reglas RCV activas (Nivel 2)",
+)
+def evaluar_vigencia(peticion: EvaluacionVigenciaRequest, db: Session = Depends(get_db)):
+    """
+    Aplica de forma determinista las reglas Cronológicas y de Vigencia activas:
+    la vigencia mandatoria (RCV-01, días para el vencimiento) y la caducidad
+    estricta por tipo de documento (p. ej. RCV-02: comprobante de domicilio con
+    antigüedad máxima de 90 días naturales desde su emisión). Una regla pausada
+    en el catálogo deja de aplicarse.
+    """
+    reglas = db.query(Regla).filter(Regla.familia_regla == "RCV", Regla.activo.is_(True)).all()
+    resultado = vigencia.evaluar(
+        reglas,
+        tipo_documento=peticion.tipo_documento,
+        fecha_emision=peticion.fecha_emision,
+        fecha_vencimiento=peticion.fecha_vencimiento,
+        fecha_referencia=peticion.fecha_referencia or date.today(),
+    )
+    return asdict(resultado)
 
 
 @router.post(

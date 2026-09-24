@@ -152,6 +152,28 @@ function Etapas({ actual }) {
   )
 }
 
+const TONO_VIGENCIA = { VENCIDO: 'bad', PROXIMO_A_VENCER: 'warn', INDETERMINADO: 'warn', VIGENTE: 'ok' }
+
+/**
+ * Vigencia según las reglas RCV del rules-service (Nivel 2), con la regla que
+ * decidió el resultado. Devuelve null si ninguna regla de vigencia aplicó, para
+ * mostrar entonces solo los días hasta el vencimiento.
+ */
+function vigenciaSegunReglas(vigencia, textoVencimiento) {
+  if (vigencia?.disponible === false) return { tono: 'warn', texto: 'Reglas de vigencia no disponibles' }
+  if (!vigencia?.resultado || !TONO_VIGENCIA[vigencia.resultado]) return null
+  const decisiva =
+    vigencia.evaluaciones?.find((e) => e.resultado === vigencia.resultado && e.criterio === 'ANTIGUEDAD_DESDE_EMISION') ||
+    vigencia.evaluaciones?.find((e) => e.resultado === vigencia.resultado)
+  if (!decisiva) return null
+  let texto = textoVencimiento
+  if (vigencia.resultado === 'INDETERMINADO') texto = 'No verificable'
+  else if (decisiva.criterio === 'ANTIGUEDAD_DESDE_EMISION') {
+    texto = `${decisiva.dias_calculados.toLocaleString('es-MX')} días desde la emisión (máx. ${decisiva.limite_dias})`
+  }
+  return { tono: TONO_VIGENCIA[vigencia.resultado], texto: `${texto} · ${decisiva.codigo_regla}` }
+}
+
 /** Dato del dictamen: etiqueta tenue arriba, valor debajo. */
 function Dato({ label, children, ancho = false }) {
   return (
@@ -177,8 +199,7 @@ function DictamenIa({ dictamen, rfcTitular, duracion }) {
         ? 'warn'
         : 'bad'
   const dias = diasRestantes(dictamen)
-  const tonoVigencia = dias === null ? 'neutral' : dias < 0 ? 'bad' : dias <= 30 ? 'warn' : 'ok'
-  const textoVigencia =
+  const textoVencimiento =
     dias === null
       ? 'Sin fecha de vencimiento'
       : dias < 0
@@ -186,6 +207,10 @@ function DictamenIa({ dictamen, rfcTitular, duracion }) {
         : dias === 0
           ? 'Vence hoy'
           : `${dias} ${dias === 1 ? 'día restante' : 'días restantes'}`
+  const segunReglas = vigenciaSegunReglas(dictamen.vigencia_nivel_2, textoVencimiento)
+  const tonoVigencia =
+    segunReglas?.tono ?? (dias === null ? 'neutral' : dias < 0 ? 'bad' : dias <= 30 ? 'warn' : 'ok')
+  const textoVigencia = segunReglas?.texto ?? textoVencimiento
 
   const titular = !rfcTitular
     ? { tono: 'neutral', label: 'Sin RFC de referencia' }

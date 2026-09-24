@@ -123,6 +123,15 @@ humana; por debajo de 0.70 la lectura no se considera fiable y también se
 escala. Una confianza baja nunca produce un rechazo automático: el rechazo se
 reserva a hechos del documento (vigencia expirada o RFC ajeno al expediente).
 
+**La vigencia la deciden las reglas del rules-service.** El dictamen no fija
+plazos por su cuenta: envía las fechas que extrajo el modelo y el tipo registrado
+del documento a `POST /api/v1/reglas/evaluar-vigencia` (`RULES_BASE_URL`), que
+aplica las reglas RCV activas: RCV-01 (días para el vencimiento) y RCV-02
+(comprobante de domicilio con máximo 90 días naturales desde su emisión). Un
+resultado VENCIDO produce NO_CONFORME; INDETERMINADO (sin fecha de emisión) turna
+el caso a revisión humana. Si el rules-service no responde, el dictamen tampoco
+se aprueba en automático: pasa a revisión humana con el motivo registrado.
+
 **La confianza del Nivel 4 se acota por la del Nivel 3.** Por sólida que sea la
 lectura del modelo, no puede ser más fiable que el texto que se le entregó.
 
@@ -197,6 +206,7 @@ servicio.
 python tests/generar_fixtures.py     # genera los documentos de prueba
 python tests/test_niveles_3_4.py     # suite contra el servicio levantado
 python tests/test_optimizaciones.py  # fragmentos, persistencia, caché, corte temprano y preprocesamiento (sin servidor)
+python tests/test_vigencia_dictamen.py  # dictamen con las reglas de vigencia RCV (sin red)
 ```
 
 `generar_fixtures.py` produce dos versiones del mismo documento ficticio: una

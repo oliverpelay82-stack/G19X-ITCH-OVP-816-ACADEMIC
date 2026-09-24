@@ -11,17 +11,17 @@
       "temperatura_auditoria": 0.0,
       "disponible": true,
       "modelos_instalados": [
-        "qwen/qwen3.8-27b",
-        "openai/gpt-oss-120b",
-        "whisper-large-v3-turbo",
-        "openai/gpt-oss-safeguard-20b",
-        "openai/gpt-oss-20b",
         "whisper-large-v3",
+        "whisper-large-v3-turbo",
+        "openai/gpt-oss-20b",
+        "openai/gpt-oss-120b",
         "allam-2-7b",
+        "openai/gpt-oss-safeguard-20b",
         "meta-llama/llama-prompt-guard-2-22m",
-        "meta-llama/llama-prompt-guard-2-86m",
+        "qwen/qwen3.8-27b",
         "canopylabs/orpheus-v1-english",
-        "canopylabs/orpheus-arabic-saudi"
+        "canopylabs/orpheus-arabic-saudi",
+        "meta-llama/llama-prompt-guard-2-86m"
       ],
       "modelo_requerido": "qwen/qwen3.8-27b",
       "modelo_disponible": true,
@@ -48,8 +48,8 @@
     "cache_extracciones": {
       "documentos_en_cache": 0,
       "capacidad": 64,
-      "documentos_persistidos": 0,
-      "lecturas_completas": 0,
+      "documentos_persistidos": 7,
+      "lecturas_completas": 7,
       "lecturas_completas_en_curso": 0
     }
   },
@@ -72,7 +72,7 @@
         "confianza": 0.9879
       }
     ],
-    "fuente_texto": "extraccion",
+    "fuente_texto": "persistencia",
     "archivo": "constancia_vectorial.pdf",
     "tamanio_bytes": 5322
   },
@@ -95,7 +95,7 @@
         "confianza": 0.9396
       }
     ],
-    "fuente_texto": "extraccion",
+    "fuente_texto": "persistencia",
     "archivo": "constancia_escaneada.pdf",
     "tamanio_bytes": 323801
   },
@@ -125,10 +125,32 @@
       "caracteres_contexto": 811,
       "fragmentos_relevantes": []
     },
+    "vigencia_nivel_2": {
+      "tipo_evaluado": "CSF_SAT",
+      "origen_tipo": "detectado",
+      "disponible": true,
+      "tipo_documento": "CSF_SAT",
+      "fecha_referencia": "2026-09-23",
+      "resultado": "VIGENTE",
+      "es_vigente": true,
+      "dias_calculados": null,
+      "evaluaciones": [
+        {
+          "codigo_regla": "RCV-01",
+          "nombre_regla": "Vigencia Mandatoria",
+          "severidad": "ALTA",
+          "criterio": "DIAS_PARA_VENCIMIENTO",
+          "resultado": "VIGENTE",
+          "limite_dias": 30,
+          "dias_calculados": 114,
+          "detalle": "El documento vence en 114 días (2027-01-15)."
+        }
+      ]
+    },
     "fuente_texto": "cliente",
     "tiempos_ms": {
       "resolucion_texto": 0,
-      "inferencia": 2124
+      "inferencia": 2374
     }
   },
   "analisis_no_conforme": {
@@ -158,10 +180,32 @@
       "caracteres_contexto": 811,
       "fragmentos_relevantes": []
     },
+    "vigencia_nivel_2": {
+      "tipo_evaluado": "CSF_SAT",
+      "origen_tipo": "detectado",
+      "disponible": true,
+      "tipo_documento": "CSF_SAT",
+      "fecha_referencia": "2026-09-23",
+      "resultado": "VIGENTE",
+      "es_vigente": true,
+      "dias_calculados": null,
+      "evaluaciones": [
+        {
+          "codigo_regla": "RCV-01",
+          "nombre_regla": "Vigencia Mandatoria",
+          "severidad": "ALTA",
+          "criterio": "DIAS_PARA_VENCIMIENTO",
+          "resultado": "VIGENTE",
+          "limite_dias": 30,
+          "dias_calculados": 114,
+          "detalle": "El documento vence en 114 días (2027-01-15)."
+        }
+      ]
+    },
     "fuente_texto": "cliente",
     "tiempos_ms": {
       "resolucion_texto": 0,
-      "inferencia": 2006
+      "inferencia": 11915
     }
   },
   "chat": {
@@ -179,7 +223,7 @@
     "fuente_texto": "cliente",
     "tiempos_ms": {
       "resolucion_texto": 0,
-      "inferencia": 10696
+      "inferencia": 1414
     }
   }
 }

@@ -1,7 +1,7 @@
 """
 Esquemas de validación de datos para Reglas de Validación (DTOs).
 """
-from datetime import datetime
+from datetime import date, datetime
 from typing import Optional
 from pydantic import BaseModel, Field
 
@@ -37,3 +37,39 @@ class ReglaResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class EvaluacionVigenciaRequest(BaseModel):
+    """Fechas de un documento a contrastar con las reglas Cronológicas y de Vigencia (RCV)."""
+    tipo_documento: str = Field(..., min_length=2, max_length=50, description="Tipo documental, ej. 'COMP_DOMICILIO'")
+    fecha_emision: Optional[date] = Field(None, description="Fecha de emisión del documento (ISO 8601)")
+    fecha_vencimiento: Optional[date] = Field(None, description="Fecha de vencimiento declarada, si existe")
+    fecha_referencia: Optional[date] = Field(None, description="Fecha contra la que se evalúa; por defecto, hoy")
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [{"tipo_documento": "COMP_DOMICILIO", "fecha_emision": "2026-06-15"}]
+        }
+    }
+
+
+class EvaluacionReglaResponse(BaseModel):
+    """Resultado de una regla RCV sobre el documento."""
+    codigo_regla: str
+    nombre_regla: str
+    severidad: str
+    criterio: str = Field(description="ANTIGUEDAD_DESDE_EMISION o DIAS_PARA_VENCIMIENTO")
+    resultado: str = Field(description="VIGENTE, PROXIMO_A_VENCER, VENCIDO, INDETERMINADO o NO_APLICA")
+    limite_dias: int
+    dias_calculados: Optional[int] = None
+    detalle: str
+
+
+class EvaluacionVigenciaResponse(BaseModel):
+    """Dictamen consolidado de vigencia: el resultado más grave de las reglas aplicadas."""
+    tipo_documento: str
+    fecha_referencia: date
+    resultado: str = Field(description="VIGENTE, PROXIMO_A_VENCER, VENCIDO, INDETERMINADO o SIN_REGLAS")
+    es_vigente: Optional[bool] = Field(None, description="Nulo cuando la vigencia no pudo determinarse")
+    dias_calculados: Optional[int] = Field(None, description="Días transcurridos entre la emisión y la validación")
+    evaluaciones: list[EvaluacionReglaResponse]

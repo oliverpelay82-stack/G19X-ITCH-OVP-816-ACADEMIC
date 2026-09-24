@@ -69,8 +69,8 @@ def prueba_fragmentos() -> None:
 
 def prueba_stemming() -> None:
     print("\n[2] Normalización y stemming ligero")
-    verificar(fragmentos.tokenizar("Acciones") == fragmentos.tokenizar("acción"), "acciones ≡ acción")
-    verificar(fragmentos.tokenizar("FACULTADES") == fragmentos.tokenizar("facultad"), "facultades ≡ facultad")
+    verificar(fragmentos.tokenizar("Acciones") == fragmentos.tokenizar("acción"), "acciones == acción")
+    verificar(fragmentos.tokenizar("FACULTADES") == fragmentos.tokenizar("facultad"), "facultades == facultad")
     verificar("capital" in fragmentos.tokenizar("¿Cuál es el capital?"), "Se descartan palabras vacías y signos")
 
 

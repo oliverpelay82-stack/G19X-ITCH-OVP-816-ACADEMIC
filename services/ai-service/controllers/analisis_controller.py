@@ -133,6 +133,8 @@ def analizar_documento(peticion: AnalisisSemanticoRequest):
             rfc_titular=peticion.rfc_titular,
             razon_social_titular=peticion.razon_social_titular,
             confianza_extraccion=confianza_extraccion,
+            # El tipo registrado en el expediente decide qué reglas de vigencia aplican.
+            tipo_documento_registrado=(documento.metadatos or {}).get("tipo_documento") if documento else None,
         )
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc

@@ -81,12 +81,14 @@ services:
       TESSERACT_CMD: /usr/bin/tesseract
       TESSDATA_PREFIX: /usr/share/tesseract-ocr/5/tessdata
       CORE_BASE_URL: http://plurione-core:8001
+      RULES_BASE_URL: http://plurione-rules:8002
       STORAGE_VAULT_PATH: /app/storage_vault
     volumes:
       - ./storage_vault:/app/storage_vault
       - plurione_ai_data:/app/data
     depends_on:
       - plurione-core
+      - plurione-rules
     networks:
       - plurione-net
 
