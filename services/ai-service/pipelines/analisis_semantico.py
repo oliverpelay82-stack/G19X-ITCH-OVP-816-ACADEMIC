@@ -275,7 +275,7 @@ def analizar(
     tipo_documento_registrado: str | None = None,
 ) -> ResultadoAnalisis:
     """
-    Somete el texto al modelo local y calcula el dictamen preliminar.
+    Somete el texto al modelo (Groq Cloud) y calcula el dictamen preliminar.
 
     :param confianza_extraccion: score del Nivel 3. Cuando se recibe, acota por
         arriba la confianza final: por sólido que sea el razonamiento del modelo,

@@ -41,6 +41,8 @@ services:
       DB_PASSWORD: plurione-demo
       DB_NAME: plurione_compliance
       STORAGE_VAULT_PATH: /app/storage_vault
+      # Documentos obligatorios del expediente (reglas RIE activas, HU-09).
+      RULES_BASE_URL: http://plurione-rules:8002
     volumes:
       - ./storage_vault:/app/storage_vault
     depends_on:

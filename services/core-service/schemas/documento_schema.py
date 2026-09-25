@@ -28,6 +28,7 @@ class DocumentoResponse(BaseModel):
     hash_sha256: str
     tamanio_bytes: int
     mime_type: str
+    estado_integridad: str = "INTEGRO"
     creado_en: datetime
 
     class Config:

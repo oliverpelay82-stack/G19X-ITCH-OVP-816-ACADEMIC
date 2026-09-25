@@ -68,9 +68,15 @@ def obtener_por_documento(documento_id: str, forzar_ocr: bool = False) -> TextoD
     """
     Devuelve el texto del documento sin repetir nunca un OCR ya hecho.
 
-    Propaga ``DocumentoNoEncontradoError``, ``FormatoNoSoportadoError`` y
+    Antes de servir cualquier texto —incluso desde memoria o disco— el
+    core-service verifica la integridad del binario (RIE-03): un texto extraído
+    de un archivo que después fue alterado no debe volver a analizarse.
+
+    Propaga ``DocumentoNoEncontradoError``, ``DocumentoAlteradoError``,
+    ``CoreNoDisponibleError``, ``FormatoNoSoportadoError`` y
     ``MotorOcrNoDisponibleError`` para que el controlador los traduzca a HTTP.
     """
+    core_client.verificar_integridad(documento_id)
     clave = (documento_id, forzar_ocr)
     fuente_calculada = ["extraccion"]
 

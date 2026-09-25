@@ -1,63 +1,43 @@
 """
-Prueba unitaria / integración rápida para verificar:
+Prueba unitaria / integración rápida del Nivel 1 y de la completitud (RIE-01):
 1. Rechazo de tipo de documento no permitido (Enum validation).
 2. Rechazo de archivo corrupto o con extensión falsa (Magic bytes validation).
 3. Aceptación de archivo PDF válido con cálculo inmutable SHA-256.
 4. Cálculo correcto de completitud por tipos distintos (no conteo ciego).
-5. Transición de estado del expediente a CONFORME al completar los 3 obligatorios.
+5. Con los 3 obligatorios presentes pero sin auditar, el expediente queda
+   EN_REVISION: subir archivos nunca lo aprueba por sí solo (RN-01).
 
-Aislamiento: la prueba crea su propio titular y expediente temporales
-(EXP-TEST-TMP) y, al terminar —pase o falle—, borra únicamente lo que ella
-misma creó. Nunca lee ni modifica los expedientes reales de la base de datos.
-Los binarios de prueba solo se eliminan de la bóveda si ningún otro registro
-los referencia (dos archivos idénticos comparten el mismo nombre en la bóveda).
+Aislamiento: corre sobre la base de datos de pruebas plurione_compliance_test,
+que se recrea en cada ejecución, y sobre una bóveda temporal (tests/bd_pruebas.py).
+Nunca lee ni modifica los expedientes reales ni la bóveda real.
 """
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "services", "core-service")))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import bd_pruebas  # noqa: E402
 
-from fastapi.testclient import TestClient
-from main import app
-from config.database import SessionLocal
-from models.titular import TitularExpediente
-from models.expediente import Expediente
-from models.documento import Documento
+BOVEDA = bd_pruebas.preparar_entorno()
 
+from fastapi.testclient import TestClient  # noqa: E402
+from main import app  # noqa: E402
+from clients import rules_client  # noqa: E402
+from config.database import SessionLocal, init_db  # noqa: E402
+from models.titular import TitularExpediente  # noqa: E402
+from models.expediente import Expediente  # noqa: E402
+
+init_db()
 client = TestClient(app)
 
 CODIGO_EXPEDIENTE_TMP = "EXP-TEST-TMP"
 RFC_TITULAR_TMP = "TMP010101AAA"
 
-
-def _limpiar_entidades_temporales() -> None:
-    """
-    Elimina el expediente y el titular temporales, sus documentos y los
-    binarios de bóveda que solo ellos usaban. Filtra siempre por el código o
-    RFC temporales: jamás toca un registro que la prueba no haya creado.
-    """
-    db = SessionLocal()
-    try:
-        titular = db.query(TitularExpediente).filter(TitularExpediente.rfc == RFC_TITULAR_TMP).first()
-        expediente = db.query(Expediente).filter(Expediente.codigo_expediente == CODIGO_EXPEDIENTE_TMP).first()
-
-        if expediente:
-            documentos = db.query(Documento).filter(Documento.expediente_id == expediente.id).all()
-            rutas = {d.ruta_almacenamiento for d in documentos}
-            for documento in documentos:
-                db.delete(documento)
-            db.flush()
-            for ruta in rutas:
-                compartida = db.query(Documento).filter(Documento.ruta_almacenamiento == ruta).first()
-                if not compartida and os.path.isfile(ruta):
-                    os.remove(ruta)
-            db.delete(expediente)
-        if titular:
-            db.flush()
-            db.delete(titular)
-        db.commit()
-    finally:
-        db.close()
+# Catálogo fijo: la prueba no depende de que el rules-service esté corriendo.
+rules_client.obtener_documentos_obligatorios = lambda: rules_client.InventarioObligatorio(
+    documentos={t: {"codigo_regla": "RIE-01", "severidad": "CRITICA"}
+                for t in ("CSF_SAT", "COMP_DOMICILIO", "ACTA_CONSTITUTIVA")},
+    fuente=rules_client.FUENTE_CATALOGO,
+)
 
 
 def _crear_expediente_temporal() -> str:
@@ -86,17 +66,13 @@ def _crear_expediente_temporal() -> str:
 
 def run_tests():
     print("=== INICIANDO PRUEBAS DEL PIPELINE DE VALIDACIÓN (NIVEL 1 & 2 BASE) ===")
-
-    # Restos de una ejecución anterior interrumpida.
-    _limpiar_entidades_temporales()
     exp_id = _crear_expediente_temporal()
-    print(f"[*] Usando expediente temporal: {CODIGO_EXPEDIENTE_TMP} (ID: {exp_id})")
-
+    print(f"[*] Usando expediente temporal: {CODIGO_EXPEDIENTE_TMP} (ID: {exp_id}) en {bd_pruebas.NOMBRE_BD_PRUEBAS}")
     try:
         _ejecutar_casos(exp_id)
     finally:
-        _limpiar_entidades_temporales()
-        print(f"[*] Expediente temporal {CODIGO_EXPEDIENTE_TMP} eliminado junto con sus documentos.")
+        bd_pruebas.limpiar_boveda(BOVEDA)
+        print("[*] Bóveda temporal eliminada.")
 
     print("\n=== TODAS LAS PRUEBAS DEL PIPELINE PASARON SATISFACTORIAMENTE ===")
 
@@ -174,9 +150,9 @@ def _ejecutar_casos(exp_id: str) -> None:
     exp_data = client.get(f"/api/v1/expedientes/{exp_id}").json()
     print(f" -> Completitud actual: {exp_data['porcentaje_completitud']}%, Estado: {exp_data['estado_cumplimiento']}")
     assert float(exp_data['porcentaje_completitud']) == 100.0
-    assert exp_data['estado_cumplimiento'] == "CONFORME"
-    print(" -> PASÓ: El expediente alcanzó el 100.0% y cambió automáticamente su estado a CONFORME!")
-
+    assert exp_data['estado_cumplimiento'] == "EN_REVISION", exp_data['estado_cumplimiento']
+    assert exp_data['evaluacion']['faltantes'] == []
+    print(" -> PASÓ: 100% de completitud, pero EN_REVISION: los documentos aún no tienen dictamen (RN-01).")
 
 if __name__ == "__main__":
     run_tests()

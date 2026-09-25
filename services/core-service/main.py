@@ -12,6 +12,8 @@ from controllers.titular_controller import router as titular_router
 from controllers.expediente_controller import router as expediente_router
 from controllers.documento_controller import router as documento_router
 from controllers.health_controller import router as health_router
+from controllers.dictamen_controller import router as dictamen_router
+from controllers.bitacora_controller import router as bitacora_router
 
 app = FastAPI(
     title="Core Service — Motor de Validación de Cumplimiento Documental",
@@ -39,6 +41,8 @@ app.include_router(health_router)
 app.include_router(titular_router)
 app.include_router(expediente_router)
 app.include_router(documento_router)
+app.include_router(dictamen_router)
+app.include_router(bitacora_router)
 
 
 if __name__ == "__main__":

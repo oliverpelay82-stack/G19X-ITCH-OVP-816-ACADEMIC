@@ -39,6 +39,13 @@ class ReglaResponse(BaseModel):
         from_attributes = True
 
 
+class DocumentoObligatorioResponse(BaseModel):
+    """Tipo de documento que exige el expediente y la regla RIE que lo exige."""
+    tipo_documento: str
+    codigo_regla: str
+    severidad: str
+
+
 class EvaluacionVigenciaRequest(BaseModel):
     """Fechas de un documento a contrastar con las reglas Cronológicas y de Vigencia (RCV)."""
     tipo_documento: str = Field(..., min_length=2, max_length=50, description="Tipo documental, ej. 'COMP_DOMICILIO'")

@@ -10,8 +10,9 @@ from sqlalchemy.orm import Session
 
 from config.database import get_db
 from models.regla import Regla
-from motor import vigencia
+from motor import obligatorios, vigencia
 from schemas.regla_schema import (
+    DocumentoObligatorioResponse,
     EvaluacionVigenciaRequest,
     EvaluacionVigenciaResponse,
     ReglaCreate,
@@ -43,6 +44,22 @@ def evaluar_vigencia(peticion: EvaluacionVigenciaRequest, db: Session = Depends(
         fecha_referencia=peticion.fecha_referencia or date.today(),
     )
     return asdict(resultado)
+
+
+@router.get(
+    "/documentos-obligatorios",
+    response_model=list[DocumentoObligatorioResponse],
+    summary="Documentos que exige el expediente según las reglas RIE activas (HU-09)",
+)
+def listar_documentos_obligatorios(db: Session = Depends(get_db)):
+    """
+    Deriva el inventario obligatorio del expediente de las reglas activas de la
+    familia RIE que declaran un tipo de documento obligatorio. El core-service
+    lo consulta para calcular la completitud (RIE-01) en lugar de fijarla en
+    su código.
+    """
+    reglas = db.query(Regla).filter(Regla.familia_regla == "RIE", Regla.activo.is_(True)).all()
+    return [asdict(d) for d in obligatorios.documentos_obligatorios(reglas)]
 
 
 @router.post(

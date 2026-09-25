@@ -1,5 +1,6 @@
 # Entorno y secretos
 .env
+*.sql
 
 # Python
 __pycache__/

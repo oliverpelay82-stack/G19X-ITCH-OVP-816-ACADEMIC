@@ -45,6 +45,12 @@ class AnalisisSemanticoRequest(_FuenteDocumental):
         default=False,
         description="Ignora la capa vectorial del PDF y rasteriza todas las páginas.",
     )
+    usuario: str = Field(
+        default="OPERADOR",
+        min_length=1,
+        max_length=100,
+        description="Usuario que solicita la auditoría; queda en la bitácora junto al dictamen persistido.",
+    )
 
     model_config = {
         "json_schema_extra": {

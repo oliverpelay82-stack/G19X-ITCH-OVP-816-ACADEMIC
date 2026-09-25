@@ -24,8 +24,8 @@ import time
 
 from fastapi import APIRouter, HTTPException, status
 
-from clients import groq_client
-from clients.core_client import DocumentoNoEncontradoError
+from clients import core_client, groq_client
+from clients.core_client import CoreNoDisponibleError, DocumentoAlteradoError, DocumentoNoEncontradoError
 from clients.groq_client import GroqNoDisponibleError, GroqRespuestaInvalidaError
 from config import settings
 from pipelines import analisis_semantico as pipeline_analisis
@@ -52,6 +52,10 @@ def _documento(documento_id: str, forzar_ocr: bool = False) -> repositorio_texto
         return repositorio_texto.obtener_por_documento(documento_id, forzar_ocr)
     except DocumentoNoEncontradoError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    except DocumentoAlteradoError as exc:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from exc
+    except CoreNoDisponibleError as exc:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(exc)) from exc
     except FormatoNoSoportadoError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"[Nivel 3] {exc}") from exc
     except MotorOcrNoDisponibleError as exc:
@@ -84,6 +88,37 @@ def _estado_lectura(documento_id: str | None, documento: repositorio_texto.Texto
 
 def _ms(inicio: float) -> int:
     return round((time.perf_counter() - inicio) * 1000)
+
+
+def _persistir_dictamen(documento_id: str, resultado: pipeline_analisis.ResultadoAnalisis, usuario: str) -> dict:
+    """
+    Guarda el dictamen en el core-service (tabla dictamenes_auditoria y
+    bitácora). Si el core no responde, el dictamen se devuelve igualmente pero
+    marcado como no persistido, para que la interfaz no lo presente como
+    definitivo. Una alteración RIE-03 detectada en ese momento sí se propaga.
+    """
+    rfc = resultado.rfc_detectado if resultado.rfc_detectado and len(resultado.rfc_detectado) <= 13 else None
+    carga = {
+        "documento_id": documento_id,
+        "estatus": resultado.estatus_preliminar,
+        "nivel_confianza": round(resultado.nivel_confianza, 4),
+        "requiere_revision_humana": resultado.requiere_revision_humana,
+        "tipo_documento_detectado": resultado.tipo_documento_detectado,
+        "rfc_detectado": rfc,
+        "match_titular": resultado.match_titular,
+        "fecha_emision": resultado.fecha_emision,
+        "fecha_vencimiento": resultado.fecha_vencimiento,
+        "vigencia": resultado.vigencia_nivel_2 or None,
+        "observaciones": resultado.observaciones,
+        "modelo_utilizado": resultado.modelo_utilizado,
+        "usuario": usuario,
+    }
+    try:
+        return {"guardado": True, "dictamen": core_client.registrar_dictamen(carga)}
+    except DocumentoAlteradoError as exc:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from exc
+    except (CoreNoDisponibleError, DocumentoNoEncontradoError) as exc:
+        return {"guardado": False, "detalle": str(exc)}
 
 
 @router.post(
@@ -159,6 +194,10 @@ def analizar_documento(peticion: AnalisisSemanticoRequest):
         }
     if documento:
         respuesta["extraccion_nivel_3"] = _estado_lectura(peticion.documento_id, documento)
+    # Solo el dictamen de un documento de la bóveda se persiste: un texto suelto
+    # enviado por el cliente no pertenece a ningún expediente.
+    if documento and peticion.documento_id:
+        respuesta["persistencia"] = _persistir_dictamen(peticion.documento_id, resultado, peticion.usuario)
     return respuesta
 
 

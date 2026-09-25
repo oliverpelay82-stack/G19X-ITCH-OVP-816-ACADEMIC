@@ -11,6 +11,8 @@ Verifica, en proceso y sin modificar el catálogo:
 7. Motor de vigencia (unitario, fechas fijas, sin BD): límites de la caducidad
    estricta de 90 días, casos indeterminados, reglas pausadas y RCV-01.
 8. Endpoint /reglas/evaluar-vigencia contra el catálogo real con RCV-02.
+9. Inventario de documentos obligatorios (HU-09): agregación unitaria de las
+   reglas RIE y endpoint /reglas/documentos-obligatorios (solo lectura).
 
 Uso:  python tests/test_rules_service.py   (requiere PostgreSQL con el seed del DOC-05)
 """
@@ -24,7 +26,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..",
 from fastapi.testclient import TestClient  # noqa: E402
 
 from main import app  # noqa: E402
-from motor import vigencia  # noqa: E402
+from motor import obligatorios, vigencia  # noqa: E402
 
 client = TestClient(app)
 FAMILIAS = {"RIE", "RCV", "RSC", "RDS"}
@@ -70,6 +72,7 @@ def main() -> int:
 
     prueba_motor_vigencia()
     prueba_endpoint_vigencia()
+    prueba_documentos_obligatorios()
 
     aprobadas = sum(_resultados)
     print(f"\nResultado: {aprobadas}/{len(_resultados)} verificaciones aprobadas")
@@ -135,6 +138,37 @@ def prueba_endpoint_vigencia() -> None:
     verificar(r["resultado"] == "INDETERMINADO" and r["es_vigente"] is None, "Sin fecha de emisión: INDETERMINADO")
     invalida = post(tipo_documento="COMP_DOMICILIO", fecha_emision="2026-13-40")
     verificar(invalida.status_code == 422, "Una fecha inválida se rechaza con 422", f"HTTP {invalida.status_code}")
+
+
+def prueba_documentos_obligatorios() -> None:
+    print("\n[9] Documentos obligatorios del expediente (HU-09)")
+
+    def rie(codigo, tipo, severidad="CRITICA", obligatorio=True, activo=True, familia="RIE"):
+        return SimpleNamespace(codigo_regla=codigo, familia_regla=familia, severidad=severidad, tipo_documento=tipo,
+                               documento_obligatorio=obligatorio, activo=activo)
+
+    inventario = obligatorios.documentos_obligatorios([
+        rie("RIE-01", None),                                   # regla general: no aporta un tipo
+        rie("RIE-01-CSF", "CSF_SAT"),
+        rie("RIE-01-DOM", "comp_domicilio", severidad="ALTA"),
+        rie("RDS-01-DOM", "COMP_DOMICILIO", severidad="CRITICA", familia="RDS"),  # otra familia: se ignora
+        rie("RIE-01-ACTA", "ACTA_CONSTITUTIVA", activo=False),  # pausada
+        rie("RIE-01-EDO", "ESTADO_CUENTA", obligatorio=False),  # opcional
+        rie("RIE-09-DOM", "COMP_DOMICILIO", severidad="CRITICA"),
+    ])
+    por_tipo = {d.tipo_documento: d for d in inventario}
+    verificar(set(por_tipo) == {"CSF_SAT", "COMP_DOMICILIO"},
+              "Solo cuentan reglas RIE activas, obligatorias y con tipo", ", ".join(sorted(por_tipo)))
+    verificar(por_tipo["COMP_DOMICILIO"].severidad == "CRITICA" and por_tipo["COMP_DOMICILIO"].codigo_regla == "RIE-09-DOM",
+              "Si dos reglas exigen el mismo tipo, prevalece la más severa")
+
+    respuesta = client.get("/api/v1/reglas/documentos-obligatorios")
+    verificar(respuesta.status_code == 200, "El endpoint responde", f"HTTP {respuesta.status_code}")
+    datos = respuesta.json()
+    reglas_rie = {r["codigo_regla"]: r for r in client.get("/api/v1/reglas", params={"familia_regla": "RIE"}).json()}
+    verificar(all(d["codigo_regla"] in reglas_rie and reglas_rie[d["codigo_regla"]]["activo"] for d in datos),
+              "Cada tipo exigido proviene de una regla RIE activa del catálogo real",
+              ", ".join(d["tipo_documento"] for d in datos) or "catálogo sin obligatorios (ejecute el seed)")
 
 
 if __name__ == "__main__":

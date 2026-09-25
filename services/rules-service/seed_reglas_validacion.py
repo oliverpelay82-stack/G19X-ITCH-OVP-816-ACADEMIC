@@ -5,7 +5,9 @@ están definidas textualmente en el "Catálogo Formal de Reglas de Negocio"
 del DOC-05 (Estrategia de Validación y Catálogo de Reglas de Negocio), y
 RCV-02: la "Caducidad Estricta de Documentos con Vigencia Legal Fija" del
 mismo catálogo, aplicada al comprobante de domicilio fiscal con el límite
-"no mayor a 3 meses" del DOC-02 (90 días naturales, DOC-08).
+"no mayor a 3 meses" del DOC-02 (90 días naturales, DOC-08). Carga también
+las reglas RIE-01-CSF, RIE-01-DOM y RIE-01-ACTA, que declaran los tres tipos de
+documento obligatorios del expediente (DOC-02).
 
 Ejecuta (desde services/rules-service/): python seed_reglas_validacion.py
 """
@@ -31,6 +33,30 @@ REGLAS_BASE = [
         "documento_obligatorio": True,
         "dias_maximos_vigencia": None,
     },
+    # Inventario obligatorio del expediente B2B (DOC-02): una regla RIE por tipo
+    # de documento. El core-service calcula la completitud (RIE-01) a partir de
+    # estas reglas, no de una lista fija en su código (HU-09 / HU-12).
+    *[
+        {
+            "codigo_regla": codigo,
+            "nombre_regla": f"Completitud: {nombre}",
+            "familia_regla": "RIE",
+            "descripcion": (
+                f"El expediente debe contener {articulo} {nombre}. Mientras falte, "
+                "el expediente no puede obtener estatus de aprobado (RIE-01)."
+            ),
+            "severidad": "CRITICA",
+            "accion": f"Semáforo Rojo: falta {articulo} {nombre}.",
+            "tipo_documento": tipo,
+            "documento_obligatorio": True,
+            "dias_maximos_vigencia": None,
+        }
+        for codigo, tipo, articulo, nombre in [
+            ("RIE-01-CSF", "CSF_SAT", "la", "Constancia de Situación Fiscal"),
+            ("RIE-01-DOM", "COMP_DOMICILIO", "el", "Comprobante de Domicilio Fiscal"),
+            ("RIE-01-ACTA", "ACTA_CONSTITUTIVA", "el", "Acta Constitutiva / Poder Notarial"),
+        ]
+    ],
     {
         "codigo_regla": "RIE-02",
         "nombre_regla": "Vinculación Obligatoria de Anexos",

@@ -43,7 +43,11 @@ class Documento(Base):
     # Tamaño en bytes y tipo MIME
     tamanio_bytes = Column(BigInteger, nullable=False)
     mime_type = Column(String(100), nullable=False)
-    
+
+    # Resultado de la última verificación RIE-03: INTEGRO o ALTERADO. Un
+    # documento alterado queda bloqueado para lectura y análisis.
+    estado_integridad = Column(String(20), nullable=False, default="INTEGRO", server_default="INTEGRO")
+
     # Fecha de carga en UTC
     creado_en = Column(
         DateTime,
