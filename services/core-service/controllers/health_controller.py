@@ -26,4 +26,5 @@ def health_check():
         "servicio": "core-service",
         "puerto": 8001,
         "conexion_bd": conexion_bd,
+        "version": "1.0.0",
     }

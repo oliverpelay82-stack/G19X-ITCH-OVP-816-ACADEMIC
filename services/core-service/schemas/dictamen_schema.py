@@ -4,7 +4,7 @@ Esquemas de validación de datos para Dictámenes y Bitácora (DTOs).
 from datetime import date, datetime
 from typing import Any, Literal, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 EstatusDictamen = Literal["CONFORME", "NO_CONFORME", "EN_REVISION"]
 
@@ -79,8 +79,7 @@ class DictamenResponse(BaseModel):
     revisado_en: Optional[datetime] = None
     creado_en: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class BitacoraResponse(BaseModel):
@@ -94,5 +93,4 @@ class BitacoraResponse(BaseModel):
     detalle: dict[str, Any]
     creado_en: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

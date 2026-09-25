@@ -11,11 +11,16 @@ rules-service se simulan para cubrir cada camino de forma determinista.
   5. Se evalúa el tipo registrado en el expediente; sin él, el tipo detectado
      traducido al catálogo del core (COMPROBANTE_DOMICILIO -> COMP_DOMICILIO).
 
+Las simulaciones se instalan con ``monkeypatch`` de pytest y se deshacen al
+terminar, así que ninguna otra suite hereda un cliente falso.
+
 Uso:  cd services/ai-service && python tests/test_vigencia_dictamen.py
 """
 import os
 import sys
 from datetime import date
+
+import pytest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -34,16 +39,16 @@ def verificar(condicion: bool, titulo: str, detalle: str = "") -> None:
     print(f"  {'[ OK ]' if condicion else '[FALLA]'} {titulo}" + (f"  -> {detalle}" if detalle else ""))
 
 
-def modelo(fecha_emision):
+def modelo(mp: pytest.MonkeyPatch, fecha_emision):
     """Simula la extracción de Groq: comprobante de domicilio legible del titular."""
-    groq_client.generar_json = lambda prompt, system: {
+    mp.setattr(groq_client, "generar_json", lambda prompt, system: {
         "tipo_documento_detectado": "COMPROBANTE_DOMICILIO", "rfc_detectado": RFC,
         "razon_social_detectada": "PLURIONE S.A. DE C.V.", "fecha_emision": fecha_emision,
         "fecha_vencimiento": None, "nivel_confianza": 0.95, "observaciones": "Texto legible.",
-    }
+    })
 
 
-def reglas(resultado=None, falla=False):
+def reglas(mp: pytest.MonkeyPatch, resultado=None, falla=False):
     """Simula el rules-service con el resultado indicado para RCV-02."""
     def evaluar(tipo, emision, vencimiento, referencia):
         llamadas.append((tipo, emision, vencimiento, referencia))
@@ -54,7 +59,7 @@ def reglas(resultado=None, falla=False):
                       "limite_dias": 90, "dias_calculados": None, "detalle": f"Resultado {resultado}."}
         return {"tipo_documento": tipo, "fecha_referencia": referencia.isoformat(), "resultado": resultado,
                 "es_vigente": None, "dias_calculados": None, "evaluaciones": [evaluacion]}
-    rules_client.evaluar_vigencia = evaluar
+    mp.setattr(rules_client, "evaluar_vigencia", evaluar)
 
 
 def analizar(tipo_registrado="COMP_DOMICILIO"):
@@ -62,10 +67,12 @@ def analizar(tipo_registrado="COMP_DOMICILIO"):
                                        tipo_documento_registrado=tipo_registrado)
 
 
-def main() -> int:
+def main(mp: pytest.MonkeyPatch) -> int:
     print("=== DICTAMEN DEL NIVEL 4 CON LAS REGLAS DE VIGENCIA (RCV) ===\n")
+    _resultados.clear()
+    llamadas.clear()
 
-    modelo("2019-04-13"); reglas("VENCIDO")
+    modelo(mp, "2019-04-13"); reglas(mp, "VENCIDO")
     r = analizar()
     verificar(r.estatus_preliminar == "NO_CONFORME" and r.vigente is False and not r.requiere_revision_humana,
               "Comprobante vencido por RCV-02: NO_CONFORME aunque el RFC coincida", r.estatus_preliminar)
@@ -73,23 +80,23 @@ def main() -> int:
     verificar(r.vigencia_nivel_2.get("disponible") and r.vigencia_nivel_2.get("resultado") == "VENCIDO",
               "El dictamen incluye la traza del Nivel 2")
 
-    modelo("2026-08-01"); reglas("VIGENTE")
+    modelo(mp, "2026-08-01"); reglas(mp, "VIGENTE")
     r = analizar()
     verificar(r.estatus_preliminar == "CONFORME" and r.vigente is True, "Comprobante reciente: CONFORME", r.estatus_preliminar)
 
-    modelo(None); reglas("INDETERMINADO")
+    modelo(mp, None); reglas(mp, "INDETERMINADO")
     r = analizar()
     verificar(r.estatus_preliminar == "EN_REVISION" and r.requiere_revision_humana and r.vigente is None,
               "Sin fecha de emisión: EN_REVISION con revisión humana", r.estatus_preliminar)
 
-    modelo("2026-08-01"); reglas(falla=True)
+    modelo(mp, "2026-08-01"); reglas(mp, falla=True)
     r = analizar()
     verificar(r.estatus_preliminar == "EN_REVISION" and r.requiere_revision_humana,
               "rules-service caído: EN_REVISION, nunca CONFORME sin verificar la vigencia", r.estatus_preliminar)
     verificar(r.vigencia_nivel_2.get("disponible") is False and any("rules-service" in o for o in r.observaciones),
               "El motivo de la revisión queda registrado")
 
-    llamadas.clear(); modelo("2026-08-01"); reglas("VIGENTE")
+    llamadas.clear(); modelo(mp, "2026-08-01"); reglas(mp, "VIGENTE")
     analizar(tipo_registrado="COMP_DOMICILIO")
     analizar(tipo_registrado=None)
     verificar(llamadas[0][0] == "COMP_DOMICILIO", "Se evalúa el tipo registrado en el expediente")
@@ -101,5 +108,10 @@ def main() -> int:
     return 0 if aprobadas == len(_resultados) else 1
 
 
+def test_vigencia_dictamen(monkeypatch):
+    assert main(monkeypatch) == 0, "Hay verificaciones de vigencia del dictamen en [FALLA] (ver salida con -s)"
+
+
 if __name__ == "__main__":
-    sys.exit(main())
+    with pytest.MonkeyPatch.context() as mp:
+        sys.exit(main(mp))

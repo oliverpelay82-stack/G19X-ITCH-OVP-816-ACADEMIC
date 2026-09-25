@@ -14,6 +14,8 @@ Aloja los Niveles 3 y 4 del pipeline de validación (DOC-05):
 
 Puerto: 8003.
 """
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -23,28 +25,8 @@ from controllers.health_controller import router as health_router
 from controllers.extraccion_controller import router as extraccion_router
 from controllers.analisis_controller import router as analisis_router
 
-app = FastAPI(
-    title="AI Service — Motor de Validación de Cumplimiento Documental",
-    description=(
-        "Microservicio de análisis inteligente de documentos (API RESTful /api/v1). "
-        "Implementa el Nivel 3 (extracción de texto con OCR) y el Nivel 4 (análisis "
-        "semántico con LLM vía Groq Cloud) del pipeline de validación del DOC-05."
-    ),
-    version="1.0.0",
-)
 
-# Permitir llamadas CORS desde el frontend
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-
-@app.on_event("startup")
-def on_startup():
+def _diagnostico_arranque() -> None:
     """
     Diagnóstico de arranque.
 
@@ -75,6 +57,33 @@ def on_startup():
     elif diagnostico:
         print(f"[ai-service] AVISO: {diagnostico.get('detalle')}")
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    _diagnostico_arranque()
+    yield
+    print("[ai-service] Servicio detenido.")
+
+
+app = FastAPI(
+    title="AI Service — Motor de Validación de Cumplimiento Documental",
+    description=(
+        "Microservicio de análisis inteligente de documentos (API RESTful /api/v1). "
+        "Implementa el Nivel 3 (extracción de texto con OCR) y el Nivel 4 (análisis "
+        "semántico con LLM vía Groq Cloud) del pipeline de validación del DOC-05."
+    ),
+    version="1.0.0",
+    lifespan=lifespan,
+)
+
+# Permitir llamadas CORS desde el frontend
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(health_router)
 app.include_router(extraccion_router)

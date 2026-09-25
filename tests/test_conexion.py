@@ -7,7 +7,10 @@ Ejecuta: python test_conexion.py
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "services", "core-service")))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import servicios  # noqa: E402
+
+servicios.activar("core-service")
 
 from config.database import engine
 from sqlalchemy import text
@@ -29,6 +32,10 @@ def probar():
         print("\nSugerencia: Revisa que la contraseña en el archivo .env sea la correcta.")
         print("=" * 60)
         return False
+
+def test_conexion_postgresql():
+    assert probar(), "No se pudo conectar a PostgreSQL con la configuración del core-service"
+
 
 if __name__ == "__main__":
     probar()

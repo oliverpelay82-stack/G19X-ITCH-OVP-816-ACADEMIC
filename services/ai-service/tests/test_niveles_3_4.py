@@ -253,5 +253,16 @@ def main() -> int:
     return 0 if aprobadas == total else 1
 
 
+def test_niveles_3_4():
+    """Suite en vivo: se omite si el ai-service no está levantado en AI_SERVICE_URL."""
+    import pytest
+
+    try:
+        requests.get(f"{API}/health", timeout=3)
+    except requests.RequestException:
+        pytest.skip(f"ai-service no disponible en {BASE}; esta suite requiere el servicio y GROQ_API_KEY")
+    assert main() == 0, "Hay verificaciones de los Niveles 3 y 4 en [FALLA] (ver salida con -s)"
+
+
 if __name__ == "__main__":
     sys.exit(main())

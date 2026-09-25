@@ -31,6 +31,7 @@ def health_check():
         "status": "online",
         "servicio": "ai-service",
         "puerto": 8003,
+        "version": "1.0.0",
         "modo_despliegue": "cloud-groq",
         "capacidades_operativas": operativo,
         "motor_inferencia": {

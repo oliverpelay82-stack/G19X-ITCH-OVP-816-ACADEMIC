@@ -26,4 +26,5 @@ def health_check():
         "servicio": "rules-service",
         "puerto": 8002,
         "conexion_bd": conexion_bd,
+        "version": "1.0.0",
     }

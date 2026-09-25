@@ -3,7 +3,7 @@ Esquemas de validación de datos (DTOs).
 Equivalente a las clases DTO / Request en Spring Boot.
 """
 from datetime import datetime
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class TitularCreate(BaseModel):
@@ -23,5 +23,4 @@ class TitularResponse(BaseModel):
     categoria: str
     creado_en: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

@@ -21,7 +21,10 @@ import sys
 from datetime import date, timedelta
 from types import SimpleNamespace
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "services", "rules-service")))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import servicios  # noqa: E402
+
+servicios.activar("rules-service")
 
 from fastapi.testclient import TestClient  # noqa: E402
 
@@ -169,6 +172,10 @@ def prueba_documentos_obligatorios() -> None:
     verificar(all(d["codigo_regla"] in reglas_rie and reglas_rie[d["codigo_regla"]]["activo"] for d in datos),
               "Cada tipo exigido proviene de una regla RIE activa del catálogo real",
               ", ".join(d["tipo_documento"] for d in datos) or "catálogo sin obligatorios (ejecute el seed)")
+
+
+def test_rules_service():
+    assert main() == 0, "Hay verificaciones del rules-service en [FALLA] (ver salida con -s)"
 
 
 if __name__ == "__main__":

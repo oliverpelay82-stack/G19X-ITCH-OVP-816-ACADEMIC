@@ -22,10 +22,11 @@ BOVEDA = bd_pruebas.preparar_entorno()
 from fastapi.testclient import TestClient  # noqa: E402
 from main import app  # noqa: E402
 from clients import rules_client  # noqa: E402
-from config.database import SessionLocal, init_db  # noqa: E402
+from config.database import SessionLocal, engine, init_db  # noqa: E402
 from models.titular import TitularExpediente  # noqa: E402
 from models.expediente import Expediente  # noqa: E402
 
+bd_pruebas.verificar_aislamiento(engine)
 init_db()
 client = TestClient(app)
 
@@ -153,6 +154,10 @@ def _ejecutar_casos(exp_id: str) -> None:
     assert exp_data['estado_cumplimiento'] == "EN_REVISION", exp_data['estado_cumplimiento']
     assert exp_data['evaluacion']['faltantes'] == []
     print(" -> PASÓ: 100% de completitud, pero EN_REVISION: los documentos aún no tienen dictamen (RN-01).")
+
+def test_pipeline_nivel1():
+    run_tests()
+
 
 if __name__ == "__main__":
     run_tests()

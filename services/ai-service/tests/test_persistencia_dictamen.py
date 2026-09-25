@@ -11,11 +11,16 @@ ai-service, sin red: Groq, el rules-service y el core-service se simulan.
      como al registrar el dictamen.
   5. El cliente del core traduce el 409 de integridad a DocumentoAlteradoError.
 
+Las simulaciones se instalan con ``monkeypatch`` de pytest y se deshacen al
+terminar, así que ninguna otra suite hereda un cliente falso.
+
 Uso:  cd services/ai-service && python tests/test_persistencia_dictamen.py
 """
 import os
 import sys
 from types import SimpleNamespace
+
+import pytest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -38,20 +43,20 @@ def verificar(condicion: bool, titulo: str, detalle: str = "") -> None:
     print(f"  {'[ OK ]' if condicion else '[FALLA]'} {titulo}" + (f"  -> {detalle}" if detalle else ""))
 
 
-def preparar(registro=None, texto_error=None):
+def preparar(mp: pytest.MonkeyPatch, registro=None, texto_error=None):
     """Simula Groq, el rules-service, el texto del documento y el registro en el core."""
-    groq_client.generar_json = lambda prompt, system: {
+    mp.setattr(groq_client, "generar_json", lambda prompt, system: {
         "tipo_documento_detectado": "COMPROBANTE_DOMICILIO", "rfc_detectado": RFC,
         "razon_social_detectada": "PLURIONE S.A. DE C.V.", "fecha_emision": "2019-04-13",
         "fecha_vencimiento": None, "nivel_confianza": 0.95, "observaciones": "Texto legible.",
-    }
-    rules_client.evaluar_vigencia = lambda tipo, emision, vencimiento, referencia: {
+    })
+    mp.setattr(rules_client, "evaluar_vigencia", lambda tipo, emision, vencimiento, referencia: {
         "tipo_documento": tipo, "fecha_referencia": referencia.isoformat(), "resultado": "VENCIDO",
         "es_vigente": False, "dias_calculados": 2722,
         "evaluaciones": [{"codigo_regla": "RCV-02", "nombre_regla": "Caducidad Estricta", "severidad": "ALTA",
                           "criterio": "ANTIGUEDAD_DESDE_EMISION", "resultado": "VENCIDO", "limite_dias": 90,
                           "dias_calculados": 2722, "detalle": "2722 días de antigüedad; máximo 90."}],
-    }
+    })
 
     def obtener(documento_id, forzar_ocr=False):
         if texto_error:
@@ -66,7 +71,7 @@ def preparar(registro=None, texto_error=None):
             fuente="persistencia",
         )
 
-    repositorio_texto.obtener_por_documento = obtener
+    mp.setattr(repositorio_texto, "obtener_por_documento", obtener)
 
     def registrar(carga):
         registrados.append(carga)
@@ -74,7 +79,7 @@ def preparar(registro=None, texto_error=None):
             raise registro
         return {"id": "dictamen-001", "estatus": carga["estatus"], "estado_expediente": "NO_CONFORME"}
 
-    core_client.registrar_dictamen = registrar
+    mp.setattr(core_client, "registrar_dictamen", registrar)
 
 
 def analizar(**cuerpo):
@@ -82,11 +87,12 @@ def analizar(**cuerpo):
                        json={"rfc_titular": RFC, "razon_social_titular": "PLURIONE S.A. DE C.V.", **cuerpo})
 
 
-def main_pruebas() -> int:
+def main_pruebas(mp: pytest.MonkeyPatch) -> int:
     print("=== PERSISTENCIA DEL DICTAMEN Y RIE-03 EN EL AI-SERVICE ===")
+    _resultados.clear()
 
     print("\n[1] Dictamen persistido en el core-service")
-    preparar()
+    preparar(mp)
     registrados.clear()
     r = analizar(documento_id=DOC_ID, usuario="ana.lopez")
     cuerpo = r.json()
@@ -103,40 +109,39 @@ def main_pruebas() -> int:
     verificar(carga.get("usuario") == "ana.lopez", "Viaja el usuario que solicitó la auditoría")
 
     print("\n[2] core-service caído durante el registro")
-    preparar(registro=CoreNoDisponibleError("Connection refused"))
+    preparar(mp, registro=CoreNoDisponibleError("Connection refused"))
     r = analizar(documento_id=DOC_ID)
     persistencia = r.json().get("persistencia", {})
     verificar(r.status_code == 200 and persistencia.get("guardado") is False and "refused" in persistencia.get("detalle", ""),
               "El dictamen se devuelve marcado como no persistido")
 
     print("\n[3] Texto suelto")
-    preparar()
+    preparar(mp)
     registrados.clear()
     r = analizar(texto="CONSTANCIA DE SITUACION FISCAL RFC PLU180514AB3")
     verificar(r.status_code == 200 and "persistencia" not in r.json() and not registrados,
               "Un texto enviado por el cliente no se persiste")
 
     print("\n[4] RIE-03: documento alterado")
-    preparar(texto_error=DocumentoAlteradoError("[RIE-03] La huella SHA-256 del binario no coincide."))
+    preparar(mp, texto_error=DocumentoAlteradoError("[RIE-03] La huella SHA-256 del binario no coincide."))
     r = analizar(documento_id=DOC_ID)
     verificar(r.status_code == 409 and "RIE-03" in r.json()["detail"], "Resolver el texto de un alterado: 409")
     r = client.post("/api/v1/ai/chat-documento", json={"documento_id": DOC_ID, "pregunta": "¿Quién es el titular?"})
     verificar(r.status_code == 409, "El chat tampoco opera sobre un documento alterado: 409")
-    preparar(registro=DocumentoAlteradoError("[RIE-03] alterado al registrar"))
+    preparar(mp, registro=DocumentoAlteradoError("[RIE-03] alterado al registrar"))
     r = analizar(documento_id=DOC_ID)
     verificar(r.status_code == 409, "Alteración detectada al registrar el dictamen: 409")
 
     print("\n[5] Cliente del core-service")
-    original = core_client.requests.get
-    core_client.requests.get = lambda url, timeout: SimpleNamespace(
-        status_code=409, ok=False, text="", json=lambda: {"detail": "[RIE-03] huella distinta"})
-    try:
-        core_client.verificar_integridad(DOC_ID)
-        traducido = False
-    except DocumentoAlteradoError as exc:
-        traducido = "RIE-03" in str(exc)
-    finally:
-        core_client.requests.get = original
+    # requests.get es global al proceso: la simulación se deshace al salir del bloque.
+    with pytest.MonkeyPatch.context() as local:
+        local.setattr(core_client.requests, "get", lambda url, timeout: SimpleNamespace(
+            status_code=409, ok=False, text="", json=lambda: {"detail": "[RIE-03] huella distinta"}))
+        try:
+            core_client.verificar_integridad(DOC_ID)
+            traducido = False
+        except DocumentoAlteradoError as exc:
+            traducido = "RIE-03" in str(exc)
     verificar(traducido, "HTTP 409 del core-service -> DocumentoAlteradoError")
 
     aprobadas = sum(_resultados)
@@ -144,5 +149,10 @@ def main_pruebas() -> int:
     return 0 if aprobadas == len(_resultados) else 1
 
 
+def test_persistencia_dictamen(monkeypatch):
+    assert main_pruebas(monkeypatch) == 0, "Hay verificaciones de persistencia del dictamen en [FALLA] (ver salida con -s)"
+
+
 if __name__ == "__main__":
-    sys.exit(main_pruebas())
+    with pytest.MonkeyPatch.context() as mp:
+        sys.exit(main_pruebas(mp))

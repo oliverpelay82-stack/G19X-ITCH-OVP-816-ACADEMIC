@@ -34,9 +34,11 @@ from sqlalchemy.exc import DBAPIError  # noqa: E402
 from main import app  # noqa: E402
 from clients import rules_client  # noqa: E402
 from config.database import SessionLocal, engine, init_db  # noqa: E402
+from models.documento import Documento  # noqa: E402
 from models.titular import TitularExpediente  # noqa: E402
 from motor import integridad  # noqa: E402
 
+bd_pruebas.verificar_aislamiento(engine)
 init_db()
 client = TestClient(app)
 _resultados: list[bool] = []
@@ -252,7 +254,6 @@ def prueba_rie03(exp_id: str, docs: dict) -> None:
 
     db = SessionLocal()
     try:
-        from models.documento import Documento
         ruta = integridad.ruta_binario(db.query(Documento).filter(Documento.id == csf["id"]).first())
     finally:
         db.close()
@@ -300,7 +301,7 @@ def prueba_inmutabilidad() -> None:
         verificar(rechazada, f"La base rechaza: {sentencia.split(' SET')[0].split(' WHERE')[0]}", tabla)
 
 
-def run_tests() -> None:
+def run_tests() -> int:
     print("=== MOTOR DE REGLAS (SEMANA 6): DICTÁMENES, SEMÁFORO, RIE-03 Y RATIFICACIÓN ===")
     try:
         prueba_catalogo_obligatorios()
@@ -314,8 +315,12 @@ def run_tests() -> None:
 
     aprobadas = sum(_resultados)
     print(f"\nResultado: {aprobadas}/{len(_resultados)} verificaciones aprobadas")
-    sys.exit(0 if aprobadas == len(_resultados) else 1)
+    return 0 if aprobadas == len(_resultados) else 1
+
+
+def test_dictamenes_semaforo():
+    assert run_tests() == 0, "Hay verificaciones de dictámenes/semáforo en [FALLA] (ver salida con -s)"
 
 
 if __name__ == "__main__":
-    run_tests()
+    sys.exit(run_tests())

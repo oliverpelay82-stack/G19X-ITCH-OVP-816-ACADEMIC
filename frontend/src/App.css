@@ -469,13 +469,6 @@
   box-shadow: var(--shadow-card);
 }
 
-.section-head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--s-4);
-}
-
 .section-title {
   font-size: var(--fs-title);
   font-weight: 600;

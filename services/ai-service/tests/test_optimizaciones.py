@@ -22,6 +22,8 @@ import tempfile
 import threading
 import time
 
+import pytest
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import cv2  # noqa: E402
@@ -79,22 +81,19 @@ def prueba_stemming() -> None:
 
 def prueba_persistencia() -> None:
     print("\n[3] Persistencia permanente (SQLite)")
-    with tempfile.TemporaryDirectory() as tmp:
-        original = settings.EXTRACCIONES_DB_PATH
-        settings.EXTRACCIONES_DB_PATH = os.path.join(tmp, "extracciones.sqlite3")
-        try:
-            persistencia_texto.guardar("abc", False, "texto parcial", {"total_paginas": 26}, completo=False)
-            verificar(persistencia_texto.leer("abc").texto == "texto parcial", "Guarda y recupera una lectura parcial")
-            persistencia_texto.guardar("abc", False, "texto completo", {"total_paginas": 26}, completo=True)
-            persistencia_texto.guardar("abc", False, "otra parcial", {"total_paginas": 26}, completo=False)
-            guardada = persistencia_texto.leer("abc")
-            verificar(
-                guardada.completo and guardada.texto == "texto completo",
-                "Una lectura completa no se sobrescribe con una parcial",
-            )
-            verificar(persistencia_texto.leer("xyz") is None, "Una huella desconocida devuelve None")
-        finally:
-            settings.EXTRACCIONES_DB_PATH = original
+    # La ruta original se restaura al salir del bloque, antes de borrar el directorio temporal.
+    with tempfile.TemporaryDirectory() as tmp, pytest.MonkeyPatch.context() as mp:
+        mp.setattr(settings, "EXTRACCIONES_DB_PATH", os.path.join(tmp, "extracciones.sqlite3"))
+        persistencia_texto.guardar("abc", False, "texto parcial", {"total_paginas": 26}, completo=False)
+        verificar(persistencia_texto.leer("abc").texto == "texto parcial", "Guarda y recupera una lectura parcial")
+        persistencia_texto.guardar("abc", False, "texto completo", {"total_paginas": 26}, completo=True)
+        persistencia_texto.guardar("abc", False, "otra parcial", {"total_paginas": 26}, completo=False)
+        guardada = persistencia_texto.leer("abc")
+        verificar(
+            guardada.completo and guardada.texto == "texto completo",
+            "Una lectura completa no se sobrescribe con una parcial",
+        )
+        verificar(persistencia_texto.leer("xyz") is None, "Una huella desconocida devuelve None")
 
 
 def prueba_cache() -> None:
@@ -164,6 +163,7 @@ def prueba_preprocesamiento() -> None:
 
 def main() -> int:
     print("=== PRUEBAS DE OPTIMIZACIÓN DEL AI-SERVICE ===\n")
+    _resultados.clear()
     prueba_fragmentos()
     prueba_stemming()
     prueba_persistencia()
@@ -173,6 +173,10 @@ def main() -> int:
     aprobadas = sum(_resultados)
     print(f"\nResultado: {aprobadas}/{len(_resultados)} verificaciones aprobadas")
     return 0 if aprobadas == len(_resultados) else 1
+
+
+def test_optimizaciones():
+    assert main() == 0, "Hay verificaciones de optimización en [FALLA] (ver salida con -s)"
 
 
 if __name__ == "__main__":

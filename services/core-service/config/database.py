@@ -20,6 +20,8 @@ DB_PASSWORD = os.getenv("DB_PASSWORD", "")
 DB_HOST = os.getenv("DB_HOST", "127.0.0.1")
 DB_PORT = os.getenv("DB_PORT", "5432" if DB_DIALECT == "postgresql" else "3306")
 DB_NAME = os.getenv("DB_NAME", "plurione_compliance")
+# Trazas del SQL ejecutado (show-sql de Hibernate): apagadas salvo DB_ECHO=true.
+DB_ECHO = os.getenv("DB_ECHO", "false").strip().lower() in {"1", "true", "yes", "on"}
 
 # URL de conexión: respeta DATABASE_URL si existe, o la construye dinámicamente
 if os.getenv("DATABASE_URL"):
@@ -33,7 +35,7 @@ else:
 engine = create_engine(
     DATABASE_URL,
     pool_pre_ping=True,  # Verifica que la conexión siga viva antes de cada consulta
-    echo=True,           # Imprime en consola el SQL ejecutado (igual que show-sql=true en Hibernate)
+    echo=DB_ECHO,        # DB_ECHO=true imprime el SQL ejecutado (igual que show-sql=true en Hibernate)
 )
 
 # Fábrica de sesiones para interactuar con la BD

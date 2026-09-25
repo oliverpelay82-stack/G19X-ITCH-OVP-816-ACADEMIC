@@ -3,7 +3,7 @@ Esquemas de validación de datos para Expedientes (DTOs).
 """
 from datetime import datetime
 from typing import Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from schemas.titular_schema import TitularResponse
 
@@ -56,5 +56,4 @@ class ExpedienteResponse(BaseModel):
     titular: Optional[TitularResponse] = None
     evaluacion: Optional[EvaluacionExpedienteResponse] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

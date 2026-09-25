@@ -4,7 +4,7 @@ Equivalente a las clases DTO / Response en Spring Boot.
 """
 from datetime import datetime
 from enum import Enum
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class TipoDocumentoEnum(str, Enum):
@@ -31,5 +31,4 @@ class DocumentoResponse(BaseModel):
     estado_integridad: str = "INTEGRO"
     creado_en: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
