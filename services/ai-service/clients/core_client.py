@@ -18,6 +18,14 @@ import requests
 
 from config import settings
 
+# Sesión HTTP del proceso: reutiliza las conexiones TCP (keep-alive) hacia el
+# core-service en lugar de abrir una por petición. Sin estado propio (no hay
+# cookies ni autenticación), así que puede compartirse entre los hilos del pool.
+_sesion = requests.Session()
+# Tope para establecer la conexión: un core-service caído o inalcanzable falla
+# en segundos; el segundo valor de cada timeout es el de lectura de la respuesta.
+TIMEOUT_CONEXION_SEGUNDOS = 3
+
 
 class DocumentoNoEncontradoError(LookupError):
     """El identificador no existe en el catálogo o su binario no está disponible."""
@@ -41,7 +49,7 @@ def _detalle(respuesta: requests.Response) -> str:
 def _get(ruta: str, timeout: int = 15) -> requests.Response:
     url = f"{settings.CORE_BASE_URL}/api/v1{ruta}"
     try:
-        respuesta = requests.get(url, timeout=timeout)
+        respuesta = _sesion.get(url, timeout=(TIMEOUT_CONEXION_SEGUNDOS, timeout))
     except requests.RequestException as exc:
         raise CoreNoDisponibleError(f"No fue posible consultar el core-service en {settings.CORE_BASE_URL}: {exc}") from exc
     if respuesta.status_code == 404:
@@ -72,7 +80,7 @@ def registrar_dictamen(dictamen: dict[str, Any]) -> dict[str, Any]:
     """Persiste el dictamen del Nivel 4 en el core-service y devuelve el registro creado."""
     url = f"{settings.CORE_BASE_URL}/api/v1/dictamenes"
     try:
-        respuesta = requests.post(url, json=dictamen, timeout=15)
+        respuesta = _sesion.post(url, json=dictamen, timeout=(TIMEOUT_CONEXION_SEGUNDOS, 15))
     except requests.RequestException as exc:
         raise CoreNoDisponibleError(f"No fue posible registrar el dictamen en {settings.CORE_BASE_URL}: {exc}") from exc
     if respuesta.status_code == 409:

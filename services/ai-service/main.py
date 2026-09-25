@@ -19,8 +19,9 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from clients import groq_client
 from config import settings
+from pipelines import extraccion_pipeline
+from controllers.health_controller import precargar as precargar_salud
 from controllers.health_controller import router as health_router
 from controllers.extraccion_controller import router as extraccion_router
 from controllers.analisis_controller import router as analisis_router
@@ -28,33 +29,29 @@ from controllers.analisis_controller import router as analisis_router
 
 def _diagnostico_arranque() -> None:
     """
-    Diagnóstico de arranque.
+    Diagnóstico y precarga de arranque.
 
     El servicio levanta aunque sus dependencias externas no estén listas: de esa
     forma el operador puede consultar `/api/v1/health` y ver exactamente qué
     falta, en lugar de enfrentarse a un contenedor que no arranca.
+
+    Groq y Tesseract se consultan una sola vez y su estado queda en el caché del
+    health check (``precargar``): el primer sondeo del frontend responde de
+    inmediato y la primera inferencia reutiliza la conexión HTTPS ya abierta.
     """
     print(f"[ai-service] Motor de inferencia: Groq Cloud ({settings.GROQ_BASE_URL})")
-    estado = groq_client.verificar_estado()
+    estado, diagnostico = precargar_salud()
     if estado["modelo_disponible"]:
         print(f"[ai-service] Modelo '{settings.GROQ_MODEL}' disponible y listo para inferencia.")
     else:
         print(f"[ai-service] AVISO: {estado['detalle']}")
-
-    diagnostico = {}
-    try:
-        from pipelines import extraccion_pipeline
-
-        diagnostico = extraccion_pipeline.diagnostico_ocr()
-    except Exception as exc:  # pragma: no cover - solo afecta al mensaje de arranque
-        print(f"[ai-service] AVISO: no fue posible inicializar el motor OCR: {exc}")
 
     if diagnostico.get("disponible"):
         print(
             f"[ai-service] Tesseract {diagnostico['version']} activo "
             f"(idiomas: {', '.join(diagnostico['idiomas_disponibles'])})."
         )
-    elif diagnostico:
+    else:
         print(f"[ai-service] AVISO: {diagnostico.get('detalle')}")
 
 
@@ -62,7 +59,8 @@ def _diagnostico_arranque() -> None:
 async def lifespan(app: FastAPI):
     _diagnostico_arranque()
     yield
-    print("[ai-service] Servicio detenido.")
+    extraccion_pipeline.cerrar()
+    print("[ai-service] Pool de OCR cerrado; servicio detenido.")
 
 
 app = FastAPI(

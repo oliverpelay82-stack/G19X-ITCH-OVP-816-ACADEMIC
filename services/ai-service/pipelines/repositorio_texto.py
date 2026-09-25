@@ -10,10 +10,13 @@ Orden de resolución para un ``documento_id``:
      pasar por OCR.
 
 Si el corte temprano dejó páginas sin leer, la lectura de todas las páginas se
-programa en un hilo de fondo. La petición actual responde con la lectura
+programa en un hilo de fondo, pero solo cuando la pide quien la aprovecha: el
+chat, que busca cláusulas en cualquier página (capital social, comisario o
+firmas al final). La auditoría solo necesita los datos de identificación, que
+cubre la lectura parcial; programar ahí la completa ocupaba el pool de OCR con
+páginas que nadie iba a consultar. La petición actual responde con la lectura
 parcial, y cuando la completa termina reemplaza a la parcial en memoria y en
-disco, de modo que la búsqueda de fragmentos pasa a abarcar el documento entero
-(capital social, comisario o firmas en las últimas páginas).
+disco.
 """
 from __future__ import annotations
 
@@ -64,9 +67,14 @@ def _extraer(contenido: bytes, nombre: str, forzar_ocr: bool, texto_completo: bo
 
 
 # ── Documentos de la bóveda ─────────────────────────────────────────
-def obtener_por_documento(documento_id: str, forzar_ocr: bool = False) -> TextoDocumento:
+def obtener_por_documento(
+    documento_id: str, forzar_ocr: bool = False, completar_en_fondo: bool = True
+) -> TextoDocumento:
     """
     Devuelve el texto del documento sin repetir nunca un OCR ya hecho.
+
+    :param completar_en_fondo: si la lectura es parcial, programa la de todas
+        las páginas en segundo plano. La auditoría lo desactiva; el chat, no.
 
     Antes de servir cualquier texto —incluso desde memoria o disco— el
     core-service verifica la integridad del binario (RIE-03): un texto extraído
@@ -97,7 +105,7 @@ def obtener_por_documento(documento_id: str, forzar_ocr: bool = False) -> TextoD
     documento, desde_memoria = cache_texto.obtener_o_calcular(clave, resolver)
     documento = replace(documento, fuente="memoria" if desde_memoria else fuente_calculada[0])
 
-    if not documento.completo and settings.COMPLETAR_LECTURA_EN_SEGUNDO_PLANO:
+    if completar_en_fondo and not documento.completo and settings.COMPLETAR_LECTURA_EN_SEGUNDO_PLANO:
         _programar_lectura_completa(documento_id, forzar_ocr, documento)
     return documento
 

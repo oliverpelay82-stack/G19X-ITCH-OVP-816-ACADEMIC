@@ -43,6 +43,18 @@ from config import settings
 
 pytesseract.pytesseract.tesseract_cmd = settings.TESSERACT_CMD
 
+# Pool único de OCR para todo el proceso. Con un pool por petición, tres
+# auditorías simultáneas lanzaban 3 × OCR_WORKERS procesos de Tesseract sobre
+# OCR_WORKERS núcleos físicos (y la lectura completa de fondo sumaba otra
+# tanda): el CPU se sobresuscribía y la memoria crecía con cada petición. Así,
+# el total de reconocimientos simultáneos queda acotado a OCR_WORKERS.
+_POOL_OCR = ThreadPoolExecutor(max_workers=settings.OCR_WORKERS, thread_name_prefix="ocr")
+
+
+def cerrar() -> None:
+    """Apagado del servicio: descarta los reconocimientos en cola sin esperarlos."""
+    _POOL_OCR.shutdown(wait=False, cancel_futures=True)
+
 # Firmas binarias aceptadas, idénticas a las del Nivel 1 en core-service.
 FIRMAS_MAGICAS: dict[str, list[bytes]] = {
     "application/pdf": [b"%PDF-"],
@@ -120,9 +132,12 @@ _ANCHO_MINIMO_OCR = 1800
 _MAX_TINTA_OTSU = 0.25
 
 
-def preprocesar_imagen(imagen_bgr: np.ndarray) -> np.ndarray:
+def preprocesar_imagen(imagen: np.ndarray) -> np.ndarray:
     """
     Acondiciona una página rasterizada para maximizar la exactitud de Tesseract.
+
+    Acepta la página ya en escala de grises (2D, como la entrega ``_rasterizar``)
+    o en BGR (3 canales, como llegan las fotos JPEG/PNG).
 
     Pasos:
       1. Escala de grises: descarta información cromática que el OCR no usa.
@@ -142,7 +157,7 @@ def preprocesar_imagen(imagen_bgr: np.ndarray) -> np.ndarray:
     escaneo limpio CLAHE amplifica el grano y reduce la exactitud (medido:
     98.0 % → 92.7 % en la constancia escaneada de prueba).
     """
-    gris = cv2.cvtColor(imagen_bgr, cv2.COLOR_BGR2GRAY)
+    gris = imagen if imagen.ndim == 2 else cv2.cvtColor(imagen, cv2.COLOR_BGR2GRAY)
 
     alto, ancho = gris.shape
     if ancho < _ANCHO_MINIMO_OCR:
@@ -168,9 +183,9 @@ def preprocesar_imagen(imagen_bgr: np.ndarray) -> np.ndarray:
     return binaria
 
 
-def _ocr_sobre_imagen(imagen_bgr: np.ndarray) -> tuple[str, float]:
-    """Ejecuta Tesseract sobre una imagen ya preprocesada y promedia su confianza."""
-    binaria = preprocesar_imagen(imagen_bgr)
+def _ocr_sobre_imagen(imagen: np.ndarray) -> tuple[str, float]:
+    """Preprocesa la imagen (gris o BGR), ejecuta Tesseract y promedia su confianza."""
+    binaria = preprocesar_imagen(imagen)
     try:
         datos = pytesseract.image_to_data(
             binaria,
@@ -220,11 +235,17 @@ def _ocr_sobre_imagen(imagen_bgr: np.ndarray) -> tuple[str, float]:
 
 
 def _rasterizar(pagina: "fitz.Page") -> np.ndarray:
-    """Rasteriza una página PDF a ``OCR_DPI`` ppp y la entrega en BGR para OpenCV."""
+    """
+    Rasteriza una página PDF a ``OCR_DPI`` ppp directamente en escala de grises.
+
+    El OCR no usa el color: rasterizar en RGB para convertir después a gris
+    ocupaba 32 MB por página carta a 300 ppp (RGB + BGR + gris); en gris son
+    8 MB y la imagen resultante es prácticamente idéntica (diferencia media de
+    0.03 niveles por píxel frente a la conversión de OpenCV).
+    """
     matriz = fitz.Matrix(settings.OCR_DPI / 72.0, settings.OCR_DPI / 72.0)
-    pixmap = pagina.get_pixmap(matrix=matriz, colorspace=fitz.csRGB)
-    imagen = np.frombuffer(pixmap.samples, dtype=np.uint8).reshape(pixmap.height, pixmap.width, 3)
-    return cv2.cvtColor(imagen, cv2.COLOR_RGB2BGR)
+    pixmap = pagina.get_pixmap(matrix=matriz, colorspace=fitz.csGRAY)
+    return np.frombuffer(pixmap.samples, dtype=np.uint8).reshape(pixmap.height, pixmap.width)
 
 
 def _ocr_en_paralelo(imagenes: list[np.ndarray]) -> list[tuple[str, float]]:
@@ -233,12 +254,10 @@ def _ocr_en_paralelo(imagenes: list[np.ndarray]) -> list[tuple[str, float]]:
 
     Se usan hilos y no procesos: Tesseract corre como un proceso externo y
     OpenCV libera el GIL, así que los hilos solo esperan y el trabajo real se
-    reparte entre los núcleos sin copiar las imágenes entre procesos.
+    reparte entre los núcleos sin copiar las imágenes entre procesos. El pool
+    es el compartido del proceso (``_POOL_OCR``).
     """
-    if len(imagenes) <= 1 or settings.OCR_WORKERS <= 1:
-        return [_ocr_sobre_imagen(img) for img in imagenes]
-    with ThreadPoolExecutor(max_workers=min(settings.OCR_WORKERS, len(imagenes))) as pool:
-        return list(pool.map(_ocr_sobre_imagen, imagenes))
+    return list(_POOL_OCR.map(_ocr_sobre_imagen, imagenes))
 
 
 # ── Heurística de calidad de la capa vectorial ──────────────────────
@@ -413,7 +432,8 @@ def _procesar_pdf(
 def _procesar_imagen(contenido: bytes, observaciones: list[str]) -> list[ResultadoPagina]:
     with Image.open(io.BytesIO(contenido)) as imagen_pil:
         imagen_rgb = np.array(imagen_pil.convert("RGB"))
-    texto, confianza = _ocr_sobre_imagen(cv2.cvtColor(imagen_rgb, cv2.COLOR_RGB2BGR))
+    # También por el pool compartido, para que cuente dentro del tope de OCR_WORKERS.
+    texto, confianza = _POOL_OCR.submit(_ocr_sobre_imagen, cv2.cvtColor(imagen_rgb, cv2.COLOR_RGB2BGR)).result()
     observaciones.append("Documento entregado como imagen: resuelto íntegramente por OCR.")
     return [
         ResultadoPagina(numero=1, metodo="OCR", caracteres=len(texto), confianza=confianza, texto=texto)

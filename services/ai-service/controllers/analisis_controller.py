@@ -46,10 +46,12 @@ SYSTEM_PROMPT_CHAT = (
 )
 
 
-def _documento(documento_id: str, forzar_ocr: bool = False) -> repositorio_texto.TextoDocumento:
+def _documento(
+    documento_id: str, forzar_ocr: bool = False, completar_en_fondo: bool = True
+) -> repositorio_texto.TextoDocumento:
     """Resuelve el texto de un documento de la bóveda y traduce los errores a HTTP."""
     try:
-        return repositorio_texto.obtener_por_documento(documento_id, forzar_ocr)
+        return repositorio_texto.obtener_por_documento(documento_id, forzar_ocr, completar_en_fondo)
     except DocumentoNoEncontradoError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
     except DocumentoAlteradoError as exc:
@@ -65,12 +67,12 @@ def _documento(documento_id: str, forzar_ocr: bool = False) -> repositorio_texto
 
 
 def _resolver_contenido(
-    documento_id: str | None, texto: str | None, forzar_ocr: bool = False
+    documento_id: str | None, texto: str | None, forzar_ocr: bool = False, completar_en_fondo: bool = True
 ) -> tuple[str, repositorio_texto.TextoDocumento | None, str]:
     """Devuelve (texto, documento resuelto o None, fuente del texto)."""
     if texto and texto.strip():
         return texto.strip(), None, "cliente"
-    documento = _documento(documento_id or "", forzar_ocr)
+    documento = _documento(documento_id or "", forzar_ocr, completar_en_fondo)
     return documento.texto, documento, documento.fuente
 
 
@@ -130,9 +132,10 @@ def preparar_documento(documento_id: str):
     """
     Deja listo el texto del documento en memoria y en disco. Si ya se había
     extraído, responde al instante; si no, ejecuta el Nivel 3 una única vez.
+    Es la primera etapa de la auditoría: no programa la lectura completa.
     """
     inicio = time.perf_counter()
-    documento = _documento(documento_id)
+    documento = _documento(documento_id, completar_en_fondo=False)
     return {
         "documento_id": documento_id,
         "fuente_texto": documento.fuente,
@@ -156,7 +159,10 @@ def analizar_documento(peticion: AnalisisSemanticoRequest):
     el modelo extrajo, no el modelo mismo.
     """
     inicio = time.perf_counter()
-    texto, documento, fuente = _resolver_contenido(peticion.documento_id, peticion.texto, peticion.forzar_ocr)
+    # La auditoría solo extrae datos de identificación: le basta la lectura parcial.
+    texto, documento, fuente = _resolver_contenido(
+        peticion.documento_id, peticion.texto, peticion.forzar_ocr, completar_en_fondo=False
+    )
     ms_texto = _ms(inicio)
 
     confianza_extraccion = documento.traza.get("confidence_score") if documento else None
@@ -258,7 +264,7 @@ def chat_documento(peticion: ChatDocumentoRequest):
         "modelo_utilizado": settings.GROQ_MODEL,
         "caracteres_de_contexto": len(seleccion.texto),
         "contexto_truncado": seleccion.recortado,
-        "contexto_llm": seleccion.traza(),
+        "contexto_llm": {**seleccion.traza(), "uso_tokens": groq_client.uso_de(contenido)},
         "fuente_texto": fuente,
         "tiempos_ms": {"resolucion_texto": ms_texto, "inferencia": _ms(inicio)},
     }

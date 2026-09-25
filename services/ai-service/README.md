@@ -35,6 +35,8 @@ GROQ_API_KEY=gsk_...
 GROQ_MODEL=qwen/qwen3.8-27b
 GROQ_TEMPERATURE=0.0
 GROQ_TIMEOUT=30
+GROQ_MAX_RETRIES=2
+GROQ_CACHE_INFERENCIAS=true
 GROQ_MAX_TOKENS=1000
 ```
 
@@ -46,8 +48,16 @@ Groq no está configurado y el Nivel 3 (OCR) sigue operando.
 > por minuto para este modelo, contando entrada y salida. Cada consulta envía
 > hasta `MAX_CARACTERES_CONTEXTO` (6,500 por defecto) caracteres del documento
 > más el historial del chat, así que varias consultas seguidas agotan el cupo y
-> el cliente reintenta hasta que se libera (la respuesta pasa de ~2 s a
-> 10–18 s). Un plan de pago elimina esa espera.
+> el SDK reintenta hasta `GROQ_MAX_RETRIES` veces respetando la cabecera
+> `Retry-After` de Groq (la respuesta pasa de ~2 s a 10–18 s); agotados los
+> reintentos, el servicio responde 503. Un plan de pago elimina esa espera.
+>
+> Cada dictamen y cada respuesta del chat informan los tokens consumidos en
+> `contexto_llm.uso_tokens` (`prompt_tokens`, `completion_tokens`,
+> `total_tokens` y `desde_cache`). Medido: una Constancia de Situación Fiscal
+> consume 1,780 tokens por auditoría y un turno de chat, unos 500; una
+> reauditoría servida por el caché, 0. El historial del chat admite hasta 20
+> turnos (422 si se excede).
 
 ### Tesseract OCR (motor de reconocimiento óptico)
 
@@ -137,7 +147,8 @@ lectura del modelo, no puede ser más fiable que el texto que se le entregó.
 
 **Corte temprano del OCR.** Para responder rápido la primera vez, el OCR se
 detiene al reunir `MAX_CARACTERES_CONTEXTO` caracteres o tras `MAX_PAGINAS_OCR`
-(6) páginas escaneadas; el resto se lee en segundo plano. La traza
+(6) páginas escaneadas; el resto se lee en segundo plano cuando se usa el
+chat (la auditoría solo necesita los datos de identificación). La traza
 informa `paginas_omitidas_ocr` y `extraccion_parcial`, y el endpoint
 `/ai/extraer-texto` acepta `texto_completo=true` para reconocer todas las
 páginas.
@@ -181,7 +192,14 @@ por la huella SHA-256 del binario. Un documento ya leído no vuelve a pasar por
 OCR aunque se reinicie el servicio: el acta de 26 páginas se sirve desde disco en
 0.2 s en lugar de 89 s. Cuando el corte temprano deja páginas sin leer, la
 lectura completa se hace en segundo plano (`COMPLETAR_LECTURA_EN_SEGUNDO_PLANO`)
-y reemplaza a la parcial al terminar.
+al primer uso del chat —no en la auditoría— y reemplaza a la parcial al terminar.
+
+**Caché de inferencias.** A temperatura 0.0 la respuesta del modelo se guarda en
+la misma SQLite (tabla `inferencias`) por huella SHA-256 de la petición exacta
+(modelo, parámetros, prompt, texto y titular). Reauditar el mismo documento no
+consume tokens de Groq (medido: 0.8 s → 0.0 s de inferencia); cualquier cambio
+en el texto, el titular o el prompt produce otra clave. `GROQ_CACHE_INFERENCIAS=false`
+lo desactiva. El chat no se guarda.
 
 **Preprocesamiento de fotos.** Las imágenes de menos de 1,800 px de ancho se
 amplían antes del OCR. Si la binarización de Otsu deja más del 25 % de la página

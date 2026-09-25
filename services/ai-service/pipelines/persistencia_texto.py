@@ -13,6 +13,10 @@ sobrescribe con una parcial.
 
 SQLite viene incluido en Python, no requiere servidor y mantiene al ai-service
 desacoplado de la base de datos de los otros microservicios (DOC-08).
+
+La tabla ``inferencias`` guarda, en la misma base, la respuesta JSON del modelo
+por huella de la petición exacta (ver ``clients/groq_client.py``): una
+reauditoría del mismo documento no vuelve a consumir tokens de Groq.
 """
 from __future__ import annotations
 
@@ -39,6 +43,14 @@ CREATE TABLE IF NOT EXISTS extracciones (
 )
 """
 
+_ESQUEMA_INFERENCIAS = """
+CREATE TABLE IF NOT EXISTS inferencias (
+    clave      TEXT PRIMARY KEY,   -- SHA-256 de modelo + parámetros + mensajes
+    respuesta  TEXT NOT NULL,      -- objeto JSON devuelto por el modelo
+    creado_en  TEXT NOT NULL
+)
+"""
+
 _candado_escritura = Lock()
 _inicializada: set[str] = set()
 
@@ -58,6 +70,7 @@ def _conectar() -> sqlite3.Connection:
     if ruta not in _inicializada:
         conexion.execute("PRAGMA journal_mode=WAL")
         conexion.execute(_ESQUEMA)
+        conexion.execute(_ESQUEMA_INFERENCIAS)
         conexion.commit()
         _inicializada.add(ruta)
     return conexion
@@ -103,6 +116,29 @@ def guardar(sha256: str, forzar_ocr: bool, texto: str, traza: dict[str, Any], co
                     json.dumps(traza_sin_texto, ensure_ascii=False),
                     datetime.now(timezone.utc).isoformat(),
                 ),
+            )
+            conexion.commit()
+    except sqlite3.Error:
+        pass
+
+
+def leer_inferencia(clave: str) -> dict[str, Any] | None:
+    """Devuelve la respuesta guardada del modelo para esa petición, o ``None``."""
+    try:
+        with closing(_conectar()) as conexion:
+            fila = conexion.execute("SELECT respuesta FROM inferencias WHERE clave = ?", (clave,)).fetchone()
+    except sqlite3.Error:
+        return None
+    return json.loads(fila[0]) if fila else None
+
+
+def guardar_inferencia(clave: str, respuesta: dict[str, Any]) -> None:
+    """Guarda la respuesta del modelo; la primera respuesta a una petición es la que queda."""
+    try:
+        with _candado_escritura, closing(_conectar()) as conexion:
+            conexion.execute(
+                "INSERT OR IGNORE INTO inferencias (clave, respuesta, creado_en) VALUES (?, ?, ?)",
+                (clave, json.dumps(respuesta, ensure_ascii=False), datetime.now(timezone.utc).isoformat()),
             )
             conexion.commit()
     except sqlite3.Error:

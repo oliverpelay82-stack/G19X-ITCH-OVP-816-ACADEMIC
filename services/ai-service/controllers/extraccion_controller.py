@@ -54,7 +54,9 @@ async def extraer_texto(
     *confidence score*, el método que resolvió cada página y la señal de
     escalamiento al Nivel 5 cuando la legibilidad es insuficiente.
     """
-    contenido = await file.read()
+    # Lectura acotada: un archivo mayor al límite del Nivel 1 nunca entra completo
+    # a memoria; con un byte de más, el pipeline lo rechaza con 400.
+    contenido = await file.read(settings.MAX_FILE_SIZE_BYTES + 1)
 
     try:
         texto, traza, fuente = await run_in_threadpool(
@@ -97,7 +99,7 @@ def configuracion_ocr():
         "umbral_confianza_hitl": settings.UMBRAL_CONFIANZA_HITL,
         "tamanio_maximo_mb": settings.MAX_FILE_SIZE_BYTES // (1024 * 1024),
         "preprocesamiento": [
-            "Conversión a escala de grises (cv2.cvtColor)",
+            "Rasterizado directo en escala de grises (PyMuPDF csGRAY; cv2.cvtColor para fotos JPEG/PNG)",
             "Filtro bilateral de reducción de ruido (cv2.bilateralFilter)",
             "Binarización automática de Otsu (cv2.threshold + THRESH_OTSU)",
             "Corrección de polaridad tinta/fondo",

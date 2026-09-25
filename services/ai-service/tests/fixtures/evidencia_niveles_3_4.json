@@ -3,6 +3,7 @@
     "status": "online",
     "servicio": "ai-service",
     "puerto": 8003,
+    "version": "1.0.0",
     "modo_despliegue": "cloud-groq",
     "capacidades_operativas": true,
     "motor_inferencia": {
@@ -11,17 +12,17 @@
       "temperatura_auditoria": 0.0,
       "disponible": true,
       "modelos_instalados": [
-        "whisper-large-v3",
         "whisper-large-v3-turbo",
-        "openai/gpt-oss-20b",
-        "openai/gpt-oss-120b",
         "allam-2-7b",
-        "openai/gpt-oss-safeguard-20b",
+        "meta-llama/llama-prompt-guard-2-86m",
+        "canopylabs/orpheus-v1-english",
+        "whisper-large-v3",
+        "canopylabs/orpheus-arabic-saudi",
+        "openai/gpt-oss-120b",
         "meta-llama/llama-prompt-guard-2-22m",
         "qwen/qwen3.8-27b",
-        "canopylabs/orpheus-v1-english",
-        "canopylabs/orpheus-arabic-saudi",
-        "meta-llama/llama-prompt-guard-2-86m"
+        "openai/gpt-oss-20b",
+        "openai/gpt-oss-safeguard-20b"
       ],
       "modelo_requerido": "qwen/qwen3.8-27b",
       "modelo_disponible": true,
@@ -48,8 +49,8 @@
     "cache_extracciones": {
       "documentos_en_cache": 0,
       "capacidad": 64,
-      "documentos_persistidos": 7,
-      "lecturas_completas": 7,
+      "documentos_persistidos": 9,
+      "lecturas_completas": 9,
       "lecturas_completas_en_curso": 0
     }
   },
@@ -108,7 +109,7 @@
     "fecha_emision": "2026-01-15",
     "fecha_vencimiento": "2027-01-15",
     "vigente": true,
-    "dias_para_vencimiento": 114,
+    "dias_para_vencimiento": 112,
     "nivel_confianza": 0.95,
     "estatus_preliminar": "CONFORME",
     "requiere_revision_humana": false,
@@ -130,7 +131,7 @@
       "origen_tipo": "detectado",
       "disponible": true,
       "tipo_documento": "CSF_SAT",
-      "fecha_referencia": "2026-09-23",
+      "fecha_referencia": "2026-09-25",
       "resultado": "VIGENTE",
       "es_vigente": true,
       "dias_calculados": null,
@@ -142,15 +143,15 @@
           "criterio": "DIAS_PARA_VENCIMIENTO",
           "resultado": "VIGENTE",
           "limite_dias": 30,
-          "dias_calculados": 114,
-          "detalle": "El documento vence en 114 días (2027-01-15)."
+          "dias_calculados": 112,
+          "detalle": "El documento vence en 112 días (2027-01-15)."
         }
       ]
     },
     "fuente_texto": "cliente",
     "tiempos_ms": {
       "resolucion_texto": 0,
-      "inferencia": 2374
+      "inferencia": 31
     }
   },
   "analisis_no_conforme": {
@@ -162,7 +163,7 @@
     "fecha_emision": "2026-01-15",
     "fecha_vencimiento": "2027-01-15",
     "vigente": true,
-    "dias_para_vencimiento": 114,
+    "dias_para_vencimiento": 112,
     "nivel_confianza": 0.95,
     "estatus_preliminar": "NO_CONFORME",
     "requiere_revision_humana": false,
@@ -185,7 +186,7 @@
       "origen_tipo": "detectado",
       "disponible": true,
       "tipo_documento": "CSF_SAT",
-      "fecha_referencia": "2026-09-23",
+      "fecha_referencia": "2026-09-25",
       "resultado": "VIGENTE",
       "es_vigente": true,
       "dias_calculados": null,
@@ -197,15 +198,15 @@
           "criterio": "DIAS_PARA_VENCIMIENTO",
           "resultado": "VIGENTE",
           "limite_dias": 30,
-          "dias_calculados": 114,
-          "detalle": "El documento vence en 114 días (2027-01-15)."
+          "dias_calculados": 112,
+          "detalle": "El documento vence en 112 días (2027-01-15)."
         }
       ]
     },
     "fuente_texto": "cliente",
     "tiempos_ms": {
       "resolucion_texto": 0,
-      "inferencia": 11915
+      "inferencia": 61
     }
   },
   "chat": {
@@ -223,7 +224,7 @@
     "fuente_texto": "cliente",
     "tiempos_ms": {
       "resolucion_texto": 0,
-      "inferencia": 1414
+      "inferencia": 496
     }
   }
 }

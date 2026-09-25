@@ -22,12 +22,22 @@ GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
 GROQ_MODEL: str = os.getenv("GROQ_MODEL", "qwen/qwen3.8-27b")
 GROQ_BASE_URL: str = os.getenv("GROQ_BASE_URL", "https://api.groq.com/openai/v1")
 GROQ_TIMEOUT: int = int(os.getenv("GROQ_TIMEOUT", "30"))
+# Reintentos ante 429, 5xx y fallos de red. Los hace el SDK de OpenAI con backoff
+# exponencial que respeta la cabecera Retry-After de Groq; no hay otra capa.
+GROQ_MAX_RETRIES: int = int(os.getenv("GROQ_MAX_RETRIES", "2"))
 # Tope de tokens de salida por respuesta. También acota el consumo del límite de
 # tokens por minuto del plan de Groq, que cuenta entrada y salida.
 GROQ_MAX_TOKENS: int = int(os.getenv("GROQ_MAX_TOKENS", "1000"))
 # Auditoría documental: temperatura 0.0 para respuestas deterministas y
 # reproducibles ante un mismo documento (requisito de trazabilidad, DOC-05).
 GROQ_TEMPERATURE: float = float(os.getenv("GROQ_TEMPERATURE", "0.0"))
+# Reutiliza la respuesta del modelo ante una petición idéntica (mismo texto,
+# titular, prompt, modelo y parámetros). Solo aplica a temperatura 0.0, donde la
+# respuesta es reproducible; una reauditoría del mismo documento no consume
+# tokens. Desactívelo para obligar a consultar de nuevo al modelo.
+GROQ_CACHE_INFERENCIAS: bool = os.getenv("GROQ_CACHE_INFERENCIAS", "true").strip().lower() in (
+    "1", "true", "si", "sí", "yes",
+)
 
 # ── Motor OCR (Tesseract) ───────────────────────────────────────────
 def _resolver_tesseract() -> str:

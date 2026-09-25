@@ -13,6 +13,13 @@ import requests
 
 from config import settings
 
+# Sesión HTTP del proceso: reutiliza las conexiones TCP (keep-alive) hacia el
+# rules-service. Sin estado propio, puede compartirse entre hilos.
+_sesion = requests.Session()
+# (conexión, lectura): un rules-service caído falla en segundos y el dictamen
+# pasa a revisión humana en lugar de esperar el timeout completo.
+TIMEOUT_SEGUNDOS = (3, 10)
+
 
 class ReglasNoDisponiblesError(RuntimeError):
     """El rules-service no respondió o devolvió un error."""
@@ -32,7 +39,9 @@ def evaluar_vigencia(
         "fecha_referencia": fecha_referencia.isoformat(),
     }
     try:
-        respuesta = requests.post(f"{settings.RULES_BASE_URL}/api/v1/reglas/evaluar-vigencia", json=cuerpo, timeout=10)
+        respuesta = _sesion.post(
+            f"{settings.RULES_BASE_URL}/api/v1/reglas/evaluar-vigencia", json=cuerpo, timeout=TIMEOUT_SEGUNDOS
+        )
         respuesta.raise_for_status()
         return respuesta.json()
     except requests.RequestException as exc:

@@ -379,7 +379,7 @@ def analizar(
         requiere_revision_humana=requiere_hitl,
         observaciones=observaciones,
         modelo_utilizado=settings.GROQ_MODEL,
-        contexto_llm=seleccion.traza(),
+        contexto_llm={**seleccion.traza(), "uso_tokens": groq_client.uso_de(crudo)},
         vigencia_nivel_2=vigencia_nivel_2,
     )
 

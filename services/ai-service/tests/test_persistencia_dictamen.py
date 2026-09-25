@@ -58,7 +58,7 @@ def preparar(mp: pytest.MonkeyPatch, registro=None, texto_error=None):
                           "dias_calculados": 2722, "detalle": "2722 días de antigüedad; máximo 90."}],
     })
 
-    def obtener(documento_id, forzar_ocr=False):
+    def obtener(documento_id, forzar_ocr=False, completar_en_fondo=True):
         if texto_error:
             raise texto_error
         return repositorio_texto.TextoDocumento(
@@ -133,9 +133,9 @@ def main_pruebas(mp: pytest.MonkeyPatch) -> int:
     verificar(r.status_code == 409, "Alteración detectada al registrar el dictamen: 409")
 
     print("\n[5] Cliente del core-service")
-    # requests.get es global al proceso: la simulación se deshace al salir del bloque.
+    # La sesión HTTP es compartida por el proceso: la simulación se deshace al salir del bloque.
     with pytest.MonkeyPatch.context() as local:
-        local.setattr(core_client.requests, "get", lambda url, timeout: SimpleNamespace(
+        local.setattr(core_client._sesion, "get", lambda url, timeout: SimpleNamespace(
             status_code=409, ok=False, text="", json=lambda: {"detail": "[RIE-03] huella distinta"}))
         try:
             core_client.verificar_integridad(DOC_ID)

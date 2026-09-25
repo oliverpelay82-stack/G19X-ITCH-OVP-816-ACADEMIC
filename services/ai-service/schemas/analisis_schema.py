@@ -82,7 +82,10 @@ class ChatDocumentoRequest(_FuenteDocumental):
     )
     historial: list[MensajeChat] = Field(
         default_factory=list,
-        description="Turnos anteriores de la conversación, del más antiguo al más reciente.",
+        # El frontend envía los últimos 6; el tope protege a Groq (413 / límite de
+        # tokens por minuto) de un cliente directo de la API con un hilo sin fin.
+        max_length=20,
+        description="Turnos anteriores de la conversación, del más antiguo al más reciente (máximo 20).",
     )
 
     model_config = {
