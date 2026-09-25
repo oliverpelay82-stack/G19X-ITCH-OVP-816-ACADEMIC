@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Sidebar from './components/Sidebar.jsx'
 import Header from './components/Header.jsx'
 import MetricsCards from './components/MetricsCards.jsx'
-import MotorIaPanel from './components/MotorIaPanel.jsx'
 import TitularesTab from './components/TitularesTab.jsx'
 import ExpedientesTab from './components/ExpedientesTab.jsx'
 import BovedaTab from './components/BovedaTab.jsx'
@@ -21,19 +20,23 @@ import {
 import './App.css'
 
 /**
- * Título de cada sección y sus migas: la jerarquía del dominio es
- * Empresa › Expediente › Documento en bóveda; las reglas son configuración.
+ * Título de cada sección y su grupo de navegación. Las migas tienen dos
+ * niveles (Grupo › Sección), igual que la barra lateral.
  */
 const SECCIONES = {
-  titulares: { titulo: 'Empresas', raiz: 'Cumplimiento', ruta: ['titulares'] },
-  expedientes: { titulo: 'Expedientes', raiz: 'Cumplimiento', ruta: ['titulares', 'expedientes'] },
-  boveda: { titulo: 'Bóveda criptográfica', raiz: 'Cumplimiento', ruta: ['titulares', 'expedientes', 'boveda'] },
-  reglas: { titulo: 'Catálogo de reglas', raiz: 'Configuración', ruta: ['reglas'] },
+  titulares: { titulo: 'Empresas', grupo: 'Cumplimiento', miga: 'Empresas' },
+  expedientes: { titulo: 'Expedientes', grupo: 'Cumplimiento', miga: 'Expedientes' },
+  boveda: { titulo: 'Bóveda criptográfica', grupo: 'Cumplimiento', miga: 'Bóveda' },
+  reglas: { titulo: 'Catálogo de reglas', grupo: 'Configuración', miga: 'Reglas' },
 }
 
-const MIGA_LABEL = { titulares: 'Empresas', expedientes: 'Expedientes', boveda: 'Bóveda', reglas: 'Reglas' }
+/** Sección a la que lleva el clic en el grupo de las migas. */
+const INICIO_GRUPO = { Cumplimiento: 'titulares', Configuración: 'reglas' }
 
 const INTERVALO_REFRESCO = 15000
+
+/** Duración mínima del giro del botón de refresco, para que el clic se perciba. */
+const REFRESCO_MINIMO_MS = 600
 
 /** Mide la latencia de un health check sin alterar el cliente HTTP. */
 async function sondear(fn) {
@@ -46,10 +49,11 @@ async function sondear(fn) {
   }
 }
 
+/** `online: null` significa "aún sin sondear" (la cabecera lo muestra en gris). */
 const HEALTH_INICIAL = {
-  core: { online: false, latencia: null, payload: null },
-  rules: { online: false, latencia: null, payload: null },
-  ai: { online: false, latencia: null, payload: null },
+  core: { online: null, latencia: null, payload: null },
+  rules: { online: null, latencia: null, payload: null },
+  ai: { online: null, latencia: null, payload: null },
 }
 
 export default function App() {
@@ -65,6 +69,8 @@ export default function App() {
   const [expedientes, setExpedientes] = useState([])
   const [documentos, setDocumentos] = useState([])
   const [reglas, setReglas] = useState([])
+  // Expediente que la vista de Expedientes debe desplegar al abrirse desde Empresas.
+  const [focoExpediente, setFocoExpediente] = useState(null)
 
   // Evita avisar de la misma caída en cada ciclo de sondeo.
   const caidasAvisadas = useRef(new Set())
@@ -114,7 +120,7 @@ export default function App() {
   const refrescar = useCallback(async () => {
     setRefrescando(true)
     try {
-      await Promise.all([cargarTodo(), chequearSalud()])
+      await Promise.all([cargarTodo(), chequearSalud(), new Promise((r) => setTimeout(r, REFRESCO_MINIMO_MS))])
     } finally {
       setRefrescando(false)
     }
@@ -151,7 +157,15 @@ export default function App() {
   )
 
   const seccion = SECCIONES[tabActiva]
-  const migas = [{ id: null, label: seccion.raiz }, ...seccion.ruta.map((id) => ({ id, label: MIGA_LABEL[id] }))]
+  const migas = [
+    { id: INICIO_GRUPO[seccion.grupo] === tabActiva ? null : INICIO_GRUPO[seccion.grupo], label: seccion.grupo },
+    { id: tabActiva, label: seccion.miga },
+  ]
+
+  const abrirExpediente = useCallback((expedienteId) => {
+    setFocoExpediente(expedienteId)
+    setTabActiva('expedientes')
+  }, [])
 
   return (
     <div className="app-shell">
@@ -163,6 +177,7 @@ export default function App() {
           migas={migas}
           onNavigate={setTabActiva}
           health={health}
+          reglas={reglas}
           onRefresh={refrescar}
           refrescando={refrescando}
           isDark={isDark}
@@ -177,12 +192,13 @@ export default function App() {
             loading={loading}
           />
 
-          <MotorIaPanel estado={health.ai} reglas={reglas} loading={loading} />
 
           <div className="tab-region" key={tabActiva}>
             {tabActiva === 'titulares' && (
               <TitularesTab
                 titulares={titulares}
+                expedientes={expedientes}
+                onAbrirExpediente={abrirExpediente}
                 loading={loading}
                 onRefresh={refrescar}
                 isOnline={health.core.online}
@@ -192,10 +208,11 @@ export default function App() {
               <ExpedientesTab
                 expedientes={expedientes}
                 titulares={titulares}
-                documentos={documentos}
                 loading={loading}
                 onRefresh={refrescar}
                 isOnline={health.core.online}
+                foco={focoExpediente}
+                onFocoAtendido={() => setFocoExpediente(null)}
               />
             )}
             {tabActiva === 'boveda' && (

@@ -1,78 +1,109 @@
 import { useMemo } from 'react'
+import { Building2, FolderKanban, Gauge, Vault } from 'lucide-react'
 import { Skeleton } from './Skeleton.jsx'
 import { tonoPorPorcentaje } from '../constants.js'
-import { formatBytes } from '../utils/format.js'
 
 const contar = (lista, prueba) => lista.reduce((n, x) => n + (prueba(x) ? 1 : 0), 0)
 
+/** Tamaño agregado de la bóveda siempre en MB, para que la cifra sea comparable. */
+const enMB = (bytes) => `${(bytes / (1024 * 1024)).toLocaleString('es-MX', { maximumFractionDigits: 1 })} MB`
+
 /**
- * Fila de KPIs: etiqueta en versales, número grande y una línea de desglose
- * que explica de dónde sale la cifra.
+ * Fila de KPIs compacta (~75 px): cuatro tarjetas horizontales con icono en
+ * micro-squircle, etiqueta en versales, cifra tabular y un desglose que
+ * explica de dónde sale el número. Se elevan 1 px al pasar el cursor.
  */
 export default function MetricsCards({ titulares, expedientes, documentos, loading }) {
-  const cards = useMemo(() => {
+  const datos = useMemo(() => {
     const morales = contar(titulares, (t) => t.tipo_persona === 'MORAL')
-    const conformes = contar(expedientes, (e) => e.estado_cumplimiento === 'CONFORME')
-    const enRevision = contar(expedientes, (e) => e.estado_cumplimiento === 'EN_REVISION')
-    const completos = contar(expedientes, (e) => Number(e.porcentaje_completitud || 0) >= 100)
     const bytes = documentos.reduce((acc, d) => acc + Number(d.tamanio_bytes || 0), 0)
-    const cumplimiento = expedientes.length
+    const completitud = expedientes.length
       ? expedientes.reduce((acc, e) => acc + Number(e.porcentaje_completitud || 0), 0) / expedientes.length
       : 0
-
-    return [
-      {
-        id: 'empresas',
-        label: 'Empresas',
-        valor: titulares.length,
-        desglose: `${morales} morales · ${titulares.length - morales} físicas`,
-      },
-      {
-        id: 'expedientes',
-        label: 'Expedientes',
-        valor: expedientes.length,
-        desglose: `${conformes} conformes · ${enRevision} en revisión`,
-      },
-      {
-        id: 'boveda',
-        label: 'Bóveda',
-        valor: documentos.length,
-        desglose: `${formatBytes(bytes)} bajo custodia`,
-      },
-      {
-        id: 'cumplimiento',
-        label: 'Cumplimiento',
-        valor: `${cumplimiento.toFixed(0)}%`,
-        desglose: `${completos} de ${expedientes.length} expedientes completos`,
-        progreso: cumplimiento,
-      },
-    ]
+    return {
+      morales,
+      fisicas: titulares.length - morales,
+      semaforo: [
+        { id: 'ok', label: 'Conformes', titulo: 'expedientes conformes', n: contar(expedientes, (e) => e.estado_cumplimiento === 'CONFORME') },
+        { id: 'warn', label: 'Revisión', titulo: 'expedientes en revisión', n: contar(expedientes, (e) => e.estado_cumplimiento === 'EN_REVISION') },
+        { id: 'bad', label: 'No conformes', titulo: 'expedientes no conformes', n: contar(expedientes, (e) => e.estado_cumplimiento === 'NO_CONFORME') },
+      ],
+      bytes,
+      completitud,
+      completos: contar(expedientes, (e) => Number(e.porcentaje_completitud || 0) >= 100),
+    }
   }, [titulares, expedientes, documentos])
+
+  const tarjetas = [
+    {
+      id: 'empresas',
+      icon: Building2,
+      label: 'Empresas',
+      valor: titulares.length,
+      pie: (
+        <span className="metric-foot">{`${datos.morales} ${datos.morales === 1 ? 'moral' : 'morales'} · ${datos.fisicas} ${datos.fisicas === 1 ? 'física' : 'físicas'}`}</span>
+      ),
+    },
+    {
+      id: 'expedientes',
+      icon: FolderKanban,
+      label: 'Expedientes',
+      valor: expedientes.length,
+      pie: (
+        <span className="metric-pills" aria-label="Semáforo de expedientes">
+          {datos.semaforo.map((s) => (
+            <span key={s.id} className={`pill pill--${s.id}`} title={`${s.n} ${s.titulo}`}>
+              <span className={`status-dot status-dot--${s.id}`} aria-hidden="true" />
+              <span className="tabular">{s.n}</span>
+              <span className="pill-label">{s.label}</span>
+            </span>
+          ))}
+        </span>
+      ),
+    },
+    {
+      id: 'boveda',
+      icon: Vault,
+      label: 'Bóveda',
+      valor: documentos.length,
+      pie: <span className="metric-foot">{`${enMB(datos.bytes)} bajo custodia`}</span>,
+    },
+    {
+      id: 'completitud',
+      icon: Gauge,
+      label: 'Completitud',
+      valor: `${datos.completitud.toFixed(0)}%`,
+      pie: <span className="metric-foot">{`${datos.completos} de ${expedientes.length} expedientes completos`}</span>,
+      progreso: datos.completitud,
+    },
+  ]
 
   return (
     <section className="metrics-grid" aria-label="Indicadores del motor">
-      {cards.map((card) => (
-        <article className="card metric-card" key={card.id}>
-          <p className="metric-label">{card.label}</p>
-          {loading ? (
-            <>
-              <Skeleton w={56} h={28} />
-              <Skeleton w="70%" h={11} />
-            </>
-          ) : (
-            <>
-              <p className="metric-value tabular">{card.valor}</p>
-              <p className="metric-foot">{card.desglose}</p>
-            </>
-          )}
-          {card.progreso !== undefined && (
-            <span className="metric-bar" aria-hidden="true">
-              <span
-                className={`metric-bar-fill metric-bar-fill--${tonoPorPorcentaje(card.progreso)}`}
-                style={{ width: `${loading ? 0 : card.progreso}%` }}
-              />
-            </span>
-          )}
+      {tarjetas.map(({ id, icon: Icono, label, valor, pie, progreso }) => (
+        <article className="card metric-card" key={id}>
+          <span className="squircle" aria-hidden="true">
+            <Icono size={15} />
+          </span>
+          <div className="metric-text">
+            <p className="metric-label">{label}</p>
+            {loading ? (
+              <Skeleton w={110} h={20} />
+            ) : (
+              <div className="metric-body">
+                <p className="metric-value tabular">{valor}</p>
+                {pie}
+              </div>
+            )}
+            {progreso !== undefined && (
+              <span className="metric-bar" aria-hidden="true">
+                <span
+                  className={`metric-bar-fill metric-bar-fill--${tonoPorPorcentaje(progreso)}`}
+                  style={{ width: `${loading ? 0 : progreso}%` }}
+                />
+              </span>
+            )}
+          </div>
         </article>
       ))}
     </section>

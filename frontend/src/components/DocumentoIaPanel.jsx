@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
-import { ArrowUp, Check, Equal, FileText, Loader2, MessageSquareText, Sparkles, TriangleAlert, X, Zap } from 'lucide-react'
+import { ArrowUp, Check, FileText, Loader2, MessageSquareText, Minus, Sparkles, X, Zap } from 'lucide-react'
 import { Skeleton } from './Skeleton.jsx'
+import DictamenesGuardados, { AvisoIntegridad } from './DictamenesGuardados.jsx'
 import { EmptyState, Segmented } from './ui.jsx'
 import useToast from '../hooks/useToast.js'
 import { analizarDocumento, prepararDocumento, preguntarSobreDocumento } from '../services/api.js'
+import { TIPO_DOCUMENTO_LABEL } from '../constants.js'
 import { formatFechaCorta } from '../utils/format.js'
 
 const MODELO_POR_DEFECTO = 'Groq Qwen 27B'
@@ -21,6 +23,15 @@ const TIPO_IA_LABEL = {
   CERTIFICACION: 'Certificación',
   IDENTIFICACION_OFICIAL: 'Identificación Oficial',
   OTRO: 'No clasificado',
+}
+
+/** Equivalencia entre el catálogo del Nivel 4 y el del core-service (espejo de TIPO_A_CATALOGO_CORE). */
+const TIPO_IA_A_CORE = {
+  CONSTANCIA_SITUACION_FISCAL: 'CSF_SAT',
+  COMPROBANTE_DOMICILIO: 'COMP_DOMICILIO',
+  ACTA_CONSTITUTIVA: 'ACTA_CONSTITUTIVA',
+  OPINION_CUMPLIMIENTO: 'OPINION_CUMPLIMIENTO',
+  ESTADO_CUENTA: 'ESTADO_CUENTA',
 }
 
 const ESTATUS_IA = {
@@ -57,6 +68,23 @@ const ETAPAS = [
 ]
 
 const ETAPAS_INICIALES = Object.fromEntries(ETAPAS.map((e) => [e.id, { estado: 'pendiente', detalle: '' }]))
+
+/**
+ * Cancelación en cascada: si una etapa falla, las posteriores no pueden
+ * ejecutarse (el Nivel 4 necesita el texto del Nivel 3, y las reglas RCV las
+ * fechas que extrae el Nivel 4). Pasan a "omitido" en lugar de quedar en cola.
+ */
+function fallarEnCascada(idEtapa, detalle) {
+  const i = ETAPAS.findIndex((e) => e.id === idEtapa)
+  const cambios = { [idEtapa]: { estado: 'error', detalle } }
+  for (const posterior of ETAPAS.slice(i + 1)) {
+    cambios[posterior.id] = {
+      estado: 'omitido',
+      detalle: `Cancelado: falló ${ETAPAS[i].label.toLowerCase()} (${ETAPAS[i].nivel})`,
+    }
+  }
+  return cambios
+}
 
 /** Cuántos turnos previos viajan como historial para no inflar el contexto. */
 const MAX_TURNOS_HISTORIAL = 6
@@ -147,7 +175,11 @@ function detalleReglas(vigencia) {
   const decisiva = vigencia?.resultado && reglaDecisiva(vigencia)
   if (!decisiva) return { estado: 'hecho', detalle: 'Sin reglas aplicables al tipo' }
   const meta = RESULTADO_VIGENCIA[vigencia.resultado]
-  return { estado: 'hecho', detalle: `${decisiva.codigo_regla} · ${meta?.label || vigencia.resultado.toLowerCase()}` }
+  const dias =
+    Number.isInteger(decisiva.dias_calculados) && decisiva.criterio === 'ANTIGUEDAD_DESDE_EMISION'
+      ? ` · ${numero(decisiva.dias_calculados)} días (máx. ${decisiva.limite_dias})`
+      : ''
+  return { estado: 'hecho', detalle: `${decisiva.codigo_regla} · ${meta?.label || vigencia.resultado.toLowerCase()}${dias}` }
 }
 
 /**
@@ -168,7 +200,9 @@ function separarMotivo(observaciones = []) {
 
 /**
  * Stepper de tres etapas. Mientras corre muestra la etapa activa; al terminar
- * queda como traza compacta del pipeline con el detalle de cada etapa.
+ * queda como traza compacta del pipeline con el detalle de cada etapa. Una
+ * etapa omitida por un fallo anterior se muestra en gris neutro, sin color de
+ * estado: no dice nada sobre el cumplimiento del documento.
  */
 function Stepper({ etapas, compacto }) {
   return (
@@ -178,17 +212,21 @@ function Stepper({ etapas, compacto }) {
         return (
           <li key={e.id} className={`step step--${estado}`}>
             <span className="step-marker" aria-hidden="true">
-              {estado === 'activo' && <Loader2 className="spin" size={11} strokeWidth={2.4} />}
-              {estado === 'hecho' && <Check size={11} strokeWidth={2.6} />}
-              {estado === 'error' && <X size={11} strokeWidth={2.6} />}
+              {estado === 'activo' && <Loader2 className="spin" size={11} strokeWidth={1.75} />}
+              {estado === 'hecho' && <Check size={11} strokeWidth={1.75} />}
+              {estado === 'error' && <X size={11} strokeWidth={1.75} />}
+              {estado === 'omitido' && <Minus size={11} strokeWidth={1.75} />}
               {(estado === 'pendiente' || estado === 'espera') && <span className="step-num">{i + 1}</span>}
             </span>
             <span className="step-body">
               <span className="step-label">
                 {e.label}
                 <span className="step-level">{e.nivel}</span>
+                {estado === 'omitido' && <span className="badge badge--skip">Omitido</span>}
               </span>
-              <span className="step-detail">{detalle || (estado === 'pendiente' ? 'En cola' : ' ')}</span>
+              <span className="step-detail" title={detalle || undefined}>
+                {detalle || (estado === 'pendiente' ? 'En cola' : ' ')}
+              </span>
             </span>
           </li>
         )
@@ -218,35 +256,82 @@ function Confianza({ dictamen }) {
   )
 }
 
-/** RFC extraído del documento frente al RFC registrado del titular. */
-function CotejoRfc({ dictamen, rfcTitular }) {
-  const tono = !rfcTitular || !dictamen.rfc_detectado ? 'neutral' : dictamen.match_titular ? 'ok' : 'bad'
-  const Icono = tono === 'ok' ? Equal : tono === 'bad' ? X : TriangleAlert
-  const leyenda = !rfcTitular
-    ? 'Sin RFC de referencia'
-    : !dictamen.rfc_detectado
-      ? 'RFC no localizado'
-      : dictamen.match_titular
-        ? 'Coincide con el titular'
-        : 'Titular ajeno'
+/** Resultado de una fila del cotejo: coincide, discrepa o no se puede comparar. */
+const RESULTADO_COTEJO = {
+  ok: { tono: 'ok', label: 'Coincide' },
+  bad: { tono: 'bad', label: 'Discrepa' },
+  na: { tono: 'neutral', label: 'Sin referencia' },
+  ausente: { tono: 'bad', label: 'No localizado' },
+  info: { tono: 'neutral', label: 'Informativo' },
+}
+
+/**
+ * Tabla de cotejo documental: lo que registra el expediente frente a lo que
+ * extrajo el modelo. El RFC y el tipo documental se comparan de forma
+ * determinista; la razón social es informativa (el dictamen no la compara).
+ */
+function Cotejo({ dictamen, expediente, tipoRegistrado }) {
+  const rfcTitular = expediente?.titular?.rfc || null
+  const tipoDetectadoCore = TIPO_IA_A_CORE[dictamen.tipo_documento_detectado] || null
+  const filas = [
+    {
+      campo: 'RFC',
+      esperado: rfcTitular,
+      detectado: dictamen.rfc_detectado,
+      mono: true,
+      // Sin RFC en el documento no hay titularidad comprobable: el dictamen lo trata como discrepancia.
+      resultado: !rfcTitular ? 'na' : !dictamen.rfc_detectado ? 'ausente' : dictamen.match_titular ? 'ok' : 'bad',
+      nota: dictamen.rfc_detectado && !dictamen.rfc_estructura_valida ? 'Estructura SAT inválida' : null,
+    },
+    {
+      campo: 'Tipo documental',
+      esperado: TIPO_DOCUMENTO_LABEL[tipoRegistrado] || tipoRegistrado,
+      detectado: TIPO_IA_LABEL[dictamen.tipo_documento_detectado] || TIPO_IA_LABEL.OTRO,
+      resultado: !tipoRegistrado ? 'na' : tipoDetectadoCore === tipoRegistrado ? 'ok' : 'bad',
+    },
+    {
+      campo: 'Razón social',
+      esperado: expediente?.titular?.razon_social,
+      detectado: dictamen.razon_social_detectada,
+      resultado: 'info',
+    },
+  ]
   return (
-    <div className={`rfc-match rfc-match--${tono}`}>
-      <div className="rfc-side">
-        <span className="eyebrow">RFC del documento</span>
-        <span className={`mono rfc-value ${dictamen.rfc_detectado ? '' : 'cell-muted'}`}>
-          {dictamen.rfc_detectado || 'No localizado'}
-        </span>
-        {dictamen.rfc_detectado && !dictamen.rfc_estructura_valida && (
-          <span className="rfc-warning">Estructura SAT inválida</span>
-        )}
-      </div>
-      <span className="rfc-link" data-tooltip={leyenda}>
-        <Icono size={12} strokeWidth={2.4} aria-label={leyenda} />
-      </span>
-      <div className="rfc-side rfc-side--end">
-        <span className="eyebrow">RFC del titular</span>
-        <span className={`mono rfc-value ${rfcTitular ? '' : 'cell-muted'}`}>{rfcTitular || 'Sin RFC'}</span>
-      </div>
+    <div className="card table-card table-card--flat">
+      <table className="data-table data-table--inner cotejo">
+        <colgroup>
+          <col style={{ width: '18%' }} />
+          <col style={{ width: '32%' }} />
+          <col style={{ width: '32%' }} />
+          <col style={{ width: '18%' }} />
+        </colgroup>
+        <thead>
+          <tr>
+            <th>Campo</th>
+            <th>Esperado · expediente</th>
+            <th>Detectado · documento</th>
+            <th className="col-right">Resultado</th>
+          </tr>
+        </thead>
+        <tbody>
+          {filas.map((f) => {
+            const r = RESULTADO_COTEJO[f.resultado]
+            return (
+              <tr key={f.campo}>
+                <td className="cell-muted">{f.campo}</td>
+                <td className={f.mono ? 'mono cell-mono' : ''}>{f.esperado || <span className="cell-muted">—</span>}</td>
+                <td className={f.mono ? 'mono cell-mono' : ''}>
+                  {f.detectado || <span className="cell-muted">No localizado</span>}
+                  {f.nota && <span className="cell-sub cell-bad">{f.nota}</span>}
+                </td>
+                <td className="col-right">
+                  <span className={`badge badge--${r.tono}`}>{r.label}</span>
+                </td>
+              </tr>
+            )
+          })}
+        </tbody>
+      </table>
     </div>
   )
 }
@@ -283,35 +368,65 @@ function EstadoLectura({ lectura, contexto }) {
   )
 }
 
-/** Chips de las cláusulas que el modelo leyó para responder, con su posición en el documento. */
+/**
+ * Chips de las cláusulas que el modelo leyó para responder: título en versales
+ * y posición en el documento. Un clic despliega el inicio del fragmento.
+ */
 function Citas({ contexto }) {
+  const [abierta, setAbierta] = useState(null)
   const fragmentos = contexto?.estrategia_contexto === 'fragmentos' ? contexto.fragmentos_relevantes || [] : []
   if (!fragmentos.length) return null
+  const seleccionada = fragmentos.find((f) => `${f.posicion_pct}-${f.puntaje}` === abierta)
   return (
-    <ul className="citations" aria-label="Fragmentos consultados">
-      {fragmentos.map((f) => (
-        <li key={`${f.posicion_pct}-${f.puntaje}`} className="citation" title={f.inicio}>
-          <FileText size={11} strokeWidth={2} aria-hidden="true" />
-          <span className="citation-title">{f.titulo || f.inicio}</span>
-          <span className="citation-pos tabular">{f.posicion_pct}%</span>
-        </li>
-      ))}
-    </ul>
+    <div className="citations-wrap">
+      <ul className="citations" aria-label="Fragmentos consultados">
+        {fragmentos.map((f) => {
+          const clave = `${f.posicion_pct}-${f.puntaje}`
+          const activa = abierta === clave
+          return (
+            <li key={clave}>
+              <button
+                type="button"
+                className={`citation ${activa ? 'is-active' : ''}`}
+                onClick={() => setAbierta(activa ? null : clave)}
+                aria-expanded={activa}
+              >
+                <FileText size={11} strokeWidth={1.75} aria-hidden="true" />
+                <span className="citation-title">[{(f.titulo || f.inicio || 'Fragmento').toUpperCase()}]</span>
+                <span className="citation-pos tabular">{f.posicion_pct}%</span>
+              </button>
+            </li>
+          )
+        })}
+      </ul>
+      {seleccionada && (
+        <blockquote className="citation-preview">
+          <p>{seleccionada.inicio}…</p>
+          <footer className="tabular">Fragmento ubicado al {seleccionada.posicion_pct}% del documento</footer>
+        </blockquote>
+      )}
+    </div>
   )
+}
+
+/** Interpreta las **negritas** de Markdown de la respuesta del modelo como nodos de React. */
+function TextoModelo({ texto }) {
+  const partes = String(texto).split(/\*\*(.+?)\*\*/g)
+  return partes.map((parte, i) => (i % 2 === 1 ? <strong key={i}>{parte}</strong> : parte))
 }
 
 /** Micro-meta de una respuesta: tiempo total y proveedor, con el modelo en el tooltip. */
 function MetaInferencia({ modelo, duracion }) {
   return (
     <span className="inference-meta" title={nombreModelo(modelo)}>
-      <Zap size={11} strokeWidth={2.2} aria-hidden="true" />
+      <Zap size={11} strokeWidth={1.75} aria-hidden="true" />
       <span className="tabular">{formatDuracion(duracion)}</span> · Groq LPU
     </span>
   )
 }
 
 /* ── Dictamen ───────────────────────────────────────────────────── */
-function DictamenIa({ dictamen, rfcTitular, duracion }) {
+function DictamenIa({ dictamen, expediente, tipoRegistrado, duracion }) {
   const estatus = ESTATUS_IA[dictamen.estatus_preliminar] || {
     tono: 'neutral',
     label: dictamen.estatus_preliminar || 'Sin dictamen',
@@ -336,37 +451,33 @@ function DictamenIa({ dictamen, rfcTitular, duracion }) {
           <p className="eyebrow">Dictamen preliminar</p>
           <p className="verdict-word">{estatus.label}</p>
           {motivo && <p className="verdict-reason">{motivo}</p>}
-          <div className="badge-row">
-            <span className={`badge badge--${tonoVigencia}`}>
-              <span className={`status-dot status-dot--${tonoVigencia}`} aria-hidden="true" />
-              {segunReglas?.texto ?? textoVencimiento}
-            </span>
-            {dictamen.requiere_revision_humana && <span className="badge badge--warn">Revisión humana · Nivel 5</span>}
-          </div>
+          <p className={`vigencia-line vigencia-line--${tonoVigencia}`}>
+            <span className={`status-dot status-dot--${tonoVigencia}`} aria-hidden="true" />
+            <span className="tabular">{segunReglas?.texto ?? textoVencimiento}</span>
+          </p>
+          {dictamen.requiere_revision_humana && (
+            <div className="badge-row">
+              <span className="badge badge--warn">Revisión humana · Nivel 5</span>
+            </div>
+          )}
         </div>
         <Confianza dictamen={dictamen} />
       </div>
 
-      <CotejoRfc dictamen={dictamen} rfcTitular={rfcTitular} />
+      <Cotejo dictamen={dictamen} expediente={expediente} tipoRegistrado={tipoRegistrado} />
 
-      <dl className="detail-grid detail-grid--4">
-        <div className="detail-item">
-          <dt>Tipo detectado</dt>
-          <dd>{TIPO_IA_LABEL[dictamen.tipo_documento_detectado] || TIPO_IA_LABEL.OTRO}</dd>
-        </div>
-        <div className="detail-item">
-          <dt>Razón social</dt>
-          <dd className={dictamen.razon_social_detectada ? '' : 'cell-muted'}>
-            {dictamen.razon_social_detectada || 'No localizada'}
-          </dd>
-        </div>
+      <dl className="detail-grid detail-grid--3">
         <div className="detail-item">
           <dt>Emisión</dt>
-          <dd className="tabular">{fechaIso(dictamen.fecha_emision)}</dd>
+          <dd className="mono">{fechaIso(dictamen.fecha_emision)}</dd>
         </div>
         <div className="detail-item">
           <dt>Vencimiento</dt>
-          <dd className="tabular">{fechaIso(dictamen.fecha_vencimiento)}</dd>
+          <dd className="mono">{fechaIso(dictamen.fecha_vencimiento)}</dd>
+        </div>
+        <div className="detail-item">
+          <dt>Días para el vencimiento</dt>
+          <dd className="mono">{dias === null ? '—' : numero(dias)}</dd>
         </div>
       </dl>
 
@@ -392,9 +503,11 @@ function DictamenIa({ dictamen, rfcTitular, duracion }) {
 }
 
 /* ── Auditoría ──────────────────────────────────────────────────── */
-function AuditoriaIa({ doc, expediente, iaOnline }) {
+function AuditoriaIa({ doc, expediente, iaOnline, onCambio }) {
   const toast = useToast()
   const [etapas, setEtapas] = useState(null)
+  const [recarga, setRecarga] = useState(0)
+  const [alterado, setAlterado] = useState(doc.estado_integridad === 'ALTERADO')
   const [dictamen, setDictamen] = useState(null)
   const [duracion, setDuracion] = useState(null)
   const rfcTitular = expediente?.titular?.rfc || null
@@ -416,14 +529,14 @@ function AuditoriaIa({ doc, expediente, iaOnline }) {
           estado: 'hecho',
           detalle: [
             n3.metodo_extraccion,
-            n3.total_paginas && `${n3.total_paginas} págs.`,
+            n3.total_paginas && `${n3.total_paginas - (n3.paginas_omitidas_ocr || 0)} de ${n3.total_paginas} págs.`,
             FUENTE_TEXTO[prep?.fuente_texto],
             formatDuracion(msLectura),
           ]
             .filter(Boolean)
             .join(' · '),
         },
-        analisis: { estado: 'activo', detalle: 'Extrayendo datos con Groq…' },
+        analisis: { estado: 'activo', detalle: 'Extrayendo datos · Groq LPU…' },
         reglas: { estado: 'espera', detalle: 'Espera las fechas extraídas' },
       })
 
@@ -436,7 +549,7 @@ function AuditoriaIa({ doc, expediente, iaOnline }) {
       marcar({
         analisis: {
           estado: 'hecho',
-          detalle: `${nombreModelo(resultado?.modelo_utilizado)} · ${formatDuracion(resultado?.tiempos_ms?.inferencia)}`,
+          detalle: `Groq LPU · ${(resultado?.modelo_utilizado || '').split('/').pop()} · ${formatDuracion(resultado?.tiempos_ms?.inferencia)}`,
         },
         reglas: detalleReglas(resultado?.vigencia_nivel_2),
       })
@@ -444,9 +557,22 @@ function AuditoriaIa({ doc, expediente, iaOnline }) {
       setDuracion(performance.now() - inicio)
       const meta = ESTATUS_IA[resultado?.estatus_preliminar]
       toast.info('Dictamen de IA generado', `${doc.nombre_archivo_original} · ${meta?.label || resultado?.estatus_preliminar}`)
+      if (resultado?.persistencia?.guardado === false) {
+        toast.alerta('Dictamen no guardado', `El core-service no lo registró: ${resultado.persistencia.detalle}`)
+      }
+      setRecarga((n) => n + 1)
+      onCambio?.()
     } catch (err) {
-      marcar({ [actual]: { estado: 'error', detalle: err?.message || 'Error del ai-service' } })
-      avisarFallo(toast, err, 'No se pudo auditar el documento')
+      marcar(fallarEnCascada(actual, err?.message || 'Error del ai-service'))
+      if (err?.status === 409) {
+        // RIE-03: el core-service bloqueó el documento y emitió su dictamen.
+        setAlterado(true)
+        setRecarga((n) => n + 1)
+        onCambio?.()
+        toast.error('Integridad comprometida (RIE-03)', err.message)
+      } else {
+        avisarFallo(toast, err, 'No se pudo auditar el documento')
+      }
     }
   }
 
@@ -461,10 +587,10 @@ function AuditoriaIa({ doc, expediente, iaOnline }) {
           type="button"
           className={`btn ${dictamen ? 'btn-secondary' : 'btn-primary'}`}
           onClick={auditar}
-          disabled={analizando || !iaOnline}
-          title={iaOnline ? undefined : 'El ai-service (:8003) no responde'}
+          disabled={analizando || !iaOnline || alterado}
+          title={alterado ? 'Documento bloqueado por RIE-03' : iaOnline ? undefined : 'El ai-service (:8003) no responde'}
         >
-          {analizando ? <Loader2 className="spin" size={14} /> : <Sparkles size={14} strokeWidth={2} />}
+          {analizando ? <Loader2 className="spin" size={14} /> : <Sparkles size={14} />}
           {analizando ? 'Auditando…' : dictamen ? 'Volver a auditar' : 'Auditar documento'}
         </button>
       </div>
@@ -484,7 +610,16 @@ function AuditoriaIa({ doc, expediente, iaOnline }) {
         </div>
       )}
 
-      {!analizando && dictamen && <DictamenIa dictamen={dictamen} rfcTitular={rfcTitular} duracion={duracion} />}
+      {alterado && <AvisoIntegridad />}
+
+      {!analizando && dictamen && (
+        <DictamenIa dictamen={dictamen} expediente={expediente} tipoRegistrado={doc.tipo_documento} duracion={duracion} />
+      )}
+
+      <div className="registro-auditoria">
+        <h5 className="section-title section-title--sm">Registro de auditoría</h5>
+        <DictamenesGuardados doc={doc} recarga={recarga} onCambio={onCambio} />
+      </div>
     </div>
   )
 }
@@ -576,7 +711,9 @@ function ChatDocumento({ doc, iaOnline }) {
             </div>
           ) : (
             <div key={m.id} className={`bubble ${m.error ? 'bubble--error' : 'bubble--bot'}`}>
-              <p className="bubble-text">{m.contenido}</p>
+              <p className="bubble-text">
+                <TextoModelo texto={m.contenido} />
+              </p>
               {!m.error && (
                 <>
                   <Citas contexto={m.contexto} />
@@ -621,7 +758,7 @@ function ChatDocumento({ doc, iaOnline }) {
           disabled={deshabilitado || borrador.trim().length < 3}
           aria-label="Enviar pregunta"
         >
-          {pensando ? <Loader2 className="spin" size={14} /> : <ArrowUp size={14} strokeWidth={2.2} />}
+          {pensando ? <Loader2 className="spin" size={14} /> : <ArrowUp size={14} />}
         </button>
       </form>
     </div>
@@ -641,7 +778,7 @@ const VISTAS = [
  * El padre debe montarlo con `key={doc.id}` para que el dictamen y el hilo
  * se reinicien al cambiar de documento.
  */
-export default function DocumentoIaPanel({ doc, expediente, iaOnline = true }) {
+export default function DocumentoIaPanel({ doc, expediente, iaOnline = true, onCambio }) {
   const [vista, setVista] = useState('auditoria')
 
   return (
@@ -656,7 +793,7 @@ export default function DocumentoIaPanel({ doc, expediente, iaOnline = true }) {
 
       {/* Ambas vistas permanecen montadas para no perder el dictamen ni el hilo al alternar. */}
       <div hidden={vista !== 'auditoria'}>
-        <AuditoriaIa doc={doc} expediente={expediente} iaOnline={iaOnline} />
+        <AuditoriaIa doc={doc} expediente={expediente} iaOnline={iaOnline} onCambio={onCambio} />
       </div>
       <div hidden={vista !== 'chat'}>
         <ChatDocumento doc={doc} iaOnline={iaOnline} />

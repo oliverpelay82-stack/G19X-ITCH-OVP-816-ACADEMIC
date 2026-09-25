@@ -43,7 +43,7 @@ function Switch({ checked, onClick, loading, label }) {
       aria-label={label}
       data-tooltip={checked ? 'Pausar regla' : 'Activar regla'}
     >
-      <span className="switch-thumb">{loading && <Loader2 className="spin" size={9} strokeWidth={3} />}</span>
+      <span className="switch-thumb">{loading && <Loader2 className="spin" size={9} strokeWidth={1.75} />}</span>
     </button>
   )
 }
@@ -221,7 +221,7 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
         </label>
 
         <button type="button" className="btn btn-primary toolbar-action" onClick={() => setModalAbierto(true)}>
-          <Plus size={14} strokeWidth={2} />
+          <Plus size={14} />
           Nueva regla
         </button>
       </div>

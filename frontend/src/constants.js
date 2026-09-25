@@ -40,7 +40,7 @@ export const getSeveridadMeta = (severidad) =>
 export const SERVICIOS = [
   { key: 'core', nombre: 'Core Service', etiqueta: 'Core', puerto: 8001, alcance: 'Titulares · Expedientes · Bóveda' },
   { key: 'rules', nombre: 'Rules Service', etiqueta: 'Rules', puerto: 8002, alcance: 'Catálogo de reglas (Nivel 2)' },
-  { key: 'ai', nombre: 'AI Service', etiqueta: 'AI · Groq', puerto: 8003, alcance: 'Extracción y análisis semántico' },
+  { key: 'ai', nombre: 'AI Service', etiqueta: 'AI Groq', puerto: 8003, alcance: 'Extracción y análisis semántico' },
 ]
 
 /**
@@ -57,6 +57,15 @@ export const ESTADO_BADGE = {
   NO_CONFORME: { tono: 'bad', label: 'No Conforme' },
   RECHAZADO: { tono: 'bad', label: 'Rechazado' },
   BLOQUEADO: { tono: 'bad', label: 'Bloqueado' },
+}
+
+/** Estado de un documento dentro del semáforo del expediente (core-service). */
+export const ESTADO_DOCUMENTO = {
+  CONFORME: { tono: 'ok', label: 'Conforme' },
+  EN_REVISION: { tono: 'warn', label: 'En revisión' },
+  NO_CONFORME: { tono: 'bad', label: 'No conforme' },
+  SIN_DICTAMEN: { tono: 'neutral', label: 'Sin auditar' },
+  FALTANTE: { tono: 'bad', label: 'Faltante' },
 }
 
 export const getEstadoBadge = (estado) =>

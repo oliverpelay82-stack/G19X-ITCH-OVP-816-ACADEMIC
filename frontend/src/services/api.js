@@ -7,9 +7,12 @@
  *   - AI Service    (:8003) → Extracción de texto/OCR (Nivel 3) y análisis
  *                            semántico con LLM vía Groq Cloud (Nivel 4).
  */
-export const CORE_BASE_URL = 'http://127.0.0.1:8001/api/v1'
-export const RULES_BASE_URL = 'http://127.0.0.1:8002/api/v1'
-export const AI_BASE_URL = 'http://127.0.0.1:8003/api/v1'
+// Configurables en el build (VITE_CORE_URL, VITE_RULES_URL, VITE_AI_URL) para
+// desplegar o probar contra otros puertos sin tocar el código; por defecto,
+// los puertos oficiales del DOC-08.
+export const CORE_BASE_URL = import.meta.env.VITE_CORE_URL || 'http://127.0.0.1:8001/api/v1'
+export const RULES_BASE_URL = import.meta.env.VITE_RULES_URL || 'http://127.0.0.1:8002/api/v1'
+export const AI_BASE_URL = import.meta.env.VITE_AI_URL || 'http://127.0.0.1:8003/api/v1'
 
 class ApiError extends Error {
   constructor(message, status, detail) {
@@ -79,6 +82,16 @@ export const getDocumentosPorExpediente = (expedienteId) =>
   request(CORE_BASE_URL, `/documentos/expediente/${expedienteId}`)
 export const uploadDocumento = (formData) =>
   request(CORE_BASE_URL, '/documentos/upload', { method: 'POST', body: formData, isFormData: true })
+
+/* ── Dictámenes y bitácora (Core Service :8001) ─────────────────── */
+/** Historial de dictámenes de un documento, del más reciente al más antiguo. */
+export const getDictamenes = (params) => request(CORE_BASE_URL, '/dictamenes', { params })
+
+/** Ratificación humana (Nivel 5): { nuevo_estatus, justificacion, usuario }. */
+export const ratificarDictamen = (dictamenId, data) =>
+  request(CORE_BASE_URL, `/dictamenes/${dictamenId}/ratificar`, { method: 'POST', body: data })
+
+export const getBitacora = (params) => request(CORE_BASE_URL, '/bitacora', { params })
 
 /* ── M2: Reglas de Validación (Rules Service :8002) ─────────────── */
 export const getReglas = (params) => request(RULES_BASE_URL, '/reglas', { params })

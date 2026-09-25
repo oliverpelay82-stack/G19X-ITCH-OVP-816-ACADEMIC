@@ -13,7 +13,7 @@ import { copiarAlPortapapeles } from '../utils/format.js'
 export function SearchBox({ value, onChange, placeholder, label, compacto = false }) {
   return (
     <label className={`search-box ${compacto ? 'search-box--sm' : ''}`}>
-      <Search size={14} strokeWidth={2} aria-hidden="true" />
+      <Search size={14} aria-hidden="true" />
       <input
         type="search"
         placeholder={placeholder}
@@ -23,7 +23,7 @@ export function SearchBox({ value, onChange, placeholder, label, compacto = fals
       />
       {value && (
         <button type="button" className="search-clear" onClick={() => onChange('')} aria-label="Limpiar búsqueda">
-          <X size={12} strokeWidth={2} />
+          <X size={12} strokeWidth={1.75} />
         </button>
       )}
     </label>
@@ -66,8 +66,8 @@ export function EmptyState({ icon: Icono, titulo, descripcion, children }) {
   return (
     <div className="empty-state">
       {Icono && (
-        <span className="empty-icon" aria-hidden="true">
-          <Icono size={18} strokeWidth={1.75} />
+        <span className="squircle squircle--lg empty-icon" aria-hidden="true">
+          <Icono size={16} />
         </span>
       )}
       <p className="empty-title">{titulo}</p>
@@ -112,7 +112,7 @@ export function CopyChip({ valor, visible, etiqueta, completo = false }) {
       data-tooltip={copiado ? 'Copiado' : `Copiar ${etiqueta}`}
     >
       <span className="mono">{visible ?? valor}</span>
-      {copiado ? <Check size={12} strokeWidth={2.4} className="copy-ok" /> : <Copy size={12} strokeWidth={2} />}
+      {copiado ? <Check size={12} strokeWidth={1.75} className="copy-ok" /> : <Copy size={12} strokeWidth={1.75} />}
     </button>
   )
 }

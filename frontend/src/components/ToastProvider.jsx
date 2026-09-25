@@ -68,7 +68,7 @@ export function ToastProvider({ children }) {
               {t.detalle && <p className="toast-detail">{t.detalle}</p>}
             </div>
             <button type="button" className="toast-close" onClick={() => cerrar(t.id)} aria-label="Cerrar aviso">
-              <X size={13} strokeWidth={2} />
+              <X size={13} />
             </button>
           </div>
         ))}

@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
 
-const STORAGE_KEY = 'plurione-theme'
+// v2: el rediseño White & Warm hace del tema claro el predeterminado.
+const STORAGE_KEY = 'plurione-theme-v2'
 
 /** Lee el tema ya resuelto por el script de arranque de index.html. */
 function temaInicial() {
-  if (typeof document === 'undefined') return 'dark'
+  if (typeof document === 'undefined') return 'light'
   const actual = document.documentElement.getAttribute('data-theme')
   if (actual === 'dark' || actual === 'light') return actual
   try {
@@ -13,7 +14,7 @@ function temaInicial() {
   } catch {
     /* almacenamiento bloqueado: se usa el tema por defecto */
   }
-  return 'dark'
+  return 'light'
 }
 
 /**

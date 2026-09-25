@@ -15,20 +15,24 @@ const GRUPOS = [
   },
 ]
 
+/** Versión del motor que se muestra en el pie (catálogo DOC-05). */
+const VERSION = 'DOC-05 Compliance v1.0.0'
+
 /**
- * Barra lateral delgada: marca y navegación agrupada con iconos discretos,
- * indicador de sección activa y el conteo de registros de cada vista.
+ * Barra lateral esbelta: isotipo en micro-squircle, navegación agrupada en
+ * versales y el ítem activo como tarjeta blanca elevada. Cada entrada lleva
+ * el conteo de registros de su vista en una píldora de cifras tabulares.
  */
 export default function Sidebar({ tabActiva, onTabChange, contadores }) {
   return (
     <aside className="sidebar">
       <div className="sidebar-brand">
-        <span className="brand-mark" aria-hidden="true">
-          <ShieldCheck size={14} strokeWidth={2} />
+        <span className="squircle squircle--lg squircle--brand" aria-hidden="true">
+          <ShieldCheck size={16} />
         </span>
         <div className="brand-text">
           <span className="brand-name">PluriOne</span>
-          <span className="brand-sub">Motor de validación</span>
+          <span className="brand-sub">Motor de Cumplimiento</span>
         </div>
       </div>
 
@@ -47,7 +51,9 @@ export default function Sidebar({ tabActiva, onTabChange, contadores }) {
                   onClick={() => onTabChange(id)}
                   aria-current={activo ? 'page' : undefined}
                 >
-                  <Icono size={15} strokeWidth={1.75} className="nav-icon" aria-hidden="true" />
+                  <span className="squircle" aria-hidden="true">
+                    <Icono size={15} />
+                  </span>
                   <span className="nav-label">{label}</span>
                   {total !== undefined && <span className="nav-count tabular">{total}</span>}
                 </button>
@@ -57,7 +63,12 @@ export default function Sidebar({ tabActiva, onTabChange, contadores }) {
         ))}
       </nav>
 
-      <p className="sidebar-foot">DOC-05 · Pipeline de 5 niveles</p>
+      <div className="sidebar-foot">
+        <span className="version-badge">
+          <span className="status-dot status-dot--ok" aria-hidden="true" />
+          {VERSION}
+        </span>
+      </div>
     </aside>
   )
 }

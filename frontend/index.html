@@ -8,7 +8,7 @@
       name="description"
       content="Motor de Validación de Cumplimiento Documental — PluriOne S.A. de C.V."
     />
-    <meta name="theme-color" content="#09090b" />
+    <meta name="theme-color" content="#fafaf9" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -18,11 +18,12 @@
     <title>Motor de Validación de Cumplimiento Documental</title>
     <script>
       /* Resuelve el tema antes del primer pintado para que no haya destello
-         al recargar. El tema oscuro es el predeterminado. */
+         al recargar. El tema claro es el predeterminado; la clave v2 descarta
+         la preferencia guardada con el diseño anterior (oscuro por defecto). */
       (function () {
-        var tema = 'dark'
+        var tema = 'light'
         try {
-          var guardado = localStorage.getItem('plurione-theme')
+          var guardado = localStorage.getItem('plurione-theme-v2')
           if (guardado === 'dark' || guardado === 'light') tema = guardado
         } catch (e) {
           /* almacenamiento bloqueado: se queda el tema por defecto */

@@ -19,16 +19,19 @@ Antes de implementar cualquier módulo, tabla o regla, debes consultar:
 ## 2. Roles y Agentes Especializados
 
 ### 🎨 Agente de Diseño y Experiencia de Usuario (UI/UX Specialist)
-* **Estándar Visual:** Interfaz enterprise de alta densidad (referencias: Stripe Dashboard, GitHub Enterprise, AWS Console). Prohibido lo genérico, infantil o chillón: **cero gradientes, brillos, neón y desenfoques** (`backdrop-filter`).
-* **Tipografía:** `Inter` para texto base y `JetBrains Mono` para hashes, folios y RFC. Etiquetas de 11 px en versales con tracking; `font-variant-numeric: tabular-nums` en tablas, fechas, tamaños y hashes.
-* **Design system (tokens en `frontend/src/index.css`):**
-  * Tema oscuro por defecto: fondo `#09090B`, paneles y modales `#121214`, superficies `#18181B` / `#232326`; bordes `rgba(255,255,255,0.07)`, separadores de tabla `0.05`, hover de fila `0.02`. Texto `#F4F4F5` / `#A1A1AA` / `#71717A`.
-  * **El color es exclusivo de los estados funcionales**, sobre fondo al 8 %: `CONFORME` `#10B981`, `EN_REVISION` / HITL `#F59E0B`, `NO_CONFORME` / `RECHAZADO` `#EF4444`. Pasos omitidos o cancelados: gris neutro `#71717A`. Todo lo demás (botones, bordes, encabezados, bóveda, foco) es monocromo titanio/plata; no hay color de marca.
-  * Iconos `lucide-react` con trazo fino: `LucideProvider strokeWidth={1.5}` en `main.jsx`; solo iconos ≤ 12 px usan 1.75. Nunca 2 o más.
-  * Micro-contenedores `.squircle` (28 px; 32 px con `--lg`): fondo `rgba(255,255,255,0.03)`, borde `rgba(255,255,255,0.08)`, radio 6 px, icono `#A1A1AA` → `#F4F4F5` en hover. Se usan en la sidebar, en las métricas, en los botones de icono y en las acciones de tabla.
-  * Densidad: métricas condensadas (`padding: 12px 16px`); celdas de tabla `10px 14px`. En Bóveda y Expedientes la tabla es la protagonista (se omite la franja del motor de IA).
-  * Rejilla de 4 px; radios 6 px (botones, inputs, squircles), 8 px (cards), 10 px (modales).
-* **Micro-interacciones:** transiciones de 150 ms ease, sin rebotes ni escalados. Sin sombras en las cards: la profundidad sale del contraste entre superficies. Status dots de 6 px sin pulso, tablas sin zebra-striping y copiado de hashes al portapapeles.
+* **Estándar Visual — "White & Warm Minimalist"** (referencias: Stripe Dashboard, Linear, Vercel, Apple Developer Console). El blanco puro manda; neutros cálidos (escala *stone*), **cero gradientes, neones y desenfoques**, densidad técnica alta.
+* **Tipografía:** `Inter` 400/500/600 para texto; `JetBrains Mono` con cifras tabulares para hashes SHA-256, folios, RFC, fechas y bytes. Versales de 11 px con tracking `0.06em`; H1 de sección en 18 px semibold.
+* **Tokens maestros (`frontend/src/index.css`)** — los componentes (`App.css`) solo consumen tokens, nunca colores literales; el tema oscuro redefine los mismos nombres:
+  * Tema claro (predeterminado): `--bg-canvas #FAFAF9`, `--bg-surface #FFFFFF` (tarjetas, tablas, modales), `--bg-subtle #F5F5F4`, líneas `#E7E5E4` / `#F0EFED` / `#D6D3D1` (hover).
+  * Texto: `--text-primary #1C1917`, `--text-secondary #57534E`, `--text-muted #78716C` (versales y metadatos legibles, AA), `--text-tertiary #A8A29E` (solo placeholders y decoración: no alcanza AA en texto pequeño).
+  * Sombras Stripe: `--shadow-card`, `--shadow-card-hover`, `--shadow-modal` (micro-elevación de 1–3 px).
+  * **El color solo comunica estado** (texto · fondo · borde): `CONFORME` `#15803D`/`#F0FDF4`/`#BBF7D0`; `EN_REVISION` `#B45309`/`#FFFBEB`/`#FDE68A`; `NO_CONFORME` `#B91C1C`/`#FEF2F2`/`#FECACA`; omitido/neutro `#57534E`/`#F5F5F4`/`#E7E5E4`.
+  * Tema oscuro alternativo (Dark Slate mate, `#09090B`), sin brillos. El tema se guarda en `localStorage` con la clave `plurione-theme-v2`.
+* **Iconografía:** `lucide-react` con `LucideProvider strokeWidth={1.5}` en `main.jsx` (solo iconos ≤ 12 px usan 1.75). Iconos de sidebar, métricas, botones y acciones de tabla dentro de micro-squircles `.squircle` de 28/32 px: fondo `#F5F5F4`, borde `#E7E5E4`, radio 7 px, icono `#57534E`; en hover, fondo blanco, borde `#D6D3D1` y sombra de 1 px.
+* **App shell:** sidebar con ítem activo como tarjeta blanca elevada y conteos en píldora; header con migas `Grupo › Sección`, H1 y la **System Health Strip** (`SystemHealth.jsx`: Core, Rules y AI Groq con latencia, puerto y modelo). No hay paneles flotantes de estado en el dashboard.
+* **Vistas:** métricas compactas (~75 px, elevación de 1 px en hover); Empresas en tarjetas de perfil (≤ 6 titulares) o tabla; Expedientes como tarjetas con semáforo grande y tabla de documentos requeridos; Bóveda como tabla densa. El modal de auditoría muestra metadatos en dos columnas, un stepper con cancelación en cascada ("Omitido"), el veredicto con la vigencia RCV destacada, la tabla de cotejo, el registro de dictámenes con la ratificación humana y el chat con citas interactivas.
+* **Micro-interacciones:** transiciones de 150–240 ms solo sobre `transform`, `opacity`, color y sombra (60 fps). Ningún estado se comunica solo con color: siempre va con su etiqueta.
+* **URLs de los servicios:** configurables en el build con `VITE_CORE_URL`, `VITE_RULES_URL` y `VITE_AI_URL`; por defecto, `:8001`, `:8002` y `:8003`.
 * **Interfaz Oficial:** La interfaz oficial del sistema es el proyecto **React 19** ubicado en `frontend/`. La vista legacy `views/panel.html` fue retirada.
 
 ### ⚙️ Agente Backend & Arquitectura de Datos (FastAPI + PostgreSQL + Microservicios)

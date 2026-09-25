@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { FileLock2, SearchX, Upload } from 'lucide-react'
+import { FileLock2, ScanSearch, SearchX, Upload } from 'lucide-react'
 import Modal from './Modal.jsx'
 import DropZone from './DropZone.jsx'
 import DocumentoIaPanel from './DocumentoIaPanel.jsx'
@@ -11,7 +11,7 @@ import { uploadDocumento } from '../services/api.js'
 import { TIPO_DOCUMENTO_CORTO, TIPO_DOCUMENTO_LABEL, TIPOS_DOCUMENTO } from '../constants.js'
 import { formatBytes, formatFecha, formatFechaCorta, hashCorto } from '../utils/format.js'
 
-const COLUMNAS = 6
+const COLUMNAS = 7
 
 /** Etiqueta de la firma binaria a partir del MIME devuelto por el backend. */
 function firmaDeMime(mime) {
@@ -115,7 +115,7 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
           disabled={!isOnline || expedientes.length === 0}
           title={!isOnline ? 'El core-service (:8001) no responde' : undefined}
         >
-          <Upload size={14} strokeWidth={2} />
+          <Upload size={14} />
           Custodiar documento
         </button>
       </div>
@@ -124,12 +124,13 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
         <div className="table-scroll">
           <table className="data-table">
             <colgroup>
-              <col style={{ width: '34%' }} />
-              <col style={{ width: '12%' }} />
-              <col style={{ width: '16%' }} />
-              <col style={{ width: '20%' }} />
-              <col style={{ width: '8%' }} />
+              <col style={{ width: '30%' }} />
+              <col style={{ width: '11%' }} />
+              <col style={{ width: '17%' }} />
+              <col style={{ width: '19%' }} />
+              <col style={{ width: '9%' }} />
               <col style={{ width: '10%' }} />
+              <col style={{ width: 52 }} />
             </colgroup>
             <thead>
               <tr>
@@ -137,8 +138,9 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
                 <th>Tipo</th>
                 <th>Expediente</th>
                 <th>SHA-256</th>
-                <th>Firma</th>
                 <th className="col-right">Tamaño</th>
+                <th className="col-right">Ingesta</th>
+                <th aria-label="Acciones" />
               </tr>
             </thead>
             <tbody>
@@ -165,14 +167,21 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
                     <tr key={doc.id} className="row-clickable" onClick={() => setDetalle(doc)}>
                       <td>
                         <div className="cell-stack">
-                          <span className="identity-name">{doc.nombre_archivo_original}</span>
+                          <span className="identity-name">
+                            {doc.nombre_archivo_original}
+                            {doc.estado_integridad === 'ALTERADO' && (
+                              <span className="badge badge--bad badge--inline" title="La huella SHA-256 no coincide con la registrada (RIE-03)">
+                                Alterado
+                              </span>
+                            )}
+                          </span>
                           <span className="cell-sub">
-                            {exp?.titular?.razon_social || 'Sin titular'} · {formatFechaCorta(doc.creado_en)}
+                            {firma.label} · {exp?.titular?.razon_social || 'Sin titular'}
                           </span>
                         </div>
                       </td>
                       <td>
-                        <span className="tag" title={TIPO_DOCUMENTO_LABEL[doc.tipo_documento]}>
+                        <span className="tag tag--type" title={TIPO_DOCUMENTO_LABEL[doc.tipo_documento]}>
                           {tipoCorto(doc.tipo_documento)}
                         </span>
                       </td>
@@ -180,12 +189,24 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
                       <td>
                         <CopyChip valor={doc.hash_sha256} visible={hashCorto(doc.hash_sha256, 8, 6)} etiqueta="hash SHA-256" />
                       </td>
-                      <td>
-                        <span className="badge badge--vault" data-tooltip={`Magic Bytes ${firma.firma}`}>
-                          {firma.label}
-                        </span>
+                      <td className="col-right mono cell-num">{formatBytes(doc.tamanio_bytes)}</td>
+                      <td className="col-right mono cell-num" title={formatFecha(doc.creado_en)}>
+                        {formatFechaCorta(doc.creado_en)}
                       </td>
-                      <td className="col-right cell-muted tabular">{formatBytes(doc.tamanio_bytes)}</td>
+                      <td className="col-action">
+                        <button
+                          type="button"
+                          className="icon-button icon-button--sm"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setDetalle(doc)
+                          }}
+                          aria-label={`Inspeccionar ${doc.nombre_archivo_original}: custodia y auditoría`}
+                          title="Inspeccionar"
+                        >
+                          <ScanSearch size={14} />
+                        </button>
+                      </td>
                     </tr>
                   )
                 })}
@@ -233,24 +254,40 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
           subtitle={`${expDetalle?.codigo_expediente || 'Sin expediente'} · ${expDetalle?.titular?.razon_social || 'Sin titular'}`}
           onClose={() => setDetalle(null)}
         >
-          <dl className="detail-grid detail-grid--3">
+          <dl className="inspect-grid">
+            <Dato label="Huella SHA-256 · inmutable (RIE-03)" ancho>
+              <CopyChip valor={detalle.hash_sha256} etiqueta="hash SHA-256" completo />
+            </Dato>
+            <Dato label="Titular asociado">
+              <span className="cell-stack">
+                <span>{expDetalle?.titular?.razon_social || 'Sin titular'}</span>
+                <span className="cell-sub mono">{expDetalle?.titular?.rfc || '—'}</span>
+              </span>
+            </Dato>
             <Dato label="Tipo documental">{TIPO_DOCUMENTO_LABEL[detalle.tipo_documento] || tipoCorto(detalle.tipo_documento)}</Dato>
             <Dato label="Firma binaria">
-              <span className="badge badge--vault">
+              <span className="mono">
                 {firmaDetalle.label} · {firmaDetalle.firma}
               </span>
             </Dato>
             <Dato label="Tamaño · Ingesta">
-              <span className="tabular">
+              <span className="mono">
                 {formatBytes(detalle.tamanio_bytes)} · {formatFecha(detalle.creado_en)}
               </span>
             </Dato>
-            <Dato label="Huella SHA-256 (inmutable, RIE-03)" ancho>
-              <CopyChip valor={detalle.hash_sha256} etiqueta="hash SHA-256" completo />
+            <Dato label="Expediente">
+              <span className="mono">{expDetalle?.codigo_expediente || '—'}</span>
+            </Dato>
+            <Dato label="Integridad">
+              {detalle.estado_integridad === 'ALTERADO' ? (
+                <span className="badge badge--bad">Alterado · bloqueado</span>
+              ) : (
+                <span className="badge badge--ok">Íntegro al ingresar</span>
+              )}
             </Dato>
           </dl>
 
-          <DocumentoIaPanel key={detalle.id} doc={detalle} expediente={expDetalle} iaOnline={iaOnline} />
+          <DocumentoIaPanel key={detalle.id} doc={detalle} expediente={expDetalle} iaOnline={iaOnline} onCambio={onRefresh} />
         </Modal>
       )}
     </div>

@@ -1,27 +1,173 @@
-import { Fragment, useMemo, useState } from 'react'
-import { Check, ChevronDown, FolderKanban, Loader2, Plus, SearchX } from 'lucide-react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { ChevronDown, FolderKanban, Loader2, Plus, SearchX } from 'lucide-react'
 import Modal from './Modal.jsx'
-import { SkeletonRows } from './Skeleton.jsx'
+import { SkeletonCards } from './Skeleton.jsx'
 import useToast from '../hooks/useToast.js'
 import DropZone from './DropZone.jsx'
 import useDebounce from '../hooks/useDebounce.js'
-import { EmptyRow, Segmented, SearchBox } from './ui.jsx'
+import { EmptyState, Segmented, SearchBox } from './ui.jsx'
 import { createExpediente, uploadDocumento } from '../services/api.js'
-import { getEstadoBadge, TIPOS_DOCUMENTO, tonoPorPorcentaje } from '../constants.js'
+import {
+  ESTADO_DOCUMENTO,
+  getEstadoBadge,
+  getSeveridadMeta,
+  TIPO_DOCUMENTO_LABEL,
+  TIPOS_DOCUMENTO,
+  tonoPorPorcentaje,
+} from '../constants.js'
 import { formatRelativo, iniciales } from '../utils/format.js'
-
-const COLUMNAS = 6
 
 /** Estados de cumplimiento del expediente, en el orden del semáforo. */
 const ESTADOS_FILTRO = ['CONFORME', 'EN_REVISION', 'NO_CONFORME']
 
+/**
+ * Filas del detalle: cada documento que exige el catálogo de reglas (RIE-01)
+ * con el archivo vigente y su estado, más los documentos opcionales cargados.
+ */
+function filasDetalle(evaluacion) {
+  const obligatorios = evaluacion?.obligatorios || []
+  const porTipo = new Map((evaluacion?.documentos || []).map((d) => [d.tipo_documento, d]))
+  const filas = obligatorios.map((o) => {
+    const doc = porTipo.get(o.tipo_documento)
+    return {
+      tipo: o.tipo_documento,
+      regla: o.codigo_regla,
+      severidad: o.severidad,
+      obligatorio: true,
+      doc,
+      estado: o.presente ? doc?.estado || 'SIN_DICTAMEN' : 'FALTANTE',
+    }
+  })
+  for (const d of evaluacion?.documentos || []) {
+    if (!d.obligatorio) {
+      filas.push({ tipo: d.tipo_documento, regla: null, severidad: null, obligatorio: false, doc: d, estado: d.estado })
+    }
+  }
+  return filas
+}
+
+/** Detalle desplegado: tabla de documentos requeridos, motivos del semáforo y carga. */
+function DetalleExpediente({ exp, subiendo, onSubir }) {
+  const evaluacion = exp.evaluacion
+  const filas = filasDetalle(evaluacion)
+  const faltantes = new Set(evaluacion?.faltantes || [])
+  // Los faltantes primero; el resto sigue disponible para sustituir al vigente.
+  const tiposCarga = [...TIPOS_DOCUMENTO].sort(
+    (a, b) => Number(!faltantes.has(a.value)) - Number(!faltantes.has(b.value))
+  )
+
+  return (
+    <div className="exp-detail">
+      <div className="exp-detail-main">
+        <div className="card table-card table-card--flat">
+          <table className="data-table data-table--inner">
+            <colgroup>
+              <col style={{ width: '32%' }} />
+              <col style={{ width: '14%' }} />
+              <col style={{ width: '12%' }} />
+              <col style={{ width: '26%' }} />
+              <col style={{ width: '16%' }} />
+            </colgroup>
+            <thead>
+              <tr>
+                <th>Documento requerido</th>
+                <th>Regla</th>
+                <th>Severidad</th>
+                <th>Archivo vigente</th>
+                <th className="col-right">Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filas.length === 0 && (
+                <tr className="empty-row">
+                  <td colSpan={5} className="cell-muted">
+                    El catálogo de reglas no declara documentos obligatorios.
+                  </td>
+                </tr>
+              )}
+              {filas.map((f) => {
+                const meta = ESTADO_DOCUMENTO[f.estado] || ESTADO_DOCUMENTO.SIN_DICTAMEN
+                const sev = f.severidad ? getSeveridadMeta(f.severidad) : null
+                return (
+                  <tr key={f.tipo}>
+                    <td>
+                      <span className="identity-name">{TIPO_DOCUMENTO_LABEL[f.tipo] || f.tipo}</span>
+                    </td>
+                    <td className="mono cell-mono">{f.regla || <span className="cell-muted">Opcional</span>}</td>
+                    <td>{sev ? <span className="cell-muted">{sev.label}</span> : <span className="cell-muted">—</span>}</td>
+                    <td>
+                      {f.doc ? (
+                        <span className="cell-stack">
+                          <span className="cell-ellipsis" title={f.doc.nombre_archivo_original}>
+                            {f.doc.nombre_archivo_original}
+                          </span>
+                          {f.doc.revisado_por_humano && <span className="cell-sub">Ratificado por un analista</span>}
+                          {f.doc.estado_integridad === 'ALTERADO' && <span className="cell-sub cell-bad">Alterado (RIE-03)</span>}
+                        </span>
+                      ) : (
+                        <span className="cell-muted">No cargado</span>
+                      )}
+                    </td>
+                    <td className="col-right">
+                      <span className={`badge badge--${meta.tono}`}>
+                        <span className={`status-dot status-dot--${meta.tono}`} aria-hidden="true" />
+                        {meta.label}
+                      </span>
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        {evaluacion?.motivos?.length > 0 && (
+          <div className="exp-motivos">
+            <p className="eyebrow">Motivos del semáforo</p>
+            <ul>
+              {evaluacion.motivos.map((m) => (
+                <li key={m}>{m}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {evaluacion?.advertencia && <p className="notice notice--warn">{evaluacion.advertencia}</p>}
+        {evaluacion?.sustituidos > 0 && (
+          <p className="field-hint">
+            {evaluacion.sustituidos} {evaluacion.sustituidos === 1 ? 'archivo sustituido' : 'archivos sustituidos'} por uno
+            más reciente del mismo tipo; su historial se conserva en la bitácora.
+          </p>
+        )}
+      </div>
+
+      <aside className="exp-detail-side">
+        <p className="eyebrow">Custodiar documento</p>
+        <p className="field-hint">
+          {faltantes.size === 0
+            ? 'Obligatorios completos. Cargar otro archivo del mismo tipo sustituye al vigente.'
+            : `Faltan ${faltantes.size} ${faltantes.size === 1 ? 'documento obligatorio' : 'documentos obligatorios'}.`}
+        </p>
+        <DropZone compacto subiendo={subiendo} tipos={tiposCarga} onArchivo={(archivo, tipo) => onSubir(exp.id, archivo, tipo)} />
+      </aside>
+    </div>
+  )
+}
+
+/**
+ * Expedientes como tarjetas: cabecera con titular, folio, semáforo grande y
+ * completitud; al desplegarse, la tabla de documentos que exige el
+ * rules-service con el estado de cada uno y los motivos del semáforo.
+ *
+ * `foco` es el expediente que debe abrirse al llegar desde Empresas.
+ */
 export default function ExpedientesTab({
   expedientes,
   titulares,
-  documentos,
   loading,
   onRefresh,
   isOnline = true,
+  foco = null,
+  onFocoAtendido,
 }) {
   const toast = useToast()
   const [modalAbierto, setModalAbierto] = useState(false)
@@ -32,18 +178,15 @@ export default function ExpedientesTab({
   const [filtroEstado, setFiltroEstado] = useState('TODOS')
   const [expandido, setExpandido] = useState(null)
   const [subiendoEn, setSubiendoEn] = useState(null)
+  const tarjetas = useRef(new Map())
 
   const consulta = useDebounce(busqueda, 220)
+  // El expediente enfocado desde Empresas se abre hasta que el operador interactúa.
+  const abiertoId = foco ?? expandido
 
-  /** Documentos ya custodiados, agrupados por expediente. */
-  const docsPorExpediente = useMemo(() => {
-    const mapa = new Map()
-    for (const d of documentos || []) {
-      if (!mapa.has(d.expediente_id)) mapa.set(d.expediente_id, [])
-      mapa.get(d.expediente_id).push(d)
-    }
-    return mapa
-  }, [documentos])
+  useEffect(() => {
+    if (foco && !loading) tarjetas.current.get(foco)?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+  }, [foco, loading])
 
   const opcionesEstado = useMemo(
     () => [
@@ -70,6 +213,11 @@ export default function ExpedientesTab({
       return coincideEstado && coincideBusqueda
     })
   }, [expedientes, consulta, filtroEstado])
+
+  const alternar = (id) => {
+    setExpandido(abiertoId === id ? null : id)
+    onFocoAtendido?.()
+  }
 
   const cerrarModal = () => {
     setModalAbierto(false)
@@ -136,151 +284,81 @@ export default function ExpedientesTab({
           disabled={titulares.length === 0 || !isOnline}
           title={titulares.length === 0 ? 'Primero registra una empresa' : undefined}
         >
-          <Plus size={14} strokeWidth={2} />
+          <Plus size={14} />
           Aperturar expediente
         </button>
       </div>
 
-      <div className="card table-card">
-        <div className="table-scroll">
-          <table className="data-table">
-            <colgroup>
-              <col style={{ width: '34%' }} />
-              <col style={{ width: '16%' }} />
-              <col style={{ width: '14%' }} />
-              <col style={{ width: '18%' }} />
-              <col style={{ width: '13%' }} />
-              <col style={{ width: 48 }} />
-            </colgroup>
-            <thead>
-              <tr>
-                <th>Titular</th>
-                <th>Folio</th>
-                <th>Estado</th>
-                <th className="col-right">Completitud</th>
-                <th className="col-right">Actualizado</th>
-                <th aria-label="Detalle" />
-              </tr>
-            </thead>
-            <tbody>
-              {loading && <SkeletonRows rows={4} cols={COLUMNAS} />}
+      {loading && <SkeletonCards count={3} height={72} />}
 
-              {!loading && filtrados.length === 0 && (
-                <EmptyRow
-                  columnas={COLUMNAS}
-                  icon={expedientes.length === 0 ? FolderKanban : SearchX}
-                  titulo={expedientes.length === 0 ? 'Aún no hay expedientes aperturados' : 'Sin resultados'}
-                  descripcion={
-                    expedientes.length === 0
-                      ? 'Apertura un expediente para empezar a custodiar la documentación de un titular.'
-                      : 'Ajusta la búsqueda o el filtro de estado.'
-                  }
-                />
-              )}
-
-              {!loading &&
-                filtrados.map((exp) => {
-                  const meta = getEstadoBadge(exp.estado_cumplimiento)
-                  const progreso = Math.max(0, Math.min(100, Number(exp.porcentaje_completitud || 0)))
-                  const tono = tonoPorPorcentaje(progreso)
-                  const abierto = expandido === exp.id
-                  const docs = docsPorExpediente.get(exp.id) || []
-                  const tiposCargados = new Set(docs.map((d) => d.tipo_documento))
-                  const entregados = TIPOS_DOCUMENTO.filter((t) => tiposCargados.has(t.value))
-                  const faltantes = TIPOS_DOCUMENTO.filter((t) => !tiposCargados.has(t.value))
-                  const alternar = () => setExpandido(abierto ? null : exp.id)
-
-                  return (
-                    <Fragment key={exp.id}>
-                      <tr className={`row-clickable ${abierto ? 'is-open' : ''}`} onClick={alternar}>
-                        <td>
-                          <div className="identity">
-                            <span className="avatar" aria-hidden="true">
-                              {iniciales(exp.titular?.razon_social || exp.codigo_expediente)}
-                            </span>
-                            <span className="identity-name">{exp.titular?.razon_social || 'Titular no disponible'}</span>
-                          </div>
-                        </td>
-                        <td className="mono cell-mono">{exp.codigo_expediente}</td>
-                        <td>
-                          <span className={`badge badge--${meta.tono}`}>
-                            <span className={`status-dot status-dot--${meta.tono}`} aria-hidden="true" />
-                            {meta.label}
-                          </span>
-                        </td>
-                        <td className="col-right">
-                          <div className="progress" title={`${entregados.length} de ${TIPOS_DOCUMENTO.length} tipos obligatorios`}>
-                            <span className="progress-track">
-                              <span className={`progress-fill progress-fill--${tono}`} style={{ width: `${progreso}%` }} />
-                            </span>
-                            <span className="progress-value tabular">{progreso.toFixed(0)}%</span>
-                          </div>
-                        </td>
-                        <td className="col-right cell-muted">{formatRelativo(exp.actualizado_en)}</td>
-                        <td className="col-action">
-                          <button
-                            type="button"
-                            className="icon-button icon-button--sm"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              alternar()
-                            }}
-                            aria-expanded={abierto}
-                            aria-label={abierto ? 'Ocultar detalle' : 'Ver detalle y cargar documentos'}
-                          >
-                            <ChevronDown size={14} strokeWidth={2} className="chevron" />
-                          </button>
-                        </td>
-                      </tr>
-
-                      {abierto && (
-                        <tr className="row-detail">
-                          <td colSpan={COLUMNAS}>
-                            <div className="folder-detail">
-                              <div>
-                                <p className="field-label">
-                                  Documentos obligatorios · {entregados.length}/{TIPOS_DOCUMENTO.length}
-                                  {docs.length > entregados.length && ` · ${docs.length} archivos en bóveda`}
-                                </p>
-                                <ul className="checklist">
-                                  {TIPOS_DOCUMENTO.map((t) => {
-                                    const ok = tiposCargados.has(t.value)
-                                    return (
-                                      <li className={`checklist-item ${ok ? 'is-done' : ''}`} key={t.value}>
-                                        <span className="checklist-mark" aria-hidden="true">
-                                          {ok && <Check size={11} strokeWidth={2.5} />}
-                                        </span>
-                                        <span className="checklist-label">{t.label}</span>
-                                        <span className="checklist-state">{ok ? 'Aprobado' : 'Pendiente'}</span>
-                                      </li>
-                                    )
-                                  })}
-                                </ul>
-                              </div>
-
-                              {faltantes.length > 0 ? (
-                                <DropZone
-                                  compacto
-                                  subiendo={subiendoEn === exp.id}
-                                  tipos={faltantes}
-                                  onArchivo={(archivo, tipo) => subirDocumento(exp.id, archivo, tipo)}
-                                />
-                              ) : (
-                                <p className="folder-complete">
-                                  Expediente completo: los {TIPOS_DOCUMENTO.length} tipos obligatorios están custodiados.
-                                </p>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      )}
-                    </Fragment>
-                  )
-                })}
-            </tbody>
-          </table>
+      {!loading && filtrados.length === 0 && (
+        <div className="card">
+          <EmptyState
+            icon={expedientes.length === 0 ? FolderKanban : SearchX}
+            titulo={expedientes.length === 0 ? 'Aún no hay expedientes aperturados' : 'Sin resultados'}
+            descripcion={
+              expedientes.length === 0
+                ? 'Apertura un expediente para empezar a custodiar la documentación de un titular.'
+                : 'Ajusta la búsqueda o el filtro de estado.'
+            }
+          />
         </div>
-      </div>
+      )}
+
+      {!loading && filtrados.length > 0 && (
+        <div className="exp-list">
+          {filtrados.map((exp) => {
+            const meta = getEstadoBadge(exp.estado_cumplimiento)
+            const progreso = Math.max(0, Math.min(100, Number(exp.porcentaje_completitud || 0)))
+            const obligatorios = exp.evaluacion?.obligatorios || []
+            const presentes = obligatorios.filter((o) => o.presente).length
+            const abierto = abiertoId === exp.id
+            return (
+              <article
+                key={exp.id}
+                className={`card exp-card exp-card--${meta.tono} ${abierto ? 'is-open' : ''}`}
+                ref={(el) => (el ? tarjetas.current.set(exp.id, el) : tarjetas.current.delete(exp.id))}
+              >
+                <button
+                  type="button"
+                  className="exp-summary"
+                  onClick={() => alternar(exp.id)}
+                  aria-expanded={abierto}
+                  aria-label={`${exp.titular?.razon_social || exp.codigo_expediente}: ${meta.label}`}
+                >
+                  <span className="avatar" aria-hidden="true">
+                    {iniciales(exp.titular?.razon_social || exp.codigo_expediente)}
+                  </span>
+                  <span className="exp-identity">
+                    <span className="identity-name">{exp.titular?.razon_social || 'Titular no disponible'}</span>
+                    <span className="cell-sub mono">
+                      {exp.codigo_expediente} · {exp.titular?.rfc || 'sin RFC'}
+                    </span>
+                  </span>
+                  <span className={`badge badge--lg badge--${meta.tono}`}>
+                    <span className={`status-dot status-dot--${meta.tono}`} aria-hidden="true" />
+                    {meta.label}
+                  </span>
+                  <span className="progress" title={`${presentes} de ${obligatorios.length} documentos obligatorios`}>
+                    <span className="progress-track">
+                      <span className={`progress-fill progress-fill--${tonoPorPorcentaje(progreso)}`} style={{ width: `${progreso}%` }} />
+                    </span>
+                    <span className="progress-value tabular">
+                      {presentes}/{obligatorios.length}
+                    </span>
+                  </span>
+                  <span className="exp-updated cell-muted tabular">{formatRelativo(exp.actualizado_en)}</span>
+                  <span className="squircle exp-chevron" aria-hidden="true">
+                    <ChevronDown size={14} className="chevron" />
+                  </span>
+                </button>
+
+                {abierto && <DetalleExpediente exp={exp} subiendo={subiendoEn === exp.id} onSubir={subirDocumento} />}
+              </article>
+            )
+          })}
+        </div>
+      )}
 
       {modalAbierto && (
         <Modal

@@ -92,7 +92,7 @@ export default function DropZone({
         tabIndex={0}
         aria-label="Seleccionar o arrastrar un documento"
       >
-        <Upload size={18} strokeWidth={1.75} className="dropzone-icon" />
+        <Upload size={18} className="dropzone-icon" />
         <p className="dropzone-title">{arrastrando ? 'Suelta para analizar' : 'Arrastra un archivo o haz clic'}</p>
         <p className="dropzone-hint">PDF, JPG o PNG · máx. {formatBytes(MAX_FILE_SIZE_BYTES)}</p>
         <input
@@ -117,7 +117,7 @@ export default function DropZone({
             <span className="analysis-file-name">{archivo.name}</span>
             <span className="analysis-file-size mono">{formatBytes(archivo.size)}</span>
             <button type="button" className="icon-button icon-button--sm" onClick={limpiar} aria-label="Descartar archivo">
-              <X size={14} strokeWidth={2} />
+              <X size={14} />
             </button>
           </div>
 

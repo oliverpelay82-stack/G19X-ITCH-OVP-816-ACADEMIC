@@ -1,25 +1,12 @@
 import { ChevronRight, Moon, RefreshCw, Sun } from 'lucide-react'
-import { SERVICIOS } from '../constants.js'
-
-/** Tono del punto de salud: apagado, degradado (sin BD o sin capacidades) o en línea. */
-function tonoServicio(estado) {
-  if (!estado?.online) return 'off'
-  const p = estado.payload
-  if (p?.conexion_bd === false || p?.capacidades_operativas === false) return 'warn'
-  return 'ok'
-}
-
-function detalleServicio(servicio, estado, tono) {
-  if (tono === 'off') return `${servicio.nombre} sin respuesta`
-  const base = `${servicio.nombre} · ${estado.latencia} ms`
-  return tono === 'warn' ? `${base} · degradado` : base
-}
+import SystemHealth from './SystemHealth.jsx'
 
 /**
- * Barra superior: migas de la jerarquía (ancestros navegables), título de la
- * sección, estado en vivo de los tres microservicios y acciones globales.
+ * Cabecera ejecutiva: migas navegables (Cumplimiento › Sección), título H1,
+ * la franja de salud de los tres microservicios y las acciones globales en
+ * micro-squircles (refrescar y tema).
  */
-export default function Header({ titulo, migas = [], onNavigate, health, onRefresh, refrescando, isDark, onToggleTheme }) {
+export default function Header({ titulo, migas = [], onNavigate, health, reglas, onRefresh, refrescando, isDark, onToggleTheme }) {
   return (
     <header className="app-header">
       <div className="app-header-heading">
@@ -37,7 +24,7 @@ export default function Header({ titulo, migas = [], onNavigate, health, onRefre
                         {m.label}
                       </button>
                     )}
-                    {!ultima && <ChevronRight size={12} strokeWidth={2} aria-hidden="true" />}
+                    {!ultima && <ChevronRight size={12} aria-hidden="true" />}
                   </li>
                 )
               })}
@@ -48,31 +35,19 @@ export default function Header({ titulo, migas = [], onNavigate, health, onRefre
       </div>
 
       <div className="app-header-tools">
-        <ul className="service-badges" aria-label="Estado de los microservicios">
-          {SERVICIOS.map((s) => {
-            const estado = health?.[s.key]
-            const tono = tonoServicio(estado)
-            return (
-              <li key={s.key} className={`service-badge service-badge--${tono}`} data-tooltip={detalleServicio(s, estado, tono)}>
-                <span className={`live-dot live-dot--${tono}`} aria-hidden="true" />
-                <span className="service-badge-name">{s.etiqueta}</span>
-                <span className="service-badge-port tabular">:{s.puerto}</span>
-              </li>
-            )
-          })}
-        </ul>
+        <SystemHealth health={health} reglas={reglas} />
 
         <span className="header-divider" aria-hidden="true" />
 
         <button
           type="button"
-          className="icon-button"
+          className={`icon-button ${refrescando ? 'is-busy' : ''}`}
           onClick={onRefresh}
           disabled={refrescando}
           data-tooltip="Actualizar datos"
           aria-label="Actualizar datos"
         >
-          <RefreshCw size={15} strokeWidth={2} className={refrescando ? 'spin' : ''} />
+          <RefreshCw size={15} className="refresh-icon" />
         </button>
 
         <button
@@ -80,11 +55,11 @@ export default function Header({ titulo, migas = [], onNavigate, health, onRefre
           className="icon-button"
           onClick={onToggleTheme}
           role="switch"
-          aria-checked={isDark}
+          aria-checked={!isDark}
           data-tooltip={isDark ? 'Modo claro' : 'Modo oscuro'}
           aria-label={isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
         >
-          {isDark ? <Sun size={15} strokeWidth={2} /> : <Moon size={15} strokeWidth={2} />}
+          {isDark ? <Sun size={15} /> : <Moon size={15} />}
         </button>
       </div>
     </header>

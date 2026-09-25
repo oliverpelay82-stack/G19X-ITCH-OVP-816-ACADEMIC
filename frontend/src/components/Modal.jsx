@@ -46,7 +46,7 @@ export default function Modal({ title, subtitle, onClose, children, footer, size
             {subtitle && <p className="modal-subtitle">{subtitle}</p>}
           </div>
           <button type="button" className="icon-button icon-button--sm" onClick={onClose} aria-label="Cerrar">
-            <X size={15} strokeWidth={2} />
+            <X size={15} />
           </button>
         </header>
 
