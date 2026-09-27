@@ -1,0 +1,86 @@
+# Integración continua del Motor de Validación de Cumplimiento Documental.
+#
+#   backend  — PostgreSQL 17 como servicio, inicialización con el seed del
+#              catálogo DOC-05 y las suites de pytest de core-service y
+#              rules-service (BD de pruebas plurione_compliance_test) y del
+#              ai-service (offline: Groq, core y rules se simulan; la suite de
+#              los Niveles 3 y 4 se omite porque requiere el servicio en vivo).
+#   frontend — lint (oxlint) y build de producción de la interfaz React 19.
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DB_DIALECT: postgresql
+      DB_HOST: 127.0.0.1
+      DB_PORT: "5432"
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: plurione_compliance
+      TESSERACT_CMD: /usr/bin/tesseract
+      TESSDATA_PREFIX: /usr/share/tesseract-ocr/5/tessdata
+      PYTHONIOENCODING: utf-8
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: services/*/requirements.txt
+
+      - name: Tesseract OCR (español e inglés)
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends tesseract-ocr tesseract-ocr-spa tesseract-ocr-eng
+
+      - name: Dependencias de los tres servicios
+        run: |
+          pip install -r services/core-service/requirements.txt \
+                      -r services/rules-service/requirements.txt \
+                      -r services/ai-service/requirements.txt \
+                      pytest httpx
+
+      - name: Base de datos, tablas y catálogo de reglas (DOC-05)
+        run: python scripts/setup_postgres.py
+
+      - name: Pruebas de core-service y rules-service
+        run: pytest tests/ -v
+
+      - name: Pruebas offline del ai-service
+        working-directory: services/ai-service
+        run: pytest tests/ -v
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
