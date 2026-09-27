@@ -1,0 +1,518 @@
+"""
+Reportes de auditoría exportables (Módulo 6: RF-22, RF-23, RF-24; HU-28, HU-29).
+
+  * **Dictamen de cumplimiento por expediente (RF-23).** Consolida el semáforo,
+    los documentos exigidos por las reglas, la evidencia de cada dictamen
+    (reglas aplicadas, confianza, huella SHA-256, ratificación humana), las
+    alertas con su recomendación y la trazabilidad de la bitácora.
+  * **Reporte global de cumplimiento (RF-22).** Porcentaje global, expedientes
+    conformes y no conformes, y distribución de alertas por severidad y tipo.
+
+Ambos se emiten en PDF (presentación formal) y en Excel (.xlsx, análisis y
+seguimiento), como pide RF-24. El módulo solo da formato: recibe los datos ya
+evaluados por ``motor/cumplimiento.py`` y no toca la base de datos.
+"""
+from __future__ import annotations
+
+import io
+from collections import Counter
+from dataclasses import dataclass, field
+from datetime import datetime
+from typing import Any
+
+from openpyxl import Workbook
+from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
+from openpyxl.utils import get_column_letter
+from reportlab.lib import colors
+from reportlab.lib.enums import TA_LEFT
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+from reportlab.lib.units import mm
+from reportlab.platypus import KeepTogether, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+
+from config.catalogo import etiqueta_documento, etiqueta_expediente
+from models.bitacora import BitacoraAuditoria
+from models.dictamen import DictamenAuditoria
+from models.expediente import Expediente
+from motor.cumplimiento import EvaluacionExpediente
+
+FORMATOS = {"pdf": "application/pdf", "xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}
+
+ESTADO_LEGIBLE = {
+    "CONFORME": "Conforme",
+    "EN_REVISION": "En revisión",
+    "NO_CONFORME": "No conforme",
+    "SIN_DICTAMEN": "Sin auditar",
+    "FALTANTE": "Faltante",
+}
+VIGENCIA_LEGIBLE = {"VIGENTE": "Vigente", "PROXIMO_A_VENCER": "Próximo a vencer", "VENCIDO": "Vencido"}
+SEVERIDAD_LEGIBLE = {"CRITICA": "Crítica", "ALTA": "Alta", "MEDIA_ALTA": "Media-Alta", "MEDIA": "Media", "BAJA": "Baja"}
+
+# Paleta del sistema de diseño (neutros stone y colores de estado).
+TINTA = colors.HexColor("#1C1917")
+SECUNDARIO = colors.HexColor("#57534E")
+LINEA = colors.HexColor("#E7E5E4")
+FONDO_SUTIL = colors.HexColor("#F5F5F4")
+COLOR_ESTADO = {
+    "CONFORME": (colors.HexColor("#15803D"), colors.HexColor("#F0FDF4")),
+    "EN_REVISION": (colors.HexColor("#B45309"), colors.HexColor("#FFFBEB")),
+    "NO_CONFORME": (colors.HexColor("#B91C1C"), colors.HexColor("#FEF2F2")),
+}
+
+
+@dataclass
+class DatosExpediente:
+    expediente: Expediente
+    evaluacion: EvaluacionExpediente
+    dictamenes: dict[str, DictamenAuditoria] = field(default_factory=dict)   # por documento_id
+    eventos: list[BitacoraAuditoria] = field(default_factory=list)
+
+
+def _fecha(valor: Any) -> str:
+    if valor is None:
+        return "—"
+    if isinstance(valor, datetime):
+        return valor.strftime("%Y-%m-%d %H:%M")
+    return valor.isoformat() if hasattr(valor, "isoformat") else str(valor)
+
+
+def _ahora() -> str:
+    """Hora local del servidor con su desfase, la misma referencia que las fechas de la base."""
+    ahora = datetime.now().astimezone()
+    desfase = ahora.strftime("%z")
+    return f"{ahora.strftime('%Y-%m-%d %H:%M')} (UTC{desfase[:3]}:{desfase[3:]})"
+
+
+def _pct(valor: float) -> str:
+    return f"{valor:.1f} %"
+
+
+def _filas_documentos(ev: EvaluacionExpediente) -> list[dict[str, Any]]:
+    """Documentos exigidos (con su archivo vigente) más los opcionales cargados."""
+    por_tipo = {d.tipo_documento: d for d in ev.documentos}
+    filas = []
+    for o in ev.obligatorios:
+        doc = por_tipo.get(o["tipo_documento"])
+        filas.append({
+            "tipo": o["tipo_documento"],
+            "documento": etiqueta_documento(o["tipo_documento"]),
+            "requisito": (f"Anexo de {etiqueta_documento(o['documento_principal'])}" if o["documento_principal"]
+                          else "Obligatorio"),
+            "regla": o["codigo_regla"],
+            "severidad": SEVERIDAD_LEGIBLE.get(o["severidad"], o["severidad"]),
+            "archivo": doc.nombre_archivo_original if doc else "No cargado",
+            "estado": ESTADO_LEGIBLE.get(doc.estado if doc else "FALTANTE", "—"),
+            "vigencia": _texto_vigencia(doc),
+            "documento_id": doc.documento_id if doc else None,
+        })
+    for d in ev.documentos:
+        if not d.obligatorio:
+            filas.append({
+                "tipo": d.tipo_documento, "documento": etiqueta_documento(d.tipo_documento), "requisito": "Opcional",
+                "regla": "—", "severidad": "—", "archivo": d.nombre_archivo_original,
+                "estado": ESTADO_LEGIBLE.get(d.estado, d.estado), "vigencia": _texto_vigencia(d),
+                "documento_id": d.documento_id,
+            })
+    return filas
+
+
+def _texto_vigencia(doc) -> str:
+    if doc is None or not doc.vigencia:
+        return "—"
+    return f"{VIGENCIA_LEGIBLE.get(doc.vigencia, doc.vigencia)} ({_fecha(doc.fecha_caducidad)})"
+
+
+def _evidencia(datos: DatosExpediente) -> list[dict[str, Any]]:
+    """Evidencia de cada dictamen vigente (RF-23): qué se evaluó y con qué resultado."""
+    filas = []
+    for d in datos.evaluacion.documentos:
+        dictamen = datos.dictamenes.get(d.documento_id)
+        if dictamen is None:
+            continue
+        reglas = ", ".join(
+            f"{r.get('codigo_regla')}: {r.get('resultado')}" for r in (dictamen.reglas_aplicadas or [])
+        )
+        ratificacion = (
+            f"{dictamen.revisado_por} ({_fecha(dictamen.revisado_en)}): {dictamen.justificacion_humana}"
+            if dictamen.revisado_por_humano else "—"
+        )
+        filas.append({
+            "documento": etiqueta_documento(d.tipo_documento),
+            "archivo": d.nombre_archivo_original,
+            "estatus": ESTADO_LEGIBLE.get(dictamen.estatus, dictamen.estatus),
+            "preliminar": ESTADO_LEGIBLE.get(dictamen.estatus_preliminar, dictamen.estatus_preliminar),
+            "origen": dictamen.origen,
+            "confianza": f"{dictamen.nivel_confianza * 100:.0f} %" if dictamen.nivel_confianza is not None else "—",
+            "reglas": reglas or "—",
+            "hash": dictamen.hash_sha256,
+            "modelo": dictamen.modelo_utilizado or "—",
+            "fecha": _fecha(dictamen.creado_en),
+            "ratificacion": ratificacion,
+            "observaciones": " ".join(dictamen.observaciones or []),
+        })
+    return filas
+
+
+# ═══════════════════════════ Excel ═══════════════════════════════
+_BORDE = Border(bottom=Side(style="thin", color="E7E5E4"))
+_CABECERA = Font(bold=True, color="1C1917")
+_FONDO_CABECERA = PatternFill("solid", fgColor="F5F5F4")
+
+
+def _hoja_tabla(hoja, columnas: list[tuple[str, str, int]], filas: list[dict[str, Any]], fila_inicio: int = 1) -> None:
+    """Escribe una tabla con cabecera fija y filtro. columnas: (clave, título, ancho)."""
+    for i, (_, titulo, ancho) in enumerate(columnas, start=1):
+        celda = hoja.cell(row=fila_inicio, column=i, value=titulo)
+        celda.font = _CABECERA
+        celda.fill = _FONDO_CABECERA
+        celda.border = _BORDE
+        hoja.column_dimensions[get_column_letter(i)].width = ancho
+    for r, fila in enumerate(filas, start=fila_inicio + 1):
+        for c, (clave, _, _) in enumerate(columnas, start=1):
+            celda = hoja.cell(row=r, column=c, value=fila.get(clave))
+            celda.alignment = Alignment(vertical="top", wrap_text=True)
+    hoja.freeze_panes = hoja.cell(row=fila_inicio + 1, column=1)
+    if filas:
+        hoja.auto_filter.ref = f"A{fila_inicio}:{get_column_letter(len(columnas))}{fila_inicio + len(filas)}"
+
+
+def _hoja_ficha(hoja, titulo: str, pares: list[tuple[str, Any]]) -> None:
+    hoja["A1"] = titulo
+    hoja["A1"].font = Font(bold=True, size=14)
+    for i, (clave, valor) in enumerate(pares, start=3):
+        hoja.cell(row=i, column=1, value=clave).font = Font(bold=True, color="57534E")
+        hoja.cell(row=i, column=2, value=valor).alignment = Alignment(wrap_text=True, vertical="top")
+    hoja.column_dimensions["A"].width = 30
+    hoja.column_dimensions["B"].width = 90
+
+
+def _ficha_expediente(datos: DatosExpediente) -> list[tuple[str, Any]]:
+    exp, ev = datos.expediente, datos.evaluacion
+    titular = exp.titular
+    return [
+        ("Folio", exp.codigo_expediente),
+        ("Nombre", exp.nombre or "—"),
+        ("Tipo de expediente", etiqueta_expediente(exp.tipo_expediente)),
+        ("Titular", titular.razon_social if titular else "—"),
+        ("RFC", titular.rfc if titular else "—"),
+        ("Fecha de apertura", _fecha(exp.creado_en)),
+        ("Estado de cumplimiento", ESTADO_LEGIBLE.get(ev.estado, ev.estado)),
+        ("Completitud documental", _pct(ev.porcentaje_completitud)),
+        ("Documentos faltantes", ", ".join(etiqueta_documento(t) for t in ev.faltantes) or "Ninguno"),
+        ("Alertas vigentes", len(ev.alertas)),
+        ("Criterio de obligatoriedad", ev.fuente_obligatorios + (f" — {ev.advertencia}" if ev.advertencia else "")),
+        ("Reporte emitido", _ahora()),
+    ]
+
+
+def expediente_xlsx(datos: DatosExpediente) -> bytes:
+    libro = Workbook()
+    resumen = libro.active
+    resumen.title = "Dictamen"
+    _hoja_ficha(resumen, "Dictamen de Cumplimiento Documental", _ficha_expediente(datos))
+    fila = len(_ficha_expediente(datos)) + 5
+    resumen.cell(row=fila, column=1, value="Motivos del semáforo").font = Font(bold=True)
+    for i, motivo in enumerate(datos.evaluacion.motivos, start=fila + 1):
+        resumen.cell(row=i, column=2, value=motivo).alignment = Alignment(wrap_text=True)
+
+    _hoja_tabla(libro.create_sheet("Documentos"), [
+        ("documento", "Documento", 38), ("requisito", "Requisito", 30), ("regla", "Regla", 16),
+        ("severidad", "Severidad", 12), ("archivo", "Archivo vigente", 40), ("estado", "Estado", 14),
+        ("vigencia", "Vigencia", 28),
+    ], _filas_documentos(datos.evaluacion))
+
+    _hoja_tabla(libro.create_sheet("Evidencia"), [
+        ("documento", "Documento", 32), ("archivo", "Archivo", 34), ("estatus", "Estatus", 14),
+        ("preliminar", "Estatus preliminar", 16), ("origen", "Origen", 12), ("confianza", "Confianza", 11),
+        ("reglas", "Reglas aplicadas", 40), ("hash", "SHA-256", 68), ("modelo", "Modelo", 20),
+        ("fecha", "Fecha", 17), ("ratificacion", "Ratificación humana", 50), ("observaciones", "Observaciones", 70),
+    ], _evidencia(datos))
+
+    _hoja_tabla(libro.create_sheet("Alertas"), [
+        ("severidad", "Severidad", 12), ("titulo", "Alerta", 42), ("detalle", "Detalle", 60),
+        ("recomendacion", "Recomendación", 70), ("regla", "Regla", 14),
+    ], [{**a.__dict__, "severidad": SEVERIDAD_LEGIBLE.get(a.severidad, a.severidad)} for a in datos.evaluacion.alertas])
+
+    _hoja_tabla(libro.create_sheet("Bitácora"), [
+        ("fecha", "Fecha", 18), ("evento", "Evento", 24), ("usuario", "Usuario", 24),
+        ("ip", "IP de origen", 16), ("detalle", "Detalle", 90),
+    ], [{"fecha": _fecha(e.creado_en), "evento": e.evento, "usuario": e.usuario, "ip": e.ip_origen or "—",
+         "detalle": _resumen_detalle(e.detalle)} for e in datos.eventos])
+    return _guardar(libro)
+
+
+def global_xlsx(evaluados: list[tuple[Expediente, EvaluacionExpediente]]) -> bytes:
+    libro = Workbook()
+    resumen = libro.active
+    resumen.title = "Resumen"
+    indicadores = _indicadores(evaluados)
+    _hoja_ficha(resumen, "Reporte de Cumplimiento Documental", [
+        ("Expedientes evaluados", indicadores["total"]),
+        ("Cumplimiento global", _pct(indicadores["porcentaje_global"])),
+        ("Conformes", indicadores["conformes"]),
+        ("En revisión", indicadores["en_revision"]),
+        ("No conformes", indicadores["no_conformes"]),
+        ("Completitud promedio", _pct(indicadores["completitud_promedio"])),
+        ("Alertas vigentes", indicadores["alertas"]),
+        *[(f"Alertas {SEVERIDAD_LEGIBLE.get(s, s).lower()}", n) for s, n in indicadores["alertas_por_severidad"]],
+        *[(f"Expedientes {etiqueta_expediente(t).lower()}s", n) for t, n in indicadores["por_tipo"]],
+        ("Reporte emitido", _ahora()),
+    ])
+    _hoja_tabla(libro.create_sheet("Expedientes"), [
+        ("folio", "Folio", 26), ("nombre", "Nombre", 30), ("tipo", "Tipo", 14), ("titular", "Titular", 38),
+        ("rfc", "RFC", 16), ("estado", "Estado", 14), ("completitud", "Completitud %", 14),
+        ("faltantes", "Faltantes", 50), ("alertas", "Alertas", 9), ("apertura", "Apertura", 17),
+    ], _filas_expedientes(evaluados))
+    _hoja_tabla(libro.create_sheet("Alertas"), [
+        ("folio", "Folio", 26), ("titular", "Titular", 34), ("severidad", "Severidad", 12),
+        ("titulo", "Alerta", 42), ("recomendacion", "Recomendación", 80),
+    ], _filas_alertas(evaluados))
+    return _guardar(libro)
+
+
+def _guardar(libro: Workbook) -> bytes:
+    salida = io.BytesIO()
+    libro.save(salida)
+    return salida.getvalue()
+
+
+def _resumen_detalle(detalle: dict[str, Any] | None) -> str:
+    if not detalle:
+        return ""
+    partes = []
+    for clave, valor in detalle.items():
+        if isinstance(valor, (list, dict)):
+            if not valor:
+                continue
+            valor = "; ".join(str(v.get("titulo", v)) if isinstance(v, dict) else str(v) for v in valor) \
+                if isinstance(valor, list) else str(valor)
+        partes.append(f"{clave}: {valor}")
+    return " · ".join(partes)[:1000]
+
+
+# ═══════════════════════ Indicadores (RF-22) ═══════════════════════
+def _indicadores(evaluados: list[tuple[Expediente, EvaluacionExpediente]]) -> dict[str, Any]:
+    estados = Counter(ev.estado for _, ev in evaluados)
+    total = len(evaluados)
+    alertas = [a for _, ev in evaluados for a in ev.alertas]
+    orden = list(SEVERIDAD_LEGIBLE)
+    por_severidad = sorted(Counter(a.severidad for a in alertas).items(),
+                           key=lambda p: orden.index(p[0]) if p[0] in orden else 99)
+    return {
+        "total": total,
+        "conformes": estados.get("CONFORME", 0),
+        "en_revision": estados.get("EN_REVISION", 0),
+        "no_conformes": estados.get("NO_CONFORME", 0),
+        # Proporción de expedientes que cumplen al 100 % (RF-22).
+        "porcentaje_global": round(estados.get("CONFORME", 0) / total * 100, 1) if total else 0.0,
+        "completitud_promedio": round(sum(ev.porcentaje_completitud for _, ev in evaluados) / total, 1) if total else 0.0,
+        "alertas": len(alertas),
+        "alertas_por_severidad": por_severidad,
+        "por_tipo": sorted(Counter(exp.tipo_expediente for exp, _ in evaluados).items()),
+    }
+
+
+def _filas_expedientes(evaluados) -> list[dict[str, Any]]:
+    return [{
+        "folio": exp.codigo_expediente,
+        "nombre": exp.nombre or "—",
+        "tipo": etiqueta_expediente(exp.tipo_expediente),
+        "titular": exp.titular.razon_social if exp.titular else "—",
+        "rfc": exp.titular.rfc if exp.titular else "—",
+        "estado": ESTADO_LEGIBLE.get(ev.estado, ev.estado),
+        "completitud": ev.porcentaje_completitud,
+        "faltantes": ", ".join(etiqueta_documento(t) for t in ev.faltantes) or "—",
+        "alertas": len(ev.alertas),
+        "apertura": _fecha(exp.creado_en),
+    } for exp, ev in evaluados]
+
+
+def _filas_alertas(evaluados) -> list[dict[str, Any]]:
+    return [{
+        "folio": exp.codigo_expediente,
+        "titular": exp.titular.razon_social if exp.titular else "—",
+        "severidad": SEVERIDAD_LEGIBLE.get(a.severidad, a.severidad),
+        "titulo": a.titulo,
+        "recomendacion": a.recomendacion,
+    } for exp, ev in evaluados for a in ev.alertas]
+
+
+# ═══════════════════════════ PDF ═══════════════════════════════
+def _estilos() -> dict[str, ParagraphStyle]:
+    base = getSampleStyleSheet()
+    return {
+        "titulo": ParagraphStyle("titulo", parent=base["Title"], fontName="Helvetica-Bold", fontSize=16,
+                                 textColor=TINTA, alignment=TA_LEFT, spaceAfter=2),
+        "subtitulo": ParagraphStyle("subtitulo", parent=base["Normal"], fontSize=9, textColor=SECUNDARIO,
+                                    spaceAfter=10),
+        "seccion": ParagraphStyle("seccion", parent=base["Heading2"], fontName="Helvetica-Bold", fontSize=10.5,
+                                  textColor=TINTA, spaceBefore=12, spaceAfter=5),
+        "texto": ParagraphStyle("texto", parent=base["Normal"], fontSize=8.5, leading=11, textColor=TINTA),
+        "celda": ParagraphStyle("celda", parent=base["Normal"], fontSize=7.5, leading=9.5, textColor=TINTA),
+        "celda_mono": ParagraphStyle("celda_mono", parent=base["Normal"], fontName="Courier", fontSize=6.5,
+                                     leading=8.5, textColor=SECUNDARIO),
+        "cabecera": ParagraphStyle("cabecera", parent=base["Normal"], fontName="Helvetica-Bold", fontSize=7.5,
+                                   leading=9.5, textColor=SECUNDARIO),
+    }
+
+
+def _esc(texto: Any) -> str:
+    return str(texto if texto is not None else "—").replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+
+def _tabla(filas: list[list[Any]], anchos: list[float], estilos, cabecera: list[str]) -> Table:
+    datos = [[Paragraph(_esc(c), estilos["cabecera"]) for c in cabecera]]
+    for fila in filas:
+        datos.append([c if isinstance(c, Paragraph) else Paragraph(_esc(c), estilos["celda"]) for c in fila])
+    tabla = Table(datos, colWidths=anchos, repeatRows=1)
+    tabla.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), FONDO_SUTIL),
+        ("LINEBELOW", (0, 0), (-1, -1), 0.4, LINEA),
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("TOPPADDING", (0, 0), (-1, -1), 3),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+        ("LEFTPADDING", (0, 0), (-1, -1), 4),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 4),
+    ]))
+    return tabla
+
+
+def _ficha(pares: list[tuple[str, Any]], estilos, ancho: float) -> Table:
+    filas = [[Paragraph(_esc(k), estilos["cabecera"]), Paragraph(_esc(v), estilos["texto"])] for k, v in pares]
+    tabla = Table(filas, colWidths=[ancho * 0.3, ancho * 0.7])
+    tabla.setStyle(TableStyle([
+        ("LINEBELOW", (0, 0), (-1, -1), 0.4, LINEA),
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("TOPPADDING", (0, 0), (-1, -1), 3),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+    ]))
+    return tabla
+
+
+def _sello_estado(estado: str, texto: str, estilos, ancho: float) -> Table:
+    """Semáforo del expediente: color de estado siempre acompañado de su etiqueta."""
+    tinta, fondo = COLOR_ESTADO.get(estado, (SECUNDARIO, FONDO_SUTIL))
+    estilo = ParagraphStyle("sello", parent=estilos["texto"], fontName="Helvetica-Bold", fontSize=11, textColor=tinta)
+    tabla = Table([[Paragraph(_esc(texto), estilo)]], colWidths=[ancho])
+    tabla.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, -1), fondo),
+        ("BOX", (0, 0), (-1, -1), 0.6, tinta),
+        ("TOPPADDING", (0, 0), (-1, -1), 7),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 7),
+        ("LEFTPADDING", (0, 0), (-1, -1), 8),
+    ]))
+    return tabla
+
+
+def _pie(lienzo, doc) -> None:
+    lienzo.saveState()
+    lienzo.setFont("Helvetica", 7)
+    lienzo.setFillColor(SECUNDARIO)
+    lienzo.drawString(doc.leftMargin, 10 * mm,
+                      "PluriOne S.A. de C.V. · Motor de Validación de Cumplimiento Documental · Documento generado "
+                      "automáticamente a partir de la bitácora inmutable")
+    lienzo.drawRightString(doc.pagesize[0] - doc.rightMargin, 10 * mm, f"Página {doc.page}")
+    lienzo.restoreState()
+
+
+def _documento_pdf(historia: list, titulo: str) -> bytes:
+    salida = io.BytesIO()
+    doc = SimpleDocTemplate(salida, pagesize=letter, leftMargin=16 * mm, rightMargin=16 * mm, topMargin=16 * mm,
+                            bottomMargin=18 * mm, title=titulo, author="PluriOne — Motor de Cumplimiento")
+    doc.build(historia, onFirstPage=_pie, onLaterPages=_pie)
+    return salida.getvalue()
+
+
+def expediente_pdf(datos: DatosExpediente) -> bytes:
+    e = _estilos()
+    ancho = letter[0] - 32 * mm
+    exp, ev = datos.expediente, datos.evaluacion
+    estado = ESTADO_LEGIBLE.get(ev.estado, ev.estado)
+    historia: list = [
+        Paragraph("Dictamen de Cumplimiento Documental", e["titulo"]),
+        Paragraph(f"Expediente {_esc(exp.codigo_expediente)} · emitido el {_ahora()}", e["subtitulo"]),
+        _sello_estado(ev.estado, f"{estado} · completitud {_pct(ev.porcentaje_completitud)} · "
+                                 f"{len(ev.alertas)} alertas vigentes", e, ancho),
+        Spacer(1, 8),
+        _ficha(_ficha_expediente(datos)[:6], e, ancho),
+        Paragraph("Motivos del semáforo", e["seccion"]),
+        *[Paragraph(f"• {_esc(m)}", e["texto"]) for m in ev.motivos],
+        Paragraph("Documentos exigidos por el catálogo de reglas", e["seccion"]),
+        _tabla(
+            [[f["documento"], f["requisito"], f["regla"], f["archivo"], f["estado"], f["vigencia"]]
+             for f in _filas_documentos(ev)],
+            [ancho * p for p in (0.22, 0.15, 0.13, 0.22, 0.11, 0.17)], e,
+            ["Documento", "Requisito", "Regla", "Archivo vigente", "Estado", "Vigencia"],
+        ),
+    ]
+
+    if ev.alertas:
+        historia += [
+            Paragraph("Alertas y recomendaciones", e["seccion"]),
+            _tabla(
+                [[SEVERIDAD_LEGIBLE.get(a.severidad, a.severidad), f"{a.titulo}. {a.detalle}", a.recomendacion]
+                 for a in ev.alertas],
+                [ancho * p for p in (0.11, 0.42, 0.47)], e, ["Severidad", "Hallazgo", "Recomendación"],
+            ),
+        ]
+
+    evidencia = _evidencia(datos)
+    if evidencia:
+        historia.append(Paragraph("Evidencia de auditoría por documento", e["seccion"]))
+        for f in evidencia:
+            historia.append(KeepTogether([
+                _ficha([
+                    ("Documento", f"{f['documento']} — {f['archivo']}"),
+                    ("Dictamen", f"{f['estatus']} (preliminar: {f['preliminar']}, origen {f['origen']}, "
+                                 f"confianza {f['confianza']}, {f['fecha']})"),
+                    ("Reglas aplicadas", f["reglas"]),
+                    ("Ratificación humana", f["ratificacion"]),
+                    ("Observaciones", f["observaciones"] or "—"),
+                ], e, ancho),
+                Paragraph(f"SHA-256: {_esc(f['hash'])}", e["celda_mono"]),
+                Spacer(1, 6),
+            ]))
+
+    if datos.eventos:
+        historia += [
+            Paragraph("Trazabilidad (bitácora inmutable)", e["seccion"]),
+            _tabla(
+                [[_fecha(ev_.creado_en), ev_.evento, ev_.usuario, ev_.ip_origen or "—"] for ev_ in datos.eventos[:40]],
+                [ancho * p for p in (0.2, 0.3, 0.3, 0.2)], e, ["Fecha", "Evento", "Usuario", "IP de origen"],
+            ),
+        ]
+    return _documento_pdf(historia, f"Dictamen {exp.codigo_expediente}")
+
+
+def global_pdf(evaluados: list[tuple[Expediente, EvaluacionExpediente]]) -> bytes:
+    e = _estilos()
+    ancho = letter[0] - 32 * mm
+    ind = _indicadores(evaluados)
+    historia: list = [
+        Paragraph("Reporte de Cumplimiento Documental", e["titulo"]),
+        Paragraph(f"{ind['total']} expedientes evaluados · emitido el {_ahora()}", e["subtitulo"]),
+        _ficha([
+            ("Cumplimiento global", f"{_pct(ind['porcentaje_global'])} de los expedientes son conformes"),
+            ("Conformes / En revisión / No conformes",
+             f"{ind['conformes']} / {ind['en_revision']} / {ind['no_conformes']}"),
+            ("Completitud promedio", _pct(ind["completitud_promedio"])),
+            ("Alertas vigentes", ", ".join(f"{SEVERIDAD_LEGIBLE.get(s, s)}: {n}" for s, n in
+                                           ind["alertas_por_severidad"]) or "Ninguna"),
+            ("Expedientes por tipo", ", ".join(f"{etiqueta_expediente(t)}: {n}" for t, n in ind["por_tipo"]) or "—"),
+        ], e, ancho),
+        Paragraph("Expedientes", e["seccion"]),
+        _tabla(
+            [[f["folio"], f["tipo"], f["titular"], f["estado"], f"{f['completitud']:.1f} %", f["alertas"]]
+             for f in _filas_expedientes(evaluados)],
+            [ancho * p for p in (0.24, 0.12, 0.34, 0.12, 0.1, 0.08)], e,
+            ["Folio", "Tipo", "Titular", "Estado", "Completitud", "Alertas"],
+        ),
+    ]
+    alertas = _filas_alertas(evaluados)
+    if alertas:
+        historia += [
+            Paragraph("Alertas y recomendaciones", e["seccion"]),
+            _tabla([[a["folio"], a["severidad"], a["titulo"], a["recomendacion"]] for a in alertas],
+                   [ancho * p for p in (0.2, 0.1, 0.28, 0.42)], e, ["Folio", "Severidad", "Alerta", "Recomendación"]),
+        ]
+    return _documento_pdf(historia, "Reporte de Cumplimiento Documental")

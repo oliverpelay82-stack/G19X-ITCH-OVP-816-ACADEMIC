@@ -5,7 +5,8 @@ Equivalente a @RestController @RequestMapping("/api/v1/reglas") en Spring Boot.
 from dataclasses import asdict
 from datetime import date
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from config.database import get_db
@@ -49,17 +50,29 @@ def evaluar_vigencia(peticion: EvaluacionVigenciaRequest, db: Session = Depends(
 @router.get(
     "/documentos-obligatorios",
     response_model=list[DocumentoObligatorioResponse],
-    summary="Documentos que exige el expediente según las reglas RIE activas (HU-09)",
+    summary="Documentos y anexos que exige un tipo de expediente según las reglas RIE activas (HU-09, HU-10)",
 )
-def listar_documentos_obligatorios(db: Session = Depends(get_db)):
+def listar_documentos_obligatorios(
+    tipo_expediente: Optional[str] = Query(
+        None, description="JURIDICO, CORPORATIVO o REGULATORIO; sin él se devuelven las reglas de todos los tipos"
+    ),
+    db: Session = Depends(get_db),
+):
     """
     Deriva el inventario obligatorio del expediente de las reglas activas de la
     familia RIE que declaran un tipo de documento obligatorio. El core-service
     lo consulta para calcular la completitud (RIE-01) en lugar de fijarla en
-    su código.
+    su código. Los registros con ``documento_principal`` son anexos (RIE-02):
+    solo se exigen cuando el expediente contiene ese documento principal.
     """
+    if tipo_expediente and tipo_expediente.strip().upper() not in obligatorios.TIPOS_EXPEDIENTE:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Tipo de expediente no reconocido: '{tipo_expediente}'. "
+                   f"Valores válidos: {', '.join(obligatorios.TIPOS_EXPEDIENTE)}.",
+        )
     reglas = db.query(Regla).filter(Regla.familia_regla == "RIE", Regla.activo.is_(True)).all()
-    return [asdict(d) for d in obligatorios.documentos_obligatorios(reglas)]
+    return [asdict(d) for d in obligatorios.documentos_obligatorios(reglas, tipo_expediente)]
 
 
 @router.post(
@@ -73,6 +86,19 @@ def crear_regla(regla_dto: ReglaCreate, db: Session = Depends(get_db)):
     Equivalente a @PostMapping.
     Valida que el código de la regla no exista y la guarda en reglas_validacion.
     """
+    principal = regla_dto.documento_principal.strip().upper() if regla_dto.documento_principal else None
+    tipo_documento = regla_dto.tipo_documento.strip().upper() if regla_dto.tipo_documento else None
+    if principal and not tipo_documento:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Una regla de anexo (RIE-02) debe indicar el tipo de documento del anexo.",
+        )
+    if principal and principal == tipo_documento:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Un documento no puede ser anexo de sí mismo.",
+        )
+
     existente = db.query(Regla).filter(Regla.codigo_regla == regla_dto.codigo_regla.upper()).first()
     if existente:
         raise HTTPException(
@@ -87,10 +113,12 @@ def crear_regla(regla_dto: ReglaCreate, db: Session = Depends(get_db)):
         descripcion=regla_dto.descripcion,
         severidad=regla_dto.severidad.upper(),
         accion=regla_dto.accion,
-        tipo_documento=regla_dto.tipo_documento.upper() if regla_dto.tipo_documento else None,
+        tipo_documento=tipo_documento,
         documento_obligatorio=regla_dto.documento_obligatorio,
         dias_maximos_vigencia=regla_dto.dias_maximos_vigencia,
         activo=regla_dto.activo,
+        tipo_expediente=regla_dto.tipo_expediente,
+        documento_principal=principal,
     )
 
     db.add(nueva_regla)
@@ -108,6 +136,7 @@ def crear_regla(regla_dto: ReglaCreate, db: Session = Depends(get_db)):
 def listar_reglas(
     familia_regla: Optional[str] = None,
     activo: Optional[bool] = None,
+    tipo_expediente: Optional[str] = Query(None, description="Reglas de ese tipo de expediente más las generales"),
     db: Session = Depends(get_db),
 ):
     """
@@ -120,6 +149,8 @@ def listar_reglas(
         query = query.filter(Regla.familia_regla == familia_regla.upper())
     if activo is not None:
         query = query.filter(Regla.activo == activo)
+    if tipo_expediente:
+        query = query.filter(or_(Regla.tipo_expediente.is_(None), Regla.tipo_expediente == tipo_expediente.upper()))
     return query.order_by(Regla.codigo_regla.asc()).all()
 
 

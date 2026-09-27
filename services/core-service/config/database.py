@@ -61,6 +61,23 @@ def get_db():
 _MIGRACIONES_POSTGRES = [
     # RIE-03: estado de la última verificación criptográfica del documento.
     "ALTER TABLE documentos ADD COLUMN IF NOT EXISTS estado_integridad VARCHAR(20) NOT NULL DEFAULT 'INTEGRO'",
+    # RF-01 / HU-01: clasificación temática y nombre descriptivo del expediente.
+    # Los expedientes previos (CSF, domicilio y acta) son corporativos (DOC-02).
+    "ALTER TABLE expedientes ADD COLUMN IF NOT EXISTS tipo_expediente VARCHAR(20) NOT NULL DEFAULT 'CORPORATIVO'",
+    "ALTER TABLE expedientes ADD COLUMN IF NOT EXISTS nombre VARCHAR(150)",
+    "CREATE INDEX IF NOT EXISTS ix_expedientes_tipo_expediente ON expedientes (tipo_expediente)",
+    # RF-05: fecha de apertura para filtrar. En los expedientes ya existentes se
+    # toma del evento APERTURA_EXPEDIENTE de la bitácora.
+    "ALTER TABLE expedientes ADD COLUMN IF NOT EXISTS creado_en TIMESTAMP",
+    "CREATE INDEX IF NOT EXISTS ix_expedientes_creado_en ON expedientes (creado_en)",
+    """
+    UPDATE expedientes e
+       SET creado_en = COALESCE(
+               (SELECT MIN(b.creado_en) FROM bitacora_auditoria b
+                 WHERE b.expediente_id = e.id AND b.evento = 'APERTURA_EXPEDIENTE'),
+               e.actualizado_en)
+     WHERE e.creado_en IS NULL
+    """,
     # RF-27: la bitácora solo admite inserciones.
     """
     CREATE OR REPLACE FUNCTION bitacora_inmutable() RETURNS trigger AS $$

@@ -5,7 +5,7 @@ import { SkeletonCards, SkeletonRows } from './Skeleton.jsx'
 import { CopyChip, EmptyRow, EmptyState, Segmented, SearchBox } from './ui.jsx'
 import useToast from '../hooks/useToast.js'
 import useDebounce from '../hooks/useDebounce.js'
-import { createExpediente, createTitular } from '../services/api.js'
+import { createTitular } from '../services/api.js'
 import { getEstadoBadge } from '../constants.js'
 import { formatFechaCorta, iniciales, validarRfc } from '../utils/format.js'
 
@@ -37,7 +37,7 @@ function EstadoExpediente({ expediente }) {
 }
 
 /** Acción principal del titular: abrir su expediente o aperturar el primero. */
-function AccionExpediente({ titular, expediente, onAbrir, onAperturar, aperturando, isOnline, compacta = false }) {
+function AccionExpediente({ titular, expediente, onAbrir, onAperturar, isOnline, compacta = false }) {
   if (expediente) {
     return compacta ? (
       <button
@@ -61,11 +61,11 @@ function AccionExpediente({ titular, expediente, onAbrir, onAperturar, aperturan
       type="button"
       className={compacta ? 'icon-button icon-button--sm' : 'btn btn-secondary btn-sm'}
       onClick={() => onAperturar(titular)}
-      disabled={aperturando || !isOnline}
+      disabled={!isOnline}
       aria-label={`Aperturar expediente para ${titular.razon_social}`}
       title="Aperturar expediente"
     >
-      {aperturando ? <Loader2 className="spin" size={14} /> : <FolderPlus size={14} />}
+      <FolderPlus size={14} />
       {!compacta && 'Aperturar expediente'}
     </button>
   )
@@ -130,6 +130,7 @@ export default function TitularesTab({
   titulares,
   expedientes = [],
   onAbrirExpediente,
+  onAperturarExpediente,
   loading,
   onRefresh,
   isOnline = true,
@@ -142,7 +143,6 @@ export default function TitularesTab({
   const [busqueda, setBusqueda] = useState('')
   const [filtroTipo, setFiltroTipo] = useState('TODOS')
   const [vistaElegida, setVistaElegida] = useState(null) // null: automática según el número de empresas
-  const [aperturando, setAperturando] = useState(null)
 
   const consulta = useDebounce(busqueda, 220)
   const rfcCheck = validarRfc(form.rfc, form.tipo_persona)
@@ -207,19 +207,9 @@ export default function TitularesTab({
     }
   }
 
-  const aperturar = async (titular) => {
-    setAperturando(titular.id)
-    try {
-      const creado = await createExpediente({ titular_id: titular.id })
-      toast.exito('Expediente aperturado', creado?.codigo_expediente || titular.razon_social)
-      await onRefresh()
-      onAbrirExpediente?.(creado.id)
-    } catch (err) {
-      toast.error('No se pudo aperturar', err.message)
-    } finally {
-      setAperturando(null)
-    }
-  }
+  // El tipo de expediente (RF-01) se elige en el modal de Expedientes, que
+  // llega con este titular preseleccionado.
+  const aperturar = (titular) => onAperturarExpediente?.(titular.id)
 
   const acciones = {
     onAbrir: (id) => onAbrirExpediente?.(id),
@@ -288,7 +278,6 @@ export default function TitularesTab({
                 key={t.id}
                 titular={t}
                 expedientes={expedientesPorTitular.get(t.id) || []}
-                aperturando={aperturando === t.id}
                 {...acciones}
               />
             ))}
@@ -351,7 +340,6 @@ export default function TitularesTab({
                           <AccionExpediente
                             titular={t}
                             expediente={ultimo}
-                            aperturando={aperturando === t.id}
                             compacta
                             {...acciones}
                           />

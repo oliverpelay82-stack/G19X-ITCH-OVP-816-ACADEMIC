@@ -6,6 +6,8 @@ import TitularesTab from './components/TitularesTab.jsx'
 import ExpedientesTab from './components/ExpedientesTab.jsx'
 import BovedaTab from './components/BovedaTab.jsx'
 import ReglasTab from './components/ReglasTab.jsx'
+import AlertasTab from './components/AlertasTab.jsx'
+import ReportesTab from './components/ReportesTab.jsx'
 import useToast from './hooks/useToast.js'
 import useTheme from './hooks/useTheme.js'
 import {
@@ -27,11 +29,13 @@ const SECCIONES = {
   titulares: { titulo: 'Empresas', grupo: 'Cumplimiento', miga: 'Empresas' },
   expedientes: { titulo: 'Expedientes', grupo: 'Cumplimiento', miga: 'Expedientes' },
   boveda: { titulo: 'Bóveda criptográfica', grupo: 'Cumplimiento', miga: 'Bóveda' },
+  alertas: { titulo: 'Alertas y recomendaciones', grupo: 'Auditoría', miga: 'Alertas' },
+  reportes: { titulo: 'Reportes de cumplimiento', grupo: 'Auditoría', miga: 'Reportes' },
   reglas: { titulo: 'Catálogo de reglas', grupo: 'Configuración', miga: 'Reglas' },
 }
 
 /** Sección a la que lleva el clic en el grupo de las migas. */
-const INICIO_GRUPO = { Cumplimiento: 'titulares', Configuración: 'reglas' }
+const INICIO_GRUPO = { Cumplimiento: 'titulares', Auditoría: 'alertas', Configuración: 'reglas' }
 
 const INTERVALO_REFRESCO = 15000
 
@@ -69,8 +73,10 @@ export default function App() {
   const [expedientes, setExpedientes] = useState([])
   const [documentos, setDocumentos] = useState([])
   const [reglas, setReglas] = useState([])
-  // Expediente que la vista de Expedientes debe desplegar al abrirse desde Empresas.
+  // Expediente que la vista de Expedientes debe desplegar al abrirse desde Empresas o Alertas.
   const [focoExpediente, setFocoExpediente] = useState(null)
+  // Titular para el que se pidió aperturar un expediente desde Empresas.
+  const [aperturaTitular, setAperturaTitular] = useState(null)
 
   // Evita avisar de la misma caída en cada ciclo de sondeo.
   const caidasAvisadas = useRef(new Set())
@@ -151,6 +157,7 @@ export default function App() {
       titulares: titulares.length,
       expedientes: expedientes.length,
       boveda: documentos.length,
+      alertas: expedientes.reduce((n, e) => n + (e.evaluacion?.alertas?.length || 0), 0),
       reglas: reglas.length,
     }),
     [titulares, expedientes, documentos, reglas]
@@ -164,6 +171,11 @@ export default function App() {
 
   const abrirExpediente = useCallback((expedienteId) => {
     setFocoExpediente(expedienteId)
+    setTabActiva('expedientes')
+  }, [])
+
+  const aperturarExpediente = useCallback((titularId) => {
+    setAperturaTitular(titularId)
     setTabActiva('expedientes')
   }, [])
 
@@ -199,6 +211,7 @@ export default function App() {
                 titulares={titulares}
                 expedientes={expedientes}
                 onAbrirExpediente={abrirExpediente}
+                onAperturarExpediente={aperturarExpediente}
                 loading={loading}
                 onRefresh={refrescar}
                 isOnline={health.core.online}
@@ -213,7 +226,15 @@ export default function App() {
                 isOnline={health.core.online}
                 foco={focoExpediente}
                 onFocoAtendido={() => setFocoExpediente(null)}
+                apertura={aperturaTitular}
+                onAperturaAtendida={() => setAperturaTitular(null)}
               />
+            )}
+            {tabActiva === 'alertas' && (
+              <AlertasTab expedientes={expedientes} loading={loading} onAbrirExpediente={abrirExpediente} />
+            )}
+            {tabActiva === 'reportes' && (
+              <ReportesTab expedientes={expedientes} loading={loading} isOnline={health.core.online} />
             )}
             {tabActiva === 'boveda' && (
               <BovedaTab

@@ -5,15 +5,18 @@ Equivalente a @RestController @RequestMapping("/api/v1/expedientes") en Spring B
 El estado de cumplimiento que devuelven estas rutas es el consolidado del
 semáforo (``motor/cumplimiento.py``): se recalcula en cada consulta contra el
 catálogo de reglas vigente y los dictámenes persistidos, de modo que pausar una
-regla o ratificar un dictamen se refleja de inmediato.
+regla, ratificar un dictamen o el simple paso del tiempo (un documento que
+vence) se reflejan de inmediato.
 """
-from datetime import datetime
+from datetime import date, datetime, time, timedelta
 from dataclasses import asdict
+from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
-from clients import rules_client
+from config.catalogo import TIPOS_EXPEDIENTE
 from config.database import get_db
 from models.bitacora import EVENTO_APERTURA_EXPEDIENTE
 from models.titular import TitularExpediente
@@ -30,12 +33,73 @@ def _respuesta(exp: Expediente, evaluacion: cumplimiento.EvaluacionExpediente | 
         id=exp.id,
         titular_id=exp.titular_id,
         codigo_expediente=exp.codigo_expediente,
+        tipo_expediente=exp.tipo_expediente,
+        nombre=exp.nombre,
         estado_cumplimiento=exp.estado_cumplimiento,
         porcentaje_completitud=float(exp.porcentaje_completitud),
+        creado_en=exp.creado_en,
         actualizado_en=exp.actualizado_en,
         titular=TitularResponse.model_validate(exp.titular) if exp.titular else None,
         evaluacion=EvaluacionExpedienteResponse.model_validate(asdict(evaluacion)) if evaluacion else None,
     )
+
+
+def _inicio_del_dia(dia: date) -> datetime:
+    """
+    Inicio del día del calendario local del servidor, con su zona horaria.
+    creado_en es TIMESTAMP sin zona y PostgreSQL lo guarda en la zona de su
+    sesión (America/Mexico_City en local, UTC en el contenedor); al comparar
+    contra un valor con zona, PostgreSQL convierte con esa misma zona, así que
+    el filtro es correcto en ambos despliegues.
+    """
+    return datetime.combine(dia, time.min).astimezone()
+
+
+def consultar_expedientes(
+    db: Session,
+    *,
+    q: Optional[str] = None,
+    tipo_expediente: Optional[str] = None,
+    desde: Optional[date] = None,
+    hasta: Optional[date] = None,
+) -> list[Expediente]:
+    """Búsqueda y filtrado de expedientes (RF-05, HU-04)."""
+    query = db.query(Expediente).join(TitularExpediente, Expediente.titular_id == TitularExpediente.id)
+    if q and q.strip():
+        patron = f"%{q.strip()}%"
+        query = query.filter(or_(
+            Expediente.codigo_expediente.ilike(patron),
+            Expediente.nombre.ilike(patron),
+            TitularExpediente.razon_social.ilike(patron),
+            TitularExpediente.rfc.ilike(patron),
+        ))
+    if tipo_expediente:
+        tipo = tipo_expediente.strip().upper()
+        if tipo not in TIPOS_EXPEDIENTE:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"Tipo de expediente no reconocido: '{tipo_expediente}'. "
+                       f"Valores válidos: {', '.join(TIPOS_EXPEDIENTE)}.",
+            )
+        query = query.filter(Expediente.tipo_expediente == tipo)
+    if desde:
+        query = query.filter(Expediente.creado_en >= _inicio_del_dia(desde))
+    if hasta:
+        query = query.filter(Expediente.creado_en < _inicio_del_dia(hasta + timedelta(days=1)))
+    return query.order_by(Expediente.actualizado_en.desc()).all()
+
+
+def evaluar_lista(
+    db: Session, expedientes: list[Expediente], causa: str
+) -> list[tuple[Expediente, cumplimiento.EvaluacionExpediente]]:
+    """Reevalúa cada expediente consultando una sola vez el catálogo de cada tipo."""
+    cache = cumplimiento.CacheInventarios()
+    resultado = []
+    for exp in expedientes:
+        evaluacion = cumplimiento.reevaluar(db, exp, causa=causa, inventario=cache.para(exp))
+        resultado.append((exp, evaluacion))
+    db.commit()
+    return resultado
 
 
 @router.post(
@@ -47,8 +111,9 @@ def _respuesta(exp: Expediente, evaluacion: cumplimiento.EvaluacionExpediente | 
 def crear_expediente(dto: ExpedienteCreate, request: Request, db: Session = Depends(get_db)):
     """
     Equivalente a @PostMapping.
-    Crea un expediente vinculado a un titular existente. Nace sin documentos,
-    así que su semáforo inicial refleja los obligatorios faltantes (RIE-01).
+    Crea un expediente vinculado a un titular existente, con su clasificación
+    temática (RF-01). Nace sin documentos, así que su semáforo inicial refleja
+    los obligatorios faltantes del catálogo de su tipo (RIE-01, RF-06).
     """
     # 1. Validar que el titular exista
     titular = db.query(TitularExpediente).filter(TitularExpediente.id == dto.titular_id).first()
@@ -58,15 +123,22 @@ def crear_expediente(dto: ExpedienteCreate, request: Request, db: Session = Depe
             detail=f"Titular con ID '{dto.titular_id}' no encontrado en el sistema.",
         )
 
-    # 2. Generar código legible de expediente (ej. EXP-PLU-202609131745)
+    # 2. Generar código legible de expediente (ej. EXP-PLU-202609131745). Si el
+    #    titular ya abrió otro en el mismo minuto, se agrega un consecutivo.
     prefijo_rfc = titular.rfc[:4]
     estampa_tiempo = datetime.now().strftime("%Y%m%d%H%M")
     codigo = f"EXP-{prefijo_rfc}-{estampa_tiempo}"
+    consecutivo = 1
+    while db.query(Expediente.id).filter(Expediente.codigo_expediente == codigo).first():
+        consecutivo += 1
+        codigo = f"EXP-{prefijo_rfc}-{estampa_tiempo}-{consecutivo}"
 
     # 3. Crear el modelo
     nuevo_expediente = Expediente(
         titular_id=titular.id,
         codigo_expediente=codigo,
+        tipo_expediente=dto.tipo_expediente.value,
+        nombre=(dto.nombre or "").strip() or None,
         estado_cumplimiento="EN_REVISION",
         porcentaje_completitud=0.00,
     )
@@ -80,7 +152,13 @@ def crear_expediente(dto: ExpedienteCreate, request: Request, db: Session = Depe
         expediente_id=nuevo_expediente.id,
         usuario="OPERADOR",
         ip_origen=ip,
-        detalle={"codigo_expediente": codigo, "titular_id": titular.id, "rfc_titular": titular.rfc},
+        detalle={
+            "codigo_expediente": codigo,
+            "tipo_expediente": nuevo_expediente.tipo_expediente,
+            "nombre": nuevo_expediente.nombre,
+            "titular_id": titular.id,
+            "rfc_titular": titular.rfc,
+        },
     )
     evaluacion = cumplimiento.reevaluar(db, nuevo_expediente, causa="APERTURA_EXPEDIENTE", ip_origen=ip)
     db.commit()
@@ -91,22 +169,27 @@ def crear_expediente(dto: ExpedienteCreate, request: Request, db: Session = Depe
 @router.get(
     "",
     response_model=list[ExpedienteResponse],
-    summary="Listar todos los expedientes documentales",
+    summary="Listar y buscar expedientes (por texto, tipo, fecha de apertura y estatus)",
 )
-def listar_expedientes(db: Session = Depends(get_db)):
+def listar_expedientes(
+    q: Optional[str] = Query(None, description="Folio, nombre del expediente, razón social o RFC"),
+    tipo_expediente: Optional[str] = Query(None, description="JURIDICO, CORPORATIVO o REGULATORIO"),
+    estado: Optional[str] = Query(None, description="CONFORME, EN_REVISION o NO_CONFORME"),
+    desde: Optional[date] = Query(None, description="Apertura a partir de esta fecha (inclusive)"),
+    hasta: Optional[date] = Query(None, description="Apertura hasta esta fecha (inclusive)"),
+    db: Session = Depends(get_db),
+):
     """
-    Equivalente a @GetMapping.
-    Retorna la lista de expedientes con su titular y su semáforo consolidado.
-    El catálogo de obligatorios se consulta una sola vez para toda la lista.
+    Equivalente a @GetMapping (RF-05, HU-04).
+    Retorna los expedientes con su titular y su semáforo consolidado. El
+    estatus se filtra después de reevaluar, porque puede cambiar con la
+    consulta (un documento que venció hoy, una regla pausada).
     """
-    expedientes = db.query(Expediente).order_by(Expediente.actualizado_en.desc()).all()
-    inventario = rules_client.obtener_documentos_obligatorios() if expedientes else None
-    resultado = []
-    for exp in expedientes:
-        evaluacion = cumplimiento.reevaluar(db, exp, causa="CONSULTA_EXPEDIENTES", inventario=inventario)
-        resultado.append((exp, evaluacion))
-    db.commit()
-    return [_respuesta(exp, evaluacion) for exp, evaluacion in resultado]
+    expedientes = consultar_expedientes(db, q=q, tipo_expediente=tipo_expediente, desde=desde, hasta=hasta)
+    evaluados = evaluar_lista(db, expedientes, causa="CONSULTA_EXPEDIENTES")
+    if estado:
+        evaluados = [(exp, ev) for exp, ev in evaluados if exp.estado_cumplimiento == estado.strip().upper()]
+    return [_respuesta(exp, evaluacion) for exp, evaluacion in evaluados]
 
 
 @router.get(
@@ -117,7 +200,8 @@ def listar_expedientes(db: Session = Depends(get_db)):
 def obtener_expediente_por_id(expediente_id: str, db: Session = Depends(get_db)):
     """
     Retorna el expediente con el desglose del semáforo: documentos obligatorios
-    y faltantes, estado de cada documento vigente y los motivos del estado.
+    y faltantes, anexos exigidos, estado y vigencia de cada documento, motivos
+    del estado y alertas con su recomendación.
     """
     exp = db.query(Expediente).filter(Expediente.id == expediente_id).first()
     if not exp:

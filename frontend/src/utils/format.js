@@ -26,6 +26,21 @@ export function formatFechaCorta(valor) {
   return formatFecha(valor, { day: '2-digit', month: 'short', year: 'numeric' })
 }
 
+/**
+ * Fecha de calendario sin hora (AAAA-MM-DD, p. ej. una fecha de vencimiento).
+ * `new Date('2026-10-01')` la interpretaría como medianoche UTC y en México se
+ * mostraría el día anterior; aquí se construye en hora local.
+ */
+export function formatDia(valor) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(valor || '')
+  if (!m) return formatFechaCorta(valor)
+  return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])).toLocaleDateString('es-MX', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  })
+}
+
 /** "hace 4 min", "hace 2 h"… para marcas de tiempo recientes. */
 export function formatRelativo(valor) {
   if (!valor) return '—'

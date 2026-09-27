@@ -50,6 +50,15 @@ class Regla(Base):
     # expediente (RIE-01 / HU-09)
     documento_obligatorio = Column(Boolean, default=True, nullable=False)
 
+    # Tipo de expediente al que aplica la regla (RF-06): JURIDICO, CORPORATIVO o
+    # REGULATORIO; nulo cuando aplica a cualquier tipo de expediente.
+    tipo_expediente = Column(String(20), nullable=True)
+
+    # Vinculación de anexos (RIE-02, RF-07, HU-10): si se indica, la regla exige
+    # ``tipo_documento`` como anexo solo cuando el expediente contiene este
+    # documento principal (ej. ANEXO_CONTRATO cuando hay CONTRATO_SERVICIOS).
+    documento_principal = Column(String(50), nullable=True)
+
     # Vigencia temporal en días máximos permitidos (RCV-01)
     dias_maximos_vigencia = Column(Integer, nullable=True)
 

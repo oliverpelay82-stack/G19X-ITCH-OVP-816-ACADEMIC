@@ -4,6 +4,17 @@ import { MAX_FILE_SIZE_BYTES } from '../constants.js'
 import { analizarNivel1 } from '../utils/nivel1.js'
 import { formatBytes } from '../utils/format.js'
 
+/** Agrupa las opciones por `seccion` conservando su orden (sin sección, un solo grupo). */
+function agruparPorSeccion(tipos) {
+  const grupos = new Map()
+  for (const t of tipos) {
+    const clave = t.seccion || ''
+    if (!grupos.has(clave)) grupos.set(clave, [])
+    grupos.get(clave).push(t)
+  }
+  return [...grupos.entries()]
+}
+
 /**
  * Zona de carga con arrastrar y soltar. Al recibir el archivo ejecuta en el
  * navegador el Nivel 1 del pipeline (firma binaria, tamaño y SHA-256) y
@@ -142,11 +153,23 @@ export default function DropZone({
           <label className="field">
             <span className="field-label">Tipo de documento</span>
             <select value={tipoActivo} onChange={(e) => setTipo(e.target.value)}>
-              {tipos.map((t) => (
-                <option key={t.value} value={t.value}>
-                  {t.label}
-                </option>
-              ))}
+              {agruparPorSeccion(tipos).map(([seccion, opciones]) =>
+                seccion ? (
+                  <optgroup key={seccion} label={seccion}>
+                    {opciones.map((t) => (
+                      <option key={t.value} value={t.value}>
+                        {t.label}
+                      </option>
+                    ))}
+                  </optgroup>
+                ) : (
+                  opciones.map((t) => (
+                    <option key={t.value} value={t.value}>
+                      {t.label}
+                    </option>
+                  ))
+                )
+              )}
             </select>
           </label>
         )}

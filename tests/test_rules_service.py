@@ -165,6 +165,39 @@ def prueba_documentos_obligatorios() -> None:
     verificar(por_tipo["COMP_DOMICILIO"].severidad == "CRITICA" and por_tipo["COMP_DOMICILIO"].codigo_regla == "RIE-09-DOM",
               "Si dos reglas exigen el mismo tipo, prevalece la más severa")
 
+    print("\n[10] Inventario por tipo de expediente y anexos vinculados (RF-06, RIE-02)")
+
+    def regla(codigo, tipo, tipo_expediente=None, principal=None, severidad="CRITICA"):
+        return SimpleNamespace(codigo_regla=codigo, familia_regla="RIE", severidad=severidad, tipo_documento=tipo,
+                               documento_obligatorio=True, activo=True, tipo_expediente=tipo_expediente,
+                               documento_principal=principal)
+
+    catalogo = [
+        regla("RIE-01-CSF", "CSF_SAT", "CORPORATIVO"),
+        regla("RIE-01-JUR-CONT", "CONTRATO_SERVICIOS", "JURIDICO"),
+        regla("RIE-01-GEN", "AVISO_PRIVACIDAD"),                                 # sin tipo: aplica a todos
+        regla("RIE-02-CONT-ANX", "ANEXO_CONTRATO", principal="CONTRATO_SERVICIOS", severidad="ALTA"),
+    ]
+    juridico = {(d.tipo_documento, d.documento_principal) for d in obligatorios.documentos_obligatorios(catalogo, "juridico")}
+    verificar(juridico == {("CONTRATO_SERVICIOS", None), ("AVISO_PRIVACIDAD", None),
+                           ("ANEXO_CONTRATO", "CONTRATO_SERVICIOS")},
+              "El jurídico recibe sus reglas, las generales y el anexo; no la CSF del corporativo")
+    todos = obligatorios.documentos_obligatorios(catalogo)
+    verificar(len(todos) == 4, "Sin tipo de expediente se devuelven todas las reglas (compatibilidad)")
+
+    invalido = client.get("/api/v1/reglas/documentos-obligatorios", params={"tipo_expediente": "FISCAL"})
+    verificar(invalido.status_code == 422, "Un tipo de expediente inválido responde 422", f"HTTP {invalido.status_code}")
+    for tipo in ("JURIDICO", "CORPORATIVO", "REGULATORIO"):
+        datos = client.get("/api/v1/reglas/documentos-obligatorios", params={"tipo_expediente": tipo}).json()
+        verificar(all(d["tipo_expediente"] in (None, tipo) for d in datos),
+                  f"El catálogo real para {tipo} solo trae reglas de ese tipo o generales",
+                  ", ".join(d["tipo_documento"] for d in datos if not d["documento_principal"]))
+    anexo_propio = client.post("/api/v1/reglas", json={
+        "codigo_regla": "RIE-99-TEST", "nombre_regla": "Anexo inválido", "familia_regla": "RIE",
+        "descripcion": "Un documento no puede ser anexo de sí mismo.", "severidad": "ALTA", "accion": "Ninguna",
+        "tipo_documento": "FIANZA", "documento_principal": "FIANZA"})
+    verificar(anexo_propio.status_code == 422, "Un documento no puede ser anexo de sí mismo (422, no se guarda)")
+
     respuesta = client.get("/api/v1/reglas/documentos-obligatorios")
     verificar(respuesta.status_code == 200, "El endpoint responde", f"HTTP {respuesta.status_code}")
     datos = respuesta.json()

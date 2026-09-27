@@ -5,7 +5,7 @@ Conecta SQLAlchemy con la base de datos MySQL local.
 """
 import os
 from dotenv import load_dotenv
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker, declarative_base
 
 # Cargar variables del archivo .env (ubicado en backend/.env, resuelto de forma
@@ -54,10 +54,38 @@ def get_db():
         db.close()
 
 
+# ── Migraciones idempotentes (PostgreSQL) ──────────────────────────
+# create_all() no altera tablas existentes: estas sentencias agregan las
+# columnas nuevas del catálogo sobre una tabla ya poblada.
+_MIGRACIONES_POSTGRES = [
+    # RF-06: reglas por tipo de expediente. RIE-02 / RF-07: anexos vinculados.
+    "ALTER TABLE reglas_validacion ADD COLUMN IF NOT EXISTS tipo_expediente VARCHAR(20)",
+    "ALTER TABLE reglas_validacion ADD COLUMN IF NOT EXISTS documento_principal VARCHAR(50)",
+]
+
+# Migración de datos, una sola vez (cuando la columna tipo_expediente se crea):
+# el inventario obligatorio previo (CSF, domicilio y acta) es el del expediente
+# corporativo del DOC-02. Sin esto, un expediente jurídico exigiría la CSF.
+_ASIGNAR_INVENTARIO_CORPORATIVO = """
+    UPDATE reglas_validacion SET tipo_expediente = 'CORPORATIVO'
+     WHERE codigo_regla IN ('RIE-01-CSF', 'RIE-01-DOM', 'RIE-01-ACTA') AND tipo_expediente IS NULL
+"""
+
+
 def init_db():
     """
     Equivalente a: spring.jpa.hibernate.ddl-auto=update
-    Crea automáticamente las tablas en MySQL si aún no existen.
+    Crea las tablas que aún no existen y aplica las migraciones idempotentes.
     """
     Base.metadata.create_all(bind=engine)
-    print("[Base de Datos] Tablas sincronizadas con éxito en MySQL.")
+    if engine.dialect.name == "postgresql":
+        with engine.begin() as conn:
+            columna_previa = conn.execute(text(
+                "SELECT 1 FROM information_schema.columns WHERE table_schema = current_schema() "
+                "AND table_name = 'reglas_validacion' AND column_name = 'tipo_expediente'"
+            )).first()
+            for sentencia in _MIGRACIONES_POSTGRES:
+                conn.execute(text(sentencia))
+            if columna_previa is None:
+                conn.execute(text(_ASIGNAR_INVENTARIO_CORPORATIVO))
+    print("[Base de Datos] Tablas y migraciones sincronizadas con éxito.")

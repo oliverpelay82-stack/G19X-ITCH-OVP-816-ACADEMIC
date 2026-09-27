@@ -1,4 +1,4 @@
-import { Building2, FolderKanban, Scale, ShieldCheck, Vault } from 'lucide-react'
+import { BellRing, Building2, FileBarChart2, FolderKanban, Scale, ShieldCheck, Vault } from 'lucide-react'
 
 const GRUPOS = [
   {
@@ -7,6 +7,13 @@ const GRUPOS = [
       { id: 'titulares', label: 'Empresas', icon: Building2 },
       { id: 'expedientes', label: 'Expedientes', icon: FolderKanban },
       { id: 'boveda', label: 'Bóveda', icon: Vault },
+    ],
+  },
+  {
+    label: 'Auditoría',
+    items: [
+      { id: 'alertas', label: 'Alertas', icon: BellRing },
+      { id: 'reportes', label: 'Reportes', icon: FileBarChart2 },
     ],
   },
   {

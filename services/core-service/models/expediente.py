@@ -30,14 +30,23 @@ class Expediente(Base):
     
     # Código único visible (Ej: EXP-PLU-20260913)
     codigo_expediente = Column(String(50), unique=True, nullable=False, index=True)
-    
+
+    # Clasificación temática (RF-01, HU-01): JURIDICO, CORPORATIVO o REGULATORIO.
+    # Decide qué documentos exige el catálogo de reglas (RF-06).
+    tipo_expediente = Column(String(20), nullable=False, default="CORPORATIVO", server_default="CORPORATIVO", index=True)
+
+    # Nombre descriptivo opcional (RF-01), ej. 'Contrato de mantenimiento 2026'
+    nombre = Column(String(150), nullable=True)
+
     # Estado: 'EN_REVISION', 'CONFORME', 'NO_CONFORME', 'BLOQUEADO'
     estado_cumplimiento = Column(String(30), default="EN_REVISION", nullable=False)
     
     # Porcentaje de completitud documental (0.00 a 100.00)
     porcentaje_completitud = Column(Numeric(5, 2), default=0.00, nullable=False)
     
-    # Marcas de tiempo
+    # Marcas de tiempo. creado_en permite filtrar por fecha de apertura (RF-05);
+    # en los expedientes previos a la columna se reconstruye desde la bitácora.
+    creado_en = Column(DateTime, nullable=True, default=lambda: datetime.now(timezone.utc), index=True)
     actualizado_en = Column(
         DateTime,
         default=lambda: datetime.now(timezone.utc),

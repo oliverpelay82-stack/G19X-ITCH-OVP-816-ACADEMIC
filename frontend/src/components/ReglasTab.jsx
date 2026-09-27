@@ -12,7 +12,10 @@ import {
   getSeveridadMeta,
   SEVERIDADES,
   TIPO_DOCUMENTO_CORTO,
+  TIPO_DOCUMENTO_LABEL,
+  TIPO_EXPEDIENTE_LABEL,
   TIPOS_DOCUMENTO,
+  TIPOS_EXPEDIENTE,
 } from '../constants.js'
 
 const FORM_INICIAL = {
@@ -26,6 +29,8 @@ const FORM_INICIAL = {
   dias_maximos_vigencia: '',
   aplicaTodos: true,
   tiposSeleccionados: [],
+  tipo_expediente: '',
+  documento_principal: '',
 }
 
 const COLUMNAS = 6
@@ -53,6 +58,7 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
   const [filtroFamilia, setFiltroFamilia] = useState('TODAS')
   const [filtroSeveridad, setFiltroSeveridad] = useState('TODAS')
   const [filtroEstado, setFiltroEstado] = useState('TODAS')
+  const [filtroTipoExp, setFiltroTipoExp] = useState('TODOS')
   const [busqueda, setBusqueda] = useState('')
   const [modalAbierto, setModalAbierto] = useState(false)
   const [form, setForm] = useState(FORM_INICIAL)
@@ -68,15 +74,17 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
       const familiaOk = filtroFamilia === 'TODAS' || r.familia_regla === filtroFamilia
       const severidadOk = filtroSeveridad === 'TODAS' || r.severidad === filtroSeveridad
       const estadoOk = filtroEstado === 'TODAS' || (filtroEstado === 'ACTIVAS') === Boolean(r.activo)
+      // Un tipo de expediente ve sus reglas y las generales (sin tipo), como el rules-service.
+      const tipoExpOk = filtroTipoExp === 'TODOS' || !r.tipo_expediente || r.tipo_expediente === filtroTipoExp
       const busquedaOk =
         !q ||
         r.codigo_regla?.toLowerCase().includes(q) ||
         r.nombre_regla?.toLowerCase().includes(q) ||
         r.descripcion?.toLowerCase().includes(q) ||
         r.accion?.toLowerCase().includes(q)
-      return familiaOk && severidadOk && estadoOk && busquedaOk
+      return familiaOk && severidadOk && estadoOk && tipoExpOk && busquedaOk
     })
-  }, [reglas, filtroFamilia, filtroSeveridad, filtroEstado, consulta])
+  }, [reglas, filtroFamilia, filtroSeveridad, filtroEstado, filtroTipoExp, consulta])
 
   /** Agrupadas por familia normativa, en el orden oficial del DOC-05. */
   const porFamilia = useMemo(() => {
@@ -159,6 +167,8 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
       accion: form.accion,
       documento_obligatorio: form.documento_obligatorio,
       dias_maximos_vigencia: form.dias_maximos_vigencia === '' ? null : Number(form.dias_maximos_vigencia),
+      tipo_expediente: form.tipo_expediente || null,
+      documento_principal: (!form.aplicaTodos && form.documento_principal) || null,
     }
 
     try {
@@ -220,6 +230,18 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
           </select>
         </label>
 
+        <label className="select-inline">
+          <span className="sr-only">Filtrar por tipo de expediente</span>
+          <select value={filtroTipoExp} onChange={(e) => setFiltroTipoExp(e.target.value)}>
+            <option value="TODOS">Todo tipo de expediente</option>
+            {TIPOS_EXPEDIENTE.map((t) => (
+              <option key={t.value} value={t.value}>
+                {t.label}
+              </option>
+            ))}
+          </select>
+        </label>
+
         <button type="button" className="btn btn-primary toolbar-action" onClick={() => setModalAbierto(true)}>
           <Plus size={14} />
           Nueva regla
@@ -230,8 +252,8 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
         <div className="table-scroll">
           <table className="data-table">
             <colgroup>
-              <col style={{ width: '10%' }} />
-              <col style={{ width: '34%' }} />
+              <col style={{ width: '13%' }} />
+              <col style={{ width: '31%' }} />
               <col style={{ width: '11%' }} />
               <col style={{ width: '20%' }} />
               <col style={{ width: '17%' }} />
@@ -281,7 +303,9 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
                       const sev = getSeveridadMeta(r.severidad)
                       return (
                         <tr className={!r.activo ? 'is-paused' : ''} key={r.id}>
-                          <td className="mono cell-mono">{r.codigo_regla}</td>
+                          <td className="mono cell-mono cell-code" title={r.codigo_regla}>
+                            {r.codigo_regla}
+                          </td>
                           <td className="cell-wide">
                             <div className="cell-stack">
                               <span className="identity-name">{r.nombre_regla}</span>
@@ -303,6 +327,19 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
                                   ? TIPO_DOCUMENTO_CORTO[r.tipo_documento] || r.tipo_documento
                                   : 'Todo el expediente'}
                               </span>
+                              {r.documento_principal && (
+                                <span
+                                  className="tag"
+                                  title={`Anexo obligatorio de ${TIPO_DOCUMENTO_LABEL[r.documento_principal] || r.documento_principal} (RIE-02)`}
+                                >
+                                  Anexo de {TIPO_DOCUMENTO_CORTO[r.documento_principal] || r.documento_principal}
+                                </span>
+                              )}
+                              {r.tipo_expediente && (
+                                <span className="tag tag--type">
+                                  {TIPO_EXPEDIENTE_LABEL[r.tipo_expediente] || r.tipo_expediente}
+                                </span>
+                              )}
                               {r.dias_maximos_vigencia != null && (
                                 <span className="tag tabular">{r.dias_maximos_vigencia} días</span>
                               )}
@@ -447,25 +484,68 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
 
               {!form.aplicaTodos && (
                 <div className="type-picker">
-                  {TIPOS_DOCUMENTO.map((t) => {
-                    const activo = form.tiposSeleccionados.includes(t.value)
-                    return (
-                      <button
-                        type="button"
-                        key={t.value}
-                        className={`chip ${activo ? 'is-active' : ''}`}
-                        onClick={() => toggleTipo(t.value)}
-                        aria-pressed={activo}
-                      >
-                        {t.corto}
-                      </button>
-                    )
-                  })}
+                  {TIPOS_EXPEDIENTE.map((grupo) => (
+                    <div className="type-picker-group" key={grupo.value}>
+                      <span className="type-picker-label">{grupo.label}</span>
+                      <div className="tag-row">
+                        {TIPOS_DOCUMENTO.filter((t) => t.grupo === grupo.value).map((t) => {
+                          const activo = form.tiposSeleccionados.includes(t.value)
+                          return (
+                            <button
+                              type="button"
+                              key={t.value}
+                              className={`chip ${activo ? 'is-active' : ''}`}
+                              onClick={() => toggleTipo(t.value)}
+                              aria-pressed={activo}
+                              title={t.label}
+                            >
+                              {t.corto}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  ))}
                   <p className="field-hint">
                     Se creará una regla por cada tipo seleccionado, con el código sufijado por documento.
                   </p>
                 </div>
               )}
+            </div>
+
+            <div className="field-row">
+              <label className="field">
+                <span className="field-label">Tipo de expediente</span>
+                <select value={form.tipo_expediente} onChange={(e) => setForm({ ...form, tipo_expediente: e.target.value })}>
+                  <option value="">Todos los tipos</option>
+                  {TIPOS_EXPEDIENTE.map((t) => (
+                    <option key={t.value} value={t.value}>
+                      {t.label}
+                    </option>
+                  ))}
+                </select>
+                <span className="field-hint">Solo se exige en expedientes de este tipo (RF-06).</span>
+              </label>
+              <label className="field">
+                <span className="field-label">Anexo obligatorio de</span>
+                <select
+                  value={form.documento_principal}
+                  disabled={form.aplicaTodos}
+                  onChange={(e) => setForm({ ...form, documento_principal: e.target.value })}
+                >
+                  <option value="">No es anexo</option>
+                  {TIPOS_DOCUMENTO.filter((t) => !form.tiposSeleccionados.includes(t.value)).map((t) => (
+                    <option key={t.value} value={t.value}>
+                      {t.label}
+                    </option>
+                  ))}
+                </select>
+                <span className="field-hint">
+                  {form.aplicaTodos
+                    ? 'Selecciona primero el documento del anexo.'
+                    : 'Se exige solo si el expediente contiene ese documento (RIE-02).'}
+                </span>
+              </label>
             </div>
 
             {error && <p className="form-error">{error}</p>}

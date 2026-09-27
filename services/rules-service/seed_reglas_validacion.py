@@ -7,7 +7,11 @@ RCV-02: la "Caducidad Estricta de Documentos con Vigencia Legal Fija" del
 mismo catálogo, aplicada al comprobante de domicilio fiscal con el límite
 "no mayor a 3 meses" del DOC-02 (90 días naturales, DOC-08). Carga también
 las reglas RIE-01-CSF, RIE-01-DOM y RIE-01-ACTA, que declaran los tres tipos de
-documento obligatorios del expediente (DOC-02).
+documento obligatorios del expediente corporativo (DOC-02, Tabla 3), y las
+reglas equivalentes de los expedientes jurídico (Tabla 4) y regulatorio
+(Tabla 5): el inventario obligatorio depende del tipo de expediente (RF-06).
+Por último, RIE-02-CONT-ANX vincula los anexos legales al contrato de
+prestación de servicios (RIE-02, RF-07).
 
 Ejecuta (desde services/rules-service/): python seed_reglas_validacion.py
 """
@@ -33,16 +37,17 @@ REGLAS_BASE = [
         "documento_obligatorio": True,
         "dias_maximos_vigencia": None,
     },
-    # Inventario obligatorio del expediente B2B (DOC-02): una regla RIE por tipo
-    # de documento. El core-service calcula la completitud (RIE-01) a partir de
-    # estas reglas, no de una lista fija en su código (HU-09 / HU-12).
+    # Inventario obligatorio por tipo de expediente (DOC-02, Tablas 3 a 5): una
+    # regla RIE por tipo de documento. El core-service calcula la completitud
+    # (RIE-01) a partir de estas reglas, no de una lista fija en su código
+    # (HU-09 / HU-12), y solo aplica las del tipo del expediente (RF-06).
     *[
         {
             "codigo_regla": codigo,
             "nombre_regla": f"Completitud: {nombre}",
             "familia_regla": "RIE",
             "descripcion": (
-                f"El expediente debe contener {articulo} {nombre}. Mientras falte, "
+                f"El expediente {etiqueta_expediente} debe contener {articulo} {nombre}. Mientras falte, "
                 "el expediente no puede obtener estatus de aprobado (RIE-01)."
             ),
             "severidad": "CRITICA",
@@ -50,13 +55,48 @@ REGLAS_BASE = [
             "tipo_documento": tipo,
             "documento_obligatorio": True,
             "dias_maximos_vigencia": None,
+            "tipo_expediente": tipo_expediente,
         }
-        for codigo, tipo, articulo, nombre in [
-            ("RIE-01-CSF", "CSF_SAT", "la", "Constancia de Situación Fiscal"),
-            ("RIE-01-DOM", "COMP_DOMICILIO", "el", "Comprobante de Domicilio Fiscal"),
-            ("RIE-01-ACTA", "ACTA_CONSTITUTIVA", "el", "Acta Constitutiva / Poder Notarial"),
+        for tipo_expediente, etiqueta_expediente, codigo, tipo, articulo, nombre in [
+            # Corporativo (Tabla 3): el inventario base del expediente B2B.
+            ("CORPORATIVO", "corporativo", "RIE-01-CSF", "CSF_SAT", "la", "Constancia de Situación Fiscal"),
+            ("CORPORATIVO", "corporativo", "RIE-01-DOM", "COMP_DOMICILIO", "el", "Comprobante de Domicilio Fiscal"),
+            ("CORPORATIVO", "corporativo", "RIE-01-ACTA", "ACTA_CONSTITUTIVA", "el", "Acta Constitutiva"),
+            # Jurídico (Tabla 4): documentos marcados como obligatorios.
+            ("JURIDICO", "jurídico", "RIE-01-JUR-CONT", "CONTRATO_SERVICIOS", "el",
+             "Contrato de Prestación de Servicios"),
+            ("JURIDICO", "jurídico", "RIE-01-JUR-NDA", "ACUERDO_CONFIDENCIALIDAD", "el",
+             "Acuerdo de Confidencialidad (NDA)"),
+            ("JURIDICO", "jurídico", "RIE-01-JUR-PODER", "PODER_NOTARIAL", "el", "Poder Notarial del representante"),
+            # Regulatorio (Tabla 5): documentos marcados como obligatorios.
+            ("REGULATORIO", "regulatorio", "RIE-01-REG-LIC", "LICENCIA_OPERACION", "la", "Licencia de Operación"),
+            ("REGULATORIO", "regulatorio", "RIE-01-REG-PERM", "PERMISO_SECTORIAL", "el",
+             "Permiso Municipal o Sectorial"),
+            ("REGULATORIO", "regulatorio", "RIE-01-REG-POL", "POLIZA_SEGURO", "la", "Póliza de Seguro"),
+            ("REGULATORIO", "regulatorio", "RIE-01-REG-REGS", "REGISTRO_SECTORIAL", "el",
+             "Registro ante Autoridad Sectorial"),
         ]
     ],
+    # Anexo vinculado (RIE-02, RF-07): el contrato de prestación de servicios
+    # exige sus anexos legales (DOC-02, Tabla 4: "presencia de los anexos
+    # referenciados en el contrato principal"). Aplica a cualquier expediente
+    # que contenga un contrato.
+    {
+        "codigo_regla": "RIE-02-CONT-ANX",
+        "nombre_regla": "Anexos legales del Contrato de Prestación de Servicios",
+        "familia_regla": "RIE",
+        "descripcion": (
+            "Si el expediente contiene un Contrato de Prestación de Servicios, debe incluir también "
+            "sus anexos legales. La ausencia del anexo invalida el documento principal (RIE-02)."
+        ),
+        "severidad": "ALTA",
+        "accion": "Semáforo Rojo con indicación específica del anexo ausente.",
+        "tipo_documento": "ANEXO_CONTRATO",
+        "documento_obligatorio": True,
+        "dias_maximos_vigencia": None,
+        "tipo_expediente": None,
+        "documento_principal": "CONTRATO_SERVICIOS",
+    },
     {
         "codigo_regla": "RIE-02",
         "nombre_regla": "Vinculación Obligatoria de Anexos",

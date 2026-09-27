@@ -2,8 +2,11 @@
 Esquemas de validación de datos para Reglas de Validación (DTOs).
 """
 from datetime import date, datetime
-from typing import Optional
-from pydantic import BaseModel, ConfigDict, Field
+from typing import Literal, Optional
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+# Clasificación temática del expediente (RF-01, DOC-02 Tabla 5).
+TipoExpediente = Literal["JURIDICO", "CORPORATIVO", "REGULATORIO"]
 
 
 class ReglaCreate(BaseModel):
@@ -18,6 +21,18 @@ class ReglaCreate(BaseModel):
     documento_obligatorio: bool = Field(True, description="Completitud obligatoria del tipo de documento")
     dias_maximos_vigencia: Optional[int] = Field(None, ge=0, description="Vigencia temporal en días máximos")
     activo: bool = Field(True, description="Bandera de alta/baja lógica de la regla")
+    tipo_expediente: Optional[TipoExpediente] = Field(
+        None, description="Tipo de expediente al que aplica (RF-06); nulo = todos"
+    )
+    documento_principal: Optional[str] = Field(
+        None, max_length=50,
+        description="RIE-02: el tipo_documento es anexo obligatorio de este documento principal (RF-07)",
+    )
+
+    @field_validator("tipo_expediente", mode="before")
+    @classmethod
+    def _tipo_expediente_mayusculas(cls, valor):
+        return valor.strip().upper() or None if isinstance(valor, str) else valor
 
 
 class ReglaResponse(BaseModel):
@@ -33,6 +48,8 @@ class ReglaResponse(BaseModel):
     documento_obligatorio: bool
     dias_maximos_vigencia: Optional[int] = None
     activo: bool
+    tipo_expediente: Optional[str] = None
+    documento_principal: Optional[str] = None
     creado_en: datetime
 
     model_config = ConfigDict(from_attributes=True)
@@ -43,6 +60,10 @@ class DocumentoObligatorioResponse(BaseModel):
     tipo_documento: str
     codigo_regla: str
     severidad: str
+    documento_principal: Optional[str] = Field(
+        None, description="Solo en anexos (RIE-02): documento cuya presencia vuelve exigible este anexo"
+    )
+    tipo_expediente: Optional[str] = Field(None, description="Tipo de expediente de la regla; nulo = todos")
 
 
 class EvaluacionVigenciaRequest(BaseModel):

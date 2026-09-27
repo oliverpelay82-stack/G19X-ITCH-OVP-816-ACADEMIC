@@ -3002,6 +3002,373 @@ select option {
   transform: none;
 }
 
+/* ══════════════════ 10. TIPOS, ALERTAS Y REPORTES ═══════════════ */
+/* Segunda fila de filtros (tipo de expediente y fechas de apertura, RF-05). */
+.toolbar--sub {
+  margin-top: calc(-1 * var(--s-1));
+}
+
+.date-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+}
+
+.date-inline input {
+  width: auto;
+  min-width: 140px;
+}
+
+.cell-warn {
+  color: var(--warn);
+}
+
+/* Códigos de regla (RIE-01-JUR-PODER…): una sola línea, recortada con su título completo. */
+.cell-code {
+  font-size: var(--fs-micro);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Identidad de la tarjeta de expediente: razón social + tipo. */
+.exp-identity-row {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-width: 0;
+}
+
+.exp-identity-row .tag {
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.exp-nombre {
+  color: var(--text-secondary);
+}
+
+.exp-nalertas {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.exp-motivos summary {
+  cursor: pointer;
+  list-style-position: inside;
+}
+
+.exp-export {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  padding-top: var(--s-3);
+  border-top: var(--border-subtle);
+}
+
+.export-row {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+}
+
+.col-right .export-row {
+  justify-content: flex-end;
+}
+
+/* Selector del tipo de expediente en el alta (RF-01): tres opciones con su descripción. */
+.type-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--s-2);
+}
+
+.type-option {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--s-2) var(--s-3);
+  border: var(--border-default);
+  border-radius: var(--r-sm);
+  background: var(--bg-surface);
+  cursor: pointer;
+  transition: border-color var(--dur) var(--ease), background-color var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease);
+}
+
+.type-option:hover {
+  border-color: var(--line-strong);
+  background: var(--bg-subtle);
+}
+
+.type-option.is-active {
+  border-color: var(--text-primary);
+  box-shadow: var(--shadow-hairline);
+}
+
+.type-option:focus-within {
+  box-shadow: var(--focus-ring);
+}
+
+.type-option input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.type-option-label {
+  font-size: var(--fs-body);
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.type-option-desc {
+  font-size: var(--fs-micro);
+  line-height: 1.4;
+  color: var(--text-muted);
+}
+
+/* Selector de documentos de una regla, agrupado por tipo de expediente. */
+.type-picker-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+  width: 100%;
+}
+
+.type-picker-label {
+  font-size: var(--fs-micro);
+  font-weight: 500;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* Alertas con recomendación (RF-18, RF-21). */
+.exp-alertas {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+
+.alerta-lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  list-style: none;
+}
+
+.alerta {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: var(--s-3) var(--s-3) var(--s-3) var(--s-4);
+  border: var(--border-default);
+  border-radius: var(--r-sm);
+  background: var(--bg-surface);
+  overflow: hidden;
+}
+
+/* Filete con el color de la severidad; la etiqueta siempre lo acompaña. */
+.alerta::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: var(--off-solid);
+}
+
+.alerta--bad::before {
+  background: var(--bad-solid);
+}
+
+.alerta--warn::before {
+  background: var(--warn-solid);
+}
+
+.alerta-lista--bandeja .alerta {
+  box-shadow: var(--shadow-card);
+  animation: rise-in var(--dur-slow) var(--ease);
+}
+
+.alerta-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+}
+
+.alerta-head .tag {
+  height: 20px;
+}
+
+.alerta-regla {
+  font-size: var(--fs-micro);
+}
+
+.alerta-exp {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  max-width: 55%;
+  padding: 2px var(--s-2);
+  border-radius: var(--r-xs);
+  font-size: var(--fs-small);
+  color: var(--text-secondary);
+  transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+.alerta-exp:hover {
+  background: var(--bg-subtle);
+  color: var(--text-primary);
+}
+
+.alerta-exp .mono {
+  font-size: var(--fs-micro);
+}
+
+.alerta-exp-nombre {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.alerta-titulo {
+  font-size: var(--fs-body);
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.alerta-detalle {
+  font-size: var(--fs-small);
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.alerta-recomendacion {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-2);
+  margin-top: 2px;
+  padding: var(--s-2) var(--s-3);
+  border-radius: var(--r-xs);
+  background: var(--bg-subtle);
+  font-size: var(--fs-small);
+  line-height: 1.5;
+  color: var(--text-primary);
+}
+
+.alerta-recomendacion svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--icon);
+}
+
+/* Reportes: indicadores globales (RF-22) y distribución en barras. */
+.report-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--s-3);
+}
+
+.report-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  padding: var(--s-4);
+}
+
+.report-kpi {
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--text-primary);
+}
+
+.report-sub {
+  margin-top: var(--s-2);
+}
+
+.report-select select {
+  width: 100%;
+}
+
+.dist-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  list-style: none;
+}
+
+.dist-row {
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr) 32px;
+  align-items: center;
+  gap: var(--s-2);
+  font-size: var(--fs-small);
+}
+
+.dist-label {
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dist-track {
+  height: 6px;
+  border-radius: var(--r-full);
+  background: var(--bg-muted);
+  overflow: hidden;
+}
+
+.dist-fill {
+  display: block;
+  height: 100%;
+  border-radius: var(--r-full);
+  background: var(--text-tertiary);
+  transition: width var(--dur-slow) var(--ease);
+}
+
+.dist-fill--ok {
+  background: var(--ok-solid);
+}
+
+.dist-fill--warn {
+  background: var(--warn-solid);
+}
+
+.dist-fill--bad {
+  background: var(--bad-solid);
+}
+
+.dist-value {
+  text-align: right;
+  color: var(--text-primary);
+}
+
+@media (max-width: 1100px) {
+  .report-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 760px) {
+  .type-options {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .alerta-exp {
+    margin-left: 0;
+    max-width: 100%;
+  }
+}
+
 /* ══════════════════════ RESPONSIVE ══════════════════════════════ */
 @media (max-width: 1320px) {
   .health-model,

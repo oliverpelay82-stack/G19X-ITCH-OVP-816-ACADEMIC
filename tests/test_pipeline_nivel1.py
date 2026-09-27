@@ -34,7 +34,7 @@ CODIGO_EXPEDIENTE_TMP = "EXP-TEST-TMP"
 RFC_TITULAR_TMP = "TMP010101AAA"
 
 # Catálogo fijo: la prueba no depende de que el rules-service esté corriendo.
-rules_client.obtener_documentos_obligatorios = lambda: rules_client.InventarioObligatorio(
+rules_client.obtener_documentos_obligatorios = lambda *_: rules_client.InventarioObligatorio(
     documentos={t: {"codigo_regla": "RIE-01", "severidad": "CRITICA"}
                 for t in ("CSF_SAT", "COMP_DOMICILIO", "ACTA_CONSTITUTIVA")},
     fuente=rules_client.FUENTE_CATALOGO,

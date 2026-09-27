@@ -8,7 +8,7 @@ import { CopyChip, EmptyRow, Segmented, SearchBox } from './ui.jsx'
 import useToast from '../hooks/useToast.js'
 import useDebounce from '../hooks/useDebounce.js'
 import { uploadDocumento } from '../services/api.js'
-import { TIPO_DOCUMENTO_CORTO, TIPO_DOCUMENTO_LABEL, TIPOS_DOCUMENTO } from '../constants.js'
+import { TIPO_DOCUMENTO_CORTO, TIPO_DOCUMENTO_LABEL, TIPO_EXPEDIENTE_LABEL, TIPOS_DOCUMENTO, tiposParaCarga } from '../constants.js'
 import { formatBytes, formatFecha, formatFechaCorta, hashCorto } from '../utils/format.js'
 
 const COLUMNAS = 7
@@ -222,7 +222,14 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
           onClose={() => setIngestaAbierta(false)}
         >
           <DropZone
-            tipos={TIPOS_DOCUMENTO}
+            tipos={
+              mapaExpedientes[expedienteId]
+                ? tiposParaCarga(
+                    mapaExpedientes[expedienteId].tipo_expediente,
+                    mapaExpedientes[expedienteId].evaluacion?.faltantes
+                  )
+                : TIPOS_DOCUMENTO
+            }
             onArchivo={subir}
             subiendo={subiendo}
             listoExtra={Boolean(expedienteId)}
@@ -237,7 +244,7 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
                 </option>
                 {expedientes.map((e) => (
                   <option key={e.id} value={e.id}>
-                    {e.codigo_expediente} — {e.titular?.razon_social || 'Sin titular'}
+                    {e.codigo_expediente} — {e.titular?.razon_social || 'Sin titular'} ({TIPO_EXPEDIENTE_LABEL[e.tipo_expediente] || e.tipo_expediente})
                   </option>
                 ))}
               </select>

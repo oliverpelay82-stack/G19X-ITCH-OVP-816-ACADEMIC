@@ -16,3 +16,7 @@ python-multipart>=0.0.12
 
 # Cliente HTTP del rules-service (documentos obligatorios, RIE-01)
 requests>=2.32.0
+
+# Reportes exportables (RF-23, RF-24): Excel (.xlsx) y PDF
+openpyxl>=3.1.0
+reportlab>=4.2.0

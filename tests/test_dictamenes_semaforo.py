@@ -21,6 +21,7 @@ Uso:  python tests/test_dictamenes_semaforo.py   (requiere PostgreSQL)
 """
 import os
 import sys
+from datetime import date, timedelta
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import bd_pruebas  # noqa: E402
@@ -54,7 +55,7 @@ def verificar(condicion: bool, titulo: str, detalle: str = "") -> None:
 
 def catalogo(tipos=TRES_OBLIGATORIOS, severidad="CRITICA"):
     """Simula la respuesta del rules-service con los tipos indicados."""
-    rules_client.obtener_documentos_obligatorios = lambda: rules_client.InventarioObligatorio(
+    rules_client.obtener_documentos_obligatorios = lambda *_: rules_client.InventarioObligatorio(
         documentos={t: {"codigo_regla": f"RIE-01-{t[:4]}", "severidad": severidad} for t in tipos},
         fuente=rules_client.FUENTE_CATALOGO,
     )
@@ -115,6 +116,7 @@ VIGENCIA_RCV02_VENCIDA = {
          "dias_calculados": 2722, "detalle": "El documento tiene 2722 días naturales de antigüedad; el máximo es 90."}
     ],
 }
+VENCIMIENTO_LEJANO = (date.today() + timedelta(days=400)).isoformat()
 VIGENCIA_VIGENTE = {
     "disponible": True, "tipo_documento": "CSF_SAT", "resultado": "VIGENTE", "dias_calculados": None,
     "evaluaciones": [{"codigo_regla": "RCV-01", "resultado": "VIGENTE", "limite_dias": 30,
@@ -167,12 +169,13 @@ def prueba_semaforo_y_dictamenes() -> tuple[str, dict]:
               "Cada documento aparece como SIN_DICTAMEN")
 
     print("\n[3] Guardado y consulta de dictámenes; RCV-02 vencida (RN-02)")
-    d_csf = dictaminar(csf["id"], "CONFORME", vigencia=VIGENCIA_VIGENTE, fecha_vencimiento="2027-01-15",
+    # Vencimiento lejano y relativo a hoy: la vigencia se recalcula en cada consulta (RN-02).
+    d_csf = dictaminar(csf["id"], "CONFORME", vigencia=VIGENCIA_VIGENTE, fecha_vencimiento=VENCIMIENTO_LEJANO,
                        rfc_detectado="SEM010101AAA", match_titular=True)
     verificar(d_csf["estatus"] == "CONFORME" and d_csf["hash_sha256"] == csf["hash_sha256"],
               "Dictamen guardado con la huella del archivo evaluado")
     verificar(d_csf["reglas_aplicadas"][0]["codigo_regla"] == "RIE-03", "RIE-03 verificada antes de dictaminar")
-    verificar(str(d_csf["fecha_vencimiento_extraida"]) == "2027-01-15", "Fecha de vencimiento extraída persistida")
+    verificar(str(d_csf["fecha_vencimiento_extraida"]) == VENCIMIENTO_LEJANO, "Fecha de vencimiento extraída persistida")
     dictaminar(acta["id"], "CONFORME", vigencia={"disponible": True, "resultado": "SIN_REGLAS", "evaluaciones": []})
     d_dom = dictaminar(dom["id"], "NO_CONFORME", vigencia=VIGENCIA_RCV02_VENCIDA, fecha_emision="2019-04-13")
     verificar(d_dom["estado_expediente"] == "NO_CONFORME",

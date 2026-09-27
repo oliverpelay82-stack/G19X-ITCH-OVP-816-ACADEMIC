@@ -9,14 +9,35 @@ from pydantic import BaseModel, ConfigDict
 
 class TipoDocumentoEnum(str, Enum):
     """
-    Catálogo oficial de tipos documentales requeridos para expedientes B2B.
-    Conforme al DOC-05 (Regla RIE) y DOC-08.
+    Catálogo oficial de tipos documentales (DOC-02, Tablas 2 a 4; DOC-05 regla
+    RIE). Los nombres legibles viven en ``config/catalogo.py``.
     """
+    # Expediente corporativo
     CSF_SAT = "CSF_SAT"                           # Constancia de Situación Fiscal (SAT)
     COMP_DOMICILIO = "COMP_DOMICILIO"             # Comprobante de Domicilio Fiscal
-    ACTA_CONSTITUTIVA = "ACTA_CONSTITUTIVA"       # Acta Constitutiva / Poder Notarial
+    ACTA_CONSTITUTIVA = "ACTA_CONSTITUTIVA"       # Acta Constitutiva
+    PODER_NOTARIAL = "PODER_NOTARIAL"             # Poder notarial del representante
+    ESTATUTOS_SOCIALES = "ESTATUTOS_SOCIALES"
+    ACTA_ASAMBLEA = "ACTA_ASAMBLEA"
+    CEDULA_RFC = "CEDULA_RFC"                     # Registro Federal de Contribuyentes (empresa)
+    AVISO_PRIVACIDAD = "AVISO_PRIVACIDAD"
     OPINION_CUMPLIMIENTO = "OPINION_CUMPLIMIENTO" # Opinión de Cumplimiento SAT (Art. 32-D)
     ESTADO_CUENTA = "ESTADO_CUENTA"               # Carátula de Estado de Cuenta Bancario
+    # Expediente jurídico
+    CONTRATO_SERVICIOS = "CONTRATO_SERVICIOS"
+    ACUERDO_CONFIDENCIALIDAD = "ACUERDO_CONFIDENCIALIDAD"  # NDA
+    ANEXO_CONTRATO = "ANEXO_CONTRATO"             # Anexos legales referenciados en el contrato
+    DICTAMEN_PERICIAL = "DICTAMEN_PERICIAL"
+    CONVENIO_MODIFICATORIO = "CONVENIO_MODIFICATORIO"
+    # Expediente regulatorio
+    LICENCIA_OPERACION = "LICENCIA_OPERACION"
+    PERMISO_SECTORIAL = "PERMISO_SECTORIAL"       # Permisos municipales o sectoriales
+    CERTIFICACION = "CERTIFICACION"               # ISO, calidad, ambiental
+    POLIZA_SEGURO = "POLIZA_SEGURO"
+    POLIZA_RC = "POLIZA_RC"                       # Póliza de responsabilidad civil
+    FIANZA = "FIANZA"
+    CONSTANCIA_CAPACITACION = "CONSTANCIA_CAPACITACION"
+    REGISTRO_SECTORIAL = "REGISTRO_SECTORIAL"     # Registros ante autoridades sectoriales
 
 
 class DocumentoResponse(BaseModel):

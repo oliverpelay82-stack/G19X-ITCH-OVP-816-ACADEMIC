@@ -70,6 +70,8 @@ def _reglas_aplicadas(vigencia: Optional[dict[str, Any]], hash_sha256: str) -> t
                 "detalle": evaluacion.get("detalle"),
                 "dias_calculados": evaluacion.get("dias_calculados"),
                 "limite_dias": evaluacion.get("limite_dias"),
+                # Permite recalcular la vigencia contra la fecha actual (RN-02).
+                "criterio": evaluacion.get("criterio"),
             }
         )
     return reglas, vigencia.get("resultado") or "SIN_REGLAS"
