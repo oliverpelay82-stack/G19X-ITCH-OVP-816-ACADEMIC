@@ -563,13 +563,15 @@ def _alertas(
                 severidad="MEDIA",
                 titulo=f"Sin auditar: {nombre}",
                 detalle=f"«{e.nombre_archivo_original}» está custodiado pero aún no tiene dictamen.",
-                recomendacion="Ejecutar la auditoría con IA del documento desde la Bóveda (Niveles 3 y 4).",
+                recomendacion="Ejecutar la auditoría con IA del documento desde la Bóveda, o «Auditar pendientes» "
+                              "en el expediente (Niveles 3 y 4).",
                 tipo_documento=e.tipo_documento, documento_id=e.documento_id,
             ))
 
     orden = {c: i for i, c in enumerate([
         ALERTA_INTEGRIDAD, ALERTA_DOCUMENTO_FALTANTE, ALERTA_ANEXO_FALTANTE, ALERTA_DOCUMENTO_VENCIDO,
-        ALERTA_DICTAMEN_NO_CONFORME, ALERTA_PROXIMO_A_VENCER, ALERTA_REVISION_HUMANA, ALERTA_SIN_AUDITAR,
+        ALERTA_DICTAMEN_NO_CONFORME, ALERTA_CONTENIDO, ALERTA_PROXIMO_A_VENCER, ALERTA_REVISION_HUMANA,
+        ALERTA_SIN_AUDITAR,
     ])}
     return sorted(alertas, key=lambda a: (rango_severidad(a.severidad), orden.get(a.codigo, 99)))
 

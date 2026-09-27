@@ -1,0 +1,157 @@
+import { useState } from 'react'
+import { History, Loader2 } from 'lucide-react'
+import { getBitacora } from '../services/api.js'
+import { getEstadoBadge, TIPO_DOCUMENTO_LABEL } from '../constants.js'
+import { formatFecha } from '../utils/format.js'
+
+/** Causas con que el core-service reevalúa el semáforo (bitácora, EVALUACION_REGLAS). */
+const CAUSA = {
+  APERTURA_EXPEDIENTE: 'apertura',
+  INGESTA_DOCUMENTO: 'carga de un documento',
+  DICTAMEN_IA: 'dictamen de la IA',
+  RATIFICACION_HUMANA: 'ratificación de un analista',
+  REEVALUACION_PROGRAMADA: 'reevaluación programada',
+  CONSULTA_EXPEDIENTE: 'consulta',
+  CONSULTA_EXPEDIENTES: 'consulta',
+  CONSULTA_ALERTAS: 'consulta de alertas',
+  REPORTE_EXPEDIENTE: 'reporte',
+  REPORTE_GLOBAL: 'reporte global',
+}
+
+const estado = (e) => getEstadoBadge(e)
+
+// Eventos que se muestran antes de «Ver todo».
+const VISIBLES = 10
+
+/**
+ * Agrupa eventos consecutivos idénticos (mismo título y detalle): una serie de
+ * reauditorías del mismo documento se lee como una línea con «×N» y la fecha
+ * de la más reciente. La bitácora no cambia: solo su presentación.
+ */
+function agrupar(eventos, nombres) {
+  const grupos = []
+  for (const e of eventos) {
+    const descripcion = describir(e, nombres)
+    const previo = grupos[grupos.length - 1]
+    if (previo && previo.titulo === descripcion.titulo && previo.detalle === descripcion.detalle) {
+      previo.veces += 1
+    } else {
+      grupos.push({ ...descripcion, evento: e, veces: 1 })
+    }
+  }
+  return grupos
+}
+
+/** Un evento de la bitácora en lenguaje del analista: título, detalle y tono. */
+function describir(evento, nombres) {
+  const d = evento.detalle || {}
+  const documento = nombres.get(evento.documento_id) || d.nombre_archivo_original
+  switch (evento.evento) {
+    case 'APERTURA_EXPEDIENTE':
+      return { titulo: 'Expediente abierto', tono: 'neutral' }
+    case 'INGESTA_DOCUMENTO':
+      return {
+        titulo: `Documento custodiado: ${d.nombre_archivo_original || 'archivo'}`,
+        detalle: TIPO_DOCUMENTO_LABEL[d.tipo_documento] || d.tipo_documento,
+        tono: 'neutral',
+      }
+    case 'DICTAMEN_IA':
+      return {
+        titulo: `Dictamen de la IA: ${estado(d.estatus).label}`,
+        detalle: documento,
+        tono: estado(d.estatus).tono,
+      }
+    case 'RATIFICACION_HUMANA':
+      return {
+        titulo: `Ratificado por ${evento.usuario}: ${estado(d.estatus_nuevo).label}`,
+        detalle: [documento, d.justificacion && `«${d.justificacion}»`].filter(Boolean).join(' · '),
+        tono: estado(d.estatus_nuevo).tono,
+      }
+    case 'EVALUACION_REGLAS':
+      return {
+        titulo: `Semáforo: ${estado(d.estado_anterior).label} → ${estado(d.estado_nuevo).label}`,
+        detalle: d.causa ? `Por ${CAUSA[d.causa] || d.causa.toLowerCase()}` : null,
+        tono: estado(d.estado_nuevo).tono,
+      }
+    case 'ALERTA_INTEGRIDAD':
+      return { titulo: 'Integridad comprometida (RIE-03)', detalle: documento, tono: 'bad' }
+    case 'EXPORTACION_REPORTE':
+      return { titulo: `Reporte exportado (${String(d.formato || '').toUpperCase()})`, tono: 'neutral' }
+    default:
+      return { titulo: evento.evento, tono: 'neutral' }
+  }
+}
+
+/**
+ * Historial del expediente (HU-30): la bitácora inmutable en lenguaje del
+ * analista, del evento más reciente al más antiguo. Se consulta al abrirlo.
+ * `documentos` traduce el identificador de cada documento a su nombre.
+ */
+export default function HistorialExpediente({ expedienteId, documentos = [] }) {
+  const [eventos, setEventos] = useState(null)
+  const [error, setError] = useState('')
+  const [cargando, setCargando] = useState(false)
+  const [completo, setCompleto] = useState(false)
+  const nombres = new Map(documentos.map((d) => [d.id, d.nombre_archivo_original]))
+
+  const cargar = async () => {
+    setCargando(true)
+    setError('')
+    try {
+      setEventos(await getBitacora({ expediente_id: expedienteId, limite: 200 }))
+    } catch (err) {
+      setError(err?.message || 'No se pudo consultar la bitácora.')
+    } finally {
+      setCargando(false)
+    }
+  }
+
+  return (
+    <details className="exp-historial" onToggle={(e) => e.currentTarget.open && !eventos && !cargando && cargar()}>
+      <summary className="eyebrow eyebrow--icon">
+        <History size={12} aria-hidden="true" />
+        Historial del expediente
+        {eventos && <span className="tabular cell-muted"> · {eventos.length}</span>}
+      </summary>
+      {cargando && (
+        <p className="field-hint">
+          <Loader2 className="spin" size={12} aria-hidden="true" /> Consultando la bitácora…
+        </p>
+      )}
+      {error && <p className="notice notice--warn">{error}</p>}
+      {eventos && eventos.length === 0 && <p className="field-hint">Sin eventos registrados.</p>}
+      {eventos && eventos.length > 0 && (() => {
+        const grupos = agrupar(eventos, nombres)
+        const mostrados = completo ? grupos : grupos.slice(0, VISIBLES)
+        return (
+          <>
+            <ol className="historial">
+              {mostrados.map(({ titulo, detalle, tono, evento: e, veces }) => (
+                <li key={e.id} className="historial-evento">
+                  <span className={`status-dot status-dot--${tono}`} aria-hidden="true" />
+                  <div>
+                    <p className="historial-titulo">
+                      {titulo}
+                      {veces > 1 && <span className="badge badge--neutral historial-veces">×{veces}</span>}
+                    </p>
+                    {detalle && <p className="historial-detalle">{detalle}</p>}
+                    <p className="historial-meta tabular">
+                      {veces > 1 ? 'Último: ' : ''}
+                      {formatFecha(e.creado_en)} · {e.usuario}
+                      {e.ip_origen ? ` · ${e.ip_origen}` : ''}
+                    </p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+            {grupos.length > VISIBLES && (
+              <button type="button" className="btn btn-secondary btn-sm" onClick={() => setCompleto(!completo)}>
+                {completo ? 'Ver solo lo reciente' : `Ver todo (${grupos.length - VISIBLES} más)`}
+              </button>
+            )}
+          </>
+        )
+      })()}
+    </details>
+  )
+}

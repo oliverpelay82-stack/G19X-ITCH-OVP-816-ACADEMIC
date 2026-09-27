@@ -224,6 +224,8 @@ export default function App() {
                 loading={loading}
                 onRefresh={refrescar}
                 isOnline={health.core.online}
+                iaOnline={health.ai.online}
+                documentos={documentos}
                 foco={focoExpediente}
                 onFocoAtendido={() => setFocoExpediente(null)}
                 apertura={aperturaTitular}
@@ -234,7 +236,12 @@ export default function App() {
               <AlertasTab expedientes={expedientes} loading={loading} onAbrirExpediente={abrirExpediente} />
             )}
             {tabActiva === 'reportes' && (
-              <ReportesTab expedientes={expedientes} loading={loading} isOnline={health.core.online} />
+              <ReportesTab
+                expedientes={expedientes}
+                loading={loading}
+                isOnline={health.core.online}
+                onAbrirExpediente={abrirExpediente}
+              />
             )}
             {tabActiva === 'boveda' && (
               <BovedaTab

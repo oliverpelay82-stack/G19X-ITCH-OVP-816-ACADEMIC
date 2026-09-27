@@ -3098,9 +3098,49 @@ select option {
   font-weight: 500;
 }
 
-.exp-motivos summary {
-  cursor: pointer;
-  list-style-position: inside;
+/* Por qué el semáforo tiene su color (RNF-08): visible arriba de la tabla */
+.exp-motivos {
+  padding: var(--s-3) var(--s-4);
+  border: 1px solid var(--neutral-border);
+  border-radius: var(--r-sm);
+  background: var(--bg-subtle);
+}
+
+.exp-motivos--ok {
+  background: var(--ok-bg);
+  border-color: var(--ok-border);
+}
+
+.exp-motivos--warn {
+  background: var(--warn-bg);
+  border-color: var(--warn-border);
+}
+
+.exp-motivos--bad {
+  background: var(--bad-bg);
+  border-color: var(--bad-border);
+}
+
+.exp-motivos-titulo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--fs-small);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.exp-motivos ul {
+  color: var(--text-primary);
+}
+
+.exp-auditar {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--s-2);
+  padding-bottom: var(--s-3);
+  border-bottom: var(--border-subtle);
 }
 
 .exp-export {
@@ -3849,4 +3889,269 @@ select option {
   text-align: center;
   font-size: var(--fs-small);
   color: var(--text-secondary);
+}
+
+/* Archivo vigente que abre el detalle del documento */
+.enlace-archivo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  max-width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: var(--text-primary);
+  text-align: left;
+  text-decoration: underline;
+  text-decoration-color: var(--line-strong);
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.enlace-archivo:hover {
+  text-decoration-color: currentColor;
+}
+
+.enlace-archivo svg {
+  flex: none;
+  color: var(--text-muted);
+}
+
+/* Alertas agrupadas por severidad */
+.alerta-grupos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+
+.alerta-grupo > summary {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: var(--s-1) 0;
+  cursor: pointer;
+  list-style-position: inside;
+}
+
+.alerta-grupo > .alerta-lista {
+  margin-top: var(--s-2);
+}
+
+/* Auditar pendientes: avance por documento y resultado consolidado (HU-32) */
+.auditoria-pasos {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  font-size: var(--fs-small);
+}
+
+.auditoria-paso {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--s-2);
+  color: var(--text-secondary);
+}
+
+.auditoria-paso--auditando {
+  color: var(--text-primary);
+}
+
+.auditoria-paso-icono {
+  display: inline-flex;
+  color: var(--text-muted);
+}
+
+.auditoria-paso--hecho .auditoria-paso-icono {
+  color: var(--ok);
+}
+
+.auditoria-paso--error .auditoria-paso-icono {
+  color: var(--bad);
+}
+
+.auditoria-paso-estado {
+  font-size: var(--fs-micro);
+  color: var(--text-muted);
+}
+
+.auditoria-resultado {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  padding: var(--s-2) var(--s-3);
+  border: var(--border-default);
+  border-radius: var(--r-sm);
+  background: var(--bg-subtle);
+  font-size: var(--fs-small);
+  line-height: 1.6;
+}
+
+/* Historial del expediente (HU-30) */
+.exp-historial > summary {
+  cursor: pointer;
+  list-style-position: inside;
+}
+
+.historial {
+  display: flex;
+  flex-direction: column;
+  margin-top: var(--s-3);
+  border-left: var(--border-subtle);
+  padding-left: var(--s-3);
+}
+
+.historial-evento {
+  display: grid;
+  grid-template-columns: 8px minmax(0, 1fr);
+  gap: var(--s-2);
+  align-items: start;
+  padding: 6px 0;
+}
+
+.historial-evento .status-dot {
+  margin-top: 6px;
+}
+
+.historial-titulo {
+  font-size: var(--fs-small);
+  color: var(--text-primary);
+}
+
+.historial-detalle {
+  font-size: var(--fs-small);
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+}
+
+.historial-meta {
+  font-size: var(--fs-micro);
+  color: var(--text-muted);
+}
+
+.historial-veces {
+  margin-left: var(--s-2);
+  vertical-align: 1px;
+}
+
+/* Tablero operativo (RF-22): vencimientos, pendientes y evolución */
+.tablero-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  list-style: none;
+}
+
+.tablero-fila {
+  display: grid;
+  grid-template-columns: 8px minmax(0, 1fr) auto 12px;
+  align-items: center;
+  gap: var(--s-2);
+  width: 100%;
+  padding: 6px var(--s-2);
+  border: 0;
+  border-radius: var(--r-sm);
+  background: none;
+  text-align: left;
+  color: var(--text-muted);
+  transition: background-color var(--dur) var(--ease);
+}
+
+.tablero-fila:hover {
+  background: var(--bg-subtle);
+}
+
+.tablero-fila-texto {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.tablero-fila-titulo {
+  font-size: var(--fs-small);
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tablero-fila-sub {
+  font-size: var(--fs-micro);
+  color: var(--text-muted);
+}
+
+.tablero-fila-dato {
+  font-size: var(--fs-micro);
+  white-space: nowrap;
+}
+
+.tablero-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px 0;
+}
+
+.tablero-grupo + .tablero-grupo {
+  border-top: var(--border-subtle);
+}
+
+.tablero-grupo-titulo {
+  font-size: var(--fs-small);
+  color: var(--text-primary);
+}
+
+.tablero-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tablero-cifras {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--s-2);
+}
+
+.tablero-cifra {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--s-2);
+  border: var(--border-subtle);
+  border-radius: var(--r-sm);
+}
+
+.tablero-cifra-valor {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.tablero-cifra-etiqueta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-micro);
+  color: var(--text-muted);
+}
+
+.area-fila {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.area-fila .dist-row {
+  list-style: none;
+}
+
+.area-sub {
+  padding-left: 118px;
+  font-size: var(--fs-micro);
+  color: var(--text-muted);
 }

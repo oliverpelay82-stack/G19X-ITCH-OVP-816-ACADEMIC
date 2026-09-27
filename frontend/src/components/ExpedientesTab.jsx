@@ -1,14 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { ChevronDown, FolderKanban, Loader2, Plus, SearchX } from 'lucide-react'
+import { Check, ChevronDown, FolderKanban, Loader2, Maximize2, Minus, Plus, SearchX, Sparkles, X } from 'lucide-react'
 import Modal from './Modal.jsx'
 import { SkeletonCards } from './Skeleton.jsx'
 import useToast from '../hooks/useToast.js'
 import DropZone from './DropZone.jsx'
 import ExportarReporte from './ExportarReporte.jsx'
-import { ListaAlertas } from './Alertas.jsx'
+import { ListaAlertasAgrupadas } from './Alertas.jsx'
+import DetalleDocumentoModal from './DetalleDocumentoModal.jsx'
+import HistorialExpediente from './HistorialExpediente.jsx'
 import useDebounce from '../hooks/useDebounce.js'
 import { EmptyState, Segmented, SearchBox } from './ui.jsx'
-import { createExpediente, uploadDocumento } from '../services/api.js'
+import { analizarDocumento, createExpediente, getExpedienteById, uploadDocumento } from '../services/api.js'
 import {
   ESTADO_DOCUMENTO,
   getEstadoBadge,
@@ -72,25 +74,205 @@ function Vigencia({ doc }) {
   return <span className={`cell-sub cell-${meta?.tono === 'ok' ? 'muted' : meta?.tono}`}>{texto}</span>
 }
 
-/** Detalle desplegado: tabla de documentos requeridos, alertas, motivos, carga y exportación. */
-function DetalleExpediente({ exp, subiendo, onSubir }) {
+/** Estado de un documento dentro de «Auditar pendientes». */
+const PASO = {
+  cola: { icono: null, texto: 'En cola' },
+  auditando: { icono: Loader2, texto: 'Auditando…' },
+  hecho: { icono: Check, texto: null },
+  error: { icono: X, texto: null },
+}
+
+/**
+ * Validación del expediente con un solo botón (HU-32): audita en secuencia,
+ * con reglas e IA, los documentos vigentes que aún no tienen dictamen. Es una
+ * ejecución manual: subir un archivo nunca lo analiza por sí solo. Un fallo en
+ * un documento no detiene los demás (HU-33). Muestra el avance por documento
+ * y, al terminar, el resultado consolidado: el semáforo antes y después y las
+ * alertas que quedan.
+ */
+function AuditarPendientes({ exp, iaOnline, onTerminado }) {
+  const [pasos, setPasos] = useState(null)
+  const [resultado, setResultado] = useState(null)
+  const pendientes = (exp.evaluacion?.documentos || []).filter(
+    (d) => d.estado === 'SIN_DICTAMEN' && d.estado_integridad !== 'ALTERADO'
+  )
+  const enCurso = Boolean(pasos) && !resultado
+
+  const auditar = async () => {
+    const antes = { estado: exp.estado_cumplimiento, alertas: exp.evaluacion?.alertas?.length || 0 }
+    const lista = pendientes.map((d) => ({ id: d.documento_id, nombre: d.nombre_archivo_original, estado: 'cola' }))
+    setResultado(null)
+    setPasos(lista)
+    const marcar = (id, cambio) => setPasos((prev) => prev.map((p) => (p.id === id ? { ...p, ...cambio } : p)))
+    let fallidos = 0
+    for (const d of lista) {
+      marcar(d.id, { estado: 'auditando' })
+      try {
+        const r = await analizarDocumento({
+          documento_id: d.id,
+          rfc_titular: exp.titular?.rfc || undefined,
+          razon_social_titular: exp.titular?.razon_social || undefined,
+        })
+        marcar(d.id, { estado: 'hecho', dictamen: r?.estatus_preliminar })
+      } catch (err) {
+        fallidos += 1
+        marcar(d.id, { estado: 'error', detalle: err?.message || 'Error del ai-service' })
+      }
+    }
+    let despues = null
+    try {
+      const actualizado = await getExpedienteById(exp.id)
+      despues = { estado: actualizado?.estado_cumplimiento, alertas: actualizado?.evaluacion?.alertas?.length || 0 }
+    } catch {
+      // El resultado se muestra sin el semáforo si el core-service no responde.
+    }
+    setResultado({ antes, despues, auditados: lista.length - fallidos, total: lista.length })
+    onTerminado?.()
+  }
+
+  if (!pendientes.length && !pasos) return null
+  return (
+    <div className="exp-auditar">
+      <p className="eyebrow">Validación del expediente</p>
+      {!pasos && (
+        <p className="field-hint">
+          {pendientes.length} {pendientes.length === 1 ? 'documento sin auditar' : 'documentos sin auditar'}. Se validan
+          con reglas e IA uno por uno.
+        </p>
+      )}
+      {pasos && (
+        <ol className="auditoria-pasos" aria-live="polite">
+          {pasos.map((p) => {
+            const meta = PASO[p.estado]
+            const Icono = meta.icono
+            const estatus = p.dictamen && getEstadoBadge(p.dictamen)
+            return (
+              <li key={p.id} className={`auditoria-paso auditoria-paso--${p.estado}`}>
+                <span className="auditoria-paso-icono" aria-hidden="true">
+                  {Icono ? <Icono size={12} className={p.estado === 'auditando' ? 'spin' : undefined} /> : <Minus size={12} />}
+                </span>
+                <span className="cell-ellipsis" title={p.nombre}>
+                  {p.nombre}
+                </span>
+                <span className={`auditoria-paso-estado ${p.estado === 'error' ? 'cell-bad' : ''}`} title={p.detalle}>
+                  {estatus ? estatus.label : p.estado === 'error' ? 'Error' : meta.texto}
+                </span>
+              </li>
+            )
+          })}
+        </ol>
+      )}
+      {resultado && (
+        <div className="auditoria-resultado" role="status">
+          <p>
+            <strong>
+              {resultado.auditados} de {resultado.total}
+            </strong>{' '}
+            {resultado.total === 1 ? 'documento auditado' : 'documentos auditados'}.
+          </p>
+          {resultado.despues && (
+            <p>
+              Semáforo{' '}
+              <span className={`badge badge--${getEstadoBadge(resultado.antes.estado).tono}`}>
+                {getEstadoBadge(resultado.antes.estado).label}
+              </span>{' '}
+              →{' '}
+              <span className={`badge badge--${getEstadoBadge(resultado.despues.estado).tono}`}>
+                {getEstadoBadge(resultado.despues.estado).label}
+              </span>
+              {' · '}
+              {resultado.despues.alertas} {resultado.despues.alertas === 1 ? 'alerta' : 'alertas'} (antes{' '}
+              {resultado.antes.alertas})
+            </p>
+          )}
+        </div>
+      )}
+      {(!pasos || resultado) && pendientes.length > 0 && (
+        <button
+          type="button"
+          className="btn btn-primary"
+          onClick={auditar}
+          disabled={enCurso || !iaOnline}
+          title={iaOnline ? undefined : 'El ai-service (:8003) no responde'}
+        >
+          <Sparkles size={14} />
+          Auditar pendientes
+        </button>
+      )}
+      {enCurso && (
+        <button type="button" className="btn btn-primary" disabled>
+          <Loader2 className="spin" size={14} />
+          Auditando…
+        </button>
+      )}
+    </div>
+  )
+}
+
+/**
+ * Los motivos del semáforo en palabras del analista (RNF-08): el motor los
+ * redacta con los códigos del catálogo (ACTA_CONSTITUTIVA); aquí se leen con
+ * el nombre del documento. No se calcula nada: es el mismo motivo del motor.
+ */
+const ESTATUS_LEGIBLE = { CONFORME: 'conforme', EN_REVISION: 'en revisión', NO_CONFORME: 'no conforme' }
+
+function legible(motivo) {
+  return motivo.replace(
+    /\b[A-Z][A-Z0-9_]{3,}\b/g,
+    (codigo) => TIPO_DOCUMENTO_LABEL[codigo] || ESTATUS_LEGIBLE[codigo] || codigo
+  )
+}
+
+const TITULO_MOTIVOS = {
+  CONFORME: 'Por qué está conforme',
+  EN_REVISION: 'Por qué está en revisión',
+  NO_CONFORME: 'Por qué no está conforme',
+}
+
+function MotivosSemaforo({ estado, motivos = [] }) {
+  if (!motivos.length) return null
+  const meta = getEstadoBadge(estado)
+  return (
+    <div className={`exp-motivos exp-motivos--${meta.tono}`}>
+      <p className="exp-motivos-titulo">
+        <span className={`status-dot status-dot--${meta.tono}`} aria-hidden="true" />
+        {TITULO_MOTIVOS[estado] || 'Motivos del semáforo'}
+      </p>
+      <ul>
+        {motivos.map((m) => (
+          <li key={m}>{legible(m)}</li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+/** Detalle desplegado: motivos, documentos requeridos, alertas, historial, carga y exportación. */
+function DetalleExpediente({ exp, subiendo, onSubir, iaOnline, onRefresh, documentos, onAbrirDocumento }) {
   const evaluacion = exp.evaluacion
   const filas = filasDetalle(evaluacion)
   const alertas = evaluacion?.alertas || []
   const faltantes = evaluacion?.faltantes || []
   const tiposCarga = tiposParaCarga(exp.tipo_expediente, faltantes)
+  const todos = documentos.filter((d) => d.expediente_id === exp.id)
+  // Solo los documentos vigentes se navegan y auditan desde aquí: los sustituidos
+  // por una versión más reciente siguen consultables en la Bóveda.
+  const vigentes = new Set((evaluacion?.documentos || []).map((d) => d.documento_id))
+  const delExpediente = todos.filter((d) => vigentes.has(d.id))
 
   return (
     <div className="exp-detail">
       <div className="exp-detail-main">
+        <MotivosSemaforo estado={exp.estado_cumplimiento} motivos={evaluacion?.motivos} />
+
         <div className="card table-card table-card--flat">
           <table className="data-table data-table--inner">
             <colgroup>
-              <col style={{ width: '29%' }} />
-              <col style={{ width: '20%' }} />
+              <col style={{ width: '32%' }} />
+              <col style={{ width: '15%' }} />
               <col style={{ width: '10%' }} />
-              <col style={{ width: '25%' }} />
-              <col style={{ width: '16%' }} />
+              <col />
+              <col style={{ width: '132px' }} />
             </colgroup>
             <thead>
               <tr>
@@ -112,11 +294,15 @@ function DetalleExpediente({ exp, subiendo, onSubir }) {
               {filas.map((f) => {
                 const meta = ESTADO_DOCUMENTO[f.estado] || ESTADO_DOCUMENTO.SIN_DICTAMEN
                 const sev = f.severidad ? getSeveridadMeta(f.severidad) : null
+                const nombreTipo = TIPO_DOCUMENTO_LABEL[f.tipo] || f.tipo
+                const documento = f.doc && delExpediente.find((d) => d.id === f.doc.documento_id)
                 return (
                   <tr key={f.tipo}>
                     <td>
                       <span className="cell-stack">
-                        <span className="identity-name">{TIPO_DOCUMENTO_LABEL[f.tipo] || f.tipo}</span>
+                        <span className="identity-name cell-ellipsis" title={nombreTipo}>
+                          {nombreTipo}
+                        </span>
                         {f.anexoDe && (
                           <span className="cell-sub">Anexo de {TIPO_DOCUMENTO_LABEL[f.anexoDe] || f.anexoDe}</span>
                         )}
@@ -129,9 +315,21 @@ function DetalleExpediente({ exp, subiendo, onSubir }) {
                     <td>
                       {f.doc ? (
                         <span className="cell-stack">
-                          <span className="cell-ellipsis" title={f.doc.nombre_archivo_original}>
-                            {f.doc.nombre_archivo_original}
-                          </span>
+                          {documento ? (
+                            <button
+                              type="button"
+                              className="enlace-archivo"
+                              title={`Abrir ${f.doc.nombre_archivo_original}: auditoría y visor`}
+                              onClick={() => onAbrirDocumento(documento, delExpediente)}
+                            >
+                              <span className="cell-ellipsis">{f.doc.nombre_archivo_original}</span>
+                              <Maximize2 size={11} aria-hidden="true" />
+                            </button>
+                          ) : (
+                            <span className="cell-ellipsis" title={f.doc.nombre_archivo_original}>
+                              {f.doc.nombre_archivo_original}
+                            </span>
+                          )}
                           <Vigencia doc={f.doc} />
                           {f.doc.revisado_por_humano && <span className="cell-sub">Ratificado por un analista</span>}
                           {f.doc.estado_integridad === 'ALTERADO' && <span className="cell-sub cell-bad">Alterado (RIE-03)</span>}
@@ -158,20 +356,10 @@ function DetalleExpediente({ exp, subiendo, onSubir }) {
             <p className="eyebrow">
               Alertas y recomendaciones <span className="tabular cell-muted">· {alertas.length}</span>
             </p>
-            <ListaAlertas alertas={alertas} />
+            <ListaAlertasAgrupadas alertas={alertas} />
           </section>
         )}
 
-        {evaluacion?.motivos?.length > 0 && (
-          <details className="exp-motivos">
-            <summary className="eyebrow">Motivos del semáforo</summary>
-            <ul>
-              {evaluacion.motivos.map((m) => (
-                <li key={m}>{m}</li>
-              ))}
-            </ul>
-          </details>
-        )}
         {evaluacion?.advertencia && <p className="notice notice--warn">{evaluacion.advertencia}</p>}
         {evaluacion?.sustituidos > 0 && (
           <p className="field-hint">
@@ -179,9 +367,12 @@ function DetalleExpediente({ exp, subiendo, onSubir }) {
             más reciente del mismo tipo; su historial se conserva en la bitácora.
           </p>
         )}
+
+        <HistorialExpediente expedienteId={exp.id} documentos={todos} />
       </div>
 
       <aside className="exp-detail-side">
+        <AuditarPendientes exp={exp} iaOnline={iaOnline} onTerminado={onRefresh} />
         <p className="eyebrow">Custodiar documento</p>
         <p className="field-hint">
           {faltantes.length === 0
@@ -217,6 +408,8 @@ export default function ExpedientesTab({
   loading,
   onRefresh,
   isOnline = true,
+  iaOnline = true,
+  documentos = [],
   foco = null,
   onFocoAtendido,
   apertura = null,
@@ -235,6 +428,8 @@ export default function ExpedientesTab({
   const [expandido, setExpandido] = useState(null)
   const [subiendoEn, setSubiendoEn] = useState(null)
   const tarjetas = useRef(new Map())
+  // Documento abierto desde la tabla del expediente, con la lista de ese expediente para navegar.
+  const [documentoAbierto, setDocumentoAbierto] = useState(null)
 
   const consulta = useDebounce(busqueda, 220)
   // El expediente enfocado desde otra vista se abre hasta que el operador interactúa.
@@ -480,7 +675,17 @@ export default function ExpedientesTab({
                   </span>
                 </button>
 
-                {abierto && <DetalleExpediente exp={exp} subiendo={subiendoEn === exp.id} onSubir={subirDocumento} />}
+                {abierto && (
+                  <DetalleExpediente
+                    exp={exp}
+                    subiendo={subiendoEn === exp.id}
+                    onSubir={subirDocumento}
+                    iaOnline={iaOnline}
+                    onRefresh={onRefresh}
+                    documentos={documentos}
+                    onAbrirDocumento={(documento, lista) => setDocumentoAbierto({ documento, lista })}
+                  />
+                )}
               </article>
             )
           })}
@@ -553,6 +758,18 @@ export default function ExpedientesTab({
             </div>
           </form>
         </Modal>
+      )}
+
+      {documentoAbierto && (
+        <DetalleDocumentoModal
+          documento={documentoAbierto.documento}
+          lista={documentoAbierto.lista}
+          expediente={expedientes.find((e) => e.id === documentoAbierto.documento.expediente_id)}
+          iaOnline={iaOnline}
+          onRefresh={onRefresh}
+          onCambiar={(documento) => setDocumentoAbierto((previo) => ({ ...previo, documento }))}
+          onCerrar={() => setDocumentoAbierto(null)}
+        />
       )}
     </div>
   )

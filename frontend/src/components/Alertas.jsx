@@ -1,5 +1,5 @@
 import { ArrowUpRight, Lightbulb } from 'lucide-react'
-import { ALERTA_META, getSeveridadMeta } from '../constants.js'
+import { ALERTA_META, getSeveridadMeta, SEVERIDADES } from '../constants.js'
 
 /**
  * Alerta del motor con su recomendación correctiva (RF-18, RF-21). La
@@ -47,5 +47,35 @@ export function ListaAlertas({ alertas }) {
         <AlertaItem key={`${a.codigo}-${a.tipo_documento}-${i}`} alerta={a} />
       ))}
     </ul>
+  )
+}
+
+/**
+ * Alertas agrupadas por severidad, de la más grave a la menos grave. Las
+ * críticas y altas se muestran abiertas; las demás, plegadas con su conteo,
+ * para que un expediente con muchas alertas no esconda lo urgente.
+ */
+export function ListaAlertasAgrupadas({ alertas }) {
+  const grupos = SEVERIDADES.map((sev) => ({ sev, items: alertas.filter((a) => a.severidad === sev) }))
+    .concat([{ sev: null, items: alertas.filter((a) => !SEVERIDADES.includes(a.severidad)) }])
+    .filter((g) => g.items.length)
+  return (
+    <div className="alerta-grupos">
+      {grupos.map(({ sev, items }) => {
+        const meta = getSeveridadMeta(sev)
+        return (
+          <details key={sev || 'otras'} className="alerta-grupo" open={sev === 'CRITICA' || sev === 'ALTA'}>
+            <summary>
+              <span className={`badge badge--${meta.tono}`}>
+                <span className={`status-dot status-dot--${meta.tono}`} aria-hidden="true" />
+                {sev ? meta.label : 'Otras'}
+              </span>
+              <span className="tabular cell-muted">{items.length}</span>
+            </summary>
+            <ListaAlertas alertas={items} />
+          </details>
+        )
+      })}
+    </div>
   )
 }

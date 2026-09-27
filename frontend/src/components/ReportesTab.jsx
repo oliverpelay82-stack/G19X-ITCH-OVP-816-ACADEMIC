@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { FileBarChart2, SearchX } from 'lucide-react'
 import ExportarReporte from './ExportarReporte.jsx'
+import TableroOperativo from './TableroOperativo.jsx'
 import { SkeletonRows } from './Skeleton.jsx'
 import useDebounce from '../hooks/useDebounce.js'
 import { EmptyRow, SearchBox } from './ui.jsx'
@@ -16,16 +17,16 @@ import {
 const COLUMNAS = 6
 
 /** Barra horizontal con su etiqueta y cifra; el color solo acompaña al texto. */
-function Barra({ label, n, total, tono = 'neutral' }) {
+function Barra({ label, n, total, tono = 'neutral', elemento: Elemento = 'li' }) {
   const pct = total ? Math.round((n / total) * 100) : 0
   return (
-    <li className="dist-row">
+    <Elemento className="dist-row">
       <span className="dist-label">{label}</span>
       <span className="dist-track" aria-hidden="true">
         <span className={`dist-fill dist-fill--${tono}`} style={{ width: `${pct}%` }} />
       </span>
       <span className="dist-value tabular">{n}</span>
-    </li>
+    </Elemento>
   )
 }
 
@@ -34,7 +35,7 @@ function Barra({ label, n, total, tono = 'neutral' }) {
  * exportación del reporte global y del dictamen de cada expediente en PDF y
  * Excel (RF-23, RF-24; HU-26, HU-28, HU-29).
  */
-export default function ReportesTab({ expedientes, loading, isOnline = true }) {
+export default function ReportesTab({ expedientes, loading, isOnline = true, onAbrirExpediente }) {
   const [tipoGlobal, setTipoGlobal] = useState('')
   const [busqueda, setBusqueda] = useState('')
   const consulta = useDebounce(busqueda, 220)
@@ -54,7 +55,17 @@ export default function ReportesTab({ expedientes, loading, isOnline = true }) {
       alertas,
       porSeveridad: SEVERIDADES.map((s) => [s, alertas.filter((a) => a.severidad === s).length]),
       porCodigo: [...porCodigo.entries()].sort((a, b) => b[1] - a[1]),
-      porTipo: TIPOS_EXPEDIENTE.map((t) => [t.value, expedientes.filter((e) => e.tipo_expediente === t.value)]),
+      // Hallazgos por área (RF-22): el área es el tipo de expediente (DOC-02).
+      porArea: TIPOS_EXPEDIENTE.map((t) => {
+        const delArea = expedientes.filter((e) => e.tipo_expediente === t.value)
+        const hallazgos = delArea.flatMap((e) => e.evaluacion?.alertas || [])
+        return {
+          tipo: t.value,
+          expedientes: delArea.length,
+          hallazgos: hallazgos.length,
+          graves: hallazgos.filter((a) => a.severidad === 'CRITICA' || a.severidad === 'ALTA').length,
+        }
+      }),
     }
   }, [expedientes])
 
@@ -102,10 +113,22 @@ export default function ReportesTab({ expedientes, loading, isOnline = true }) {
         </article>
 
         <article className="card report-card">
-          <p className="eyebrow">Por tipo de expediente</p>
+          <p className="eyebrow">Hallazgos por área · {ind.alertas.length}</p>
           <ul className="dist-list">
-            {ind.porTipo.map(([t, lista]) => (
-              <Barra key={t} label={TIPO_EXPEDIENTE_LABEL[t]} n={lista.length} total={ind.total} />
+            {ind.porArea.map((a) => (
+              <li key={a.tipo} className="area-fila">
+                <Barra
+                  elemento="div"
+                  label={TIPO_EXPEDIENTE_LABEL[a.tipo]}
+                  n={a.hallazgos}
+                  total={ind.alertas.length}
+                  tono={a.graves ? 'bad' : a.hallazgos ? 'warn' : 'ok'}
+                />
+                <span className="area-sub">
+                  {a.expedientes} {a.expedientes === 1 ? 'expediente' : 'expedientes'}
+                  {a.graves > 0 && ` · ${a.graves} ${a.graves === 1 ? 'crítica o alta' : 'críticas o altas'}`}
+                </span>
+              </li>
             ))}
           </ul>
           <p className="eyebrow report-sub">Reporte global</p>
@@ -124,6 +147,8 @@ export default function ReportesTab({ expedientes, loading, isOnline = true }) {
           <ExportarReporte ruta="/reportes/cumplimiento" params={{ tipo_expediente: tipoGlobal }} disabled={!isOnline} />
         </article>
       </section>
+
+      <TableroOperativo expedientes={expedientes} onAbrirExpediente={onAbrirExpediente} />
 
       <div className="toolbar">
         <SearchBox value={busqueda} onChange={setBusqueda} placeholder="Folio, nombre, empresa o RFC…" label="Buscar expediente" />
