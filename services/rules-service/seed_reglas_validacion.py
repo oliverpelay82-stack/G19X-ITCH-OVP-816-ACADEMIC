@@ -12,7 +12,8 @@ documento obligatorios del expediente corporativo (DOC-02, Tabla 3), y las
 reglas equivalentes de los expedientes jurídico (Tabla 4) y regulatorio
 (Tabla 5): el inventario obligatorio depende del tipo de expediente (RF-06).
 Por último, RIE-02-CONT-ANX vincula los anexos legales al contrato de
-prestación de servicios (RIE-02, RF-07).
+prestación de servicios (RIE-02, RF-07). Las reglas RSC declaran los elementos
+de contenido que el Nivel 4 localiza en cada tipo de documento (DOC-05, RSC-01).
 
 Ejecuta (desde services/rules-service/): python seed_reglas_validacion.py
 """
@@ -197,6 +198,99 @@ REGLAS_BASE = [
         "documento_obligatorio": True,
         "dias_maximos_vigencia": 90,
     },
+]
+
+
+# Elementos que el Nivel 4 verifica en el contenido de cada tipo de documento
+# (familia RSC). La descripción es el criterio que lee el modelo (RDS-02) y la
+# acción, la recomendación si el elemento falta. Se redactan a partir de la
+# columna «Criterios de validación» de las Tablas 2 a 4 del DOC-02, de los
+# rasgos con que el Cap. I identifica cada documento y de RSC-01 (DOC-05).
+# Un elemento faltante deja el dictamen EN_REVISION (semáforo amarillo), nunca
+# NO_CONFORME: la omisión la confirma el analista.
+_RSC = [
+    # Contrato de prestación de servicios — RSC-01 y DOC-02 Tabla 4: «cláusulas
+    # obligatorias (objeto, vigencia, penalización, confidencialidad), firmas».
+    ("RSC-01-CONT-OBJ", "CONTRATO_SERVICIOS", "Objeto del contrato",
+     "El contrato define su objeto: los servicios que se prestan.",
+     "Solicitar la versión del contrato que defina con claridad el objeto de los servicios."),
+    ("RSC-01-CONT-VIG", "CONTRATO_SERVICIOS", "Vigencia y terminación anticipada",
+     "El contrato establece su vigencia o duración y el procedimiento de terminación anticipada o rescisión.",
+     "Revisar con el área jurídica la vigencia y la cláusula de rescisión; si faltan, solicitar un convenio "
+     "modificatorio que las incorpore."),
+    ("RSC-01-CONT-PEN", "CONTRATO_SERVICIOS", "Penalización por incumplimiento",
+     "El contrato establece penas convencionales o penalizaciones por incumplimiento.",
+     "Omisión contractual relevante: revisar con el área jurídica la inclusión de penas convencionales."),
+    ("RSC-01-CONT-CONF", "CONTRATO_SERVICIOS", "Confidencialidad y no divulgación",
+     "El contrato incluye una obligación de confidencialidad o de no divulgación entre las partes.",
+     "Omisión contractual relevante: incorporar la cláusula de confidencialidad o anexar un acuerdo de "
+     "confidencialidad (NDA)."),
+    ("RSC-01-CONT-FIRM", "CONTRATO_SERVICIOS", "Firmas de las partes",
+     "El contrato identifica a las partes y contiene el apartado de firmas de sus representantes.",
+     "Solicitar el ejemplar firmado por todas las partes."),
+    # Acuerdo de confidencialidad — DOC-02 Tabla 4: «cláusula de no divulgación,
+    # identificación de las partes, vigencia».
+    ("RSC-01-NDA-NODIV", "ACUERDO_CONFIDENCIALIDAD", "Cláusula de no divulgación",
+     "El acuerdo contiene una cláusula de no divulgación de la información confidencial.",
+     "Solicitar la versión del acuerdo que incluya la obligación de no divulgación."),
+    ("RSC-01-NDA-PART", "ACUERDO_CONFIDENCIALIDAD", "Identificación de las partes",
+     "El acuerdo identifica a las partes que se obligan a la confidencialidad.",
+     "Solicitar el acuerdo con la identificación completa de las partes."),
+    ("RSC-01-NDA-VIG", "ACUERDO_CONFIDENCIALIDAD", "Vigencia de la confidencialidad",
+     "El acuerdo establece la vigencia o duración de la obligación de confidencialidad.",
+     "Revisar con el área jurídica la vigencia de la obligación de confidencialidad."),
+    # Acta constitutiva — Cap. I: número de escritura o instrumento público, datos
+    # del notario o corredor público e inscripción en el Registro Público de
+    # Comercio; LGSM (Cap. III): facultades de los representantes.
+    ("RSC-ACTA-ESCR", "ACTA_CONSTITUTIVA", "Escritura pública y notario",
+     "El acta indica el número de escritura o instrumento público y el notario o corredor público ante quien se "
+     "otorgó.",
+     "Solicitar la copia certificada completa del acta, en la que consten el número de escritura y los datos del "
+     "notario."),
+    ("RSC-ACTA-RPC", "ACTA_CONSTITUTIVA", "Inscripción en el Registro Público de Comercio",
+     "El acta incluye la constancia o los datos de inscripción en el Registro Público de la Propiedad y del "
+     "Comercio (folio mercantil).",
+     "Solicitar la boleta o constancia de inscripción en el Registro Público de Comercio."),
+    ("RSC-ACTA-ADMON", "ACTA_CONSTITUTIVA", "Administración y facultades de representación",
+     "El acta designa al órgano de administración (administrador único o consejo de administración) y señala "
+     "quién ejerce la representación legal y con qué facultades.",
+     "Verificar en el acta o en un poder notarial vigente quién ejerce la representación legal y con qué "
+     "facultades (RN-03)."),
+    # Poder notarial — DOC-02 Tabla 4: «emitido por notario público,
+    # identificación del otorgante y apoderado»; LGSM: facultades.
+    ("RSC-PODER-NOT", "PODER_NOTARIAL", "Otorgamiento ante notario",
+     "El poder fue otorgado ante notario público e indica el número de escritura.",
+     "Solicitar el testimonio notarial del poder con el número de escritura."),
+    ("RSC-PODER-PART", "PODER_NOTARIAL", "Otorgante y apoderado",
+     "El poder identifica al otorgante (poderdante) y al apoderado.",
+     "Solicitar el poder con la identificación completa del otorgante y del apoderado."),
+    ("RSC-PODER-FAC", "PODER_NOTARIAL", "Facultades conferidas",
+     "El poder señala las facultades conferidas: pleitos y cobranzas, actos de administración o actos de "
+     "dominio.",
+     "Verificar que las facultades del apoderado basten para los actos que suscribe (RN-03)."),
+    # Póliza de seguro — DOC-02 Tabla 5: «coberturas mínimas requeridas, montos adecuados».
+    ("RSC-POL-COB", "POLIZA_SEGURO", "Coberturas y suma asegurada",
+     "La póliza especifica las coberturas contratadas y la suma asegurada.",
+     "Solicitar la carátula de la póliza con el detalle de coberturas y suma asegurada."),
+    # Licencia de operación — DOC-02 Tabla 5: «correspondencia con giro empresarial».
+    ("RSC-LIC-GIRO", "LICENCIA_OPERACION", "Giro o actividad autorizada",
+     "La licencia indica el giro o la actividad que autoriza a operar.",
+     "Verificar que la licencia corresponda al giro empresarial del titular; si no lo indica, solicitar la "
+     "licencia completa."),
+]
+REGLAS_BASE += [
+    {
+        "codigo_regla": codigo,
+        "nombre_regla": nombre,
+        "familia_regla": "RSC",
+        "descripcion": criterio,
+        "severidad": "MEDIA_ALTA",
+        "accion": recomendacion,
+        "tipo_documento": tipo,
+        "documento_obligatorio": False,
+        "dias_maximos_vigencia": None,
+    }
+    for codigo, tipo, nombre, criterio, recomendacion in _RSC
 ]
 
 

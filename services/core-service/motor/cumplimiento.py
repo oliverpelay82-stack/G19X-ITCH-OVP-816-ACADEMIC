@@ -97,6 +97,10 @@ ALERTA_INTEGRIDAD = "INTEGRIDAD_COMPROMETIDA"
 ALERTA_DICTAMEN_NO_CONFORME = "DICTAMEN_NO_CONFORME"
 ALERTA_REVISION_HUMANA = "PENDIENTE_RATIFICACION"
 ALERTA_SIN_AUDITAR = "PENDIENTE_AUDITORIA"
+ALERTA_CONTENIDO = "CONTENIDO_NO_LOCALIZADO"
+
+# Resultados de la verificación de contenido (reglas RSC/RDS) que exigen atención.
+CONTENIDO_PENDIENTE = ("NO_LOCALIZADO", "NO_VERIFICABLE")
 
 ORDEN_SEVERIDAD = ["CRITICA", "ALTA", "MEDIA_ALTA", "MEDIA", "BAJA"]
 
@@ -498,6 +502,25 @@ def _alertas(
             ))
             continue
 
+        # Elementos que el catálogo exige al documento y el Nivel 4 no localizó
+        # (RSC-01, RDS-02; RF-18: incumplimiento de una cláusula obligatoria).
+        # Una ratificación humana los resuelve: el analista ya decidió.
+        if dictamen is not None and not dictamen.revisado_por_humano:
+            for regla in dictamen.reglas_aplicadas or []:
+                if regla.get("resultado") not in CONTENIDO_PENDIENTE:
+                    continue
+                verificable = regla.get("resultado") == "NO_LOCALIZADO"
+                alertas.append(Alerta(
+                    codigo=ALERTA_CONTENIDO,
+                    severidad=regla.get("severidad") or "MEDIA_ALTA",
+                    titulo=f"{regla.get('nombre_regla') or regla.get('codigo_regla')}: "
+                           f"{'no localizado' if verificable else 'no verificado'} en {nombre}",
+                    detalle=regla.get("detalle") or "El elemento no se localizó en el texto del documento.",
+                    recomendacion=regla.get("recomendacion")
+                    or "Revisar el documento y, si el elemento falta, solicitar la versión completa al titular.",
+                    tipo_documento=e.tipo_documento, regla=regla.get("codigo_regla"), documento_id=e.documento_id,
+                ))
+
         if vigencia and vigencia.dias >= 0:
             severidad = _severidad_por_anticipacion(vigencia.dias)
             if severidad:
@@ -517,11 +540,17 @@ def _alertas(
                 ))
 
         if e.estado == EN_REVISION:
+            # El motivo que dio el motor explica por qué el caso espera al analista.
+            observaciones_dictamen = dictamen.observaciones if dictamen else []
+            motivo = next((o.split(":", 1)[1].strip() for o in observaciones_dictamen or []
+                           if o.startswith("Dictamen EN_REVISION:")), None)
+            if motivo:
+                motivo = motivo[:1].upper() + motivo[1:]
             alertas.append(Alerta(
                 codigo=ALERTA_REVISION_HUMANA,
                 severidad="MEDIA",
                 titulo=f"Pendiente de ratificación: {nombre}",
-                detalle="El motor no pudo resolver el dictamen de forma automática (confianza o vigencia).",
+                detalle=motivo or "El motor no pudo resolver el dictamen de forma automática (confianza o vigencia).",
                 recomendacion=(
                     "Un analista debe confirmar o corregir el dictamen con una justificación desde el panel de "
                     "auditoría (Nivel 5, RF-14)."

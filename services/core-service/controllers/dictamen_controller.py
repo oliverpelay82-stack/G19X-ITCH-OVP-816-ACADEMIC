@@ -51,6 +51,24 @@ def _registrado(dictamen: DictamenAuditoria, expediente: Expediente) -> Dictamen
     )
 
 
+def _reglas_de_contenido(verificaciones: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Verificaciones RSC/RDS del Nivel 4 en el formato de reglas_aplicadas."""
+    return [
+        {
+            "codigo_regla": v.get("codigo_regla"),
+            "nombre_regla": v.get("nombre_regla"),
+            "familia_regla": v.get("familia_regla"),
+            "severidad": v.get("severidad"),
+            "resultado": v.get("resultado"),
+            "detalle": v.get("observacion"),
+            "cita": v.get("cita"),
+            "recomendacion": v.get("recomendacion"),
+        }
+        for v in verificaciones
+        if isinstance(v, dict) and v.get("codigo_regla")
+    ]
+
+
 def _reglas_aplicadas(vigencia: Optional[dict[str, Any]], hash_sha256: str) -> tuple[list[dict[str, Any]], str]:
     """Reglas evaluadas en la auditoría y el resultado consolidado de vigencia."""
     reglas: list[dict[str, Any]] = [
@@ -97,6 +115,7 @@ def registrar_dictamen(dto: DictamenCreate, request: Request, db: Session = Depe
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from exc
 
     reglas, vigencia_resultado = _reglas_aplicadas(dto.vigencia, documento.hash_sha256)
+    reglas += _reglas_de_contenido(dto.verificaciones)
     dictamen = DictamenAuditoria(
         documento_id=documento.id,
         expediente_id=documento.expediente_id,

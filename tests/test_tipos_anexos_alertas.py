@@ -13,6 +13,9 @@ reportes exportables.
   4. Alertas con recomendación (RF-18, RF-21, HU-15, HU-16) y bandeja /alertas.
   5. Búsqueda y filtros de expedientes (RF-05, HU-04).
   6. Reportes PDF y Excel (RF-23, RF-24) y su registro en la bitácora.
+  7. Verificación de contenido (RSC-01): las verificaciones del Nivel 4 quedan
+     en reglas_aplicadas y cada elemento pendiente genera una alerta
+     CONTENIDO_NO_LOCALIZADO con su recomendación hasta que un analista ratifica.
 
 Aislamiento: base plurione_compliance_test y bóveda temporal (bd_pruebas.py).
 
@@ -308,6 +311,45 @@ def prueba_reportes(ctx: dict) -> None:
               "Cada exportación queda en la bitácora", f"{len(eventos)} eventos")
 
 
+def prueba_verificacion_contenido() -> None:
+    print("\n[7] Verificación de contenido del Nivel 4 (RSC-01)")
+    exp_id = abrir(titular("VCO150310QK4", "Inmobiliaria Costa Grande S.A. de C.V."))["id"]
+    documentos = {t: subir(exp_id, t, f"{t.lower()}.pdf") for t in CATALOGO["CORPORATIVO"]}
+    for tipo in ("CSF_SAT", "COMP_DOMICILIO"):
+        dictaminar(documentos[tipo]["id"])
+    verificaciones = [
+        {"codigo_regla": "RSC-ACTA-ESCR", "nombre_regla": "Escritura pública y notario", "familia_regla": "RSC",
+         "severidad": "MEDIA_ALTA", "resultado": "CUMPLE", "cita": "ESCRITURA PUBLICA NUMERO 18,442",
+         "observacion": "Escritura identificada.", "recomendacion": "Solicitar la copia certificada."},
+        {"codigo_regla": "RSC-ACTA-RPC", "nombre_regla": "Inscripción en el Registro Público de Comercio",
+         "familia_regla": "RSC", "severidad": "MEDIA_ALTA", "resultado": "NO_LOCALIZADO", "cita": None,
+         "observacion": "No se menciona el folio mercantil.",
+         "recomendacion": "Solicitar la boleta de inscripción en el Registro Público de Comercio."},
+    ]
+    dictamen = dictaminar(documentos["ACTA_CONSTITUTIVA"]["id"], "EN_REVISION", verificaciones=verificaciones,
+                          requiere_revision_humana=True)
+    reglas = {r["codigo_regla"]: r for r in dictamen["reglas_aplicadas"]}
+    verificar(reglas.get("RSC-ACTA-ESCR", {}).get("cita") == "ESCRITURA PUBLICA NUMERO 18,442"
+              and reglas.get("RSC-ACTA-RPC", {}).get("resultado") == "NO_LOCALIZADO",
+              "Las verificaciones se guardan en reglas_aplicadas con su cita y resultado")
+    datos = expediente(exp_id)
+    contenido = [a for a in datos["evaluacion"]["alertas"] if a["codigo"] == cumplimiento.ALERTA_CONTENIDO]
+    verificar(len(contenido) == 1 and contenido[0]["regla"] == "RSC-ACTA-RPC"
+              and contenido[0]["recomendacion"].startswith("Solicitar la boleta"),
+              "Solo el elemento pendiente genera CONTENIDO_NO_LOCALIZADO, con la recomendación del catálogo",
+              f"{len(contenido)} alertas")
+    ratificacion = next((a for a in datos["evaluacion"]["alertas"] if a["codigo"] == "PENDIENTE_RATIFICACION"), None)
+    verificar(datos["estado_cumplimiento"] == "EN_REVISION" and ratificacion is not None,
+              "Una omisión deja el expediente EN_REVISION, no NO_CONFORME", datos["estado_cumplimiento"])
+    r = client.post(f"/api/v1/dictamenes/{dictamen['id']}/ratificar",
+                    json={"nuevo_estatus": "CONFORME", "usuario": "analista.pruebas",
+                          "justificacion": "El folio mercantil consta en la boleta anexa al acta, revisada en físico."})
+    datos = expediente(exp_id)
+    verificar(r.status_code == 200 and cumplimiento.ALERTA_CONTENIDO not in codigos(datos)
+              and datos["estado_cumplimiento"] == "CONFORME",
+              "Tras la ratificación humana la alerta desaparece (RN-05)", datos["estado_cumplimiento"])
+
+
 def run_tests() -> int:
     print("=== TIPO DE EXPEDIENTE, ANEXOS, VIGENCIA, ALERTAS, BÚSQUEDA Y REPORTES ===")
     rules_client.obtener_documentos_obligatorios = catalogo_por_tipo
@@ -317,6 +359,7 @@ def run_tests() -> int:
         prueba_vigencia_y_alertas(ctx)
         prueba_busqueda(ctx)
         prueba_reportes(ctx)
+        prueba_verificacion_contenido()
     finally:
         rules_client.obtener_documentos_obligatorios = OBTENER_REAL
         bd_pruebas.limpiar_boveda(BOVEDA)

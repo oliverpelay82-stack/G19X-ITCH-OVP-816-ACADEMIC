@@ -28,6 +28,11 @@ class DictamenCreate(BaseModel):
         None, description="Respuesta del rules-service (evaluar-vigencia), o {'disponible': false}"
     )
     observaciones: list[str] = Field(default_factory=list)
+    verificaciones: list[dict[str, Any]] = Field(
+        default_factory=list,
+        description="Elementos del documento verificados contra las reglas RSC/RDS: "
+                    "{codigo_regla, nombre_regla, resultado, cita, observacion, recomendacion}",
+    )
     modelo_utilizado: Optional[str] = Field(None, max_length=100)
     usuario: str = Field("SISTEMA", min_length=1, max_length=100)
 
