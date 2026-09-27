@@ -20,6 +20,8 @@ const RESULTADO_REGLA = {
   NO_APLICA: 'neutral',
   VENCIDO: 'bad',
   NO_CUMPLE: 'bad',
+  NO_LOCALIZADO: 'bad',
+  NO_VERIFICABLE: 'warn',
 }
 
 const VIGENCIA = {
@@ -212,7 +214,7 @@ function DictamenVigente({ dictamen, puedeRatificar, onRatificar }) {
       {dictamen.reglas_aplicadas?.length > 0 && (
         <ul className="registro-reglas" aria-label="Reglas aplicadas">
           {dictamen.reglas_aplicadas.map((r) => (
-            <li key={`${r.codigo_regla}-${r.resultado}`} title={r.detalle || undefined}>
+            <li key={`${r.codigo_regla}-${r.resultado}`} title={[r.nombre_regla, r.detalle, r.recomendacion].filter(Boolean).join(' · ') || undefined}>
               <span className={`status-dot status-dot--${RESULTADO_REGLA[r.resultado] || 'off'}`} aria-hidden="true" />
               <span className="mono">{r.codigo_regla}</span>
               <span className="cell-muted">{String(r.resultado).toLowerCase().replace(/_/g, ' ')}</span>

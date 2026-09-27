@@ -9,11 +9,13 @@ sellos), con páginas generadas en la prueba; el OCR usa Tesseract.
      segmentación la toma por imagen); con la relectura se recupera el texto,
      incluido el folio. La imagen original no se modifica.
   3. Sello Digital SAT: se detecta en el texto (cadena original, sello digital).
+  4. Dictamen: los sellos se reportan con su página y como observación.
 
 Uso:  cd services/ai-service && python tests/test_sellos.py
 """
 import os
 import sys
+from types import SimpleNamespace
 
 import cv2
 import numpy as np
@@ -106,6 +108,20 @@ def main(mp: pytest.MonkeyPatch) -> int:
               "Se detecta la cadena original / sello digital en el texto")
     verificar(not sellos.tiene_sello_digital("El sello de autorizar del notario."),
               "Un sello notarial mencionado en el texto no es el Sello Digital SAT")
+
+    print("\n[4] Dictamen")
+    from controllers import analisis_controller as controlador
+    documento = SimpleNamespace(traza={
+        "sello_digital_sat": True,
+        "detalle_paginas": [{"pagina": 1, "sellos": [{"tipo": "SELLO", "x0": 0.7, "y0": 0.0, "x1": 0.9, "y1": 0.2}]},
+                            {"pagina": 2, "sellos": []}],
+    })
+    reportados = controlador._sellos_del_documento(documento)
+    verificar(reportados == [{"pagina": 1, "tipo": "SELLO", "x0": 0.7, "y0": 0.0, "x1": 0.9, "y1": 0.2}],
+              "Los sellos se reportan con su página")
+    observaciones = controlador._observaciones_de_sellos(documento, reportados)
+    verificar(len(observaciones) == 2 and "página(s) 1" in observaciones[0] and "Sello Digital" in observaciones[1],
+              "El dictamen menciona los sellos y el Sello Digital SAT como observaciones")
 
     aprobadas = sum(_resultados)
     print(f"\nResultado: {aprobadas}/{len(_resultados)} verificaciones aprobadas")

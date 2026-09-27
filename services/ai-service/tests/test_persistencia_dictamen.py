@@ -58,7 +58,7 @@ def preparar(mp: pytest.MonkeyPatch, registro=None, texto_error=None):
                           "dias_calculados": 2722, "detalle": "2722 días de antigüedad; máximo 90."}],
     })
 
-    def obtener(documento_id, forzar_ocr=False, completar_en_fondo=True):
+    def obtener(documento_id, forzar_ocr=False, completar_en_fondo=True, texto_completo=False):
         if texto_error:
             raise texto_error
         return repositorio_texto.TextoDocumento(

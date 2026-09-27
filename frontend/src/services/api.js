@@ -151,3 +151,13 @@ export const analizarDocumento = (data) =>
 
 export const preguntarSobreDocumento = (data) =>
   request(AI_BASE_URL, '/ai/chat-documento', { method: 'POST', body: data })
+
+/* ── Visor de evidencia (HU-20, RF-13) ──────────────────────────── */
+export const getVisorDocumento = (documentoId) => request(AI_BASE_URL, `/ai/documentos/${documentoId}/visor`)
+
+/** URL de la página renderizada; el ai-service la sirve desde el binario verificado (RIE-03). */
+export const urlPaginaDocumento = (documentoId, pagina, ancho) =>
+  `${AI_BASE_URL}/ai/documentos/${documentoId}/paginas/${pagina}?ancho=${ancho}`
+
+export const localizarCita = (documentoId, cita) =>
+  request(AI_BASE_URL, `/ai/documentos/${documentoId}/localizar`, { method: 'POST', body: { cita } })

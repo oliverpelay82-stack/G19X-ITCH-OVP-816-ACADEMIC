@@ -90,3 +90,21 @@ def registrar_dictamen(dictamen: dict[str, Any]) -> dict[str, Any]:
     if not respuesta.ok:
         raise CoreNoDisponibleError(f"El core-service rechazó el dictamen (HTTP {respuesta.status_code}): {_detalle(respuesta)}")
     return respuesta.json()
+
+
+def ultimo_dictamen(documento_id: str) -> dict[str, Any] | None:
+    """
+    Dictamen vigente del documento (el más reciente), para dar contexto al chat.
+    Es información de apoyo: si el core-service no responde, el chat sigue sin él.
+    """
+    try:
+        respuesta = _sesion.get(
+            f"{settings.CORE_BASE_URL}/api/v1/dictamenes",
+            params={"documento_id": documento_id, "limite": 1},
+            timeout=(TIMEOUT_CONEXION_SEGUNDOS, 10),
+        )
+        respuesta.raise_for_status()
+        dictamenes = respuesta.json()
+    except (requests.RequestException, ValueError):
+        return None
+    return dictamenes[0] if dictamenes else None

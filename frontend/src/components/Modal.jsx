@@ -10,9 +10,10 @@ import { X } from 'lucide-react'
  * transform establecería un bloque contenedor que dejaría el velo
  * `position: fixed` recortado al tamaño de la pestaña.
  *
- * `size`: 'md' para formularios, 'lg' para el detalle de un documento.
+ * `size`: 'md' para formularios, 'lg' para el detalle de un documento, 'xl' con el visor.
+ * `acciones`: controles de la cabecera junto al botón de cerrar (p. ej. navegación).
  */
-export default function Modal({ title, subtitle, onClose, children, footer, size = 'md' }) {
+export default function Modal({ title, subtitle, onClose, children, footer, size = 'md', acciones }) {
   const panel = useRef(null)
 
   useEffect(() => {
@@ -45,9 +46,12 @@ export default function Modal({ title, subtitle, onClose, children, footer, size
             <h3 className="modal-title">{title}</h3>
             {subtitle && <p className="modal-subtitle">{subtitle}</p>}
           </div>
-          <button type="button" className="icon-button icon-button--sm" onClick={onClose} aria-label="Cerrar">
-            <X size={15} />
-          </button>
+          <div className="modal-acciones">
+            {acciones}
+            <button type="button" className="icon-button icon-button--sm" onClick={onClose} aria-label="Cerrar">
+              <X size={15} />
+            </button>
+          </div>
         </header>
 
         <div className="modal-body">{children}</div>

@@ -25,6 +25,7 @@ from controllers.health_controller import precargar as precargar_salud
 from controllers.health_controller import router as health_router
 from controllers.extraccion_controller import router as extraccion_router
 from controllers.analisis_controller import router as analisis_router
+from controllers.visor_controller import router as visor_router
 
 
 def _diagnostico_arranque() -> None:
@@ -86,6 +87,7 @@ app.add_middleware(
 app.include_router(health_router)
 app.include_router(extraccion_router)
 app.include_router(analisis_router)
+app.include_router(visor_router)
 
 
 if __name__ == "__main__":

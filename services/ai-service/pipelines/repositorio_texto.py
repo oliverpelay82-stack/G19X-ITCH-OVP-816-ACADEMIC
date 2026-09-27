@@ -9,14 +9,17 @@ Orden de resolución para un ``documento_id``:
      El resultado se guarda en disco y en memoria: ese documento no vuelve a
      pasar por OCR.
 
-Si el corte temprano dejó páginas sin leer, la lectura de todas las páginas se
-programa en un hilo de fondo, pero solo cuando la pide quien la aprovecha: el
-chat, que busca cláusulas en cualquier página (capital social, comisario o
-firmas al final). La auditoría solo necesita los datos de identificación, que
-cubre la lectura parcial; programar ahí la completa ocupaba el pool de OCR con
-páginas que nadie iba a consultar. La petición actual responde con la lectura
-parcial, y cuando la completa termina reemplaza a la parcial en memoria y en
-disco.
+**La auditoría lee el documento completo** (``texto_completo=True``): la
+verificación de contenido busca elementos que pueden estar en cualquier página
+(la inscripción en el Registro Público o las facultades del administrador, al
+final de un acta). Esa lectura queda en memoria y en disco, así que después el
+chat, las citas y el visor trabajan sobre todas las páginas sin repetir el OCR.
+
+Si el chat abre un documento que nadie ha auditado, responde de inmediato con la
+lectura parcial (corte temprano) y programa la completa en un hilo de fondo;
+cuando termina, reemplaza a la parcial en memoria y en disco. Un candado por
+documento evita que la auditoría y la lectura de fondo reconozcan las mismas
+páginas dos veces.
 """
 from __future__ import annotations
 
@@ -48,6 +51,14 @@ class TextoDocumento:
 _ejecutor_fondo = ThreadPoolExecutor(max_workers=1, thread_name_prefix="lectura-completa")
 _en_curso: set[tuple[str, bool]] = set()
 _candado = Lock()
+# Un candado por documento para la lectura completa: la de la auditoría y la de
+# fondo del chat se esperan entre sí y la segunda reutiliza el resultado.
+_candados_lectura: dict[tuple[str, bool], Lock] = {}
+
+
+def _candado_lectura(clave: tuple[str, bool]) -> Lock:
+    with _candado:
+        return _candados_lectura.setdefault(clave, Lock())
 
 
 def _traza(extraccion: extraccion_pipeline.ResultadoExtraccion) -> dict[str, Any]:
@@ -117,6 +128,8 @@ def obtener_por_documento(
     documento, desde_memoria = cache_texto.obtener_o_calcular(clave, resolver)
     documento = replace(documento, fuente="memoria" if desde_memoria else fuente_calculada[0])
 
+    if texto_completo and not documento.completo:
+        return _completar(clave, documento)
     if completar_en_fondo and not documento.completo and settings.COMPLETAR_LECTURA_EN_SEGUNDO_PLANO:
         _programar_lectura_completa(documento_id, forzar_ocr, documento)
     return documento
@@ -136,19 +149,36 @@ def _programar_lectura_completa(documento_id: str, forzar_ocr: bool, parcial: Te
     _ejecutor_fondo.submit(_leer_completo, clave, parcial)
 
 
-def _leer_completo(clave: tuple[str, bool], parcial: TextoDocumento) -> None:
+def _completar(clave: tuple[str, bool], parcial: TextoDocumento) -> TextoDocumento:
+    """
+    Lectura de todas las páginas de un documento leído parcialmente. Si otra
+    petición la está haciendo, espera y reutiliza su resultado (ya persistido).
+    """
     documento_id, forzar_ocr = clave
+    with _candado_lectura(clave):
+        guardada = persistencia_texto.leer(parcial.sha256, forzar_ocr) if parcial.sha256 else None
+        if guardada and guardada.completo:
+            completo = replace(parcial, texto=guardada.texto, traza=guardada.traza, completo=True,
+                               fuente="persistencia")
+        else:
+            contenido = core_client.leer_binario(parcial.metadatos or {"id": documento_id})
+            texto, traza, _ = _extraer(
+                contenido,
+                (parcial.metadatos or {}).get("nombre_archivo_original", "documento"),
+                forzar_ocr,
+                True,
+                parcial.sha256,
+            )
+            completo = replace(parcial, texto=texto, traza=traza, completo=True, fuente="extraccion")
+        cache_texto.actualizar(clave, replace(completo, fuente=parcial.fuente))
+        return completo
+
+
+def _leer_completo(clave: tuple[str, bool], parcial: TextoDocumento) -> None:
+    documento_id, _ = clave
     try:
-        contenido = core_client.leer_binario(parcial.metadatos or {"id": documento_id})
-        texto, traza, _ = _extraer(
-            contenido,
-            (parcial.metadatos or {}).get("nombre_archivo_original", "documento"),
-            forzar_ocr,
-            True,
-            parcial.sha256,
-        )
-        cache_texto.actualizar(clave, replace(parcial, texto=texto, traza=traza, completo=True))
-        print(f"[ai-service] Lectura completa lista: {documento_id} ({traza['total_paginas']} páginas).")
+        completo = _completar(clave, parcial)
+        print(f"[ai-service] Lectura completa lista: {documento_id} ({completo.traza['total_paginas']} páginas).")
     except Exception:  # noqa: BLE001 - un fallo de fondo no debe tumbar el servicio
         print(f"[ai-service] AVISO: falló la lectura completa de {documento_id}:\n{traceback.format_exc()}")
     finally:

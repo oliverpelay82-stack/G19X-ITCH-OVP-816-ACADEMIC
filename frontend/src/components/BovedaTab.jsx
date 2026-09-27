@@ -2,35 +2,17 @@ import { useMemo, useState } from 'react'
 import { FileLock2, ScanSearch, SearchX, Upload } from 'lucide-react'
 import Modal from './Modal.jsx'
 import DropZone from './DropZone.jsx'
-import DocumentoIaPanel from './DocumentoIaPanel.jsx'
+import DetalleDocumentoModal from './DetalleDocumentoModal.jsx'
+import { firmaDeMime, tipoCorto } from '../utils/documentos.js'
 import { SkeletonRows } from './Skeleton.jsx'
 import { CopyChip, EmptyRow, Segmented, SearchBox } from './ui.jsx'
 import useToast from '../hooks/useToast.js'
 import useDebounce from '../hooks/useDebounce.js'
 import { uploadDocumento } from '../services/api.js'
-import { TIPO_DOCUMENTO_CORTO, TIPO_DOCUMENTO_LABEL, TIPO_EXPEDIENTE_LABEL, TIPOS_DOCUMENTO, tiposParaCarga } from '../constants.js'
+import { TIPO_DOCUMENTO_LABEL, TIPO_EXPEDIENTE_LABEL, TIPOS_DOCUMENTO, tiposParaCarga } from '../constants.js'
 import { formatBytes, formatFecha, formatFechaCorta, hashCorto } from '../utils/format.js'
 
 const COLUMNAS = 7
-
-/** Etiqueta de la firma binaria a partir del MIME devuelto por el backend. */
-function firmaDeMime(mime) {
-  if (mime === 'application/pdf') return { label: 'PDF', firma: '%PDF-' }
-  if (mime === 'image/png') return { label: 'PNG', firma: '89 50 4E 47' }
-  if (mime === 'image/jpeg') return { label: 'JPEG', firma: 'FF D8 FF' }
-  return { label: mime || 'Desconocido', firma: '—' }
-}
-
-const tipoCorto = (tipo) => TIPO_DOCUMENTO_CORTO[tipo] || (tipo === 'OTRO' ? 'Otro' : tipo)
-
-function Dato({ label, children, ancho = false }) {
-  return (
-    <div className={`detail-item ${ancho ? 'detail-item--full' : ''}`}>
-      <dt>{label}</dt>
-      <dd>{children}</dd>
-    </div>
-  )
-}
 
 /**
  * Consola de custodia (Nivel 1): documentos con su huella SHA-256, filtro
@@ -96,7 +78,6 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
   }
 
   const expDetalle = detalle ? mapaExpedientes[detalle.expediente_id] : null
-  const firmaDetalle = detalle ? firmaDeMime(detalle.mime_type) : null
 
   return (
     <div className="tab-panel">
@@ -255,47 +236,15 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
       )}
 
       {detalle && (
-        <Modal
-          size="lg"
-          title={detalle.nombre_archivo_original}
-          subtitle={`${expDetalle?.codigo_expediente || 'Sin expediente'} · ${expDetalle?.titular?.razon_social || 'Sin titular'}`}
-          onClose={() => setDetalle(null)}
-        >
-          <dl className="inspect-grid">
-            <Dato label="Huella SHA-256 · inmutable (RIE-03)" ancho>
-              <CopyChip valor={detalle.hash_sha256} etiqueta="hash SHA-256" completo />
-            </Dato>
-            <Dato label="Titular asociado">
-              <span className="cell-stack">
-                <span>{expDetalle?.titular?.razon_social || 'Sin titular'}</span>
-                <span className="cell-sub mono">{expDetalle?.titular?.rfc || '—'}</span>
-              </span>
-            </Dato>
-            <Dato label="Tipo documental">{TIPO_DOCUMENTO_LABEL[detalle.tipo_documento] || tipoCorto(detalle.tipo_documento)}</Dato>
-            <Dato label="Firma binaria">
-              <span className="mono">
-                {firmaDetalle.label} · {firmaDetalle.firma}
-              </span>
-            </Dato>
-            <Dato label="Tamaño · Ingesta">
-              <span className="mono">
-                {formatBytes(detalle.tamanio_bytes)} · {formatFecha(detalle.creado_en)}
-              </span>
-            </Dato>
-            <Dato label="Expediente">
-              <span className="mono">{expDetalle?.codigo_expediente || '—'}</span>
-            </Dato>
-            <Dato label="Integridad">
-              {detalle.estado_integridad === 'ALTERADO' ? (
-                <span className="badge badge--bad">Alterado · bloqueado</span>
-              ) : (
-                <span className="badge badge--ok">Íntegro al ingresar</span>
-              )}
-            </Dato>
-          </dl>
-
-          <DocumentoIaPanel key={detalle.id} doc={detalle} expediente={expDetalle} iaOnline={iaOnline} onCambio={onRefresh} />
-        </Modal>
+        <DetalleDocumentoModal
+          documento={detalle}
+          lista={filtrados}
+          expediente={expDetalle}
+          iaOnline={iaOnline}
+          onRefresh={onRefresh}
+          onCambiar={setDetalle}
+          onCerrar={() => setDetalle(null)}
+        />
       )}
     </div>
   )

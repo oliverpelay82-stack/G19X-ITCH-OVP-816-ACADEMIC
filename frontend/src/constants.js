@@ -80,6 +80,7 @@ export const ALERTA_META = {
   DICTAMEN_NO_CONFORME: { label: 'Dictamen' },
   PROXIMO_A_VENCER: { label: 'Por vencer' },
   PENDIENTE_RATIFICACION: { label: 'Ratificación' },
+  CONTENIDO_NO_LOCALIZADO: { label: 'Contenido' },
   PENDIENTE_AUDITORIA: { label: 'Sin auditar' },
 }
 

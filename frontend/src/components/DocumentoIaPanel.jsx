@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { ArrowUp, Check, FileText, Loader2, MessageSquareText, Minus, Sparkles, X, Zap } from 'lucide-react'
 import { Skeleton } from './Skeleton.jsx'
 import DictamenesGuardados, { AvisoIntegridad } from './DictamenesGuardados.jsx'
+import { useEvidencia } from './evidencia-context.js'
 import { EmptyState, Segmented } from './ui.jsx'
 import useToast from '../hooks/useToast.js'
-import { analizarDocumento, prepararDocumento, preguntarSobreDocumento } from '../services/api.js'
+import { analizarDocumento, getVisorDocumento, prepararDocumento, preguntarSobreDocumento } from '../services/api.js'
 import { TIPO_DOCUMENTO_LABEL } from '../constants.js'
 import { formatFechaCorta } from '../utils/format.js'
 
@@ -16,6 +17,7 @@ const TIPO_IA_LABEL = {
   OPINION_CUMPLIMIENTO: 'Opinión de Cumplimiento (32-D)',
   COMPROBANTE_DOMICILIO: 'Comprobante de Domicilio',
   ACTA_CONSTITUTIVA: 'Acta Constitutiva',
+  PODER_NOTARIAL: 'Poder Notarial',
   ESTADO_CUENTA: 'Estado de Cuenta Bancario',
   CONTRATO: 'Contrato',
   POLIZA: 'Póliza de Seguro',
@@ -30,8 +32,16 @@ const TIPO_IA_A_CORE = {
   CONSTANCIA_SITUACION_FISCAL: 'CSF_SAT',
   COMPROBANTE_DOMICILIO: 'COMP_DOMICILIO',
   ACTA_CONSTITUTIVA: 'ACTA_CONSTITUTIVA',
+  PODER_NOTARIAL: 'PODER_NOTARIAL',
   OPINION_CUMPLIMIENTO: 'OPINION_CUMPLIMIENTO',
   ESTADO_CUENTA: 'ESTADO_CUENTA',
+}
+
+/** Resultado de cada elemento exigido por las reglas RSC/RDS (verificacion_contenido.py). */
+const RESULTADO_CONTENIDO = {
+  CUMPLE: { tono: 'ok', label: 'Localizado' },
+  NO_LOCALIZADO: { tono: 'bad', label: 'No localizado' },
+  NO_VERIFICABLE: { tono: 'warn', label: 'No verificado' },
 }
 
 const ESTATUS_IA = {
@@ -41,9 +51,10 @@ const ESTATUS_IA = {
 }
 
 const PREGUNTAS_SUGERIDAS = [
+  '¿Qué le falta a este documento?',
+  '¿Qué recomiendas corregir?',
   '¿Cuándo vence este documento?',
-  '¿A qué empresa o persona pertenece?',
-  '¿Resume los datos clave de este archivo?',
+  'Resume los datos clave de este archivo',
 ]
 
 const FUENTE_TEXTO = { memoria: 'desde memoria', persistencia: 'desde disco', extraccion: 'extraído ahora' }
@@ -261,39 +272,52 @@ const RESULTADO_COTEJO = {
   ok: { tono: 'ok', label: 'Coincide' },
   bad: { tono: 'bad', label: 'Discrepa' },
   na: { tono: 'neutral', label: 'Sin referencia' },
-  ausente: { tono: 'bad', label: 'No localizado' },
+  ausente: { tono: 'warn', label: 'No localizado' },
   info: { tono: 'neutral', label: 'Informativo' },
+}
+
+/** Resultado del tipo documental: el contraste lo decide el servicio (TIPOS_COMPATIBLES). */
+function resultadoTipo(dictamen, tipoRegistrado) {
+  if (!tipoRegistrado) return 'na'
+  if (dictamen.tipo_coincide === true) return 'ok'
+  if (dictamen.tipo_coincide === false) return 'bad'
+  // Tipo sin equivalente en el catálogo del Nivel 4 (o dictamen previo): se compara solo si hay espejo.
+  const detectadoCore = TIPO_IA_A_CORE[dictamen.tipo_documento_detectado]
+  if (dictamen.tipo_coincide === null && !detectadoCore) return 'na'
+  return detectadoCore === tipoRegistrado ? 'ok' : 'bad'
 }
 
 /**
  * Tabla de cotejo documental: lo que registra el expediente frente a lo que
- * extrajo el modelo. El RFC y el tipo documental se comparan de forma
- * determinista; la razón social es informativa (el dictamen no la compara).
+ * extrajo el modelo, con el resultado que calculó el dictamen determinista.
+ * La titularidad se acredita con el RFC o, si el documento no lo incluye,
+ * con la razón social; un documento sin ninguno de los dos pasa a revisión.
  */
 function Cotejo({ dictamen, expediente, tipoRegistrado }) {
   const rfcTitular = expediente?.titular?.rfc || null
-  const tipoDetectadoCore = TIPO_IA_A_CORE[dictamen.tipo_documento_detectado] || null
+  const titularidad = dictamen.titularidad
   const filas = [
     {
       campo: 'RFC',
       esperado: rfcTitular,
       detectado: dictamen.rfc_detectado,
       mono: true,
-      // Sin RFC en el documento no hay titularidad comprobable: el dictamen lo trata como discrepancia.
+      // Sin RFC en el documento no hay rechazo: la titularidad se busca por razón social.
       resultado: !rfcTitular ? 'na' : !dictamen.rfc_detectado ? 'ausente' : dictamen.match_titular ? 'ok' : 'bad',
       nota: dictamen.rfc_detectado && !dictamen.rfc_estructura_valida ? 'Estructura SAT inválida' : null,
-    },
-    {
-      campo: 'Tipo documental',
-      esperado: TIPO_DOCUMENTO_LABEL[tipoRegistrado] || tipoRegistrado,
-      detectado: TIPO_IA_LABEL[dictamen.tipo_documento_detectado] || TIPO_IA_LABEL.OTRO,
-      resultado: !tipoRegistrado ? 'na' : tipoDetectadoCore === tipoRegistrado ? 'ok' : 'bad',
     },
     {
       campo: 'Razón social',
       esperado: expediente?.titular?.razon_social,
       detectado: dictamen.razon_social_detectada,
-      resultado: 'info',
+      resultado: titularidad === 'RAZON_SOCIAL' ? 'ok' : titularidad === 'NO_LOCALIZADA' ? 'bad' : 'info',
+      nota: titularidad === 'RAZON_SOCIAL' ? 'Acredita la titularidad' : null,
+    },
+    {
+      campo: 'Tipo documental',
+      esperado: TIPO_DOCUMENTO_LABEL[tipoRegistrado] || tipoRegistrado,
+      detectado: TIPO_IA_LABEL[dictamen.tipo_documento_detectado] || TIPO_IA_LABEL.OTRO,
+      resultado: resultadoTipo(dictamen, tipoRegistrado),
     },
   ]
   return (
@@ -301,9 +325,10 @@ function Cotejo({ dictamen, expediente, tipoRegistrado }) {
       <table className="data-table data-table--inner cotejo">
         <colgroup>
           <col style={{ width: '18%' }} />
-          <col style={{ width: '32%' }} />
-          <col style={{ width: '32%' }} />
-          <col style={{ width: '18%' }} />
+          <col />
+          <col />
+          {/* Ancho fijo: la etiqueta del resultado nunca se recorta, ni con el visor abierto. */}
+          <col style={{ width: '132px' }} />
         </colgroup>
         <thead>
           <tr>
@@ -322,7 +347,7 @@ function Cotejo({ dictamen, expediente, tipoRegistrado }) {
                 <td className={f.mono ? 'mono cell-mono' : ''}>{f.esperado || <span className="cell-muted">—</span>}</td>
                 <td className={f.mono ? 'mono cell-mono' : ''}>
                   {f.detectado || <span className="cell-muted">No localizado</span>}
-                  {f.nota && <span className="cell-sub cell-bad">{f.nota}</span>}
+                  {f.nota && <span className={`cell-sub ${f.resultado === 'ok' ? '' : 'cell-bad'}`}>{f.nota}</span>}
                 </td>
                 <td className="col-right">
                   <span className={`badge badge--${r.tono}`}>{r.label}</span>
@@ -332,6 +357,122 @@ function Cotejo({ dictamen, expediente, tipoRegistrado }) {
           })}
         </tbody>
       </table>
+    </div>
+  )
+}
+
+/**
+ * Elementos que el catálogo exige al tipo de documento (reglas RSC/RDS) con su
+ * resultado: la cita literal que lo sustenta si se localizó, o la
+ * recomendación del catálogo si falta. Una omisión no rechaza el documento:
+ * lo deja en revisión para el analista (RSC-01).
+ */
+function VerificacionContenido({ verificaciones }) {
+  const evidencia = useEvidencia()
+  if (!verificaciones?.length) return null
+  const pendientes = verificaciones.filter((v) => v.resultado !== 'CUMPLE').length
+  return (
+    <div className="contenido">
+      <div className="contenido-head">
+        <p className="eyebrow">Verificación de contenido</p>
+        <span className="cell-muted tabular">
+          {verificaciones.length - pendientes} de {verificaciones.length} localizados
+        </span>
+      </div>
+      <div className="card table-card table-card--flat">
+        <table className="data-table data-table--inner contenido-tabla">
+          <colgroup>
+            <col style={{ width: '30%' }} />
+            <col />
+            <col style={{ width: '132px' }} />
+          </colgroup>
+          <thead>
+            <tr>
+              <th>Elemento · regla</th>
+              <th>Evidencia o recomendación</th>
+              <th className="col-right">Resultado</th>
+            </tr>
+          </thead>
+          <tbody>
+            {verificaciones.map((v) => {
+              const r = RESULTADO_CONTENIDO[v.resultado] || RESULTADO_CONTENIDO.NO_VERIFICABLE
+              return (
+                <tr key={v.codigo_regla}>
+                  <td>
+                    {v.nombre_regla || v.codigo_regla}
+                    <span className="cell-sub mono">{v.codigo_regla}</span>
+                  </td>
+                  <td>
+                    {v.resultado === 'CUMPLE' && v.cita ? (
+                      evidencia ? (
+                        <button
+                          type="button"
+                          className="cita-enlace contenido-cita"
+                          onClick={() => evidencia.mostrar({ cita: v.cita, tono: 'ok' })}
+                          title="Ver la cita resaltada en el documento"
+                        >
+                          <q>{v.cita}</q>
+                        </button>
+                      ) : (
+                        <q className="contenido-cita">{v.cita}</q>
+                      )
+                    ) : (
+                      <>
+                        {v.observacion && <span className="cell-muted">{v.observacion} </span>}
+                        {v.recomendacion && <span className="contenido-recomendacion">{v.recomendacion}</span>}
+                      </>
+                    )}
+                  </td>
+                  <td className="col-right">
+                    <span className={`badge badge--${r.tono}`}>{r.label}</span>
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Sellos que detectó el Nivel 3 (tinta de color) y el Sello Digital SAT
+ * (DOC-08). Son evidencia informativa: un clic en la página los resalta en el
+ * visor del documento.
+ */
+function SellosDetectados({ sellos = [], selloDigital }) {
+  const evidencia = useEvidencia()
+  if (!sellos.length && !selloDigital) return null
+  const porPagina = new Map()
+  for (const s of sellos) porPagina.set(s.pagina, [...(porPagina.get(s.pagina) || []), s])
+  return (
+    <div className="sellos">
+      <p className="eyebrow">Sellos</p>
+      <div className="sellos-fila">
+        {selloDigital && <span className="badge badge--neutral">Sello Digital SAT</span>}
+        {[...porPagina.entries()].map(([pagina, zonas]) =>
+          evidencia ? (
+            <button
+              key={pagina}
+              type="button"
+              className="chip chip--xs"
+              onClick={() => evidencia.mostrarZonas(pagina, zonas)}
+              title="Ver el sello resaltado en el documento"
+            >
+              p. {pagina}
+              {zonas.length > 1 ? ` · ${zonas.length}` : ''}
+            </button>
+          ) : (
+            <span key={pagina} className="badge badge--neutral">
+              p. {pagina}
+            </span>
+          )
+        )}
+      </div>
+      {sellos.length > 0 && (
+        <p className="field-hint">Sellos en tinta de color detectados en el documento original.</p>
+      )}
     </div>
   )
 }
@@ -373,6 +514,7 @@ function EstadoLectura({ lectura, contexto }) {
  * y posición en el documento. Un clic despliega el inicio del fragmento.
  */
 function Citas({ contexto }) {
+  const evidencia = useEvidencia()
   const [abierta, setAbierta] = useState(null)
   const fragmentos = contexto?.estrategia_contexto === 'fragmentos' ? contexto.fragmentos_relevantes || [] : []
   if (!fragmentos.length) return null
@@ -388,12 +530,17 @@ function Citas({ contexto }) {
               <button
                 type="button"
                 className={`citation ${activa ? 'is-active' : ''}`}
-                onClick={() => setAbierta(activa ? null : clave)}
+                onClick={() => {
+                  setAbierta(activa ? null : clave)
+                  // Con el visor disponible, el fragmento se abre en su página del documento.
+                  if (!activa && f.pagina && evidencia) evidencia.irAPagina(f.pagina)
+                }}
                 aria-expanded={activa}
+                title={f.pagina ? `Ver la página ${f.pagina} en el documento` : undefined}
               >
                 <FileText size={11} strokeWidth={1.75} aria-hidden="true" />
-                <span className="citation-title">[{(f.titulo || f.inicio || 'Fragmento').toUpperCase()}]</span>
-                <span className="citation-pos tabular">{f.posicion_pct}%</span>
+                <span className="citation-title">{f.titulo || f.inicio || 'Fragmento'}</span>
+                <span className="citation-pos tabular">{f.pagina ? `p. ${f.pagina}` : `${f.posicion_pct}%`}</span>
               </button>
             </li>
           )
@@ -402,7 +549,11 @@ function Citas({ contexto }) {
       {seleccionada && (
         <blockquote className="citation-preview">
           <p>{seleccionada.inicio}…</p>
-          <footer className="tabular">Fragmento ubicado al {seleccionada.posicion_pct}% del documento</footer>
+          <footer className="tabular">
+            {seleccionada.pagina
+              ? `Fragmento de la página ${seleccionada.pagina}`
+              : `Fragmento ubicado al ${seleccionada.posicion_pct}% del documento`}
+          </footer>
         </blockquote>
       )}
     </div>
@@ -410,9 +561,62 @@ function Citas({ contexto }) {
 }
 
 /** Interpreta las **negritas** de Markdown de la respuesta del modelo como nodos de React. */
-function TextoModelo({ texto }) {
+function Negritas({ texto }) {
   const partes = String(texto).split(/\*\*(.+?)\*\*/g)
   return partes.map((parte, i) => (i % 2 === 1 ? <strong key={i}>{parte}</strong> : parte))
+}
+
+/**
+ * Respuesta del modelo con sus citas «…». El ai-service contrasta cada cita
+ * con el texto del documento; la que no aparece literalmente se marca para
+ * que no se lea como evidencia.
+ */
+function TextoModelo({ texto, citas = [] }) {
+  const evidencia = useEvidencia()
+  const porTexto = new Map(citas.map((c) => [c.texto, c]))
+  const partes = String(texto).split(/«([^»]+)»/g)
+  return partes.map((parte, i) => {
+    if (i % 2 === 0) return <Negritas key={i} texto={parte} />
+    const cita = porTexto.get(parte.trim())
+    const ok = cita?.verificada
+    const titulo =
+      ok === false
+        ? 'Esta cita no aparece literalmente en el documento ni en su dictamen'
+        : cita?.fuente === 'sistema'
+          ? 'Tomada del dictamen y del catálogo de reglas, no del documento'
+          : ok
+            ? 'Cita verificada en el documento'
+            : undefined
+    const contenido = (
+      <q className={`chat-cita ${ok === false ? 'chat-cita--sin-verificar' : ''}`} title={titulo}>
+        <Negritas texto={parte} />
+        {ok === false && <span className="badge badge--warn chat-cita-badge">Sin verificar</span>}
+      </q>
+    )
+    // Solo una cita del documento tiene dónde resaltarse; la del dictamen o el catálogo, no.
+    if (!evidencia || cita?.fuente === 'sistema') return <span key={i}>{contenido}</span>
+    const abrir = () => evidencia.mostrar({ cita: parte, tono: ok === false ? 'warn' : 'ok' })
+    // Un <button> no fluye con el texto (Chrome lo trata como inline-block): la
+    // cita del chat es un span con rol de botón, operable con Enter o espacio.
+    return (
+      <span
+        key={i}
+        role="button"
+        tabIndex={0}
+        className="cita-enlace"
+        onClick={abrir}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            abrir()
+          }
+        }}
+        title={`${titulo ? `${titulo}. ` : ''}Clic para verla en el documento`}
+      >
+        {contenido}
+      </span>
+    )
+  })
 }
 
 /** Micro-meta de una respuesta: tiempo total y proveedor, con el modelo en el tooltip. */
@@ -425,8 +629,82 @@ function MetaInferencia({ modelo, duracion }) {
   )
 }
 
+/** Titularidad según el dictamen: cómo se acreditó o por qué falta. */
+const TITULARIDAD = {
+  RFC: { tono: 'ok', texto: 'RFC coincide' },
+  RAZON_SOCIAL: { tono: 'ok', texto: 'Por razón social' },
+  AJENA: { tono: 'bad', texto: 'RFC ajeno' },
+  NO_LOCALIZADA: { tono: 'warn', texto: 'Por confirmar' },
+  SIN_REFERENCIA: { tono: 'neutral', texto: 'Sin referencia' },
+}
+
+/**
+ * Franja de resumen del dictamen: cada aspecto con su resultado y un clic que
+ * lleva a su sección. Solo resume datos que el dictamen ya trae.
+ */
+function ResumenDictamen({ dictamen, vigencia, ids }) {
+  const verificaciones = dictamen.verificaciones || []
+  const localizados = verificaciones.filter((v) => v.resultado === 'CUMPLE').length
+  const paginasConSello = new Set((dictamen.sellos || []).map((s) => s.pagina)).size
+  const titularidad = TITULARIDAD[dictamen.titularidad]
+  const puntos = [
+    titularidad && { etiqueta: 'Titularidad', ...titularidad, destino: ids.cotejo },
+    {
+      etiqueta: 'Tipo',
+      tono: dictamen.tipo_coincide === true ? 'ok' : dictamen.tipo_coincide === false ? 'bad' : 'neutral',
+      texto: dictamen.tipo_coincide === true ? 'Coincide' : dictamen.tipo_coincide === false ? 'Distinto' : 'Sin contraste',
+      destino: ids.cotejo,
+    },
+    { etiqueta: 'Vigencia', tono: vigencia.tono, texto: vigencia.texto, destino: ids.fechas },
+    verificaciones.length > 0 && {
+      etiqueta: 'Contenido',
+      tono: localizados === verificaciones.length ? 'ok' : 'warn',
+      texto: `${localizados} de ${verificaciones.length}`,
+      destino: ids.contenido,
+    },
+    paginasConSello > 0 && {
+      etiqueta: 'Sellos',
+      tono: 'neutral',
+      texto: `${paginasConSello} ${paginasConSello === 1 ? 'página' : 'páginas'}`,
+      destino: ids.sellos,
+    },
+  ].filter(Boolean)
+  const ir = (id) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  return (
+    <nav className="resumen-dictamen" aria-label="Resumen del dictamen">
+      {puntos.map((p) => (
+        <button key={p.etiqueta} type="button" className="resumen-punto" onClick={() => ir(p.destino)}>
+          <span className="resumen-etiqueta">{p.etiqueta}</span>
+          <span className={`resumen-valor resumen-valor--${p.tono}`}>
+            <span className={`status-dot status-dot--${p.tono}`} aria-hidden="true" />
+            {p.texto}
+          </span>
+        </button>
+      ))}
+    </nav>
+  )
+}
+
+/** Recomendaciones del motor como pasos a seguir (las mismas que acompañan a cada elemento pendiente). */
+function AccionesRecomendadas({ recomendaciones = [] }) {
+  const unicas = [...new Set(recomendaciones.filter(Boolean))]
+  if (!unicas.length) return null
+  return (
+    <div className="acciones">
+      <p className="eyebrow">Acciones recomendadas</p>
+      <ol>
+        {unicas.map((r) => (
+          <li key={r}>{r}</li>
+        ))}
+      </ol>
+    </div>
+  )
+}
+
 /* ── Dictamen ───────────────────────────────────────────────────── */
 function DictamenIa({ dictamen, expediente, tipoRegistrado, duracion }) {
+  const base = useId()
+  const ids = { cotejo: `${base}-cotejo`, contenido: `${base}-contenido`, sellos: `${base}-sellos`, fechas: `${base}-fechas` }
   const estatus = ESTATUS_IA[dictamen.estatus_preliminar] || {
     tono: 'neutral',
     label: dictamen.estatus_preliminar || 'Sin dictamen',
@@ -443,9 +721,17 @@ function DictamenIa({ dictamen, expediente, tipoRegistrado, duracion }) {
           : `${numero(dias)} ${dias === 1 ? 'día restante' : 'días restantes'}`
   const segunReglas = vigenciaSegunReglas(dictamen.vigencia_nivel_2, textoVencimiento)
   const tonoVigencia = segunReglas?.tono ?? (dias === null ? 'neutral' : dias < 0 ? 'bad' : dias <= 30 ? 'warn' : 'ok')
+  const vigenciaCorta =
+    RESULTADO_VIGENCIA[dictamen.vigencia_nivel_2?.resultado]?.label ?? (dias === null ? 'sin vencimiento' : textoVencimiento)
 
   return (
     <div className="dictamen">
+      <ResumenDictamen
+        dictamen={dictamen}
+        vigencia={{ tono: tonoVigencia, texto: vigenciaCorta.charAt(0).toUpperCase() + vigenciaCorta.slice(1) }}
+        ids={ids}
+      />
+
       <div className={`verdict verdict--${estatus.tono}`}>
         <div className="verdict-main">
           <p className="eyebrow">Dictamen preliminar</p>
@@ -464,9 +750,21 @@ function DictamenIa({ dictamen, expediente, tipoRegistrado, duracion }) {
         <Confianza dictamen={dictamen} />
       </div>
 
-      <Cotejo dictamen={dictamen} expediente={expediente} tipoRegistrado={tipoRegistrado} />
+      <AccionesRecomendadas recomendaciones={dictamen.recomendaciones} />
 
-      <dl className="detail-grid detail-grid--3">
+      <div id={ids.cotejo} className="ancla">
+        <Cotejo dictamen={dictamen} expediente={expediente} tipoRegistrado={tipoRegistrado} />
+      </div>
+
+      <div id={ids.contenido} className="ancla">
+        <VerificacionContenido verificaciones={dictamen.verificaciones} />
+      </div>
+
+      <div id={ids.sellos} className="ancla">
+        <SellosDetectados sellos={dictamen.sellos} selloDigital={dictamen.sello_digital_sat} />
+      </div>
+
+      <dl id={ids.fechas} className="detail-grid detail-grid--3 ancla">
         <div className="detail-item">
           <dt>Emisión</dt>
           <dd className="mono">{fechaIso(dictamen.fecha_emision)}</dd>
@@ -503,7 +801,7 @@ function DictamenIa({ dictamen, expediente, tipoRegistrado, duracion }) {
 }
 
 /* ── Auditoría ──────────────────────────────────────────────────── */
-function AuditoriaIa({ doc, expediente, iaOnline, onCambio }) {
+function AuditoriaIa({ doc, expediente, iaOnline, onCambio, onOcupado }) {
   const toast = useToast()
   const [etapas, setEtapas] = useState(null)
   const [recarga, setRecarga] = useState(0)
@@ -513,12 +811,28 @@ function AuditoriaIa({ doc, expediente, iaOnline, onCambio }) {
   const rfcTitular = expediente?.titular?.rfc || null
   const analizando = Boolean(etapas) && Object.values(etapas).some((e) => e.estado === 'activo')
 
+  // El modal bloquea el cambio de documento mientras la auditoría está en curso.
+  useEffect(() => {
+    onOcupado?.(analizando)
+  }, [analizando, onOcupado])
+
   const marcar = (cambios) => setEtapas((prev) => ({ ...prev, ...cambios }))
 
   const auditar = async () => {
     const inicio = performance.now()
     let actual = 'lectura'
     setEtapas({ ...ETAPAS_INICIALES, lectura: { estado: 'activo', detalle: 'Resolviendo el texto del documento…' } })
+    // La auditoría lee todas las páginas: se anuncia cuántas y cuántas van por
+    // OCR, para que una lectura larga no parezca detenida. Es solo informativo.
+    getVisorDocumento(doc.id)
+      .then((info) => {
+        const escaneadas = (info?.paginas || []).filter((p) => p.metodo === 'OCR').length
+        const detalle = escaneadas
+          ? `Leyendo ${info.total_paginas} págs. · ${escaneadas} por OCR (la primera vez tarda)…`
+          : `Leyendo ${info.total_paginas} págs. de capa de texto…`
+        setEtapas((prev) => (prev?.lectura?.estado === 'activo' ? { ...prev, lectura: { estado: 'activo', detalle } } : prev))
+      })
+      .catch(() => {})
     try {
       // Etapa 1: el texto queda resuelto (memoria, disco u OCR) antes de llamar al modelo.
       const { resultado: prep, duracion: msLectura } = await cronometrar(() => prepararDocumento(doc.id))
@@ -555,8 +869,8 @@ function AuditoriaIa({ doc, expediente, iaOnline, onCambio }) {
       })
       setDictamen(resultado)
       setDuracion(performance.now() - inicio)
-      const meta = ESTATUS_IA[resultado?.estatus_preliminar]
-      toast.info('Dictamen de IA generado', `${doc.nombre_archivo_original} · ${meta?.label || resultado?.estatus_preliminar}`)
+      // El éxito ya se ve en el stepper y en el veredicto; un aviso flotante lo
+      // repetía y tapaba el visor. Solo se avisa lo que no se ve en pantalla.
       if (resultado?.persistencia?.guardado === false) {
         toast.alerta('Dictamen no guardado', `El core-service no lo registró: ${resultado.persistencia.detalle}`)
       }
@@ -580,8 +894,8 @@ function AuditoriaIa({ doc, expediente, iaOnline, onCambio }) {
     <div className="ai-view">
       <div className="ai-cta">
         <p className="ai-cta-desc">
-          Clasifica el documento, coteja el RFC contra el titular y verifica su vigencia con las reglas RCV. A Groq solo
-          viaja el texto extraído, nunca el archivo.
+          Clasifica el documento, coteja su titularidad, verifica la vigencia con las reglas RCV y localiza los
+          elementos que el catálogo exige a su tipo (RSC). A Groq solo viaja el texto extraído, nunca el archivo.
         </p>
         <button
           type="button"
@@ -666,6 +980,7 @@ function ChatDocumento({ doc, iaOnline }) {
           duracion,
           lectura: r?.extraccion_nivel_3,
           contexto: r?.contexto_llm,
+          citas: r?.citas,
         },
       ])
     } catch (err) {
@@ -700,7 +1015,7 @@ function ChatDocumento({ doc, iaOnline }) {
           <EmptyState
             icon={MessageSquareText}
             titulo="Pregunta sobre este documento"
-            descripcion="El modelo responde solo con lo que contiene el archivo, cita las cláusulas que leyó y lo dice cuando no encuentra el dato."
+            descripcion="El modelo responde con lo que contiene el archivo y su dictamen en el sistema, cita las cláusulas que leyó y lo dice cuando no encuentra el dato."
           />
         )}
 
@@ -712,7 +1027,7 @@ function ChatDocumento({ doc, iaOnline }) {
           ) : (
             <div key={m.id} className={`bubble ${m.error ? 'bubble--error' : 'bubble--bot'}`}>
               <p className="bubble-text">
-                <TextoModelo texto={m.contenido} />
+                <TextoModelo texto={m.contenido} citas={m.citas} />
               </p>
               {!m.error && (
                 <>
@@ -778,7 +1093,7 @@ const VISTAS = [
  * El padre debe montarlo con `key={doc.id}` para que el dictamen y el hilo
  * se reinicien al cambiar de documento.
  */
-export default function DocumentoIaPanel({ doc, expediente, iaOnline = true, onCambio }) {
+export default function DocumentoIaPanel({ doc, expediente, iaOnline = true, onCambio, onOcupado }) {
   const [vista, setVista] = useState('auditoria')
 
   return (
@@ -793,7 +1108,7 @@ export default function DocumentoIaPanel({ doc, expediente, iaOnline = true, onC
 
       {/* Ambas vistas permanecen montadas para no perder el dictamen ni el hilo al alternar. */}
       <div hidden={vista !== 'auditoria'}>
-        <AuditoriaIa doc={doc} expediente={expediente} iaOnline={iaOnline} onCambio={onCambio} />
+        <AuditoriaIa doc={doc} expediente={expediente} iaOnline={iaOnline} onCambio={onCambio} onOcupado={onOcupado} />
       </div>
       <div hidden={vista !== 'chat'}>
         <ChatDocumento doc={doc} iaOnline={iaOnline} />

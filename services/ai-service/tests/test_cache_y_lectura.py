@@ -9,7 +9,9 @@ sin red: el cliente de Groq, el core-service y el rules-service se simulan.
      temperatura distinta de 0.0.
   4. Lectura completa: el repositorio solo la programa si se pide y si la
      lectura es parcial.
-  5. Por endpoint: la auditoría (preparar y análisis) no la programa; el chat sí.
+  5. Por endpoint: la auditoría (preparar y análisis) lee todas las páginas
+     antes de responder, una sola vez, y no programa nada en segundo plano; el
+     chat responde con la lectura parcial y programa la completa.
   6. Métricas y límites: tokens consumidos (``uso``) en la llamada y en un
      acierto de caché, ``uso_tokens`` en el dictamen y en el chat, historial
      del chat acotado a 20 turnos y timeout (conexión, lectura) hacia el core.
@@ -152,13 +154,32 @@ def prueba_lectura_completa(mp: pytest.MonkeyPatch) -> None:
         "resultado": "SIN_REGLAS", "evaluaciones": []})
     mp.setattr(core_client, "registrar_dictamen", lambda carga: {"id": "dictamen-cache", "estado_expediente": "EN_REVISION"})
 
-    r = client.post(f"/api/v1/ai/documentos/{DOC_ID}/preparar")
-    verificar(r.status_code == 200 and not programadas, "Preparar (auditoría) no programa la lectura completa",
-              f"HTTP {r.status_code}")
-    r = client.post("/api/v1/ai/analisis-semantico", json={"documento_id": DOC_ID, "rfc_titular": RFC})
-    verificar(r.status_code == 200 and not programadas, "El análisis semántico tampoco", f"HTTP {r.status_code}")
+    # La lectura completa de la auditoría se simula y se cuenta cuántas veces ocurre.
+    lecturas: list[bool] = []
+
+    def extraer(contenido, nombre, forzar_ocr, texto_completo, sha256):
+        lecturas.append(texto_completo)
+        return (f"ACTA CONSTITUTIVA ... RFC {RFC} ... 26 páginas completas",
+                {"confidence_score": 0.97, "total_paginas": 26}, True)
+
+    # En un contexto propio: la sección [6] verifica el leer_binario real.
+    with pytest.MonkeyPatch.context() as local:
+        local.setattr(core_client, "leer_binario", lambda metadatos: b"%PDF-1.4 acta")
+        local.setattr(repositorio_texto, "_extraer", extraer)
+        r = client.post(f"/api/v1/ai/documentos/{DOC_ID}/preparar")
+        verificar(r.status_code == 200 and lecturas == [True] and not programadas
+                  and r.json()["extraccion_nivel_3"]["lectura_completa"],
+                  "Preparar (auditoría) lee todas las páginas antes de responder, sin tarea de fondo",
+                  f"HTTP {r.status_code} · lecturas {lecturas}")
+        r = client.post("/api/v1/ai/analisis-semantico", json={"documento_id": DOC_ID, "rfc_titular": RFC})
+        verificar(r.status_code == 200 and lecturas == [True] and not programadas,
+                  "El análisis reutiliza esa lectura completa: el OCR no se repite", f"HTTP {r.status_code}")
+
+    # Un documento que nadie auditó: el chat no espera la lectura completa.
+    preparar_repositorio(mp, completo=False, programadas=programadas)
     r = client.post("/api/v1/ai/chat-documento", json={"documento_id": DOC_ID, "pregunta": "¿Cuál es el capital social?"})
-    verificar(r.status_code == 200 and programadas == [DOC_ID], "El chat sí programa la lectura completa",
+    verificar(r.status_code == 200 and programadas == [DOC_ID] and lecturas == [True],
+              "El chat de un documento sin auditar responde con la lectura parcial y programa la completa",
               f"HTTP {r.status_code}")
 
 

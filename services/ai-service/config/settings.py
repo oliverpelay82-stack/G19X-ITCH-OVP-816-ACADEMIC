@@ -136,6 +136,10 @@ FRAGMENTO_CARACTERES: int = int(os.getenv("FRAGMENTO_CARACTERES", "1200"))
 # denominación y los otorgantes que comparecen (≈1,300 caracteres en la prueba).
 ENCABEZADO_CARACTERES: int = int(os.getenv("ENCABEZADO_CARACTERES", "1500"))
 MAX_FRAGMENTOS_CHAT: int = int(os.getenv("MAX_FRAGMENTOS_CHAT", "4"))
+# Contexto de la verificación de contenido (reglas RSC/RDS): los mejores
+# fragmentos de cada criterio. Con la extracción de la misma auditoría (~3,300
+# tokens) debe quedar por debajo del límite de 8,000 tokens por minuto de Groq.
+MAX_CARACTERES_VERIFICACION: int = int(os.getenv("MAX_CARACTERES_VERIFICACION", "9500"))
 
 # ── Integración con el core-service (:8001) ─────────────────────────
 CORE_BASE_URL: str = os.getenv("CORE_BASE_URL", "http://127.0.0.1:8001").rstrip("/")

@@ -48,3 +48,42 @@ def evaluar_vigencia(
         raise ReglasNoDisponiblesError(
             f"No fue posible consultar las reglas de vigencia en {settings.RULES_BASE_URL}: {exc}"
         ) from exc
+
+
+# Familias cuyas reglas describen, en lenguaje natural, qué debe contener un
+# documento de cierto tipo: RSC (semánticas y contractuales, DOC-05) y RDS
+# (dinámicas, dadas de alta por el usuario con su criterio para la IA, RDS-02).
+FAMILIAS_CONTENIDO = ("RSC", "RDS")
+
+
+def criterios_contenido(tipo_documento: str | None) -> list[dict[str, Any]]:
+    """
+    Reglas activas de las familias RSC y RDS ligadas al tipo de documento. Cada
+    una es un elemento que el Nivel 4 debe localizar en el texto; su
+    ``descripcion`` es el criterio y su ``accion``, la recomendación si falta.
+    """
+    if not tipo_documento:
+        return []
+    try:
+        respuesta = _sesion.get(
+            f"{settings.RULES_BASE_URL}/api/v1/reglas", params={"activo": "true"}, timeout=TIMEOUT_SEGUNDOS
+        )
+        respuesta.raise_for_status()
+        reglas = respuesta.json()
+    except (requests.RequestException, ValueError) as exc:
+        raise ReglasNoDisponiblesError(
+            f"No fue posible consultar los criterios de contenido en {settings.RULES_BASE_URL}: {exc}"
+        ) from exc
+    tipo = tipo_documento.strip().upper()
+    return [
+        {
+            "codigo_regla": r["codigo_regla"],
+            "nombre_regla": r["nombre_regla"],
+            "familia_regla": r["familia_regla"],
+            "criterio": r["descripcion"],
+            "recomendacion": r["accion"],
+            "severidad": r["severidad"],
+        }
+        for r in reglas
+        if r.get("familia_regla") in FAMILIAS_CONTENIDO and (r.get("tipo_documento") or "").upper() == tipo
+    ]

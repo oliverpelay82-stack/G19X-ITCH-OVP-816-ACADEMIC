@@ -16,15 +16,22 @@ acotada a una tarea de lectura, que es donde su desempeño es fiable.
 """
 from __future__ import annotations
 
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from datetime import date, datetime
 from typing import Any
 import re
+import unicodedata
 
 from clients import groq_client, rules_client
 from clients.rules_client import ReglasNoDisponiblesError
 from config import settings
-from pipelines import fragmentos
+from pipelines import fragmentos, verificacion_contenido
+
+# La extracción de datos y la verificación de contenido son dos consultas
+# independientes a Groq: corren a la vez y la auditoría espera solo a la más
+# lenta. El consumo de tokens es el mismo; solo cambia el tiempo de respuesta.
+_verificaciones = ThreadPoolExecutor(max_workers=4, thread_name_prefix="verificacion")
 
 # Catálogo cerrado de tipos documentales, con el rasgo que distingue a cada uno.
 #
@@ -49,6 +56,9 @@ TIPOS_DOCUMENTALES: dict[str, str] = {
         "notario, número de escritura, socios y objeto social",
     "ESTADO_CUENTA":
         "carátula bancaria con número de cuenta o CLABE, periodo y saldos",
+    "PODER_NOTARIAL":
+        "instrumento notarial por el que una persona o sociedad otorga a un apoderado "
+        "facultades de representación (pleitos y cobranzas, actos de administración o de dominio)",
     "CONTRATO":
         "acuerdo entre dos o más partes con cláusulas, obligaciones y firmas",
     "POLIZA":
@@ -88,6 +98,35 @@ TIPO_A_CATALOGO_CORE: dict[str, str] = {
     "OPINION_CUMPLIMIENTO": "OPINION_CUMPLIMIENTO",
     "ESTADO_CUENTA": "ESTADO_CUENTA",
 }
+
+# Tipos del Nivel 4 con los que es compatible cada tipo registrado en el
+# expediente. El Cap. I del DOC-01 asigna a la IA confirmar «que el documento sea
+# del tipo que el usuario seleccionó». Los tipos sin equivalente en el catálogo
+# del Nivel 4 (aviso de privacidad, dictamen pericial, registros sectoriales…)
+# no se contrastan: el modelo no tiene con qué clasificarlos.
+TIPOS_COMPATIBLES: dict[str, set[str]] = {
+    "CSF_SAT": {"CONSTANCIA_SITUACION_FISCAL"},
+    "COMP_DOMICILIO": {"COMPROBANTE_DOMICILIO"},
+    "ACTA_CONSTITUTIVA": {"ACTA_CONSTITUTIVA"},
+    "PODER_NOTARIAL": {"PODER_NOTARIAL", "ACTA_CONSTITUTIVA"},
+    "OPINION_CUMPLIMIENTO": {"OPINION_CUMPLIMIENTO"},
+    "ESTADO_CUENTA": {"ESTADO_CUENTA"},
+    "CONTRATO_SERVICIOS": {"CONTRATO"},
+    "ACUERDO_CONFIDENCIALIDAD": {"CONTRATO"},
+    "CONVENIO_MODIFICATORIO": {"CONTRATO"},
+    "POLIZA_SEGURO": {"POLIZA"},
+    "POLIZA_RC": {"POLIZA"},
+    "FIANZA": {"POLIZA"},
+    "LICENCIA_OPERACION": {"LICENCIA"},
+    "PERMISO_SECTORIAL": {"LICENCIA"},
+    "CERTIFICACION": {"CERTIFICACION"},
+}
+
+# Terminaciones societarias que no distinguen a una empresa de otra al comparar
+# razones sociales (S.A. de C.V., S.A.P.I. de C.V., S.C., A.C., S. de R.L.…).
+_SUFIJOS_SOCIETARIOS = re.compile(
+    r"\b(s\s*a\s*p\s*i|s\s*a\s*b|s\s*a|s\s*de\s*r\s*l|s\s*c|a\s*c|s\s*r\s*l)(\s*de\s*c\s*v)?\b"
+)
 
 # RFC mexicano: 3 caracteres para persona moral o 4 para persona física,
 # seguidos de la fecha AAMMDD y la homoclave de 3 posiciones.
@@ -193,6 +232,11 @@ class ResultadoAnalisis:
     modelo_utilizado: str
     contexto_llm: dict[str, Any] = field(default_factory=dict)
     vigencia_nivel_2: dict[str, Any] = field(default_factory=dict)
+    # RFC, RAZON_SOCIAL, NO_LOCALIZADA, AJENA o SIN_REFERENCIA.
+    titularidad: str = "SIN_REFERENCIA"
+    tipo_coincide: bool | None = None
+    verificaciones: list[dict[str, Any]] = field(default_factory=list)
+    recomendaciones: list[str] = field(default_factory=list)
 
     def a_dict(self) -> dict[str, Any]:
         return {
@@ -214,6 +258,10 @@ class ResultadoAnalisis:
             "modelo_utilizado": self.modelo_utilizado,
             "contexto_llm": self.contexto_llm,
             "vigencia_nivel_2": self.vigencia_nivel_2,
+            "titularidad": self.titularidad,
+            "tipo_coincide": self.tipo_coincide,
+            "verificaciones": self.verificaciones,
+            "recomendaciones": self.recomendaciones,
         }
 
 
@@ -237,6 +285,17 @@ def normalizar_fecha(valor: Any) -> str | None:
         except ValueError:
             continue
     return None
+
+
+def normalizar_razon_social(valor: Any) -> str | None:
+    """Razón social comparable: sin acentos, signos ni terminación societaria."""
+    if not isinstance(valor, str) or not valor.strip():
+        return None
+    texto = unicodedata.normalize("NFKD", valor.lower())
+    texto = "".join(c for c in texto if not unicodedata.combining(c))
+    texto = re.sub(r"[^\w\s]", " ", texto)
+    texto = _SUFIJOS_SOCIETARIOS.sub(" ", re.sub(r"\s+", " ", texto))
+    return re.sub(r"\s+", " ", texto).strip() or None
 
 
 def _normalizar_confianza(valor: Any) -> float:
@@ -273,6 +332,8 @@ def analizar(
     confianza_extraccion: float | None = None,
     fecha_referencia: date | None = None,
     tipo_documento_registrado: str | None = None,
+    criterios_contenido: list[dict[str, Any]] | None = None,
+    paginas: list[dict[str, Any]] | None = None,
 ) -> ResultadoAnalisis:
     """
     Somete el texto al modelo (Groq Cloud) y calcula el dictamen preliminar.
@@ -283,6 +344,11 @@ def analizar(
     :param tipo_documento_registrado: tipo con el que el documento se registró
         en el expediente (catálogo del core-service). Determina qué reglas de
         vigencia aplican; si falta, se usa el tipo que detectó el modelo.
+    :param criterios_contenido: reglas RSC/RDS activas del tipo de documento
+        (``rules_client.criterios_contenido``). Si se reciben, una segunda
+        consulta verifica que el documento contenga cada elemento.
+    :param paginas: ``detalle_paginas`` del Nivel 3; cada fragmento enviado al
+        modelo queda asociado a su página en la traza.
     """
     hoy = fecha_referencia or date.today()
     if not texto.strip():
@@ -291,8 +357,13 @@ def analizar(
             "o envíe el contenido del documento."
         )
 
+    # La verificación de contenido arranca ya, en paralelo con la extracción.
+    verificacion_en_curso = _verificaciones.submit(
+        verificacion_contenido.verificar, texto, criterios_contenido or [], paginas
+    )
+
     # Documento extenso: encabezado + fragmentos relevantes, no solo el inicio.
-    seleccion = fragmentos.seleccionar(texto, CONSULTA_AUDITORIA)
+    seleccion = fragmentos.seleccionar(texto, CONSULTA_AUDITORIA, paginas=paginas)
 
     crudo = groq_client.generar_json(
         prompt=_plantilla_prompt(seleccion.texto, rfc_titular, razon_social_titular),
@@ -321,8 +392,17 @@ def analizar(
             "No se proporcionó el RFC del titular: la coincidencia no pudo verificarse."
         )
     elif rfc_detectado is None:
-        match_titular = False
-        observaciones.append("No se localizó ningún RFC en el documento.")
+        # Sin RFC en el documento no hay un RFC ajeno: la titularidad se contrasta
+        # por la razón social (Cap. I: «el nombre o el RFC»); si tampoco coincide,
+        # la decide un analista, porque un dato ausente no prueba que sea de otro.
+        esperada = normalizar_razon_social(razon_social_titular)
+        match_titular = bool(esperada and esperada == normalizar_razon_social(razon_social))
+        if match_titular:
+            observaciones.append(
+                "El documento no incluye RFC; la titularidad se verificó por la razón social del titular."
+            )
+        else:
+            observaciones.append("No se localizó ningún RFC en el documento.")
     else:
         match_titular = rfc_detectado == rfc_esperado
         if not match_titular:
@@ -355,14 +435,40 @@ def analizar(
     )
     observaciones.extend(notas_vigencia)
 
+    if rfc_esperado is None:
+        titularidad = "SIN_REFERENCIA"
+    elif rfc_detectado is None:
+        titularidad = "RAZON_SOCIAL" if match_titular else "NO_LOCALIZADA"
+    else:
+        titularidad = "RFC" if match_titular else "AJENA"
+
+    compatibles = TIPOS_COMPATIBLES.get((tipo_documento_registrado or "").upper())
+    tipo_coincide = None if compatibles is None else tipo in compatibles
+    if tipo_coincide is False:
+        observaciones.append(
+            f"El documento se registró como {tipo_documento_registrado} pero su contenido corresponde a "
+            f"{tipo}; debe confirmarse que se cargó el documento correcto."
+        )
+
+    # verificar() nunca lanza por Groq: una falla vuelve como disponible=False con su nota.
+    verificacion = verificacion_en_curso.result()
+    if verificacion.nota:
+        observaciones.append(verificacion.nota)
+
     estatus, requiere_hitl, motivos = _dictaminar(
         confianza=confianza,
         match_titular=match_titular,
         rfc_esperado=rfc_esperado,
         vigente=vigente,
         vigencia_pendiente=vigencia_pendiente,
+        rfc_localizado=rfc_detectado is not None,
+        tipo_coincide=tipo_coincide,
+        elementos_pendientes=[v["nombre_regla"] for v in verificacion.pendientes],
+        verificacion_incompleta=not verificacion.disponible,
+        reglas_dinamicas=verificacion.incluye_reglas_dinamicas,
     )
     observaciones.extend(motivos)
+    recomendaciones = [v["recomendacion"] for v in verificacion.pendientes if v.get("recomendacion")]
 
     return ResultadoAnalisis(
         tipo_documento_detectado=tipo,
@@ -379,8 +485,16 @@ def analizar(
         requiere_revision_humana=requiere_hitl,
         observaciones=observaciones,
         modelo_utilizado=settings.GROQ_MODEL,
-        contexto_llm={**seleccion.traza(), "uso_tokens": groq_client.uso_de(crudo)},
+        contexto_llm={
+            **seleccion.traza(),
+            "uso_tokens": groq_client.uso_de(crudo),
+            "uso_tokens_verificacion": verificacion.uso_tokens,
+        },
         vigencia_nivel_2=vigencia_nivel_2,
+        titularidad=titularidad,
+        tipo_coincide=tipo_coincide,
+        verificaciones=verificacion.verificaciones,
+        recomendaciones=recomendaciones,
     )
 
 
@@ -438,6 +552,11 @@ def _dictaminar(
     rfc_esperado: str | None,
     vigente: bool | None,
     vigencia_pendiente: bool = False,
+    rfc_localizado: bool = True,
+    tipo_coincide: bool | None = None,
+    elementos_pendientes: list[str] | None = None,
+    verificacion_incompleta: bool = False,
+    reglas_dinamicas: bool = False,
 ) -> tuple[str, bool, list[str]]:
     """
     Reglas deterministas que convierten la extracción en un estatus preliminar.
@@ -458,7 +577,7 @@ def _dictaminar(
             motivos + ["Dictamen NO_CONFORME: la vigencia del documento ya expiró."],
         )
 
-    if rfc_esperado is not None and not match_titular:
+    if rfc_esperado is not None and rfc_localizado and not match_titular:
         return (
             ESTATUS_NO_CONFORME,
             False,
@@ -476,6 +595,28 @@ def _dictaminar(
             ],
         )
 
+    if not match_titular:
+        return (
+            ESTATUS_EN_REVISION,
+            True,
+            motivos
+            + [
+                "Dictamen EN_REVISION: el documento no incluye RFC y su razón social no coincide con la del "
+                "titular; un analista debe confirmar a quién pertenece."
+            ],
+        )
+
+    if tipo_coincide is False:
+        return (
+            ESTATUS_EN_REVISION,
+            True,
+            motivos
+            + [
+                "Dictamen EN_REVISION: el tipo de documento detectado no corresponde al tipo con el que se "
+                "registró en el expediente."
+            ],
+        )
+
     if vigencia_pendiente:
         return (
             ESTATUS_EN_REVISION,
@@ -484,6 +625,35 @@ def _dictaminar(
             + [
                 "Dictamen EN_REVISION: la vigencia del documento no pudo verificarse contra las "
                 "reglas RCV; un analista debe confirmarla antes de aprobarlo."
+            ],
+        )
+
+    if elementos_pendientes:
+        return (
+            ESTATUS_EN_REVISION,
+            True,
+            motivos
+            + [
+                "Dictamen EN_REVISION: omisión relevante; no se localizaron o no pudieron verificarse "
+                f"estos elementos: {', '.join(elementos_pendientes)} (RSC-01)."
+            ],
+        )
+
+    if verificacion_incompleta:
+        return (
+            ESTATUS_EN_REVISION,
+            True,
+            motivos + ["Dictamen EN_REVISION: la verificación de contenido del documento no pudo completarse."],
+        )
+
+    if reglas_dinamicas:
+        return (
+            ESTATUS_EN_REVISION,
+            True,
+            motivos
+            + [
+                "Dictamen EN_REVISION: el documento se evaluó con criterios definidos por el usuario (RDS-02), "
+                "que siempre requieren ratificación humana (RDS-03)."
             ],
         )
 
