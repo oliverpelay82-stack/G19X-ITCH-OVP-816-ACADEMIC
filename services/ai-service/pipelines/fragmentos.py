@@ -29,6 +29,7 @@ import math
 import re
 import unicodedata
 from dataclasses import dataclass, field
+from functools import lru_cache
 
 from config import settings
 
@@ -133,13 +134,27 @@ def terminos_consulta(consulta: str) -> list[str]:
     return tokenizar(consulta) + tokenizar(extra)
 
 
-@dataclass
+@dataclass(frozen=True)
 class Ventana:
     inicio: int
     fin: int
     texto: str
-    tokens: list[str] = field(default_factory=list)
-    puntaje: float = 0.0
+
+
+@dataclass(frozen=True)
+class _Indice:
+    """
+    Ventanas del documento con sus términos ya contados. Se construye una sola
+    vez por texto (``_indice``): el chat y la auditoría consultan el mismo
+    documento muchas veces y retokenizar un acta de 130,000 caracteres en cada
+    pregunta era el costo dominante de la selección.
+    """
+    ventanas: tuple[Ventana, ...]
+    frecuencias: tuple[dict[str, int], ...]
+    largos: tuple[int, ...]
+    bigramas: tuple[frozenset[tuple[str, str]], ...]
+    df: dict[str, int]
+    promedio: float
 
 
 @dataclass
@@ -197,31 +212,94 @@ def _ventanas(texto: str, tamanio: int) -> list[Ventana]:
     return ventanas
 
 
-def _bm25(ventanas: list[Ventana], consulta: list[str], k1: float = 1.5, b: float = 0.75) -> None:
-    n = len(ventanas)
-    promedio = sum(len(v.tokens) for v in ventanas) / max(n, 1) or 1.0
+@lru_cache(maxsize=16)
+def _indice(texto: str, tamanio: int) -> _Indice:
+    ventanas = tuple(_ventanas(texto, tamanio))
+    frecuencias, largos, bigramas = [], [], []
     df: dict[str, int] = {}
     for v in ventanas:
-        for termino in set(v.tokens):
-            df[termino] = df.get(termino, 0) + 1
+        tokens = tokenizar(v.texto)
+        conteo: dict[str, int] = {}
+        for t in tokens:
+            conteo[t] = conteo.get(t, 0) + 1
+        for t in conteo:
+            df[t] = df.get(t, 0) + 1
+        frecuencias.append(conteo)
+        largos.append(len(tokens))
+        bigramas.append(frozenset(zip(tokens, tokens[1:])))
+    promedio = sum(largos) / max(len(largos), 1) or 1.0
+    return _Indice(ventanas, tuple(frecuencias), tuple(largos), tuple(bigramas), df, promedio)
 
-    terminos = list(dict.fromkeys(consulta))
-    bigramas = {(a, b_) for a, b_ in zip(consulta, consulta[1:])}
-    for v in ventanas:
-        frecuencias: dict[str, int] = {}
-        for t in v.tokens:
-            frecuencias[t] = frecuencias.get(t, 0) + 1
+
+def _bm25(indice: _Indice, consulta: list[str], k1: float = 1.5, b: float = 0.75) -> list[float]:
+    """Puntaje BM25 de cada ventana del índice, más un bono por bigrama de la consulta presente."""
+    n = len(indice.ventanas)
+    terminos = [t for t in dict.fromkeys(consulta) if t in indice.df]
+    bigramas_consulta = set(zip(consulta, consulta[1:]))
+    idf = {t: math.log((n - indice.df[t] + 0.5) / (indice.df[t] + 0.5) + 1.0) for t in terminos}
+    puntajes = []
+    for frecuencias, largo, bigramas in zip(indice.frecuencias, indice.largos, indice.bigramas):
         puntaje = 0.0
+        normalizador = k1 * (1 - b + b * largo / indice.promedio)
         for t in terminos:
             f = frecuencias.get(t, 0)
-            if not f:
-                continue
-            idf = math.log((n - df[t] + 0.5) / (df[t] + 0.5) + 1.0)
-            puntaje += idf * f * (k1 + 1) / (f + k1 * (1 - b + b * len(v.tokens) / promedio))
-        if bigramas:
-            presentes = set(zip(v.tokens, v.tokens[1:]))
-            puntaje += 1.5 * len(bigramas & presentes)
-        v.puntaje = puntaje
+            if f:
+                puntaje += idf[t] * f * (k1 + 1) / (f + normalizador)
+        if bigramas_consulta:
+            puntaje += 1.5 * len(bigramas_consulta & bigramas)
+        puntajes.append(puntaje)
+    return puntajes
+
+
+def pagina_de(posicion: int, paginas: list[dict] | None) -> int | None:
+    """
+    Página del documento donde cae una posición del texto consolidado, según
+    ``detalle_paginas[].inicio`` del Nivel 3. None si no hay esa información.
+    """
+    if not paginas:
+        return None
+    tramos = sorted((p["inicio"], p["pagina"]) for p in paginas if "inicio" in p and "pagina" in p)
+    actual = None
+    for inicio, numero in tramos:
+        if inicio > posicion:
+            break
+        actual = numero
+    return actual if actual is not None else (tramos[0][1] if tramos else None)
+
+
+def _encabezado(texto: str, presupuesto: int) -> tuple[str, int]:
+    fin = min(settings.ENCABEZADO_CARACTERES, presupuesto // 3)
+    # El encabezado termina en un salto de renglón para no cortar una palabra.
+    corte = texto.rfind("\n", 0, fin)
+    fin = corte if corte > fin // 2 else fin
+    return texto[:fin].rstrip(), fin
+
+
+def _repite(v: Ventana, elegidas: list[Ventana]) -> bool:
+    """La ventana repite más de la mitad de otra ya elegida (por el traslape)."""
+    return any(min(v.fin, e.fin) - max(v.inicio, e.inicio) > (v.fin - v.inicio) / 2 for e in elegidas)
+
+
+def _armar(
+    texto: str,
+    encabezado: str,
+    elegidas: list[tuple[Ventana, float, list[str]]],
+    paginas: list[dict] | None,
+) -> SeleccionContexto:
+    elegidas = sorted(elegidas, key=lambda e: e[0].inicio)
+    partes = [encabezado] + [v.texto.strip() for v, _, _ in elegidas]
+    fragmentos = [
+        {
+            "posicion_pct": round(100 * v.inicio / len(texto)),
+            "pagina": pagina_de(v.inicio + (len(v.texto) - len(v.texto.lstrip())), paginas),
+            "caracteres": len(v.texto.strip()),
+            "puntaje": round(puntaje, 2),
+            "inicio": v.texto.strip()[:80],
+            "titulo": titulo_fragmento(v.texto, terminos),
+        }
+        for v, puntaje, terminos in elegidas
+    ]
+    return SeleccionContexto(_SEPARADOR.join(partes), "fragmentos", len(texto), fragmentos)
 
 
 def seleccionar(
@@ -229,60 +307,110 @@ def seleccionar(
     consulta: str,
     presupuesto: int | None = None,
     max_fragmentos: int | None = None,
+    paginas: list[dict] | None = None,
 ) -> SeleccionContexto:
     """
     Arma el contexto para el LLM: el documento completo si cabe; si no, su
     encabezado más los fragmentos de mayor puntaje BM25 contra ``consulta``.
+    Con ``paginas`` (``detalle_paginas`` del Nivel 3), cada fragmento indica su página.
     """
     presupuesto = presupuesto or settings.MAX_CARACTERES_CONTEXTO
     texto = texto.strip()
     if len(texto) <= presupuesto:
         return SeleccionContexto(texto, "completo", len(texto))
 
-    tamanio = settings.FRAGMENTO_CARACTERES
-    encabezado_fin = min(settings.ENCABEZADO_CARACTERES, presupuesto // 3)
-    # El encabezado termina en un salto de renglón para no cortar una palabra.
-    corte = texto.rfind("\n", 0, encabezado_fin)
-    encabezado_fin = corte if corte > encabezado_fin // 2 else encabezado_fin
-    encabezado = texto[:encabezado_fin].rstrip()
-
+    encabezado, encabezado_fin = _encabezado(texto, presupuesto)
     terminos = terminos_consulta(consulta)
-    ventanas = [v for v in _ventanas(texto, tamanio) if v.fin > encabezado_fin]
-    for v in ventanas:
-        v.tokens = tokenizar(v.texto)
-    if terminos and ventanas:
-        _bm25(ventanas, terminos)
-
-    candidatas = sorted((v for v in ventanas if v.puntaje > 0), key=lambda v: v.puntaje, reverse=True)
+    indice = _indice(texto, settings.FRAGMENTO_CARACTERES)
+    puntajes = _bm25(indice, terminos) if terminos else [0.0] * len(indice.ventanas)
+    candidatas = sorted(
+        ((v, p) for v, p in zip(indice.ventanas, puntajes) if p > 0 and v.fin > encabezado_fin),
+        key=lambda c: c[1], reverse=True,
+    )
     if not candidatas:
         # Nada coincide con la consulta: se conserva el comportamiento previo.
         return SeleccionContexto(texto[:presupuesto], "inicio", len(texto))
 
-    elegidas: list[Ventana] = []
+    elegidas: list[tuple[Ventana, float, list[str]]] = []
     disponible = presupuesto - len(encabezado)
     limite = max_fragmentos or 99
-    for v in candidatas:
+    for v, puntaje in candidatas:
         if len(elegidas) >= limite:
             break
-        # Se descartan ventanas que repiten más de la mitad de otra ya elegida.
-        if any(min(v.fin, e.fin) - max(v.inicio, e.inicio) > (v.fin - v.inicio) / 2 for e in elegidas):
-            continue
         costo = len(v.texto.strip()) + len(_SEPARADOR)
-        if costo > disponible:
+        if costo > disponible or _repite(v, [e[0] for e in elegidas]):
             continue
-        elegidas.append(v)
+        elegidas.append((v, puntaje, terminos))
         disponible -= costo
+    return _armar(texto, encabezado, elegidas, paginas)
 
-    elegidas.sort(key=lambda v: v.inicio)
-    partes = [encabezado] + [v.texto.strip() for v in elegidas]
-    fragmentos = [
-        {
-            "posicion_pct": round(100 * v.inicio / len(texto)),
-            "caracteres": len(v.texto.strip()),
-            "puntaje": round(v.puntaje, 2),
-            "inicio": v.texto.strip()[:80],
-            "titulo": titulo_fragmento(v.texto, terminos),
-        }
-        for v in elegidas
-    ]
-    return SeleccionContexto(_SEPARADOR.join(partes), "fragmentos", len(texto), fragmentos)
+
+def seleccionar_por_criterios(
+    texto: str,
+    consultas: list[str],
+    presupuesto: int | None = None,
+    por_consulta: int = 2,
+    paginas: list[dict] | None = None,
+) -> SeleccionContexto:
+    """
+    Contexto para verificar varios elementos a la vez (reglas RSC/RDS). Una sola
+    consulta con todos los criterios juntos favorece al elemento con más
+    términos; aquí cada criterio se puntúa por separado y los fragmentos se
+    eligen por turnos —primero el mejor de cada criterio, luego el segundo—, de
+    modo que ningún elemento se queda sin su evidencia más probable aunque esté
+    en la última página del documento.
+    """
+    presupuesto = presupuesto or settings.MAX_CARACTERES_CONTEXTO
+    texto = texto.strip()
+    if len(texto) <= presupuesto:
+        return SeleccionContexto(texto, "completo", len(texto))
+
+    encabezado, encabezado_fin = _encabezado(texto, presupuesto)
+    indice = _indice(texto, settings.FRAGMENTO_CARACTERES)
+    rankings: list[tuple[list[str], list[tuple[Ventana, float]]]] = []
+    for consulta in consultas:
+        terminos = terminos_consulta(consulta)
+        if not terminos:
+            continue
+        puntajes = _bm25(indice, terminos)
+        ranking = sorted(
+            ((v, p) for v, p in zip(indice.ventanas, puntajes) if p > 0 and v.fin > encabezado_fin),
+            key=lambda c: c[1], reverse=True,
+        )
+        rankings.append((terminos, ranking))
+    if not any(r for _, r in rankings):
+        return SeleccionContexto(texto[:presupuesto], "inicio", len(texto))
+
+    elegidas: list[tuple[Ventana, float, list[str]]] = []
+    disponible = presupuesto - len(encabezado)
+    # Páginas que ya aportaron un fragmento a cada criterio: el segundo turno
+    # prefiere otra página. Sin esto, una cláusula que menciona el elemento
+    # («debiéndose inscribir en el Registro Público…») acaparaba los turnos con
+    # ventanas vecinas y dejaba fuera la evidencia real en otra hoja (el sello
+    # de inscripción de la última página).
+    paginas_usadas: list[set] = [set() for _ in rankings]
+    for turno in range(por_consulta):
+        for i, (terminos, ranking) in enumerate(rankings):
+            candidatas = [(v, p) for v, p in ranking if not _repite(v, [e[0] for e in elegidas])]
+            if turno and paginas_usadas[i]:
+                otras = [(v, p) for v, p in candidatas[:_ALTERNATIVAS_POR_PAGINA]
+                         if _pagina_o_tramo(v, paginas, len(texto)) not in paginas_usadas[i]]
+                candidatas = otras + [c for c in candidatas if c not in otras]
+            # El mejor fragmento aún no elegido de este criterio que quepa.
+            for v, puntaje in candidatas[:1]:
+                costo = len(v.texto.strip()) + len(_SEPARADOR)
+                if costo <= disponible:
+                    elegidas.append((v, puntaje, terminos))
+                    disponible -= costo
+                    paginas_usadas[i].add(_pagina_o_tramo(v, paginas, len(texto)))
+    return _armar(texto, encabezado, elegidas, paginas)
+
+
+# Candidatas de un criterio entre las que se busca una de otra página.
+_ALTERNATIVAS_POR_PAGINA = 6
+
+
+def _pagina_o_tramo(v: Ventana, paginas: list[dict] | None, largo: int) -> int:
+    """Página de la ventana; sin ``paginas``, el décimo del documento en que cae."""
+    pagina = pagina_de(v.inicio, paginas)
+    return pagina if pagina is not None else -(10 * v.inicio // max(largo, 1))

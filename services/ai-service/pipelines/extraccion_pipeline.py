@@ -29,6 +29,7 @@ omitidas quedan registradas en la traza y en las observaciones.
 """
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
+from functools import lru_cache
 from typing import Any
 import io
 import re
@@ -40,6 +41,7 @@ import pytesseract
 from PIL import Image
 
 from config import settings
+from pipelines import sellos
 
 pytesseract.pytesseract.tesseract_cmd = settings.TESSERACT_CMD
 
@@ -79,6 +81,12 @@ class ResultadoPagina:
     caracteres: int
     confianza: float
     texto: str = ""
+    # Palabras del OCR con su recuadro, de la misma lectura que produjo `texto`
+    # (vacío en páginas vectoriales, cuyas palabras da PyMuPDF al vuelo).
+    palabras: list[list[Any]] = field(default_factory=list)
+    inicio: int = 0        # posición de la página dentro del texto consolidado
+    # Sellos en tinta de color: {"tipo", "x0", "y0", "x1", "y1"} normalizados.
+    sellos: list[dict[str, Any]] = field(default_factory=list)
 
 
 @dataclass
@@ -94,6 +102,7 @@ class ResultadoExtraccion:
     observaciones: list[str] = field(default_factory=list)
     detalle_paginas: list[ResultadoPagina] = field(default_factory=list)
     paginas_omitidas: list[int] = field(default_factory=list)
+    sello_digital_sat: bool = False      # el texto incluye el Sello Digital SAT (DOC-08)
 
     def a_dict(self, incluir_paginas: bool = True) -> dict[str, Any]:
         datos: dict[str, Any] = {
@@ -108,6 +117,8 @@ class ResultadoExtraccion:
             "requiere_revision_humana": self.requiere_revision_humana,
             "umbral_confianza_hitl": settings.UMBRAL_CONFIANZA_HITL,
             "observaciones": self.observaciones,
+            "sello_digital_sat": self.sello_digital_sat,
+            "paginas_con_sello": [p.numero for p in self.detalle_paginas if p.sellos],
         }
         if incluir_paginas:
             datos["detalle_paginas"] = [
@@ -116,6 +127,8 @@ class ResultadoExtraccion:
                     "metodo": p.metodo,
                     "caracteres": p.caracteres,
                     "confianza": round(p.confianza, 4),
+                    "inicio": p.inicio,
+                    "sellos": p.sellos,
                 }
                 for p in self.detalle_paginas
             ]
@@ -130,6 +143,10 @@ _ANCHO_MINIMO_OCR = 1800
 # falló. Una página de texto queda entre 1 % y 10 % de tinta; una foto con
 # sombra o flash deja manchas negras que superan el 30 %.
 _MAX_TINTA_OTSU = 0.25
+# Fracción mínima de la tinta negra de una página con sellos que deben cubrir
+# las palabras leídas. Medido sobre un acta real de 14 páginas: entre 0.36 y
+# 0.99; una página cuyo texto la segmentación descartó por un sello denso: 0.0.
+MIN_COBERTURA_TINTA = 0.25
 
 
 def preprocesar_imagen(imagen: np.ndarray) -> np.ndarray:
@@ -183,14 +200,12 @@ def preprocesar_imagen(imagen: np.ndarray) -> np.ndarray:
     return binaria
 
 
-def _ocr_sobre_imagen(imagen: np.ndarray) -> tuple[str, float]:
-    """Preprocesa la imagen (gris o BGR), ejecuta Tesseract y promedia su confianza."""
-    binaria = preprocesar_imagen(imagen)
+def _tesseract(binaria: np.ndarray, psm: int = 3) -> dict[str, list[Any]]:
     try:
-        datos = pytesseract.image_to_data(
+        return pytesseract.image_to_data(
             binaria,
             lang=settings.OCR_LANG,
-            config="--oem 3 --psm 3",
+            config=f"--oem 3 --psm {psm}",
             output_type=pytesseract.Output.DICT,
         )
     except pytesseract.TesseractNotFoundError as exc:
@@ -199,56 +214,141 @@ def _ocr_sobre_imagen(imagen: np.ndarray) -> tuple[str, float]:
             f"({settings.TESSERACT_CMD}). Instale Tesseract OCR o defina TESSERACT_CMD."
         ) from exc
 
-    # Tesseract sitúa cada palabra en un bloque, un párrafo y un renglón. Esa
-    # estructura se reconstruye en lugar de concatenar las palabras seguidas:
-    # sin saltos de línea, el título del documento queda pegado al encabezado
-    # del apartado siguiente y se pierde la señal que permite reconocer de qué
-    # documento se trata. En una constancia fiscal, "CONSTANCIA DE SITUACION
-    # FISCAL" seguido de "DATOS DE IDENTIFICACION DEL CONTRIBUYENTE" en un solo
-    # renglón induce a confundirla con una identificación oficial.
-    renglones: dict[tuple[int, int, int], list[str]] = {}
-    confianzas: list[float] = []
-    for indice, texto in enumerate(datos["text"]):
+
+def _palabras(datos: dict[str, list[Any]], ancho: int, alto: int, desplazamiento=(0, 0, 1, 1)) -> list[list[Any]]:
+    """
+    Palabras de una lectura de Tesseract: ``[x0, y0, x1, y1, texto, renglón,
+    confianza]``, con el recuadro normalizado a la página. ``desplazamiento``
+    (x0, y0, ancho, alto de un recorte, normalizados) ubica en la página las
+    palabras leídas en un recorte.
+    """
+    ox, oy, ow, oh = desplazamiento
+    palabras = []
+    for i, texto in enumerate(datos["text"]):
         texto = (texto or "").strip()
         if not texto:
             continue
-        clave = (
-            datos["block_num"][indice],
-            datos["par_num"][indice],
-            datos["line_num"][indice],
-        )
-        renglones.setdefault(clave, []).append(texto)
+        clave = "-".join(str(datos[k][i]) for k in ("block_num", "par_num", "line_num"))
         try:
-            valor = float(datos["conf"][indice])
+            confianza = float(datos["conf"][i]) / 100.0
         except (TypeError, ValueError):
-            continue
-        # Tesseract marca con -1 los bloques sin estimación de confianza.
-        if valor >= 0:
-            confianzas.append(valor / 100.0)
+            confianza = -1.0
+        x, y = datos["left"][i], datos["top"][i]
+        x1, y1 = x + datos["width"][i], y + datos["height"][i]
+        palabras.append([
+            ox + ow * x / ancho, oy + oh * y / alto, ox + ow * x1 / ancho, oy + oh * y1 / alto,
+            texto, clave, confianza,
+        ])
+    return palabras
 
-    # Las claves vienen en orden de lectura, pero se ordenan de forma explícita
-    # para no depender de que el diccionario preserve el orden de inserción.
-    lineas = [" ".join(renglones[clave]) for clave in sorted(renglones)]
-    texto_pagina = "\n".join(lineas)
-    confianza = sum(confianzas) / len(confianzas) if confianzas else 0.0
-    return texto_pagina, confianza
+
+def _confianza(palabras: list[list[Any]]) -> float:
+    # Tesseract marca con -1 los bloques sin estimación de confianza.
+    valores = [p[6] for p in palabras if p[6] >= 0]
+    return sum(valores) / len(valores) if valores else 0.0
+
+
+def _texto_por_bloques(palabras: list[list[Any]]) -> str:
+    """
+    Texto en el orden de Tesseract: bloque, párrafo y renglón. Sin saltos de
+    línea, el título del documento queda pegado al encabezado del apartado
+    siguiente y se pierde la señal que permite reconocer de qué documento se
+    trata (una constancia fiscal leída en un solo renglón se confunde con una
+    identificación oficial).
+    """
+    renglones: dict[tuple[int, ...], list[str]] = {}
+    for p in palabras:
+        renglones.setdefault(tuple(int(n) for n in p[5].split("-")), []).append(p[4])
+    return "\n".join(" ".join(renglones[clave]) for clave in sorted(renglones))
+
+
+def _ocr_sobre_imagen(imagen: np.ndarray) -> tuple[str, float, list[list[Any]], list[dict[str, Any]]]:
+    """
+    Preprocesa la imagen (gris o BGR), ejecuta Tesseract y devuelve el texto,
+    su confianza promedio, las palabras con su recuadro normalizado a [0, 1]
+    (``[x0, y0, x1, y1, texto, renglón]``) y los sellos en tinta de color
+    detectados (``{"tipo", "x0", "y0", "x1", "y1"}``). Texto y palabras salen
+    de la misma lectura: lo que analiza el Nivel 4 y lo que resalta el visor
+    coinciden.
+
+    Un sello denso estampado sobre el texto puede hacer que la segmentación de
+    Tesseract tome el bloque entero por una imagen y descarte su texto. Si las
+    palabras leídas cubren menos de ``MIN_COBERTURA_TINTA`` de la tinta negra
+    de una página con sellos, se relee con la tinta de los sellos atenuada y se
+    adopta esa lectura si recupera texto sin perder confianza.
+    """
+    binaria = preprocesar_imagen(imagen)
+    palabras = _palabras(_tesseract(binaria), binaria.shape[1], binaria.shape[0])
+    encontrados: list[dict[str, Any]] = []
+
+    if imagen.ndim == 3 and settings.OCR_RELEER_SELLOS:
+        zonas = [z for z in sellos.zonas_de_color(imagen) if z.tipo]
+        alto, ancho = imagen.shape[:2]
+        encontrados = [
+            {"tipo": z.tipo, "x0": round(float(z.x0) / ancho, 4), "y0": round(float(z.y0) / alto, 4),
+             "x1": round(float(z.x1) / ancho, 4), "y1": round(float(z.y1) / alto, 4)}
+            for z in zonas
+        ]
+        if zonas and sellos.cobertura_tinta_negra(imagen, palabras) < MIN_COBERTURA_TINTA:
+            releida = preprocesar_imagen(sellos.atenuar_sellos(imagen, zonas))
+            nuevas = _palabras(_tesseract(releida), releida.shape[1], releida.shape[0])
+            if len(nuevas) > len(palabras) and _confianza(nuevas) >= _confianza(palabras) - 0.03:
+                palabras = nuevas
+
+    return _texto_por_bloques(palabras), _confianza(palabras), [p[:6] for p in palabras], encontrados
+
+
+def reconocer_pagina(imagen: np.ndarray) -> tuple[str, float, list[list[Any]], list[dict[str, Any]]]:
+    """
+    Texto, confianza y palabras con recuadro de una página que la extracción no
+    leyó (corte temprano): los pide el visor de evidencia. Es la misma función
+    de OCR que la extracción, por el pool compartido, así que el resultado es
+    idéntico y la lectura completa puede reutilizarlo.
+    """
+    return _POOL_OCR.submit(_ocr_sobre_imagen, imagen).result()
+
+
+def palabras_ocr(imagen: np.ndarray) -> list[list[Any]]:
+    """Solo las palabras con recuadro de ``reconocer_pagina``."""
+    return reconocer_pagina(imagen)[2]
+
+
+# Versión del Nivel 3. Forma parte de la llave de la persistencia: si cambia el
+# preprocesamiento o la configuración del OCR, los documentos se vuelven a leer
+# en lugar de servir un texto de otra lectura (el visor y el dictamen verían
+# documentos distintos). Súbase al modificar cualquier paso de la extracción.
+VERSION_PIPELINE = "3.2"
+
+
+@lru_cache(maxsize=1)
+def version_lectura() -> str:
+    """Huella de todo lo que determina el texto: pipeline, Tesseract, idiomas y resolución."""
+    try:
+        tesseract = str(pytesseract.get_tesseract_version())
+    except Exception:  # noqa: BLE001 - sin Tesseract la versión simplemente no incluye el dato
+        tesseract = "no-disponible"
+    sellos_activos = "sellos" if settings.OCR_RELEER_SELLOS else "sin-sellos"
+    return f"n3-{VERSION_PIPELINE}|tesseract-{tesseract}|{settings.OCR_LANG}|{settings.OCR_DPI}dpi|{sellos_activos}"
 
 
 def _rasterizar(pagina: "fitz.Page") -> np.ndarray:
     """
-    Rasteriza una página PDF a ``OCR_DPI`` ppp directamente en escala de grises.
-
-    El OCR no usa el color: rasterizar en RGB para convertir después a gris
-    ocupaba 32 MB por página carta a 300 ppp (RGB + BGR + gris); en gris son
-    8 MB y la imagen resultante es prácticamente idéntica (diferencia media de
-    0.03 niveles por píxel frente a la conversión de OpenCV).
+    Rasteriza una página PDF a ``OCR_DPI`` ppp. Con ``OCR_RELEER_SELLOS`` la
+    página se rasteriza a color (BGR, ~24 MB por hoja carta a 300 ppp) porque
+    los sellos se distinguen del texto negro por su tinta; sin esa lectura, en
+    escala de grises (8 MB), que al OCR le basta: la diferencia media frente a
+    convertir después con OpenCV es de 0.03 niveles por píxel.
     """
     matriz = fitz.Matrix(settings.OCR_DPI / 72.0, settings.OCR_DPI / 72.0)
+    if settings.OCR_RELEER_SELLOS:
+        pixmap = pagina.get_pixmap(matrix=matriz, colorspace=fitz.csRGB, alpha=False)
+        rgb = np.frombuffer(pixmap.samples, dtype=np.uint8).reshape(pixmap.height, pixmap.width, 3)
+        return cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR)
     pixmap = pagina.get_pixmap(matrix=matriz, colorspace=fitz.csGRAY)
     return np.frombuffer(pixmap.samples, dtype=np.uint8).reshape(pixmap.height, pixmap.width)
 
 
-def _ocr_en_paralelo(imagenes: list[np.ndarray]) -> list[tuple[str, float]]:
+def _ocr_en_paralelo(imagenes: list[np.ndarray]) -> list[tuple[str, float, list[list[Any]], list[dict[str, Any]]]]:
     """
     Reconoce varias páginas a la vez y devuelve los resultados en el mismo orden.
 
@@ -293,6 +393,7 @@ def extraer_texto(
     nombre_archivo: str = "documento",
     forzar_ocr: bool = False,
     texto_completo: bool = False,
+    paginas_conocidas: dict[int, tuple[str, float, list[list[Any]]]] | None = None,
 ) -> ResultadoExtraccion:
     """
     Punto de entrada del Nivel 3: recibe el binario y devuelve texto + confianza.
@@ -303,6 +404,9 @@ def extraer_texto(
     :param texto_completo: desactiva el corte temprano del OCR y reconoce todas
                            las páginas, aunque el excedente no quepa en el
                            contexto del LLM.
+    :param paginas_conocidas: páginas escaneadas ya reconocidas por esta misma
+                           versión del Nivel 3 (``persistencia_texto.paginas_reconocidas``):
+                           se reutilizan en lugar de repetir su OCR.
     """
     if not contenido:
         raise FormatoNoSoportadoError("El archivo recibido está vacío.")
@@ -317,7 +421,9 @@ def extraer_texto(
     omitidas: list[int] = []
 
     if mime == "application/pdf":
-        paginas, total_paginas = _procesar_pdf(contenido, forzar_ocr, texto_completo, omitidas, observaciones)
+        paginas, total_paginas = _procesar_pdf(
+            contenido, forzar_ocr, texto_completo, omitidas, observaciones, paginas_conocidas or {}
+        )
     else:
         paginas = _procesar_imagen(contenido, observaciones)
         total_paginas = 1
@@ -331,7 +437,9 @@ def _procesar_pdf(
     texto_completo: bool,
     omitidas: list[int],
     observaciones: list[str],
+    paginas_conocidas: dict[int, tuple[str, float, list[list[Any]]]] | None = None,
 ) -> tuple[list[ResultadoPagina], int]:
+    paginas_conocidas = paginas_conocidas or {}
     paginas: list[ResultadoPagina] = []
     caracteres_acumulados = 0
     paginas_ocr = 0
@@ -360,7 +468,7 @@ def _procesar_pdf(
         def reconocer_tanda() -> None:
             """Reconoce en paralelo la tanda pendiente y acumula su texto."""
             nonlocal caracteres_acumulados, paginas_ocr
-            for numero, (texto_ocr, confianza) in zip(
+            for numero, (texto_ocr, confianza, palabras, sellos_pagina) in zip(
                 [n for n, _ in pendientes], _ocr_en_paralelo([img for _, img in pendientes])
             ):
                 paginas.append(
@@ -370,6 +478,8 @@ def _procesar_pdf(
                         caracteres=len(texto_ocr),
                         confianza=confianza,
                         texto=texto_ocr,
+                        palabras=palabras,
+                        sellos=sellos_pagina,
                     )
                 )
                 caracteres_acumulados += len(texto_ocr)
@@ -400,6 +510,17 @@ def _procesar_pdf(
                 or paginas_ocr + len(pendientes) >= settings.MAX_PAGINAS_OCR
             ):
                 omitidas.append(indice)
+                continue
+
+            # Página ya reconocida por esta versión del Nivel 3: se reutiliza.
+            if indice in paginas_conocidas:
+                texto_ocr, confianza, palabras, sellos_pagina = paginas_conocidas[indice]
+                paginas.append(ResultadoPagina(
+                    numero=indice, metodo="OCR", caracteres=len(texto_ocr), confianza=confianza,
+                    texto=texto_ocr, palabras=palabras, sellos=sellos_pagina,
+                ))
+                caracteres_acumulados += len(texto_ocr)
+                paginas_ocr += 1
                 continue
 
             # Ruta OCR: se rasteriza aquí, en el hilo principal, porque
@@ -433,10 +554,15 @@ def _procesar_imagen(contenido: bytes, observaciones: list[str]) -> list[Resulta
     with Image.open(io.BytesIO(contenido)) as imagen_pil:
         imagen_rgb = np.array(imagen_pil.convert("RGB"))
     # También por el pool compartido, para que cuente dentro del tope de OCR_WORKERS.
-    texto, confianza = _POOL_OCR.submit(_ocr_sobre_imagen, cv2.cvtColor(imagen_rgb, cv2.COLOR_RGB2BGR)).result()
+    texto, confianza, palabras, sellos_pagina = _POOL_OCR.submit(
+        _ocr_sobre_imagen, cv2.cvtColor(imagen_rgb, cv2.COLOR_RGB2BGR)
+    ).result()
     observaciones.append("Documento entregado como imagen: resuelto íntegramente por OCR.")
     return [
-        ResultadoPagina(numero=1, metodo="OCR", caracteres=len(texto), confianza=confianza, texto=texto)
+        ResultadoPagina(
+            numero=1, metodo="OCR", caracteres=len(texto), confianza=confianza, texto=texto, palabras=palabras,
+            sellos=sellos_pagina,
+        )
     ]
 
 
@@ -446,7 +572,18 @@ def _consolidar(
     total_paginas: int,
     omitidas: list[int],
 ) -> ResultadoExtraccion:
-    texto_total = "\n\n".join(p.texto for p in paginas if p.texto).strip()
+    # Posición de cada página en el texto consolidado: permite saber en qué
+    # página está una cita sin insertar marcas que alterarían el texto analizado.
+    posicion = 0
+    for p in paginas:
+        p.inicio = posicion
+        if p.texto:
+            posicion += len(p.texto) + 2  # separador "\n\n"
+    texto_total = "\n\n".join(p.texto for p in paginas if p.texto)
+    recorte = len(texto_total) - len(texto_total.lstrip())
+    texto_total = texto_total.strip()
+    for p in paginas:
+        p.inicio = max(0, p.inicio - recorte)
     paginas_ocr = sum(1 for p in paginas if p.metodo == "OCR")
     paginas_vectoriales = len(paginas) - paginas_ocr
 
@@ -489,6 +626,7 @@ def _consolidar(
         observaciones=observaciones,
         detalle_paginas=paginas,
         paginas_omitidas=omitidas,
+        sello_digital_sat=sellos.tiene_sello_digital(texto_total),
     )
 
 

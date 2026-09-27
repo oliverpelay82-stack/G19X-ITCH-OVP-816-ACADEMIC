@@ -57,24 +57,36 @@ def _traza(extraccion: extraccion_pipeline.ResultadoExtraccion) -> dict[str, Any
 
 
 def _extraer(contenido: bytes, nombre: str, forzar_ocr: bool, texto_completo: bool, sha256: str):
+    # Las páginas escaneadas que ya reconoció una lectura parcial o el visor no
+    # vuelven a pasar por OCR (solo si son de esta misma versión del Nivel 3).
     extraccion = extraccion_pipeline.extraer_texto(
-        contenido=contenido, nombre_archivo=nombre, forzar_ocr=forzar_ocr, texto_completo=texto_completo
+        contenido=contenido, nombre_archivo=nombre, forzar_ocr=forzar_ocr, texto_completo=texto_completo,
+        paginas_conocidas=persistencia_texto.paginas_reconocidas(sha256) if sha256 and not forzar_ocr else None,
     )
     traza = _traza(extraccion)
     completo = not extraccion.paginas_omitidas
     persistencia_texto.guardar(sha256, forzar_ocr, extraccion.texto, traza, completo)
+    # Las palabras con coordenadas de cada página escaneada, de esta misma
+    # lectura: el visor resalta exactamente el texto que se analizó.
+    for pagina in extraccion.detalle_paginas:
+        if pagina.palabras:
+            persistencia_texto.guardar_palabras(
+                sha256, pagina.numero, pagina.palabras, pagina.texto, pagina.confianza, pagina.sellos
+            )
     return extraccion.texto, traza, completo
 
 
 # ── Documentos de la bóveda ─────────────────────────────────────────
 def obtener_por_documento(
-    documento_id: str, forzar_ocr: bool = False, completar_en_fondo: bool = True
+    documento_id: str, forzar_ocr: bool = False, completar_en_fondo: bool = True, texto_completo: bool = False
 ) -> TextoDocumento:
     """
     Devuelve el texto del documento sin repetir nunca un OCR ya hecho.
 
     :param completar_en_fondo: si la lectura es parcial, programa la de todas
-        las páginas en segundo plano. La auditoría lo desactiva; el chat, no.
+        las páginas en segundo plano (la usa el chat).
+    :param texto_completo: si la lectura es parcial, lee ahora todas las
+        páginas antes de responder (la usa la auditoría).
 
     Antes de servir cualquier texto —incluso desde memoria o disco— el
     core-service verifica la integridad del binario (RIE-03): un texto extraído

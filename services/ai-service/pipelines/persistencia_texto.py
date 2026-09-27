@@ -9,7 +9,12 @@ el servicio o se apague la máquina.
 
 Se guarda por separado la lectura con corte temprano (``completo = 0``) y la
 lectura de todas las páginas (``completo = 1``). Una lectura completa nunca se
-sobrescribe con una parcial.
+sobrescribe con una parcial de la misma versión.
+
+Cada lectura lleva la versión del Nivel 3 que la produjo
+(``extraccion_pipeline.version_lectura``). Una lectura de otra versión se
+ignora y el documento se vuelve a leer: el texto que analiza el Nivel 4 y las
+palabras con coordenadas que usa el visor provienen siempre de la misma lectura.
 
 SQLite viene incluido en Python, no requiere servidor y mantiene al ai-service
 desacoplado de la base de datos de los otros microservicios (DOC-08).
@@ -39,6 +44,7 @@ CREATE TABLE IF NOT EXISTS extracciones (
     texto         TEXT    NOT NULL,
     traza         TEXT    NOT NULL,
     actualizado_en TEXT   NOT NULL,
+    version       TEXT    NOT NULL DEFAULT '',
     PRIMARY KEY (sha256, forzar_ocr)
 )
 """
@@ -48,6 +54,20 @@ CREATE TABLE IF NOT EXISTS inferencias (
     clave      TEXT PRIMARY KEY,   -- SHA-256 de modelo + parámetros + mensajes
     respuesta  TEXT NOT NULL,      -- objeto JSON devuelto por el modelo
     creado_en  TEXT NOT NULL
+)
+"""
+
+_ESQUEMA_PALABRAS = """
+CREATE TABLE IF NOT EXISTS palabras_ocr (
+    sha256     TEXT    NOT NULL,
+    pagina     INTEGER NOT NULL,   -- 1-based
+    palabras   TEXT    NOT NULL,   -- [[x0, y0, x1, y1, texto, renglón], ...] normalizadas a [0, 1]
+    creado_en  TEXT    NOT NULL,
+    version    TEXT    NOT NULL DEFAULT '',
+    texto      TEXT,                -- texto de la página (misma lectura que las palabras)
+    confianza  REAL,
+    sellos     TEXT,                -- [{"tipo", "x0", "y0", "x1", "y1"}, ...]
+    PRIMARY KEY (sha256, pagina)
 )
 """
 
@@ -71,18 +91,35 @@ def _conectar() -> sqlite3.Connection:
         conexion.execute("PRAGMA journal_mode=WAL")
         conexion.execute(_ESQUEMA)
         conexion.execute(_ESQUEMA_INFERENCIAS)
+        conexion.execute(_ESQUEMA_PALABRAS)
+        # Migración de bases previas a la versión en la llave: sus filas quedan
+        # con versión vacía, que no coincide con ninguna, y se releen.
+        for tabla in ("extracciones", "palabras_ocr"):
+            columnas = {c[1] for c in conexion.execute(f"PRAGMA table_info({tabla})")}
+            if "version" not in columnas:
+                conexion.execute(f"ALTER TABLE {tabla} ADD COLUMN version TEXT NOT NULL DEFAULT ''")
+        columnas = {c[1] for c in conexion.execute("PRAGMA table_info(palabras_ocr)")}
+        for columna, tipo in (("texto", "TEXT"), ("confianza", "REAL"), ("sellos", "TEXT")):
+            if columna not in columnas:
+                conexion.execute(f"ALTER TABLE palabras_ocr ADD COLUMN {columna} {tipo}")
         conexion.commit()
         _inicializada.add(ruta)
     return conexion
 
 
+def _version() -> str:
+    from pipelines.extraccion_pipeline import version_lectura  # import diferido: evita el ciclo con el pipeline
+
+    return version_lectura()
+
+
 def leer(sha256: str, forzar_ocr: bool = False) -> ExtraccionPersistida | None:
-    """Devuelve la extracción guardada para esa huella, o ``None``."""
+    """Devuelve la extracción guardada para esa huella por la versión vigente del Nivel 3, o ``None``."""
     try:
         with closing(_conectar()) as conexion:
             fila = conexion.execute(
-                "SELECT texto, traza, completo FROM extracciones WHERE sha256 = ? AND forzar_ocr = ?",
-                (sha256, int(forzar_ocr)),
+                "SELECT texto, traza, completo FROM extracciones WHERE sha256 = ? AND forzar_ocr = ? AND version = ?",
+                (sha256, int(forzar_ocr), _version()),
             ).fetchone()
     except sqlite3.Error:
         # La persistencia acelera, pero nunca debe tumbar el análisis.
@@ -93,20 +130,21 @@ def leer(sha256: str, forzar_ocr: bool = False) -> ExtraccionPersistida | None:
 
 
 def guardar(sha256: str, forzar_ocr: bool, texto: str, traza: dict[str, Any], completo: bool) -> None:
-    """Guarda la extracción; una lectura completa nunca se reemplaza por una parcial."""
+    """Guarda la extracción; una lectura completa nunca se reemplaza por una parcial de la misma versión."""
     traza_sin_texto = {k: v for k, v in traza.items() if k != "texto_extraido"}
     try:
         with _candado_escritura, closing(_conectar()) as conexion:
             conexion.execute(
                 """
-                INSERT INTO extracciones (sha256, forzar_ocr, completo, texto, traza, actualizado_en)
-                VALUES (?, ?, ?, ?, ?, ?)
+                INSERT INTO extracciones (sha256, forzar_ocr, completo, texto, traza, actualizado_en, version)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT (sha256, forzar_ocr) DO UPDATE SET
                     completo = excluded.completo,
                     texto = excluded.texto,
                     traza = excluded.traza,
-                    actualizado_en = excluded.actualizado_en
-                WHERE excluded.completo >= extracciones.completo
+                    actualizado_en = excluded.actualizado_en,
+                    version = excluded.version
+                WHERE excluded.completo >= extracciones.completo OR excluded.version != extracciones.version
                 """,
                 (
                     sha256,
@@ -115,6 +153,7 @@ def guardar(sha256: str, forzar_ocr: bool, texto: str, traza: dict[str, Any], co
                     texto,
                     json.dumps(traza_sin_texto, ensure_ascii=False),
                     datetime.now(timezone.utc).isoformat(),
+                    _version(),
                 ),
             )
             conexion.commit()
@@ -143,6 +182,56 @@ def guardar_inferencia(clave: str, respuesta: dict[str, Any]) -> None:
             conexion.commit()
     except sqlite3.Error:
         pass
+
+
+def leer_palabras(sha256: str, pagina: int) -> list[list[Any]] | None:
+    """Palabras con recuadro de una página escaneada, de la versión vigente del Nivel 3."""
+    with closing(_conectar()) as conexion:
+        fila = conexion.execute(
+            "SELECT palabras FROM palabras_ocr WHERE sha256 = ? AND pagina = ? AND version = ?",
+            (sha256, pagina, _version()),
+        ).fetchone()
+    return json.loads(fila[0]) if fila else None
+
+
+def guardar_palabras(
+    sha256: str,
+    pagina: int,
+    palabras: list[list[Any]],
+    texto: str | None = None,
+    confianza: float | None = None,
+    sellos: list[dict[str, Any]] | None = None,
+) -> None:
+    """Guarda el reconocimiento de una página escaneada: palabras con recuadro, texto, confianza y sellos."""
+    with _candado_escritura, closing(_conectar()) as conexion:
+        conexion.execute(
+            "INSERT OR REPLACE INTO palabras_ocr "
+            "(sha256, pagina, palabras, creado_en, version, texto, confianza, sellos) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            (sha256, pagina, json.dumps(palabras, ensure_ascii=False), datetime.now(timezone.utc).isoformat(),
+             _version(), texto, confianza, json.dumps(sellos or [], ensure_ascii=False)),
+        )
+        conexion.commit()
+
+
+def paginas_reconocidas(sha256: str) -> dict[int, tuple[str, float, list[list[Any]], list[dict[str, Any]]]]:
+    """
+    Páginas escaneadas de ese archivo ya reconocidas por la versión vigente del
+    Nivel 3 (por una lectura parcial previa o por el visor): (texto, confianza,
+    palabras, sellos). La lectura completa las reutiliza en lugar de repetir su OCR.
+    """
+    try:
+        with closing(_conectar()) as conexion:
+            filas = conexion.execute(
+                "SELECT pagina, texto, confianza, palabras, sellos FROM palabras_ocr "
+                "WHERE sha256 = ? AND version = ? AND texto IS NOT NULL",
+                (sha256, _version()),
+            ).fetchall()
+    except sqlite3.Error:
+        return {}
+    return {
+        pagina: (texto, float(confianza or 0.0), json.loads(palabras), json.loads(sellos or "[]"))
+        for pagina, texto, confianza, palabras, sellos in filas
+    }
 
 
 def estadisticas() -> dict[str, Any]:

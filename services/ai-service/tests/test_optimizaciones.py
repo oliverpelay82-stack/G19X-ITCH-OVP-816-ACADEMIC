@@ -11,6 +11,9 @@ Pruebas de las optimizaciones del ai-service, sin servidor ni Groq.
      presupuesto, y con texto_completo=True se leen todas las páginas.
   6. Preprocesamiento: una foto con sombra y baja resolución se lee con
      exactitud alta gracias al umbral adaptativo.
+  7. BM25 por página y por criterio: cada fragmento indica su página; la
+     selección por criterio da a cada elemento exigido su mejor fragmento
+     aunque esté en la última página; el índice se construye una sola vez.
 
 Uso:  cd services/ai-service && python tests/test_optimizaciones.py
 """
@@ -154,11 +157,50 @@ def prueba_preprocesamiento() -> None:
     img += np.random.default_rng(7).normal(0, 9, img.shape)
     foto = cv2.cvtColor(cv2.GaussianBlur(np.clip(img, 0, 255).astype(np.uint8), (3, 3), 0), cv2.COLOR_RGB2BGR)
 
-    texto, confianza = extraccion_pipeline._ocr_sobre_imagen(foto)
+    texto, confianza, _, _ = extraccion_pipeline._ocr_sobre_imagen(foto)
     palabras = lambda t: re.findall(r"\w+", t.upper())  # noqa: E731
     exactitud = difflib.SequenceMatcher(None, palabras(texto), palabras(referencia), autojunk=False).ratio()
     verificar(exactitud >= 0.90, "Foto con sombra leída con exactitud alta", f"{exactitud:.1%}, confianza {confianza:.2f}")
     verificar("PLU180514AB3" in texto.replace(" ", ""), "El RFC se recupera de la foto")
+
+
+def prueba_bm25_por_pagina_y_criterio() -> None:
+    print("\n[7] BM25 por página y por criterio")
+    relleno = ("La sociedad podrá celebrar toda clase de contratos y actos de comercio relacionados con su "
+               "objeto social; la administración cuidará el patrimonio de la sociedad y de sus socios. ")
+    paginas_texto = [f"PÁGINA {n}. " + relleno * 14 for n in range(1, 11)]
+    paginas_texto[0] = "ESCRITURA PÚBLICA NÚMERO 1234. ANTE MÍ, LICENCIADO JUAN PÉREZ, NOTARIO PÚBLICO NÚMERO 7.\n" + paginas_texto[0]
+    paginas_texto[4] += "\nARTÍCULO DÉCIMO. - ADMINISTRACIÓN. La administración estará a cargo de un Administrador Único con facultades de dominio."
+    paginas_texto[9] += "\nEl primer testimonio quedó inscrito en el Registro Público de Comercio bajo el folio mercantil 45821."
+    texto = "\n\n".join(paginas_texto)
+    detalle, posicion = [], 0
+    for n, t in enumerate(paginas_texto, start=1):
+        detalle.append({"pagina": n, "inicio": posicion})
+        posicion += len(t) + 2
+    verificar(fragmentos.pagina_de(detalle[6]["inicio"] + 5, detalle) == 7 and fragmentos.pagina_de(0, detalle) == 1,
+              "Una posición del texto se traduce a su página")
+
+    criterios = [
+        "Escritura pública y notario número de escritura y datos del notario",
+        "Administración y facultades de representación administrador único o consejo",
+        "Inscripción en el Registro Público de Comercio folio mercantil",
+    ]
+    seleccion = fragmentos.seleccionar_por_criterios(texto, criterios, presupuesto=5000, paginas=detalle)
+    por_pagina = {f["pagina"] for f in seleccion.fragmentos}
+    verificar("folio mercantil 45821" in seleccion.texto and 10 in por_pagina,
+              "La inscripción de la última página llega al modelo, con su página", str(sorted(por_pagina)))
+    verificar("Administrador Único" in seleccion.texto and 5 in por_pagina,
+              "La administración (página 5) también tiene su fragmento")
+    verificar(seleccion.texto.startswith("ESCRITURA PÚBLICA") and len(seleccion.texto) <= 5000,
+              "Con el encabezado y dentro del presupuesto", f"{len(seleccion.texto)}/5000")
+
+    antes = fragmentos._indice.cache_info().hits
+    fragmentos.seleccionar(texto, "¿Quién es el administrador?", paginas=detalle)
+    fragmentos.seleccionar(texto, "¿Dónde quedó inscrita?", paginas=detalle)
+    verificar(fragmentos._indice.cache_info().hits >= antes + 2,
+              "El índice BM25 del documento se reutiliza entre consultas (sin retokenizar)")
+    chat = fragmentos.seleccionar(texto, "¿Cuál es el folio mercantil de la inscripción?", paginas=detalle)
+    verificar(any(f["pagina"] == 10 for f in chat.fragmentos), "Cada fragmento del chat indica su página")
 
 
 def main() -> int:
@@ -170,6 +212,7 @@ def main() -> int:
     prueba_cache()
     prueba_corte_temprano()
     prueba_preprocesamiento()
+    prueba_bm25_por_pagina_y_criterio()
     aprobadas = sum(_resultados)
     print(f"\nResultado: {aprobadas}/{len(_resultados)} verificaciones aprobadas")
     return 0 if aprobadas == len(_resultados) else 1

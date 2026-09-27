@@ -65,6 +65,11 @@ if os.path.isdir(TESSDATA_PREFIX):
 # mínimo recomendado para texto de 8-10 pt en documentos fiscales escaneados.
 OCR_DPI: int = int(os.getenv("OCR_DPI", "300"))
 
+# Segunda lectura de las zonas con sellos en tinta de color (pipelines/sellos.py):
+# recupera el texto impreso que un sello tapa y lee el texto del propio sello.
+# Rasteriza las páginas escaneadas a color (el triple de memoria por hoja).
+OCR_RELEER_SELLOS: bool = os.getenv("OCR_RELEER_SELLOS", "true").strip().lower() in ("1", "true", "si", "sí", "yes")
+
 # ── Umbrales del pipeline (DOC-05 y DOC-08) ─────────────────────────
 # Si una página vectorial rinde menos caracteres que esto, se asume que es una
 # imagen escaneada embebida y se deriva a la ruta de OCR.
