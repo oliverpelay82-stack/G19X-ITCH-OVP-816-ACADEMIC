@@ -64,6 +64,8 @@ services:
       DB_USER: postgres
       DB_PASSWORD: plurione-demo
       DB_NAME: plurione_compliance
+      # Precarga idempotente del catálogo DOC-05 al arrancar (solo inserta las reglas que falten).
+      AUTO_SEED: "true"
     depends_on:
       plurione-db:
         condition: service_healthy

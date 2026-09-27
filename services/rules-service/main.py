@@ -4,6 +4,7 @@ Responsable del catálogo de Reglas de Negocio (DOC-05: familias RIE, RCV,
 RSC, RDS) y su CRUD / activación-desactivación.
 Puerto: 8002.
 """
+import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -12,12 +13,17 @@ from fastapi.middleware.cors import CORSMiddleware
 from config.database import engine, init_db
 from controllers.regla_controller import router as regla_router
 from controllers.health_controller import router as health_router
+from seed_reglas_validacion import precargar_reglas
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("[rules-service] Sincronizando modelos con PostgreSQL...")
     init_db()
+    # Catálogo base del DOC-05: se insertan solo las reglas que falten.
+    if os.getenv("AUTO_SEED", "true").strip().lower() not in ("false", "0", "no"):
+        insertadas = precargar_reglas(verboso=False, sincronizar=False)
+        print(f"[rules-service] Catálogo de reglas verificado ({insertadas} reglas base agregadas).")
     yield
     engine.dispose()
     print("[rules-service] Pool de conexiones a PostgreSQL cerrado.")

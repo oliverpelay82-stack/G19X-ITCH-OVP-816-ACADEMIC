@@ -15,6 +15,11 @@ Por último, RIE-02-CONT-ANX vincula los anexos legales al contrato de
 prestación de servicios (RIE-02, RF-07). Las reglas RSC declaran los elementos
 de contenido que el Nivel 4 localiza en cada tipo de documento (DOC-05, RSC-01).
 
+La precarga es idempotente: solo inserta las reglas que no existen y nunca
+modifica las que el administrador ya editó. El rules-service la ejecuta al
+arrancar (AUTO_SEED=true, por defecto), de modo que un despliegue nuevo con
+Docker Compose tenga el catálogo completo sin pasos manuales.
+
 Ejecuta (desde services/rules-service/): python seed_reglas_validacion.py
 """
 from config.database import SessionLocal, init_db
@@ -294,26 +299,34 @@ REGLAS_BASE += [
 ]
 
 
-def precargar_reglas():
-    print("=" * 60)
-    print("Sincronizando tablas y precargando catálogo de reglas (DOC-05)...")
-    init_db()
+def precargar_reglas(verboso: bool = True, sincronizar: bool = True) -> int:
+    """Inserta las reglas base que falten y devuelve cuántas se agregaron."""
+    if verboso:
+        print("=" * 60)
+        print("Sincronizando tablas y precargando catálogo de reglas (DOC-05)...")
+    if sincronizar:
+        init_db()
 
     db = SessionLocal()
+    insertadas = 0
     try:
+        existentes = {codigo for (codigo,) in db.query(Regla.codigo_regla).all()}
         for datos in REGLAS_BASE:
-            existente = db.query(Regla).filter(Regla.codigo_regla == datos["codigo_regla"]).first()
-            if existente:
-                print(f"[SKIP] La regla '{datos['codigo_regla']}' ya existe. No se duplica.")
+            if datos["codigo_regla"] in existentes:
+                if verboso:
+                    print(f"[SKIP] La regla '{datos['codigo_regla']}' ya existe. No se duplica.")
                 continue
 
-            nueva_regla = Regla(**datos)
-            db.add(nueva_regla)
-            print(f"[OK] Regla '{datos['codigo_regla']}' - {datos['nombre_regla']} precargada.")
+            db.add(Regla(**datos))
+            insertadas += 1
+            if verboso:
+                print(f"[OK] Regla '{datos['codigo_regla']}' - {datos['nombre_regla']} precargada.")
 
         db.commit()
-        print("=" * 60)
-        print("Precarga de reglas_validacion finalizada con éxito.")
+        if verboso:
+            print("=" * 60)
+            print("Precarga de reglas_validacion finalizada con éxito.")
+        return insertadas
     finally:
         db.close()
 
