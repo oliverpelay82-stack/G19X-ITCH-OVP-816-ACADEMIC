@@ -142,6 +142,16 @@ def prueba_endpoint_vigencia() -> None:
     invalida = post(tipo_documento="COMP_DOMICILIO", fecha_emision="2026-13-40")
     verificar(invalida.status_code == 422, "Una fecha inválida se rechaza con 422", f"HTTP {invalida.status_code}")
 
+    rcv03 = next((r for r in reglas if r["codigo_regla"] == "RCV-03"), None)
+    verificar(rcv03 is not None and rcv03["activo"] and rcv03["tipo_documento"] == "CSF_SAT"
+              and rcv03["dias_maximos_vigencia"] == 90,
+              "RCV-03 está activa en el catálogo para CSF_SAT con 90 días (DOC-02, Tabla 2)")
+    r = post(tipo_documento="CSF_SAT", fecha_emision=(ref - timedelta(days=30)).isoformat()).json()
+    verificar(r["resultado"] == "VIGENTE", "Constancia fiscal con 30 días: VIGENTE", r["resultado"])
+    r = post(tipo_documento="CSF_SAT", fecha_emision=(ref - timedelta(days=91)).isoformat()).json()
+    verificar(r["resultado"] == "VENCIDO" and any(e["codigo_regla"] == "RCV-03" for e in r["evaluaciones"]),
+              "Constancia fiscal con 91 días: VENCIDA por RCV-03", r["resultado"])
+
 
 def prueba_documentos_obligatorios() -> None:
     print("\n[9] Documentos obligatorios del expediente (HU-09)")

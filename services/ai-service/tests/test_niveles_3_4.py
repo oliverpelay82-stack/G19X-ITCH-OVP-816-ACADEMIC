@@ -56,9 +56,11 @@ def extraer(nombre_fixture: str, **campos) -> dict:
 
 
 def main() -> int:
-    if not os.path.isdir(FIXTURES):
-        print("No existen los documentos de prueba. Ejecute antes: python tests/generar_fixtures.py")
-        return 1
+    # Las constancias de prueba se regeneran en cada ejecución: sus fechas son
+    # relativas al día, así que nunca caducan para las reglas de vigencia.
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import generar_fixtures
+    generar_fixtures.main()
 
     print("=== VERIFICACION DE LOS NIVELES 3 Y 4 DEL PIPELINE (DOC-05) ===\n")
 

@@ -20,6 +20,7 @@ constancia real ni emulan un documento oficial válido.
 Uso:  python tests/generar_fixtures.py
 """
 import os
+from datetime import date, timedelta
 
 import cv2
 import fitz
@@ -30,8 +31,11 @@ DIRECTORIO_FIXTURES = os.path.join(os.path.dirname(os.path.abspath(__file__)), "
 # Datos ficticios del documento de prueba.
 RFC_PRUEBA = "PLU180514AB3"
 RAZON_SOCIAL_PRUEBA = "PLURIONE S.A. DE C.V."
-FECHA_EMISION_PRUEBA = "2026-01-15"
-FECHA_VENCIMIENTO_PRUEBA = "2027-01-15"
+# Fechas relativas al día de la generación: la constancia debe estar vigente
+# para las reglas de vigencia (RCV-01 y la antigüedad máxima de 90 días de
+# RCV-03), sin importar cuándo se ejecuten las pruebas.
+FECHA_EMISION_PRUEBA = (date.today() - timedelta(days=20)).isoformat()
+FECHA_VENCIMIENTO_PRUEBA = (date.today() + timedelta(days=365)).isoformat()
 
 LINEAS = [
     ("DOCUMENTO DE PRUEBA - DATOS FICTICIOS", 15, True),
@@ -59,7 +63,7 @@ LINEAS = [
     (f"Fecha de vencimiento: {FECHA_VENCIMIENTO_PRUEBA}", 11, False),
     ("", 10, False),
     ("Cadena original del sello digital:", 10, True),
-    ("||1.0|2026-01-15T09:14:22|PLU180514AB3|CONSTANCIA|31200|CHIHUAHUA||", 8, False),
+    (f"||1.0|{FECHA_EMISION_PRUEBA}T09:14:22|PLU180514AB3|CONSTANCIA|31200|CHIHUAHUA||", 8, False),
 ]
 
 

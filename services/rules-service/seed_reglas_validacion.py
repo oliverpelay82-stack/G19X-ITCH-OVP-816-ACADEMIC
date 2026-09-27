@@ -5,7 +5,8 @@ están definidas textualmente en el "Catálogo Formal de Reglas de Negocio"
 del DOC-05 (Estrategia de Validación y Catálogo de Reglas de Negocio), y
 RCV-02: la "Caducidad Estricta de Documentos con Vigencia Legal Fija" del
 mismo catálogo, aplicada al comprobante de domicilio fiscal con el límite
-"no mayor a 3 meses" del DOC-02 (90 días naturales, DOC-08). Carga también
+"no mayor a 3 meses" del DOC-02 (90 días naturales, DOC-08), y RCV-03, la
+misma caducidad para la constancia de situación fiscal (DOC-02, Tabla 2). Carga también
 las reglas RIE-01-CSF, RIE-01-DOM y RIE-01-ACTA, que declaran los tres tipos de
 documento obligatorios del expediente corporativo (DOC-02, Tabla 3), y las
 reglas equivalentes de los expedientes jurídico (Tabla 4) y regulatorio
@@ -171,6 +172,28 @@ REGLAS_BASE = [
             "y solicitud de un comprobante actualizado."
         ),
         "tipo_documento": "COMP_DOMICILIO",
+        "documento_obligatorio": True,
+        "dias_maximos_vigencia": 90,
+    },
+    # Misma caducidad estricta para la constancia de situación fiscal: el
+    # DOC-02 (Tabla 2) le exige una vigencia «no mayor a 3 meses».
+    {
+        "codigo_regla": "RCV-03",
+        "nombre_regla": "Caducidad Estricta de la Constancia de Situación Fiscal",
+        "familia_regla": "RCV",
+        "descripcion": (
+            "La constancia de situación fiscal debe haberse emitido en los últimos 3 meses (90 días "
+            "naturales), conforme al inventario del expediente corporativo del DOC-02. El sistema calcula "
+            "la diferencia entre la fecha de evaluación y la fecha de emisión; si supera los 90 días, la "
+            "constancia se marca como vencida y debe solicitarse una actualizada al portal del SAT. Si el "
+            "documento no declara fecha de emisión, el caso se turna a revisión humana."
+        ),
+        "severidad": "ALTA",
+        "accion": (
+            "Más de 90 días desde la emisión: constancia vencida, Semáforo Rojo y solicitud de una "
+            "constancia actualizada."
+        ),
+        "tipo_documento": "CSF_SAT",
         "documento_obligatorio": True,
         "dias_maximos_vigencia": 90,
     },
