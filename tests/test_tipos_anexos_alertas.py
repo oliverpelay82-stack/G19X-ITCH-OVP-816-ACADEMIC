@@ -16,6 +16,8 @@ reportes exportables.
   7. Verificación de contenido (RSC-01): las verificaciones del Nivel 4 quedan
      en reglas_aplicadas y cada elemento pendiente genera una alerta
      CONTENIDO_NO_LOCALIZADO con su recomendación hasta que un analista ratifica.
+  8. Ejecución programada (DOC-02): la reevaluación diaria corrige un semáforo
+     guardado desactualizado y deja el cambio en la bitácora.
 
 Aislamiento: base plurione_compliance_test y bóveda temporal (bd_pruebas.py).
 
@@ -38,7 +40,8 @@ from main import app  # noqa: E402
 from clients import rules_client  # noqa: E402
 from config.database import SessionLocal, engine, init_db  # noqa: E402
 from models.titular import TitularExpediente  # noqa: E402
-from motor import cumplimiento  # noqa: E402
+from models.expediente import Expediente  # noqa: E402
+from motor import cumplimiento, reevaluacion_programada  # noqa: E402
 
 bd_pruebas.verificar_aislamiento(engine)
 init_db()
@@ -348,6 +351,35 @@ def prueba_verificacion_contenido() -> None:
     verificar(r.status_code == 200 and cumplimiento.ALERTA_CONTENIDO not in codigos(datos)
               and datos["estado_cumplimiento"] == "CONFORME",
               "Tras la ratificación humana la alerta desaparece (RN-05)", datos["estado_cumplimiento"])
+    return exp_id
+
+
+def prueba_reevaluacion_programada(exp_id: str) -> None:
+    print("\n[8] Reevaluación programada del motor (ejecución programada, DOC-02)")
+    # Semáforo guardado desactualizado, como el de un documento que venció sin que nadie consultara el expediente.
+    db = SessionLocal()
+    try:
+        db.query(Expediente).filter(Expediente.id == exp_id).update({"estado_cumplimiento": "NO_CONFORME"})
+        db.commit()
+    finally:
+        db.close()
+    resultado = reevaluacion_programada.reevaluar_todos()
+    # Con pytest tests/ la base trae expedientes de otras suites: se exige al menos el cambio provocado.
+    verificar(resultado.evaluados >= 4 and resultado.cambios >= 1,
+              "Reevalúa todos los expedientes y corrige el desactualizado",
+              f"{resultado.evaluados} evaluados, {resultado.cambios} cambios")
+    eventos = client.get("/api/v1/bitacora", params={"expediente_id": exp_id, "evento": "EVALUACION_REGLAS"}).json()
+    ultimo = eventos[0]["detalle"] if eventos else {}
+    verificar(ultimo.get("causa") == reevaluacion_programada.CAUSA and ultimo.get("estado_nuevo") == "CONFORME",
+              "El cambio queda en la bitácora con la causa REEVALUACION_PROGRAMADA", ultimo.get("causa"))
+    verificar(reevaluacion_programada.reevaluar_todos().cambios == 0, "Una segunda ejecución no registra cambios")
+    os.environ["REEVALUACION_INTERVALO_HORAS"] = "0"
+    desactivada = reevaluacion_programada.intervalo_horas() == 0
+    os.environ["REEVALUACION_INTERVALO_HORAS"] = "abc"
+    invalida = reevaluacion_programada.intervalo_horas() == 0
+    os.environ.pop("REEVALUACION_INTERVALO_HORAS")
+    verificar(desactivada and invalida and reevaluacion_programada.intervalo_horas() == 24,
+              "Intervalo configurable: 24 h por defecto, 0 o un valor inválido la desactivan")
 
 
 def run_tests() -> int:
@@ -359,7 +391,7 @@ def run_tests() -> int:
         prueba_vigencia_y_alertas(ctx)
         prueba_busqueda(ctx)
         prueba_reportes(ctx)
-        prueba_verificacion_contenido()
+        prueba_reevaluacion_programada(prueba_verificacion_contenido())
     finally:
         rules_client.obtener_documentos_obligatorios = OBTENER_REAL
         bd_pruebas.limpiar_boveda(BOVEDA)

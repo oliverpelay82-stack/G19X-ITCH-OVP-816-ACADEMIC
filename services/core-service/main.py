@@ -5,7 +5,8 @@ hash SHA-256 y almacenamiento físico en storage_vault), del semáforo con sus
 alertas y recomendaciones, y de los reportes de auditoría exportables.
 Puerto: 8001.
 """
-from contextlib import asynccontextmanager
+import asyncio
+from contextlib import asynccontextmanager, suppress
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -19,13 +20,20 @@ from controllers.dictamen_controller import router as dictamen_router
 from controllers.bitacora_controller import router as bitacora_router
 from controllers.alerta_controller import router as alerta_router
 from controllers.reporte_controller import router as reporte_router
+from motor import reevaluacion_programada
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("[core-service] Sincronizando modelos con PostgreSQL...")
     init_db()
+    horas = reevaluacion_programada.intervalo_horas()
+    tarea = asyncio.create_task(reevaluacion_programada.ciclo(horas)) if horas else None
     yield
+    if tarea:
+        tarea.cancel()
+        with suppress(asyncio.CancelledError):
+            await tarea
     engine.dispose()
     print("[core-service] Pool de conexiones a PostgreSQL cerrado.")
 
