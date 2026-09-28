@@ -23,7 +23,7 @@ Antes de implementar cualquier módulo, tabla o regla, debes consultar:
 * **Tipografía:** `Inter` 400/500/600 para texto; `JetBrains Mono` con cifras tabulares para hashes SHA-256, folios, RFC, fechas y bytes. Versales de 11 px con tracking `0.06em`; H1 de sección en 18 px semibold.
 * **Tokens maestros (`frontend/src/index.css`)** — los componentes (`App.css`) solo consumen tokens, nunca colores literales; el tema oscuro redefine los mismos nombres:
   * Tema claro (predeterminado): `--bg-canvas #FAFAF9`, `--bg-surface #FFFFFF` (tarjetas, tablas, modales), `--bg-subtle #F5F5F4`, líneas `#E7E5E4` / `#F0EFED` / `#D6D3D1` (hover).
-  * Texto: `--text-primary #1C1917`, `--text-secondary #57534E`, `--text-muted #78716C` (versales y metadatos legibles, AA), `--text-tertiary #A8A29E` (solo placeholders y decoración: no alcanza AA en texto pequeño).
+  * Texto: `--text-primary #1C1917`, `--text-secondary #57534E`, `--text-muted #716B66` (versales, metadatos y conteos: AA ≥ 4.5:1 sobre todas las superficies claras, incluida `--bg-subtle`), `--text-tertiary #A8A29E` (solo placeholders y decoración: no alcanza AA en texto pequeño).
   * Sombras Stripe: `--shadow-card`, `--shadow-card-hover`, `--shadow-modal` (micro-elevación de 1–3 px).
   * **El color solo comunica estado** (texto · fondo · borde): `CONFORME` `#15803D`/`#F0FDF4`/`#BBF7D0`; `EN_REVISION` `#B45309`/`#FFFBEB`/`#FDE68A`; `NO_CONFORME` `#B91C1C`/`#FEF2F2`/`#FECACA`; omitido/neutro `#57534E`/`#F5F5F4`/`#E7E5E4`.
   * Tema oscuro alternativo (Dark Slate mate, `#09090B`), sin brillos. El tema se guarda en `localStorage` con la clave `plurione-theme-v2`.

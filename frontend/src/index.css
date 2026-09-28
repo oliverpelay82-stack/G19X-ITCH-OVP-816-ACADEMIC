@@ -30,6 +30,8 @@
   --fs-body: 13px; /* cuerpo y tablas */
   --fs-title: 15px; /* títulos de tarjeta y modal */
   --fs-h1: 18px; /* título de sección */
+  --fs-metric: 22px; /* cifra de una tarjeta de métrica */
+  --fs-display: 28px; /* cifra protagonista: KPI de reporte, confianza del dictamen */
 
   --tracking-caps: 0.06em;
 
@@ -63,6 +65,10 @@
   --cell-x: 14px;
   --squircle: 28px;
   --squircle-lg: 32px;
+  /* Altura de los controles: la misma para botones, campos y filtros que
+     comparten una barra de herramientas, para que queden alineados. */
+  --control-sm: 28px; /* botón compacto (acciones de fila, tarjetas) */
+  --control-md: 32px; /* botón, campo, buscador y control segmentado */
 }
 
 /* ══════════════════════ TEMA CLARO (predeterminado) ═════════════ */
@@ -89,7 +95,7 @@
   /* Texto */
   --text-primary: #1c1917; /* grafito cálido, nunca negro puro */
   --text-secondary: #57534e;
-  --text-muted: #78716c; /* versales y metadatos legibles (AA 4.6:1) */
+  --text-muted: #716b66; /* versales y metadatos: AA ≥ 4.5:1 sobre surface, canvas, subtle y muted */
   --text-tertiary: #a8a29e; /* placeholders y elementos decorativos */
 
   /* Sombras (micro-elevación) */

@@ -30,3 +30,6 @@ services/ai-service/tessdata/*.traineddata
 
 # Texto extraído persistido por el ai-service (SQLite local, regenerable).
 services/ai-service/data/
+
+# Capturas de la regresión visual (scripts/regresion_visual.py): dependen de la BD local.
+frontend/.regresion-visual/

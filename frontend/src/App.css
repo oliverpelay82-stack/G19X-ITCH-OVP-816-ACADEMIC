@@ -412,7 +412,7 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  height: 32px;
+  height: var(--control-md);
   padding: 0 var(--s-3);
   border: 1px solid transparent;
   border-radius: var(--r-sm);
@@ -451,7 +451,7 @@
 }
 
 .btn-sm {
-  height: 28px;
+  height: var(--control-sm);
   padding: 0 10px;
   font-size: var(--fs-small);
 }
@@ -731,7 +731,7 @@
   gap: var(--s-2);
   flex: 1 1 240px;
   max-width: 340px;
-  height: 32px;
+  height: var(--control-md);
   padding: 0 var(--s-2) 0 10px;
   background: var(--bg-surface);
   border: var(--border-default);
@@ -791,7 +791,7 @@
   display: inline-flex;
   align-items: center;
   gap: 2px;
-  height: 32px;
+  height: var(--control-md);
   padding: 2px;
   background: var(--bg-subtle);
   border: var(--border-default);
@@ -828,7 +828,7 @@
 .segmented-count {
   font-size: var(--fs-micro);
   font-variant-numeric: tabular-nums;
-  color: var(--text-tertiary);
+  color: var(--text-muted);
 }
 
 .segmented-item.is-active .segmented-count {
@@ -909,7 +909,7 @@ input:not([type='checkbox']):not([type='file']):not([type='search']),
 select,
 textarea {
   width: 100%;
-  height: 32px;
+  height: var(--control-md);
   padding: 0 var(--s-3);
   background: var(--bg-surface);
   border: var(--border-default);
@@ -1439,7 +1439,7 @@ select option {
 }
 
 .metric-value {
-  font-size: 22px;
+  font-size: var(--fs-metric);
   font-weight: 600;
   letter-spacing: -0.025em;
   line-height: 1.1;
@@ -2319,7 +2319,7 @@ select option {
 }
 
 .confidence-value {
-  font-size: 28px;
+  font-size: var(--fs-display);
   font-weight: 600;
   letter-spacing: -0.03em;
   font-variant-numeric: tabular-nums;
@@ -3367,7 +3367,7 @@ select option {
 }
 
 .report-kpi {
-  font-size: 28px;
+  font-size: var(--fs-display);
   font-weight: 600;
   line-height: 1.1;
   color: var(--text-primary);
