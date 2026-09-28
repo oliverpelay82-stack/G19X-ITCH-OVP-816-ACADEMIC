@@ -219,6 +219,22 @@ export const CASOS = [
     ),
   },
   {
+    nombre: 'Select de filtro con clase de maquetación (ReportesTab)',
+    actual: (
+      <label className="select-inline report-select">
+        <span className="sr-only">Tipo de expediente del reporte</span>
+        <select value="" onChange={nada}>
+          <option value="">Todos los expedientes</option>
+        </select>
+      </label>
+    ),
+    nuevo: (
+      <Select etiqueta="Tipo de expediente del reporte" claseContenedor="report-select" value="" onChange={nada}>
+        <option value="">Todos los expedientes</option>
+      </Select>
+    ),
+  },
+  {
     nombre: 'KeyValue del registro de dictámenes (DictamenesGuardados)',
     actual: (
       <dl className="registro-grid">

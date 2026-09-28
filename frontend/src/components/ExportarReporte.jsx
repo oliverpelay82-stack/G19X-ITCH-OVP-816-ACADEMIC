@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { FileSpreadsheet, FileText, Loader2 } from 'lucide-react'
+import { FileSpreadsheet, FileText } from 'lucide-react'
+import { Button } from './ui/index.js'
 import useToast from '../hooks/useToast.js'
 import { descargarReporte } from '../services/api.js'
 
@@ -31,16 +32,16 @@ export default function ExportarReporte({ ruta, params, disabled = false, compac
   return (
     <div className="export-row" role="group" aria-label="Exportar reporte">
       {FORMATOS.map(({ id, label, icon: Icono }) => (
-        <button
+        <Button
           key={id}
-          type="button"
-          className={`btn btn-secondary ${compacto ? 'btn-sm' : ''}`}
+          compacto={compacto}
+          icono={Icono}
+          cargando={descargando === id}
           onClick={() => exportar(id)}
           disabled={disabled || descargando !== null}
         >
-          {descargando === id ? <Loader2 className="spin" size={14} /> : <Icono size={14} />}
           {label}
-        </button>
+        </Button>
       ))}
     </div>
   )

@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from 'react'
 import { Loader2, Upload, X } from 'lucide-react'
+import { Badge, Button, Field, IconButton, Select } from './ui/index.js'
 import { MAX_FILE_SIZE_BYTES } from '../constants.js'
 import { analizarNivel1 } from '../utils/nivel1.js'
 import { formatBytes } from '../utils/format.js'
@@ -127,18 +128,16 @@ export default function DropZone({
           <div className="analysis-file">
             <span className="analysis-file-name">{archivo.name}</span>
             <span className="analysis-file-size mono">{formatBytes(archivo.size)}</span>
-            <button type="button" className="icon-button icon-button--sm" onClick={limpiar} aria-label="Descartar archivo">
+            <IconButton etiqueta="Descartar archivo" compacto onClick={limpiar}>
               <X size={14} />
-            </button>
+            </IconButton>
           </div>
 
           <div className="analysis-checks">
-            <span className={`badge badge--${analisis.magic ? 'vault' : 'bad'}`}>
+            <Badge tono={analisis.magic ? 'vault' : 'bad'}>
               {analisis.magic ? `${analisis.magic.label} verificado` : 'Firma no reconocida'}
-            </span>
-            <span className={`badge badge--${analisis.tamanioOk ? 'ok' : 'bad'}`}>
-              {analisis.tamanioOk ? 'Tamaño admitido' : 'Fuera del límite'}
-            </span>
+            </Badge>
+            <Badge tono={analisis.tamanioOk ? 'ok' : 'bad'}>{analisis.tamanioOk ? 'Tamaño admitido' : 'Fuera del límite'}</Badge>
           </div>
 
           <div className="analysis-hash">
@@ -150,9 +149,8 @@ export default function DropZone({
 
       <div className="dropzone-controls">
         {tipos?.length > 1 && (
-          <label className="field">
-            <span className="field-label">Tipo de documento</span>
-            <select value={tipoActivo} onChange={(e) => setTipo(e.target.value)}>
+          <Field etiqueta="Tipo de documento">
+            <Select value={tipoActivo} onChange={(e) => setTipo(e.target.value)}>
               {agruparPorSeccion(tipos).map(([seccion, opciones]) =>
                 seccion ? (
                   <optgroup key={seccion} label={seccion}>
@@ -170,22 +168,21 @@ export default function DropZone({
                   ))
                 )
               )}
-            </select>
-          </label>
+            </Select>
+          </Field>
         )}
 
         {children}
 
-        <button
-          type="button"
-          className="btn btn-primary"
+        <Button
+          variante="primary"
           onClick={confirmar}
-          disabled={!listo || subiendo}
+          cargando={subiendo}
+          disabled={!listo}
           title={deshabilitado ? motivoDeshabilitado : undefined}
         >
-          {subiendo && <Loader2 className="spin" size={14} />}
           Custodiar en bóveda
-        </button>
+        </Button>
       </div>
     </div>
   )

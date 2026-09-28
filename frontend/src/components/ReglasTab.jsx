@@ -1,6 +1,6 @@
 import { Fragment, useMemo, useState } from 'react'
 import { Loader2, Plus, Scale, SearchX, ServerOff } from 'lucide-react'
-import { EmptyRow, EmptyState, Modal, SearchBox, Segmented } from './ui/index.js'
+import { Badge, Button, Card, EmptyRow, EmptyState, Field, Input, Modal, SearchBox, Segmented, Select, Tag } from './ui/index.js'
 import { SkeletonRows } from './Skeleton.jsx'
 import useToast from '../hooks/useToast.js'
 import useDebounce from '../hooks/useDebounce.js'
@@ -194,13 +194,13 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
   if (!isOnline) {
     return (
       <div className="tab-panel">
-        <div className="card">
+        <Card>
           <EmptyState
             icon={ServerOff}
             titulo="Microservicio de reglas (:8002) fuera de línea"
             descripcion="El rules-service no responde: no es posible consultar, evaluar ni modificar el catálogo normativo. Empresas, Expedientes y Bóveda siguen operando gracias a la arquitectura de microservicios desacoplados."
           />
-        </div>
+        </Card>
       </div>
     )
   }
@@ -217,37 +217,30 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
         <Segmented label="Filtrar por familia normativa" valor={filtroFamilia} onChange={setFiltroFamilia} opciones={opcionesFamilia} />
         <Segmented label="Filtrar por estado" valor={filtroEstado} onChange={setFiltroEstado} opciones={opcionesEstado} />
 
-        <label className="select-inline">
-          <span className="sr-only">Filtrar por severidad</span>
-          <select value={filtroSeveridad} onChange={(e) => setFiltroSeveridad(e.target.value)}>
-            <option value="TODAS">Toda severidad</option>
-            {SEVERIDADES.map((s) => (
-              <option key={s} value={s}>
-                {getSeveridadMeta(s).label}
-              </option>
-            ))}
-          </select>
-        </label>
+        <Select etiqueta="Filtrar por severidad" value={filtroSeveridad} onChange={(e) => setFiltroSeveridad(e.target.value)}>
+          <option value="TODAS">Toda severidad</option>
+          {SEVERIDADES.map((s) => (
+            <option key={s} value={s}>
+              {getSeveridadMeta(s).label}
+            </option>
+          ))}
+        </Select>
 
-        <label className="select-inline">
-          <span className="sr-only">Filtrar por tipo de expediente</span>
-          <select value={filtroTipoExp} onChange={(e) => setFiltroTipoExp(e.target.value)}>
-            <option value="TODOS">Todo tipo de expediente</option>
-            {TIPOS_EXPEDIENTE.map((t) => (
-              <option key={t.value} value={t.value}>
-                {t.label}
-              </option>
-            ))}
-          </select>
-        </label>
+        <Select etiqueta="Filtrar por tipo de expediente" value={filtroTipoExp} onChange={(e) => setFiltroTipoExp(e.target.value)}>
+          <option value="TODOS">Todo tipo de expediente</option>
+          {TIPOS_EXPEDIENTE.map((t) => (
+            <option key={t.value} value={t.value}>
+              {t.label}
+            </option>
+          ))}
+        </Select>
 
-        <button type="button" className="btn btn-primary toolbar-action" onClick={() => setModalAbierto(true)}>
-          <Plus size={14} />
+        <Button variante="primary" icono={Plus} className="toolbar-action" onClick={() => setModalAbierto(true)}>
           Nueva regla
-        </button>
+        </Button>
       </div>
 
-      <div className="card table-card">
+      <Card className="table-card">
         <div className="table-scroll">
           <table className="data-table">
             <colgroup>
@@ -314,35 +307,29 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
                             </div>
                           </td>
                           <td>
-                            <span className={`badge badge--${sev.tono}`}>
-                              <span className={`status-dot status-dot--${sev.tono}`} aria-hidden="true" />
+                            <Badge tono={sev.tono} punto>
                               {sev.label}
-                            </span>
+                            </Badge>
                           </td>
                           <td>
                             <div className="tag-row">
-                              <span className="tag">
+                              <Tag>
                                 {r.tipo_documento
                                   ? TIPO_DOCUMENTO_CORTO[r.tipo_documento] || r.tipo_documento
                                   : 'Todo el expediente'}
-                              </span>
+                              </Tag>
                               {r.documento_principal && (
-                                <span
-                                  className="tag"
+                                <Tag
                                   title={`Anexo obligatorio de ${TIPO_DOCUMENTO_LABEL[r.documento_principal] || r.documento_principal} (RIE-02)`}
                                 >
                                   Anexo de {TIPO_DOCUMENTO_CORTO[r.documento_principal] || r.documento_principal}
-                                </span>
+                                </Tag>
                               )}
                               {r.tipo_expediente && (
-                                <span className="tag tag--type">
-                                  {TIPO_EXPEDIENTE_LABEL[r.tipo_expediente] || r.tipo_expediente}
-                                </span>
+                                <Tag tipo>{TIPO_EXPEDIENTE_LABEL[r.tipo_expediente] || r.tipo_expediente}</Tag>
                               )}
-                              {r.dias_maximos_vigencia != null && (
-                                <span className="tag tabular">{r.dias_maximos_vigencia} días</span>
-                              )}
-                              {r.documento_obligatorio && <span className="tag">Obligatorio</span>}
+                              {r.dias_maximos_vigencia != null && <Tag tabular>{r.dias_maximos_vigencia} días</Tag>}
+                              {r.documento_obligatorio && <Tag>Obligatorio</Tag>}
                             </div>
                           </td>
                           <td className="cell-muted cell-action-text">
@@ -366,7 +353,7 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
             </tbody>
           </table>
         </div>
-      </div>
+      </Card>
 
       {modalAbierto && (
         <Modal
@@ -376,9 +363,8 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
         >
           <form className="form-grid" onSubmit={handleSubmit}>
             <div className="field-row">
-              <label className="field">
-                <span className="field-label">Código base</span>
-                <input
+              <Field etiqueta="Código base">
+                <Input
                   className="mono"
                   required
                   minLength={3}
@@ -387,25 +373,20 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
                   value={form.codigo_regla}
                   onChange={(e) => setForm({ ...form, codigo_regla: e.target.value.toUpperCase() })}
                 />
-              </label>
-              <label className="field">
-                <span className="field-label">Familia normativa</span>
-                <select
-                  value={form.familia_regla}
-                  onChange={(e) => setForm({ ...form, familia_regla: e.target.value })}
-                >
+              </Field>
+              <Field etiqueta="Familia normativa">
+                <Select value={form.familia_regla} onChange={(e) => setForm({ ...form, familia_regla: e.target.value })}>
                   {FAMILIAS_REGLA.map((f) => (
                     <option key={f} value={f}>
                       {f} — {FAMILIA_META[f].nombre}
                     </option>
                   ))}
-                </select>
-              </label>
+                </Select>
+              </Field>
             </div>
 
-            <label className="field">
-              <span className="field-label">Nombre de la regla</span>
-              <input
+            <Field etiqueta="Nombre de la regla">
+              <Input
                 required
                 minLength={3}
                 maxLength={150}
@@ -413,10 +394,9 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
                 value={form.nombre_regla}
                 onChange={(e) => setForm({ ...form, nombre_regla: e.target.value })}
               />
-            </label>
+            </Field>
 
-            <label className="field">
-              <span className="field-label">Descripción / criterio</span>
+            <Field etiqueta="Descripción / criterio">
               <textarea
                 required
                 minLength={10}
@@ -425,41 +405,38 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
                 value={form.descripcion}
                 onChange={(e) => setForm({ ...form, descripcion: e.target.value })}
               />
-            </label>
+            </Field>
 
             <div className="field-row">
-              <label className="field">
-                <span className="field-label">Severidad</span>
-                <select value={form.severidad} onChange={(e) => setForm({ ...form, severidad: e.target.value })}>
+              <Field etiqueta="Severidad">
+                <Select value={form.severidad} onChange={(e) => setForm({ ...form, severidad: e.target.value })}>
                   {SEVERIDADES.map((s) => (
                     <option key={s} value={s}>
                       {getSeveridadMeta(s).label}
                     </option>
                   ))}
-                </select>
-              </label>
-              <label className="field">
-                <span className="field-label">Vigencia máxima (días)</span>
-                <input
+                </Select>
+              </Field>
+              <Field etiqueta="Vigencia máxima (días)">
+                <Input
                   type="number"
                   min={0}
                   placeholder="Opcional"
                   value={form.dias_maximos_vigencia}
                   onChange={(e) => setForm({ ...form, dias_maximos_vigencia: e.target.value })}
                 />
-              </label>
+              </Field>
             </div>
 
-            <label className="field">
-              <span className="field-label">Acción ante incumplimiento</span>
-              <input
+            <Field etiqueta="Acción ante incumplimiento">
+              <Input
                 required
                 maxLength={255}
                 placeholder="Ej. Semáforo rojo y bloqueo del expediente"
                 value={form.accion}
                 onChange={(e) => setForm({ ...form, accion: e.target.value })}
               />
-            </label>
+            </Field>
 
             <label className="checkbox-field">
               <input
@@ -470,8 +447,7 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
               <span>Completitud obligatoria (RIE-01)</span>
             </label>
 
-            <div className="field">
-              <span className="field-label">Alcance de la regla</span>
+            <Field as="div" etiqueta="Alcance de la regla">
               <label className="checkbox-field">
                 <input
                   type="checkbox"
@@ -510,24 +486,28 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
                   </p>
                 </div>
               )}
-            </div>
+            </Field>
 
             <div className="field-row">
-              <label className="field">
-                <span className="field-label">Tipo de expediente</span>
-                <select value={form.tipo_expediente} onChange={(e) => setForm({ ...form, tipo_expediente: e.target.value })}>
+              <Field etiqueta="Tipo de expediente" ayuda="Solo se exige en expedientes de este tipo (RF-06).">
+                <Select value={form.tipo_expediente} onChange={(e) => setForm({ ...form, tipo_expediente: e.target.value })}>
                   <option value="">Todos los tipos</option>
                   {TIPOS_EXPEDIENTE.map((t) => (
                     <option key={t.value} value={t.value}>
                       {t.label}
                     </option>
                   ))}
-                </select>
-                <span className="field-hint">Solo se exige en expedientes de este tipo (RF-06).</span>
-              </label>
-              <label className="field">
-                <span className="field-label">Anexo obligatorio de</span>
-                <select
+                </Select>
+              </Field>
+              <Field
+                etiqueta="Anexo obligatorio de"
+                ayuda={
+                  form.aplicaTodos
+                    ? 'Selecciona primero el documento del anexo.'
+                    : 'Se exige solo si el expediente contiene ese documento (RIE-02).'
+                }
+              >
+                <Select
                   value={form.documento_principal}
                   disabled={form.aplicaTodos}
                   onChange={(e) => setForm({ ...form, documento_principal: e.target.value })}
@@ -538,25 +518,17 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
                       {t.label}
                     </option>
                   ))}
-                </select>
-                <span className="field-hint">
-                  {form.aplicaTodos
-                    ? 'Selecciona primero el documento del anexo.'
-                    : 'Se exige solo si el expediente contiene ese documento (RIE-02).'}
-                </span>
-              </label>
+                </Select>
+              </Field>
             </div>
 
             {error && <p className="form-error">{error}</p>}
 
             <div className="modal-footer">
-              <button type="button" className="btn btn-secondary" onClick={cerrarModal}>
-                Cancelar
-              </button>
-              <button type="submit" className="btn btn-primary" disabled={enviando}>
-                {enviando && <Loader2 className="spin" size={14} />}
+              <Button onClick={cerrarModal}>Cancelar</Button>
+              <Button type="submit" variante="primary" cargando={enviando}>
                 Guardar regla
-              </button>
+              </Button>
             </div>
           </form>
         </Modal>

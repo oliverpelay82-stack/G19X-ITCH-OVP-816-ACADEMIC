@@ -1,3 +1,5 @@
+import { Card } from './ui/index.js'
+
 /**
  * Placeholders de carga. Sustituyen a los textos planos de "Cargando…"
  * para que la interfaz conserve su silueta mientras llegan los datos.
@@ -31,12 +33,12 @@ export function SkeletonCards({ count = 6, height = 160 }) {
   return (
     <div className="card-grid">
       {Array.from({ length: count }, (_, i) => (
-        <div className="card skeleton-card" key={i} style={{ minHeight: height }}>
+        <Card className="skeleton-card" key={i} style={{ minHeight: height }}>
           <Skeleton w="40%" h={12} />
           <Skeleton w="72%" h={16} />
           <Skeleton w="92%" h={12} />
           <Skeleton w="100%" h={4} r="var(--r-full)" style={{ marginTop: 'auto' }} />
-        </div>
+        </Card>
       ))}
     </div>
   )

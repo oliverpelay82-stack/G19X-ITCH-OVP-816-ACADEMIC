@@ -1,5 +1,6 @@
 import { ChevronRight, Moon, RefreshCw, Sun } from 'lucide-react'
 import SystemHealth from './SystemHealth.jsx'
+import { IconButton } from './ui/index.js'
 
 /**
  * Cabecera ejecutiva: migas navegables (Cumplimiento › Sección), título H1,
@@ -39,28 +40,19 @@ export default function Header({ titulo, migas = [], onNavigate, health, reglas,
 
         <span className="header-divider" aria-hidden="true" />
 
-        <button
-          type="button"
-          className={`icon-button ${refrescando ? 'is-busy' : ''}`}
-          onClick={onRefresh}
-          disabled={refrescando}
-          data-tooltip="Actualizar datos"
-          aria-label="Actualizar datos"
-        >
+        <IconButton etiqueta="Actualizar datos" tooltip ocupado={refrescando} onClick={onRefresh} disabled={refrescando}>
           <RefreshCw size={15} className="refresh-icon" />
-        </button>
+        </IconButton>
 
-        <button
-          type="button"
-          className="icon-button"
+        <IconButton
+          etiqueta={isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+          data-tooltip={isDark ? 'Modo claro' : 'Modo oscuro'}
           onClick={onToggleTheme}
           role="switch"
           aria-checked={!isDark}
-          data-tooltip={isDark ? 'Modo claro' : 'Modo oscuro'}
-          aria-label={isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
         >
           {isDark ? <Sun size={15} /> : <Moon size={15} />}
-        </button>
+        </IconButton>
       </div>
     </header>
   )

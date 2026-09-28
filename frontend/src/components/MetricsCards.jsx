@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { Building2, FolderKanban, Gauge, Vault } from 'lucide-react'
 import { Skeleton } from './Skeleton.jsx'
+import { Card } from './ui/index.js'
 import { tonoPorPorcentaje } from '../constants.js'
 
 const contar = (lista, prueba) => lista.reduce((n, x) => n + (prueba(x) ? 1 : 0), 0)
@@ -81,7 +82,7 @@ export default function MetricsCards({ titulares, expedientes, documentos, loadi
   return (
     <section className="metrics-grid" aria-label="Indicadores del motor">
       {tarjetas.map(({ id, icon: Icono, label, valor, pie, progreso }) => (
-        <article className="card metric-card" key={id}>
+        <Card as="article" className="metric-card" key={id}>
           <span className="squircle" aria-hidden="true">
             <Icono size={15} />
           </span>
@@ -104,7 +105,7 @@ export default function MetricsCards({ titulares, expedientes, documentos, loadi
               </span>
             )}
           </div>
-        </article>
+        </Card>
       ))}
     </section>
   )

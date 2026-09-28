@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { ChevronDown, ChevronUp, PanelRightClose, PanelRightOpen } from 'lucide-react'
-import { CopyChip, Modal } from './ui/index.js'
+import { Badge, Button, CopyChip, IconButton, KeyValue, KeyValueList, Modal } from './ui/index.js'
 import DocumentoIaPanel from './DocumentoIaPanel.jsx'
 import VisorDocumento from './VisorDocumento.jsx'
 import { EvidenciaContext } from './evidencia-context.js'
@@ -11,10 +11,9 @@ import { formatBytes, formatFecha } from '../utils/format.js'
 
 function Dato({ label, children, ancho = false }) {
   return (
-    <div className={`detail-item ${ancho ? 'detail-item--full' : ''}`}>
-      <dt>{label}</dt>
-      <dd>{children}</dd>
-    </div>
+    <KeyValue etiqueta={label} className={ancho ? 'detail-item detail-item--full' : 'detail-item'}>
+      {children}
+    </KeyValue>
   )
 }
 
@@ -83,16 +82,15 @@ function InspectorDocumento({ doc, expediente, iaOnline, onRefresh, onVisor, onO
         <div className="inspector-principal">
           {children}
           <div className="inspector-acciones">
-            <button
-              type="button"
-              className="btn btn-secondary btn-sm"
+            <Button
+              compacto
+              icono={visorAbierto ? PanelRightClose : PanelRightOpen}
               onClick={() => alternarVisor(!visorAbierto)}
               disabled={!iaOnline}
               title={iaOnline ? undefined : 'El visor lo sirve el ai-service (:8003), que no responde'}
             >
-              {visorAbierto ? <PanelRightClose size={14} /> : <PanelRightOpen size={14} />}
               {visorAbierto ? 'Ocultar documento' : 'Ver documento'}
-            </button>
+            </Button>
             <span className="field-hint">Un clic en una cita del dictamen o del chat la resalta en el documento.</span>
           </div>
           <DocumentoIaPanel doc={doc} expediente={expediente} iaOnline={iaOnline} onCambio={onRefresh} onOcupado={onOcupado} />
@@ -137,29 +135,27 @@ export default function DetalleDocumentoModal({ documento, lista, expediente, ia
   const firma = firmaDeMime(documento.mime_type)
   const navegacion = posicion >= 0 && lista.length > 1 && (
     <div className="modal-nav" role="group" aria-label="Navegar entre documentos">
-      <button
-        type="button"
-        className="icon-button icon-button--sm"
+      <IconButton
+        etiqueta="Documento anterior"
+        compacto
         onClick={() => irA(-1)}
         disabled={posicion <= 0 || auditando}
-        aria-label="Documento anterior"
         title={auditando ? 'Espera a que termine la auditoría' : 'Documento anterior (Alt+↑)'}
       >
         <ChevronUp size={15} />
-      </button>
+      </IconButton>
       <span className="tabular modal-nav-pos">
         {posicion + 1} / {lista.length}
       </span>
-      <button
-        type="button"
-        className="icon-button icon-button--sm"
+      <IconButton
+        etiqueta="Documento siguiente"
+        compacto
         onClick={() => irA(1)}
         disabled={posicion >= lista.length - 1 || auditando}
-        aria-label="Documento siguiente"
         title={auditando ? 'Espera a que termine la auditoría' : 'Documento siguiente (Alt+↓)'}
       >
         <ChevronDown size={15} />
-      </button>
+      </IconButton>
     </div>
   )
 
@@ -181,7 +177,7 @@ export default function DetalleDocumentoModal({ documento, lista, expediente, ia
         onOcupado={setAuditando}
         visorInicial={visorAbierto}
       >
-        <dl className="inspect-grid">
+        <KeyValueList className="inspect-grid">
           <Dato label="Huella SHA-256 · inmutable (RIE-03)" ancho>
             <CopyChip valor={documento.hash_sha256} etiqueta="hash SHA-256" completo />
           </Dato>
@@ -207,12 +203,12 @@ export default function DetalleDocumentoModal({ documento, lista, expediente, ia
           </Dato>
           <Dato label="Integridad">
             {documento.estado_integridad === 'ALTERADO' ? (
-              <span className="badge badge--bad">Alterado · bloqueado</span>
+              <Badge tono="bad">Alterado · bloqueado</Badge>
             ) : (
-              <span className="badge badge--ok">Íntegro al ingresar</span>
+              <Badge tono="ok">Íntegro al ingresar</Badge>
             )}
           </Dato>
-        </dl>
+        </KeyValueList>
       </InspectorDocumento>
     </Modal>
   )

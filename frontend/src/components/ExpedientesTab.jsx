@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Check, ChevronDown, FolderKanban, Loader2, Maximize2, Minus, Plus, SearchX, Sparkles, X } from 'lucide-react'
-import { EmptyState, Modal, SearchBox, Segmented } from './ui/index.js'
+import { Badge, Button, Card, EmptyState, Field, Input, Modal, SearchBox, Segmented, Select, Tag } from './ui/index.js'
 import { SkeletonCards } from './Skeleton.jsx'
 import useToast from '../hooks/useToast.js'
 import DropZone from './DropZone.jsx'
@@ -172,13 +172,9 @@ function AuditarPendientes({ exp, iaOnline, onTerminado }) {
           {resultado.despues && (
             <p>
               Semáforo{' '}
-              <span className={`badge badge--${getEstadoBadge(resultado.antes.estado).tono}`}>
-                {getEstadoBadge(resultado.antes.estado).label}
-              </span>{' '}
+              <Badge tono={getEstadoBadge(resultado.antes.estado).tono}>{getEstadoBadge(resultado.antes.estado).label}</Badge>{' '}
               →{' '}
-              <span className={`badge badge--${getEstadoBadge(resultado.despues.estado).tono}`}>
-                {getEstadoBadge(resultado.despues.estado).label}
-              </span>
+              <Badge tono={getEstadoBadge(resultado.despues.estado).tono}>{getEstadoBadge(resultado.despues.estado).label}</Badge>
               {' · '}
               {resultado.despues.alertas} {resultado.despues.alertas === 1 ? 'alerta' : 'alertas'} (antes{' '}
               {resultado.antes.alertas})
@@ -187,22 +183,20 @@ function AuditarPendientes({ exp, iaOnline, onTerminado }) {
         </div>
       )}
       {(!pasos || resultado) && pendientes.length > 0 && (
-        <button
-          type="button"
-          className="btn btn-primary"
+        <Button
+          variante="primary"
+          icono={Sparkles}
           onClick={auditar}
           disabled={enCurso || !iaOnline}
           title={iaOnline ? undefined : 'El ai-service (:8003) no responde'}
         >
-          <Sparkles size={14} />
           Auditar pendientes
-        </button>
+        </Button>
       )}
       {enCurso && (
-        <button type="button" className="btn btn-primary" disabled>
-          <Loader2 className="spin" size={14} />
+        <Button variante="primary" cargando>
           Auditando…
-        </button>
+        </Button>
       )}
     </div>
   )
@@ -264,7 +258,7 @@ function DetalleExpediente({ exp, subiendo, onSubir, iaOnline, onRefresh, docume
       <div className="exp-detail-main">
         <MotivosSemaforo estado={exp.estado_cumplimiento} motivos={evaluacion?.motivos} />
 
-        <div className="card table-card table-card--flat">
+        <Card className="table-card table-card--flat">
           <table className="data-table data-table--inner">
             <colgroup>
               <col style={{ width: '32%' }} />
@@ -338,17 +332,16 @@ function DetalleExpediente({ exp, subiendo, onSubir, iaOnline, onRefresh, docume
                       )}
                     </td>
                     <td className="col-right">
-                      <span className={`badge badge--${meta.tono}`}>
-                        <span className={`status-dot status-dot--${meta.tono}`} aria-hidden="true" />
+                      <Badge tono={meta.tono} punto>
                         {f.doc?.vigencia === 'VENCIDO' ? 'Vencido' : meta.label}
-                      </span>
+                      </Badge>
                     </td>
                   </tr>
                 )
               })}
             </tbody>
           </table>
-        </div>
+        </Card>
 
         {alertas.length > 0 && (
           <section className="exp-alertas" aria-label="Alertas del expediente">
@@ -550,30 +543,27 @@ export default function ExpedientesTab({
           opciones={opcionesEstado}
         />
 
-        <button
-          type="button"
-          className="btn btn-primary toolbar-action"
+        <Button
+          variante="primary"
+          icono={Plus}
+          className="toolbar-action"
           onClick={() => setModalAbierto(true)}
           disabled={titulares.length === 0 || !isOnline}
           title={titulares.length === 0 ? 'Primero registra una empresa' : undefined}
         >
-          <Plus size={14} />
           Aperturar expediente
-        </button>
+        </Button>
       </div>
 
       <div className="toolbar toolbar--sub">
-        <label className="select-inline">
-          <span className="sr-only">Filtrar por tipo de expediente</span>
-          <select value={filtroTipo} onChange={(e) => setFiltroTipo(e.target.value)}>
-            <option value="TODOS">Todo tipo de expediente</option>
-            {TIPOS_EXPEDIENTE.map((t) => (
-              <option key={t.value} value={t.value}>
-                {t.label} ({expedientes.filter((e) => e.tipo_expediente === t.value).length})
-              </option>
-            ))}
-          </select>
-        </label>
+        <Select etiqueta="Filtrar por tipo de expediente" value={filtroTipo} onChange={(e) => setFiltroTipo(e.target.value)}>
+          <option value="TODOS">Todo tipo de expediente</option>
+          {TIPOS_EXPEDIENTE.map((t) => (
+            <option key={t.value} value={t.value}>
+              {t.label} ({expedientes.filter((e) => e.tipo_expediente === t.value).length})
+            </option>
+          ))}
+        </Select>
         <label className="date-inline">
           <span>Apertura desde</span>
           <input type="date" value={desde} max={hasta || undefined} onChange={(e) => setDesde(e.target.value)} />
@@ -583,9 +573,8 @@ export default function ExpedientesTab({
           <input type="date" value={hasta} min={desde || undefined} onChange={(e) => setHasta(e.target.value)} />
         </label>
         {hayFiltros && (
-          <button
-            type="button"
-            className="btn btn-secondary btn-sm"
+          <Button
+            compacto
             onClick={() => {
               setFiltroTipo('TODOS')
               setDesde('')
@@ -593,14 +582,14 @@ export default function ExpedientesTab({
             }}
           >
             Limpiar filtros
-          </button>
+          </Button>
         )}
       </div>
 
       {loading && <SkeletonCards count={3} height={72} />}
 
       {!loading && filtrados.length === 0 && (
-        <div className="card">
+        <Card>
           <EmptyState
             icon={expedientes.length === 0 ? FolderKanban : SearchX}
             titulo={expedientes.length === 0 ? 'Aún no hay expedientes aperturados' : 'Sin resultados'}
@@ -610,7 +599,7 @@ export default function ExpedientesTab({
                 : 'Ajusta la búsqueda o los filtros de estado, tipo y fecha.'
             }
           />
-        </div>
+        </Card>
       )}
 
       {!loading && filtrados.length > 0 && (
@@ -623,9 +612,10 @@ export default function ExpedientesTab({
             const nAlertas = exp.evaluacion?.alertas?.length || 0
             const abierto = abiertoId === exp.id
             return (
-              <article
+              <Card
+                as="article"
                 key={exp.id}
-                className={`card exp-card exp-card--${meta.tono} ${abierto ? 'is-open' : ''}`}
+                className={`exp-card exp-card--${meta.tono} ${abierto ? 'is-open' : ''}`}
                 ref={(el) => (el ? tarjetas.current.set(exp.id, el) : tarjetas.current.delete(exp.id))}
               >
                 <button
@@ -641,7 +631,7 @@ export default function ExpedientesTab({
                   <span className="exp-identity">
                     <span className="exp-identity-row">
                       <span className="identity-name">{exp.titular?.razon_social || 'Titular no disponible'}</span>
-                      <span className="tag tag--type">{TIPO_EXPEDIENTE_LABEL[exp.tipo_expediente] || exp.tipo_expediente}</span>
+                      <Tag tipo>{TIPO_EXPEDIENTE_LABEL[exp.tipo_expediente] || exp.tipo_expediente}</Tag>
                     </span>
                     <span className="cell-sub">
                       {exp.nombre && <span className="exp-nombre">{exp.nombre} · </span>}
@@ -656,10 +646,9 @@ export default function ExpedientesTab({
                       )}
                     </span>
                   </span>
-                  <span className={`badge badge--lg badge--${meta.tono}`}>
-                    <span className={`status-dot status-dot--${meta.tono}`} aria-hidden="true" />
+                  <Badge tono={meta.tono} punto grande>
                     {meta.label}
-                  </span>
+                  </Badge>
                   <span className="progress" title={`${presentes} de ${obligatorios.length} documentos obligatorios`}>
                     <span className="progress-track">
                       <span className={`progress-fill progress-fill--${tonoPorPorcentaje(progreso)}`} style={{ width: `${progreso}%` }} />
@@ -685,7 +674,7 @@ export default function ExpedientesTab({
                     onAbrirDocumento={(documento, lista) => setDocumentoAbierto({ documento, lista })}
                   />
                 )}
-              </article>
+              </Card>
             )
           })}
         </div>
@@ -698,9 +687,8 @@ export default function ExpedientesTab({
           onClose={cerrarModal}
         >
           <form className="form-grid" onSubmit={handleSubmit}>
-            <label className="field">
-              <span className="field-label">Titular</span>
-              <select required value={form.titularId} onChange={(e) => setForm({ ...form, titularId: e.target.value })}>
+            <Field etiqueta="Titular">
+              <Select required value={form.titularId} onChange={(e) => setForm({ ...form, titularId: e.target.value })}>
                 <option value="" disabled>
                   Selecciona una empresa…
                 </option>
@@ -709,11 +697,10 @@ export default function ExpedientesTab({
                     {t.razon_social} — {t.rfc}
                   </option>
                 ))}
-              </select>
-            </label>
+              </Select>
+            </Field>
 
-            <div className="field">
-              <span className="field-label">Tipo de expediente</span>
+            <Field as="div" etiqueta="Tipo de expediente" ayuda="El tipo decide qué documentos exige el catálogo de reglas (RF-06).">
               <div className="type-options" role="radiogroup" aria-label="Tipo de expediente">
                 {TIPOS_EXPEDIENTE.map((t) => (
                   <label key={t.value} className={`type-option ${form.tipo === t.value ? 'is-active' : ''}`}>
@@ -729,31 +716,26 @@ export default function ExpedientesTab({
                   </label>
                 ))}
               </div>
-              <span className="field-hint">El tipo decide qué documentos exige el catálogo de reglas (RF-06).</span>
-            </div>
+            </Field>
 
-            <label className="field">
-              <span className="field-label">Nombre descriptivo (opcional)</span>
-              <input
+            <Field etiqueta="Nombre descriptivo (opcional)">
+              <Input
                 maxLength={150}
                 placeholder="Ej. Contrato de mantenimiento 2026"
                 value={form.nombre}
                 onChange={(e) => setForm({ ...form, nombre: e.target.value })}
               />
-            </label>
+            </Field>
 
             <p className="field-hint">El folio del expediente lo genera el core-service (:8001) al momento del alta.</p>
 
             {error && <p className="form-error">{error}</p>}
 
             <div className="modal-footer">
-              <button type="button" className="btn btn-secondary" onClick={cerrarModal}>
-                Cancelar
-              </button>
-              <button type="submit" className="btn btn-primary" disabled={enviando || !form.titularId}>
-                {enviando && <Loader2 className="spin" size={14} />}
+              <Button onClick={cerrarModal}>Cancelar</Button>
+              <Button type="submit" variante="primary" cargando={enviando} disabled={!form.titularId}>
                 Crear expediente
-              </button>
+              </Button>
             </div>
           </form>
         </Modal>

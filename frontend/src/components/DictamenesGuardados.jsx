@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
-import { History, Loader2, ShieldAlert, UserCheck } from 'lucide-react'
+import { History, ShieldAlert, UserCheck } from 'lucide-react'
 import { Skeleton } from './Skeleton.jsx'
-import { Segmented } from './ui/index.js'
+import { Badge, Button, Field, Input, KeyValue, KeyValueList, Segmented } from './ui/index.js'
 import useToast from '../hooks/useToast.js'
 import { getDictamenes, ratificarDictamen } from '../services/api.js'
 import { formatFecha, formatRelativo, hashCorto } from '../utils/format.js'
@@ -55,10 +55,9 @@ function Momento({ valor }) {
 function EstatusBadge({ estatus }) {
   const m = meta(estatus)
   return (
-    <span className={`badge badge--${m.tono}`}>
-      <span className={`status-dot status-dot--${m.tono}`} aria-hidden="true" />
+    <Badge tono={m.tono} punto>
       {m.label}
-    </span>
+    </Badge>
   )
 }
 
@@ -119,23 +118,30 @@ function FormularioRatificacion({ dictamen, onRatificado, onCancelar }) {
       </header>
 
       <div className="ratificacion-grid">
-        <div className="field">
-          <span className="field-label">Decisión</span>
+        <Field as="div" etiqueta="Decisión">
           <Segmented label="Decisión del analista" valor={decision} onChange={setDecision} opciones={DECISIONES} />
-        </div>
-        <label className="field">
-          <span className="field-label">Analista</span>
-          <input value={usuario} onChange={(e) => setUsuario(e.target.value)} maxLength={100} required />
-        </label>
+        </Field>
+        <Field etiqueta="Analista">
+          <Input value={usuario} onChange={(e) => setUsuario(e.target.value)} maxLength={100} required />
+        </Field>
       </div>
 
-      <label className="field">
-        <span className="field-label">
-          Justificación
-          <span className={`field-counter tabular field-counter--${estadoCampo}`}>
-            {largo} / {MIN_JUSTIFICACION} mín.
-          </span>
-        </span>
+      <Field
+        etiqueta={
+          <>
+            Justificación
+            <span className={`field-counter tabular field-counter--${estadoCampo}`}>
+              {largo} / {MIN_JUSTIFICACION} mín.
+            </span>
+          </>
+        }
+        retro={{
+          estado: estadoCampo,
+          mensaje: justificacionValida
+            ? 'Justificación suficiente.'
+            : `Faltan ${faltan} ${faltan === 1 ? 'carácter' : 'caracteres'} para registrar la decisión.`,
+        }}
+      >
         <textarea
           rows={3}
           className={`input--${estadoCampo}`}
@@ -145,26 +151,19 @@ function FormularioRatificacion({ dictamen, onRatificado, onCancelar }) {
           placeholder="Qué se cotejó y por qué se confirma o corrige el dictamen automático…"
           maxLength={2000}
           aria-invalid={estadoCampo === 'invalido'}
-          aria-describedby={`ayuda-${dictamen.id}`}
           required
         />
-        <span id={`ayuda-${dictamen.id}`} className={`field-feedback field-feedback--${estadoCampo}`}>
-          {justificacionValida
-            ? 'Justificación suficiente.'
-            : `Faltan ${faltan} ${faltan === 1 ? 'carácter' : 'caracteres'} para registrar la decisión.`}
-        </span>
-      </label>
+      </Field>
 
       {error && <p className="form-error">{error}</p>}
 
       <div className="ratificacion-actions">
-        <button type="button" className="btn btn-secondary btn-sm" onClick={onCancelar} disabled={enviando}>
+        <Button compacto onClick={onCancelar} disabled={enviando}>
           Cancelar
-        </button>
-        <button type="submit" className="btn btn-primary btn-sm" disabled={!valida || enviando}>
-          {enviando && <Loader2 className="spin" size={13} />}
+        </Button>
+        <Button type="submit" variante="primary" compacto cargando={enviando} disabled={!valida}>
           Ratificar dictamen
-        </button>
+        </Button>
       </div>
     </form>
   )
@@ -179,10 +178,10 @@ function DictamenVigente({ dictamen, puedeRatificar, onRatificar }) {
       <header className="registro-head">
         <EstatusBadge estatus={dictamen.estatus} />
         {ratificado && (
-          <span className="badge badge--neutral" title={`Ratificado por ${dictamen.revisado_por}`}>
+          <Badge title={`Ratificado por ${dictamen.revisado_por}`}>
             <UserCheck size={12} strokeWidth={1.75} aria-hidden="true" />
             Ratificado
-          </span>
+          </Badge>
         )}
         <span className="registro-origen">{esIntegridad ? 'Integridad RIE-03' : 'Nivel 4 + reglas del Nivel 2'}</span>
         <span className="registro-fecha">
@@ -190,26 +189,16 @@ function DictamenVigente({ dictamen, puedeRatificar, onRatificar }) {
         </span>
       </header>
 
-      <dl className="registro-grid">
-        <div>
-          <dt>Confianza</dt>
-          <dd className="tabular">{pct(dictamen.nivel_confianza)}</dd>
-        </div>
-        <div>
-          <dt>Vigencia</dt>
-          <dd>{VIGENCIA[dictamen.vigencia_resultado] || '—'}</dd>
-        </div>
-        <div>
-          <dt>Dictamen automático</dt>
-          <dd>{meta(dictamen.estatus_preliminar).label}</dd>
-        </div>
-        <div>
-          <dt>Huella evaluada</dt>
-          <dd className="mono" title={dictamen.hash_sha256}>
-            {hashCorto(dictamen.hash_sha256, 8, 6)}
-          </dd>
-        </div>
-      </dl>
+      <KeyValueList className="registro-grid">
+        <KeyValue etiqueta="Confianza" valorClassName="tabular">
+          {pct(dictamen.nivel_confianza)}
+        </KeyValue>
+        <KeyValue etiqueta="Vigencia">{VIGENCIA[dictamen.vigencia_resultado] || '—'}</KeyValue>
+        <KeyValue etiqueta="Dictamen automático">{meta(dictamen.estatus_preliminar).label}</KeyValue>
+        <KeyValue etiqueta="Huella evaluada" valorClassName="mono" valorTitulo={dictamen.hash_sha256}>
+          {hashCorto(dictamen.hash_sha256, 8, 6)}
+        </KeyValue>
+      </KeyValueList>
 
       {dictamen.reglas_aplicadas?.length > 0 && (
         <ul className="registro-reglas" aria-label="Reglas aplicadas">
@@ -238,10 +227,9 @@ function DictamenVigente({ dictamen, puedeRatificar, onRatificar }) {
             <span className="status-dot status-dot--warn" aria-hidden="true" />
             Pendiente de ratificación humana: confianza por debajo del umbral o vigencia no verificable.
           </p>
-          <button type="button" className="btn btn-secondary btn-sm" onClick={onRatificar}>
-            <UserCheck size={14} />
+          <Button compacto icono={UserCheck} onClick={onRatificar}>
             Resolver revisión humana
-          </button>
+          </Button>
         </div>
       )}
     </article>

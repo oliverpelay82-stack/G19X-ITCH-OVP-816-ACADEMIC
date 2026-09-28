@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { FileLock2, ScanSearch, SearchX, Upload } from 'lucide-react'
-import { CopyChip, EmptyRow, Modal, SearchBox, Segmented } from './ui/index.js'
+import { Badge, Button, Card, CopyChip, EmptyRow, Field, IconButton, Modal, SearchBox, Segmented, Select, Tag } from './ui/index.js'
 import DropZone from './DropZone.jsx'
 import DetalleDocumentoModal from './DetalleDocumentoModal.jsx'
 import { firmaDeMime, tipoCorto } from '../utils/documentos.js'
@@ -88,19 +88,19 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
           label="Buscar en la bóveda"
         />
         <Segmented label="Filtrar por tipo documental" valor={filtroTipo} onChange={setFiltroTipo} opciones={opcionesTipo} />
-        <button
-          type="button"
-          className="btn btn-primary toolbar-action"
+        <Button
+          variante="primary"
+          icono={Upload}
+          className="toolbar-action"
           onClick={() => setIngestaAbierta(true)}
           disabled={!isOnline || expedientes.length === 0}
           title={!isOnline ? 'El core-service (:8001) no responde' : undefined}
         >
-          <Upload size={14} />
           Custodiar documento
-        </button>
+        </Button>
       </div>
 
-      <div className="card table-card">
+      <Card className="table-card">
         <div className="table-scroll">
           <table className="data-table">
             <colgroup>
@@ -150,9 +150,9 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
                           <span className="identity-name">
                             {doc.nombre_archivo_original}
                             {doc.estado_integridad === 'ALTERADO' && (
-                              <span className="badge badge--bad badge--inline" title="La huella SHA-256 no coincide con la registrada (RIE-03)">
+                              <Badge tono="bad" className="badge--inline" title="La huella SHA-256 no coincide con la registrada (RIE-03)">
                                 Alterado
-                              </span>
+                              </Badge>
                             )}
                           </span>
                           <span className="cell-sub">
@@ -161,9 +161,9 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
                         </div>
                       </td>
                       <td>
-                        <span className="tag tag--type" title={TIPO_DOCUMENTO_LABEL[doc.tipo_documento]}>
+                        <Tag tipo title={TIPO_DOCUMENTO_LABEL[doc.tipo_documento]}>
                           {tipoCorto(doc.tipo_documento)}
-                        </span>
+                        </Tag>
                       </td>
                       <td className="mono cell-mono">{exp ? exp.codigo_expediente : <span className="cell-muted">—</span>}</td>
                       <td>
@@ -174,18 +174,17 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
                         {formatFechaCorta(doc.creado_en)}
                       </td>
                       <td className="col-action">
-                        <button
-                          type="button"
-                          className="icon-button icon-button--sm"
+                        <IconButton
+                          etiqueta={`Inspeccionar ${doc.nombre_archivo_original}: custodia y auditoría`}
+                          compacto
                           onClick={(e) => {
                             e.stopPropagation()
                             setDetalle(doc)
                           }}
-                          aria-label={`Inspeccionar ${doc.nombre_archivo_original}: custodia y auditoría`}
                           title="Inspeccionar"
                         >
                           <ScanSearch size={14} />
-                        </button>
+                        </IconButton>
                       </td>
                     </tr>
                   )
@@ -193,7 +192,7 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
             </tbody>
           </table>
         </div>
-      </div>
+      </Card>
 
       {ingestaAbierta && (
         <Modal
@@ -216,9 +215,8 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
             deshabilitado={!isOnline}
             motivoDeshabilitado="El core-service (:8001) no responde"
           >
-            <label className="field">
-              <span className="field-label">Expediente destino</span>
-              <select value={expedienteId} onChange={(e) => setExpedienteId(e.target.value)} required>
+            <Field etiqueta="Expediente destino">
+              <Select value={expedienteId} onChange={(e) => setExpedienteId(e.target.value)} required>
                 <option value="" disabled>
                   Selecciona un expediente…
                 </option>
@@ -227,8 +225,8 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
                     {e.codigo_expediente} — {e.titular?.razon_social || 'Sin titular'} ({TIPO_EXPEDIENTE_LABEL[e.tipo_expediente] || e.tipo_expediente})
                   </option>
                 ))}
-              </select>
-            </label>
+              </Select>
+            </Field>
           </DropZone>
           {!expedienteId && <p className="field-hint">Elige el expediente destino para habilitar la custodia.</p>}
         </Modal>

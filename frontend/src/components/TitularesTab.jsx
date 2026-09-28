@@ -1,6 +1,23 @@
 import { useMemo, useState } from 'react'
-import { Building2, ChevronRight, FolderOpen, FolderPlus, LayoutGrid, Loader2, Plus, Rows3, SearchX } from 'lucide-react'
-import { CopyChip, EmptyRow, EmptyState, Modal, SearchBox, Segmented } from './ui/index.js'
+import { Building2, ChevronRight, FolderOpen, FolderPlus, LayoutGrid, Plus, Rows3, SearchX } from 'lucide-react'
+import {
+  Badge,
+  Button,
+  Card,
+  CopyChip,
+  EmptyRow,
+  EmptyState,
+  Field,
+  IconButton,
+  Input,
+  KeyValue,
+  KeyValueList,
+  Modal,
+  SearchBox,
+  Segmented,
+  Select,
+  Tag,
+} from './ui/index.js'
 import { SkeletonCards, SkeletonRows } from './Skeleton.jsx'
 import useToast from '../hooks/useToast.js'
 import useDebounce from '../hooks/useDebounce.js'
@@ -28,10 +45,9 @@ function EstadoExpediente({ expediente }) {
   if (!expediente) return <span className="cell-muted">Sin expediente</span>
   const meta = getEstadoBadge(expediente.estado_cumplimiento)
   return (
-    <span className={`badge badge--${meta.tono}`}>
-      <span className={`status-dot status-dot--${meta.tono}`} aria-hidden="true" />
+    <Badge tono={meta.tono} punto>
       {meta.label}
-    </span>
+    </Badge>
   )
 }
 
@@ -39,34 +55,36 @@ function EstadoExpediente({ expediente }) {
 function AccionExpediente({ titular, expediente, onAbrir, onAperturar, isOnline, compacta = false }) {
   if (expediente) {
     return compacta ? (
-      <button
-        type="button"
-        className="icon-button icon-button--sm"
+      <IconButton
+        etiqueta={`Abrir expediente ${expediente.codigo_expediente}`}
+        compacto
         onClick={() => onAbrir(expediente.id)}
-        aria-label={`Abrir expediente ${expediente.codigo_expediente}`}
         title="Abrir expediente"
       >
         <ChevronRight size={14} />
-      </button>
+      </IconButton>
     ) : (
-      <button type="button" className="btn btn-secondary btn-sm" onClick={() => onAbrir(expediente.id)}>
-        <FolderOpen size={14} />
+      <Button compacto icono={FolderOpen} onClick={() => onAbrir(expediente.id)}>
         Abrir expediente
-      </button>
+      </Button>
     )
   }
-  return (
-    <button
-      type="button"
-      className={compacta ? 'icon-button icon-button--sm' : 'btn btn-secondary btn-sm'}
+  const etiqueta = `Aperturar expediente para ${titular.razon_social}`
+  return compacta ? (
+    <IconButton etiqueta={etiqueta} compacto onClick={() => onAperturar(titular)} disabled={!isOnline} title="Aperturar expediente">
+      <FolderPlus size={14} />
+    </IconButton>
+  ) : (
+    <Button
+      compacto
+      icono={FolderPlus}
       onClick={() => onAperturar(titular)}
       disabled={!isOnline}
-      aria-label={`Aperturar expediente para ${titular.razon_social}`}
+      aria-label={etiqueta}
       title="Aperturar expediente"
     >
-      <FolderPlus size={14} />
-      {!compacta && 'Aperturar expediente'}
-    </button>
+      Aperturar expediente
+    </Button>
   )
 }
 
@@ -74,7 +92,7 @@ function AccionExpediente({ titular, expediente, onAbrir, onAperturar, isOnline,
 function TarjetaTitular({ titular, expedientes, ...acciones }) {
   const [ultimo] = expedientes
   return (
-    <article className="card profile-card">
+    <Card as="article" className="profile-card">
       <header className="profile-head">
         <span className="avatar avatar--lg" aria-hidden="true">
           {iniciales(titular.razon_social)}
@@ -89,20 +107,14 @@ function TarjetaTitular({ titular, expedientes, ...acciones }) {
         </div>
       </header>
 
-      <dl className="profile-grid">
-        <div>
-          <dt>RFC</dt>
-          <dd>
-            <CopyChip valor={titular.rfc} etiqueta="RFC" />
-          </dd>
-        </div>
-        <div>
-          <dt>Categoría regulatoria</dt>
-          <dd>
-            <span className="tag mono">{titular.categoria}</span>
-          </dd>
-        </div>
-      </dl>
+      <KeyValueList className="profile-grid">
+        <KeyValue etiqueta="RFC">
+          <CopyChip valor={titular.rfc} etiqueta="RFC" />
+        </KeyValue>
+        <KeyValue etiqueta="Categoría regulatoria">
+          <Tag mono>{titular.categoria}</Tag>
+        </KeyValue>
+      </KeyValueList>
 
       <footer className="profile-foot">
         <div className="profile-exp">
@@ -116,7 +128,7 @@ function TarjetaTitular({ titular, expedientes, ...acciones }) {
         </div>
         <AccionExpediente titular={titular} expediente={ultimo} {...acciones} />
       </footer>
-    </article>
+    </Card>
   )
 }
 
@@ -251,25 +263,25 @@ export default function TitularesTab({
           ]}
         />
 
-        <button
-          type="button"
-          className="btn btn-primary toolbar-action"
+        <Button
+          variante="primary"
+          icono={Plus}
+          className="toolbar-action"
           onClick={() => setModalAbierto(true)}
           disabled={!isOnline}
           title={!isOnline ? 'El core-service (:8001) no responde' : undefined}
         >
-          <Plus size={14} />
           Alta de empresa
-        </button>
+        </Button>
       </div>
 
       {vista === 'tarjetas' ? (
         loading ? (
           <SkeletonCards count={3} height={176} />
         ) : vacio ? (
-          <div className="card">
+          <Card>
             <EmptyState {...vacioProps} />
-          </div>
+          </Card>
         ) : (
           <div className="card-grid">
             {filtrados.map((t) => (
@@ -283,7 +295,7 @@ export default function TitularesTab({
           </div>
         )
       ) : (
-        <div className="card table-card">
+        <Card className="table-card">
           <div className="table-scroll">
             <table className="data-table">
               <colgroup>
@@ -326,10 +338,10 @@ export default function TitularesTab({
                           <CopyChip valor={t.rfc} etiqueta="RFC" />
                         </td>
                         <td>
-                          <span className="badge badge--neutral">{t.tipo_persona === 'FISICA' ? 'Física' : 'Moral'}</span>
+                          <Badge>{t.tipo_persona === 'FISICA' ? 'Física' : 'Moral'}</Badge>
                         </td>
                         <td>
-                          <span className="tag mono">{t.categoria}</span>
+                          <Tag mono>{t.categoria}</Tag>
                         </td>
                         <td>
                           <EstadoExpediente expediente={ultimo} />
@@ -349,42 +361,42 @@ export default function TitularesTab({
               </tbody>
             </table>
           </div>
-        </div>
+        </Card>
       )}
 
       {modalAbierto && (
         <Modal title="Alta de empresa" subtitle="Registra un nuevo titular de expediente" onClose={cerrarModal}>
           <form className="form-grid" onSubmit={handleSubmit}>
             <div className="field-row">
-              <label className="field">
-                <span className="field-label">Tipo de persona</span>
-                <select
-                  value={form.tipo_persona}
-                  onChange={(e) => setForm({ ...form, tipo_persona: e.target.value })}
-                >
+              <Field etiqueta="Tipo de persona">
+                <Select value={form.tipo_persona} onChange={(e) => setForm({ ...form, tipo_persona: e.target.value })}>
                   <option value="MORAL">Moral (RFC de 12)</option>
                   <option value="FISICA">Física (RFC de 13)</option>
-                </select>
-              </label>
+                </Select>
+              </Field>
 
-              <label className="field">
-                <span className="field-label">Categoría</span>
-                <select value={form.categoria} onChange={(e) => setForm({ ...form, categoria: e.target.value })}>
+              <Field etiqueta="Categoría">
+                <Select value={form.categoria} onChange={(e) => setForm({ ...form, categoria: e.target.value })}>
                   <option value="PROVEEDOR">Proveedor</option>
                   <option value="CLIENTE">Cliente</option>
-                </select>
-              </label>
+                </Select>
+              </Field>
             </div>
 
-            <label className="field">
-              <span className="field-label">
-                RFC
-                <span className="field-counter mono">
-                  {form.rfc.length}/{form.tipo_persona === 'FISICA' ? 13 : 12}
-                </span>
-              </span>
-              <input
-                className={`mono input--${rfcCheck.estado}`}
+            <Field
+              etiqueta={
+                <>
+                  RFC
+                  <span className="field-counter mono">
+                    {form.rfc.length}/{form.tipo_persona === 'FISICA' ? 13 : 12}
+                  </span>
+                </>
+              }
+              retro={rfcCheck.estado !== 'vacio' ? rfcCheck : null}
+            >
+              <Input
+                estado={rfcCheck.estado}
+                className="mono"
                 required
                 maxLength={13}
                 placeholder={form.tipo_persona === 'FISICA' ? 'PEPJ850101H23' : 'PLU200115AB1'}
@@ -393,14 +405,10 @@ export default function TitularesTab({
                 autoComplete="off"
                 spellCheck="false"
               />
-              {rfcCheck.estado !== 'vacio' && (
-                <span className={`field-feedback field-feedback--${rfcCheck.estado}`}>{rfcCheck.mensaje}</span>
-              )}
-            </label>
+            </Field>
 
-            <label className="field">
-              <span className="field-label">Razón social / Nombre completo</span>
-              <input
+            <Field etiqueta="Razón social / Nombre completo">
+              <Input
                 required
                 minLength={3}
                 maxLength={200}
@@ -408,18 +416,15 @@ export default function TitularesTab({
                 value={form.razon_social}
                 onChange={(e) => setForm({ ...form, razon_social: e.target.value })}
               />
-            </label>
+            </Field>
 
             {error && <p className="form-error">{error}</p>}
 
             <div className="modal-footer">
-              <button type="button" className="btn btn-secondary" onClick={cerrarModal}>
-                Cancelar
-              </button>
-              <button type="submit" className="btn btn-primary" disabled={enviando || rfcCheck.estado !== 'valido'}>
-                {enviando && <Loader2 className="spin" size={14} />}
+              <Button onClick={cerrarModal}>Cancelar</Button>
+              <Button type="submit" variante="primary" cargando={enviando} disabled={rfcCheck.estado !== 'valido'}>
                 Registrar titular
-              </button>
+              </Button>
             </div>
           </form>
         </Modal>

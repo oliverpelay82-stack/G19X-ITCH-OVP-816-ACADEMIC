@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { History, Loader2 } from 'lucide-react'
+import { Badge, Button } from './ui/index.js'
 import { getBitacora } from '../services/api.js'
 import { getEstadoBadge, TIPO_DOCUMENTO_LABEL } from '../constants.js'
 import { formatFecha } from '../utils/format.js'
@@ -132,7 +133,7 @@ export default function HistorialExpediente({ expedienteId, documentos = [] }) {
                   <div>
                     <p className="historial-titulo">
                       {titulo}
-                      {veces > 1 && <span className="badge badge--neutral historial-veces">×{veces}</span>}
+                      {veces > 1 && <Badge className="historial-veces">×{veces}</Badge>}
                     </p>
                     {detalle && <p className="historial-detalle">{detalle}</p>}
                     <p className="historial-meta tabular">
@@ -145,9 +146,9 @@ export default function HistorialExpediente({ expedienteId, documentos = [] }) {
               ))}
             </ol>
             {grupos.length > VISIBLES && (
-              <button type="button" className="btn btn-secondary btn-sm" onClick={() => setCompleto(!completo)}>
+              <Button compacto onClick={() => setCompleto(!completo)}>
                 {completo ? 'Ver solo lo reciente' : `Ver todo (${grupos.length - VISIBLES} más)`}
-              </button>
+              </Button>
             )}
           </>
         )

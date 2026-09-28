@@ -3,7 +3,7 @@ import { ArrowUp, Check, FileText, Loader2, MessageSquareText, Minus, Sparkles, 
 import { Skeleton } from './Skeleton.jsx'
 import DictamenesGuardados, { AvisoIntegridad } from './DictamenesGuardados.jsx'
 import { useEvidencia } from './evidencia-context.js'
-import { EmptyState, Segmented } from './ui/index.js'
+import { Badge, Button, Card, EmptyState, KeyValue, KeyValueList, Segmented } from './ui/index.js'
 import useToast from '../hooks/useToast.js'
 import { analizarDocumento, getVisorDocumento, prepararDocumento, preguntarSobreDocumento } from '../services/api.js'
 import { TIPO_DOCUMENTO_LABEL } from '../constants.js'
@@ -233,7 +233,7 @@ function Stepper({ etapas, compacto }) {
               <span className="step-label">
                 {e.label}
                 <span className="step-level">{e.nivel}</span>
-                {estado === 'omitido' && <span className="badge badge--skip">Omitido</span>}
+                {estado === 'omitido' && <Badge tono="skip">Omitido</Badge>}
               </span>
               <span className="step-detail" title={detalle || undefined}>
                 {detalle || (estado === 'pendiente' ? 'En cola' : ' ')}
@@ -321,7 +321,7 @@ function Cotejo({ dictamen, expediente, tipoRegistrado }) {
     },
   ]
   return (
-    <div className="card table-card table-card--flat">
+    <Card className="table-card table-card--flat">
       <table className="data-table data-table--inner cotejo">
         <colgroup>
           <col style={{ width: '18%' }} />
@@ -350,14 +350,14 @@ function Cotejo({ dictamen, expediente, tipoRegistrado }) {
                   {f.nota && <span className={`cell-sub ${f.resultado === 'ok' ? '' : 'cell-bad'}`}>{f.nota}</span>}
                 </td>
                 <td className="col-right">
-                  <span className={`badge badge--${r.tono}`}>{r.label}</span>
+                  <Badge tono={r.tono}>{r.label}</Badge>
                 </td>
               </tr>
             )
           })}
         </tbody>
       </table>
-    </div>
+    </Card>
   )
 }
 
@@ -379,7 +379,7 @@ function VerificacionContenido({ verificaciones }) {
           {verificaciones.length - pendientes} de {verificaciones.length} localizados
         </span>
       </div>
-      <div className="card table-card table-card--flat">
+      <Card className="table-card table-card--flat">
         <table className="data-table data-table--inner contenido-tabla">
           <colgroup>
             <col style={{ width: '30%' }} />
@@ -424,14 +424,14 @@ function VerificacionContenido({ verificaciones }) {
                     )}
                   </td>
                   <td className="col-right">
-                    <span className={`badge badge--${r.tono}`}>{r.label}</span>
+                    <Badge tono={r.tono}>{r.label}</Badge>
                   </td>
                 </tr>
               )
             })}
           </tbody>
         </table>
-      </div>
+      </Card>
     </div>
   )
 }
@@ -450,7 +450,7 @@ function SellosDetectados({ sellos = [], selloDigital }) {
     <div className="sellos">
       <p className="eyebrow">Sellos</p>
       <div className="sellos-fila">
-        {selloDigital && <span className="badge badge--neutral">Sello Digital SAT</span>}
+        {selloDigital && <Badge>Sello Digital SAT</Badge>}
         {[...porPagina.entries()].map(([pagina, zonas]) =>
           evidencia ? (
             <button
@@ -464,9 +464,7 @@ function SellosDetectados({ sellos = [], selloDigital }) {
               {zonas.length > 1 ? ` · ${zonas.length}` : ''}
             </button>
           ) : (
-            <span key={pagina} className="badge badge--neutral">
-              p. {pagina}
-            </span>
+            <Badge key={pagina}>p. {pagina}</Badge>
           )
         )}
       </div>
@@ -489,8 +487,7 @@ function EstadoLectura({ lectura, contexto }) {
   return (
     <div className="badge-row">
       {pendientes > 0 && (
-        <span
-          className="badge badge--neutral"
+        <Badge
           title={`El OCR leyó ${lectura.total_paginas - pendientes} de ${lectura.total_paginas} páginas. ${
             lectura.lectura_completa_en_curso
               ? 'El resto se está reconociendo en segundo plano; vuelve a auditar o preguntar en unos momentos.'
@@ -498,13 +495,9 @@ function EstadoLectura({ lectura, contexto }) {
           }`}
         >
           Lectura parcial · {pendientes} págs. pendientes{lectura.lectura_completa_en_curso ? ' (completándose)' : ''}
-        </span>
+        </Badge>
       )}
-      {recortado && (
-        <span className="badge badge--neutral" title="Ningún fragmento coincidió con la consulta: el modelo vio el inicio del documento.">
-          Contexto recortado
-        </span>
-      )}
+      {recortado && <Badge title="Ningún fragmento coincidió con la consulta: el modelo vio el inicio del documento.">Contexto recortado</Badge>}
     </div>
   )
 }
@@ -590,7 +583,11 @@ function TextoModelo({ texto, citas = [] }) {
     const contenido = (
       <q className={`chat-cita ${ok === false ? 'chat-cita--sin-verificar' : ''}`} title={titulo}>
         <Negritas texto={parte} />
-        {ok === false && <span className="badge badge--warn chat-cita-badge">Sin verificar</span>}
+        {ok === false && (
+          <Badge tono="warn" className="chat-cita-badge">
+            Sin verificar
+          </Badge>
+        )}
       </q>
     )
     // Solo una cita del documento tiene dónde resaltarse; la del dictamen o el catálogo, no.
@@ -743,7 +740,7 @@ function DictamenIa({ dictamen, expediente, tipoRegistrado, duracion }) {
           </p>
           {dictamen.requiere_revision_humana && (
             <div className="badge-row">
-              <span className="badge badge--warn">Revisión humana · Nivel 5</span>
+              <Badge tono="warn">Revisión humana · Nivel 5</Badge>
             </div>
           )}
         </div>
@@ -764,20 +761,17 @@ function DictamenIa({ dictamen, expediente, tipoRegistrado, duracion }) {
         <SellosDetectados sellos={dictamen.sellos} selloDigital={dictamen.sello_digital_sat} />
       </div>
 
-      <dl id={ids.fechas} className="detail-grid detail-grid--3 ancla">
-        <div className="detail-item">
-          <dt>Emisión</dt>
-          <dd className="mono">{fechaIso(dictamen.fecha_emision)}</dd>
-        </div>
-        <div className="detail-item">
-          <dt>Vencimiento</dt>
-          <dd className="mono">{fechaIso(dictamen.fecha_vencimiento)}</dd>
-        </div>
-        <div className="detail-item">
-          <dt>Días para el vencimiento</dt>
-          <dd className="mono">{dias === null ? '—' : numero(dias)}</dd>
-        </div>
-      </dl>
+      <KeyValueList id={ids.fechas} className="detail-grid detail-grid--3 ancla">
+        <KeyValue etiqueta="Emisión" className="detail-item" valorClassName="mono">
+          {fechaIso(dictamen.fecha_emision)}
+        </KeyValue>
+        <KeyValue etiqueta="Vencimiento" className="detail-item" valorClassName="mono">
+          {fechaIso(dictamen.fecha_vencimiento)}
+        </KeyValue>
+        <KeyValue etiqueta="Días para el vencimiento" className="detail-item" valorClassName="mono">
+          {dias === null ? '—' : numero(dias)}
+        </KeyValue>
+      </KeyValueList>
 
       {resto.length > 0 && (
         <div className="observations">
@@ -897,16 +891,16 @@ function AuditoriaIa({ doc, expediente, iaOnline, onCambio, onOcupado }) {
           Clasifica el documento, coteja su titularidad, verifica la vigencia con las reglas RCV y localiza los
           elementos que el catálogo exige a su tipo (RSC). A Groq solo viaja el texto extraído, nunca el archivo.
         </p>
-        <button
-          type="button"
-          className={`btn ${dictamen ? 'btn-secondary' : 'btn-primary'}`}
+        <Button
+          variante={dictamen ? 'secondary' : 'primary'}
+          icono={Sparkles}
+          cargando={analizando}
           onClick={auditar}
-          disabled={analizando || !iaOnline || alterado}
+          disabled={!iaOnline || alterado}
           title={alterado ? 'Documento bloqueado por RIE-03' : iaOnline ? undefined : 'El ai-service (:8003) no responde'}
         >
-          {analizando ? <Loader2 className="spin" size={14} /> : <Sparkles size={14} />}
           {analizando ? 'Auditando…' : dictamen ? 'Volver a auditar' : 'Auditar documento'}
-        </button>
+        </Button>
       </div>
 
       {!iaOnline && !dictamen && (
@@ -1067,14 +1061,15 @@ function ChatDocumento({ doc, iaOnline }) {
           disabled={!iaOnline}
           aria-label="Pregunta sobre el documento"
         />
-        <button
+        <Button
           type="submit"
-          className="btn btn-primary btn-icon"
+          variante="primary"
+          soloIcono
+          icono={ArrowUp}
+          cargando={pensando}
           disabled={deshabilitado || borrador.trim().length < 3}
           aria-label="Enviar pregunta"
-        >
-          {pensando ? <Loader2 className="spin" size={14} /> : <ArrowUp size={14} />}
-        </button>
+        />
       </form>
     </div>
   )

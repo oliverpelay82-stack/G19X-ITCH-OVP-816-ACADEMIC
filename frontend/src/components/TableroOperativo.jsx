@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { ArrowUpRight, CalendarClock, ClipboardCheck, TrendingUp } from 'lucide-react'
+import { Card } from './ui/index.js'
 import { getBitacora } from '../services/api.js'
 import { ALERTA_META, getEstadoBadge, TIPO_DOCUMENTO_LABEL } from '../constants.js'
 import { formatFecha } from '../utils/format.js'
@@ -30,7 +31,7 @@ function ProximosVencimientos({ expedientes, onAbrirExpediente }) {
     [expedientes]
   )
   return (
-    <article className="card report-card">
+    <Card as="article" className="report-card">
       <p className="eyebrow eyebrow--icon">
         <CalendarClock size={12} aria-hidden="true" />
         Vencimientos · {lista.length}
@@ -58,7 +59,7 @@ function ProximosVencimientos({ expedientes, onAbrirExpediente }) {
           {lista.length > MAX_FILAS && <li className="field-hint">y {lista.length - MAX_FILAS} más.</li>}
         </ul>
       )}
-    </article>
+    </Card>
   )
 }
 
@@ -77,7 +78,7 @@ function PendientesAnalista({ expedientes, onAbrirExpediente }) {
   )
   const total = grupos.reduce((s, g) => s + g.total, 0)
   return (
-    <article className="card report-card">
+    <Card as="article" className="report-card">
       <p className="eyebrow eyebrow--icon">
         <ClipboardCheck size={12} aria-hidden="true" />
         Pendientes del analista · {total}
@@ -111,7 +112,7 @@ function PendientesAnalista({ expedientes, onAbrirExpediente }) {
             ))}
         </ul>
       )}
-    </article>
+    </Card>
   )
 }
 
@@ -138,7 +139,7 @@ function EvolucionSemaforo({ expedientes, onAbrirExpediente }) {
   const codigos = new Map(expedientes.map((e) => [e.id, e.codigo_expediente]))
 
   return (
-    <article className="card report-card">
+    <Card as="article" className="report-card">
       <p className="eyebrow eyebrow--icon">
         <TrendingUp size={12} aria-hidden="true" />
         Cambios del semáforo · {DIAS_EVOLUCION} días
@@ -186,7 +187,7 @@ function EvolucionSemaforo({ expedientes, onAbrirExpediente }) {
           )}
         </>
       )}
-    </article>
+    </Card>
   )
 }
 

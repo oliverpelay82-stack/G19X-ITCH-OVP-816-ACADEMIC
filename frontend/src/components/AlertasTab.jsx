@@ -3,7 +3,7 @@ import { BellOff, SearchX } from 'lucide-react'
 import { SkeletonCards } from './Skeleton.jsx'
 import { AlertaItem } from './Alertas.jsx'
 import useDebounce from '../hooks/useDebounce.js'
-import { EmptyState, SearchBox, Segmented } from './ui/index.js'
+import { Card, EmptyState, SearchBox, Segmented, Select } from './ui/index.js'
 import {
   ALERTA_META,
   getSeveridadMeta,
@@ -86,34 +86,28 @@ export default function AlertasTab({ expedientes, loading, onAbrirExpediente }) 
           label="Buscar alertas"
         />
         <Segmented label="Filtrar por severidad" valor={filtroSeveridad} onChange={setFiltroSeveridad} opciones={opcionesSeveridad} />
-        <label className="select-inline">
-          <span className="sr-only">Filtrar por categoría</span>
-          <select value={filtroCodigo} onChange={(e) => setFiltroCodigo(e.target.value)}>
-            <option value="TODAS">Toda categoría</option>
-            {codigos.map((c) => (
-              <option key={c} value={c}>
-                {ALERTA_META[c]?.label || c}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="select-inline">
-          <span className="sr-only">Filtrar por tipo de expediente</span>
-          <select value={filtroTipo} onChange={(e) => setFiltroTipo(e.target.value)}>
-            <option value="TODOS">Todo tipo de expediente</option>
-            {TIPOS_EXPEDIENTE.map((t) => (
-              <option key={t.value} value={t.value}>
-                {t.label}
-              </option>
-            ))}
-          </select>
-        </label>
+        <Select etiqueta="Filtrar por categoría" value={filtroCodigo} onChange={(e) => setFiltroCodigo(e.target.value)}>
+          <option value="TODAS">Toda categoría</option>
+          {codigos.map((c) => (
+            <option key={c} value={c}>
+              {ALERTA_META[c]?.label || c}
+            </option>
+          ))}
+        </Select>
+        <Select etiqueta="Filtrar por tipo de expediente" value={filtroTipo} onChange={(e) => setFiltroTipo(e.target.value)}>
+          <option value="TODOS">Todo tipo de expediente</option>
+          {TIPOS_EXPEDIENTE.map((t) => (
+            <option key={t.value} value={t.value}>
+              {t.label}
+            </option>
+          ))}
+        </Select>
       </div>
 
       {loading && <SkeletonCards count={3} height={96} />}
 
       {!loading && filtradas.length === 0 && (
-        <div className="card">
+        <Card>
           <EmptyState
             icon={alertas.length === 0 ? BellOff : SearchX}
             titulo={alertas.length === 0 ? 'Sin alertas vigentes' : 'Sin coincidencias'}
@@ -123,7 +117,7 @@ export default function AlertasTab({ expedientes, loading, onAbrirExpediente }) 
                 : 'Ajusta la búsqueda o los filtros de severidad, categoría y tipo.'
             }
           />
-        </div>
+        </Card>
       )}
 
       {!loading && filtradas.length > 0 && (

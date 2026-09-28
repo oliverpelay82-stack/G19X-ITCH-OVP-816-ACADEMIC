@@ -4,7 +4,7 @@ import ExportarReporte from './ExportarReporte.jsx'
 import TableroOperativo from './TableroOperativo.jsx'
 import { SkeletonRows } from './Skeleton.jsx'
 import useDebounce from '../hooks/useDebounce.js'
-import { EmptyRow, SearchBox } from './ui/index.js'
+import { Badge, Card, EmptyRow, SearchBox, Select, Tag } from './ui/index.js'
 import {
   ALERTA_META,
   getEstadoBadge,
@@ -83,7 +83,7 @@ export default function ReportesTab({ expedientes, loading, isOnline = true, onA
   return (
     <div className="tab-panel">
       <section className="report-grid" aria-label="Indicadores de cumplimiento">
-        <article className="card report-card">
+        <Card as="article" className="report-card">
           <p className="eyebrow">Cumplimiento global</p>
           <p className="report-kpi tabular">{loading ? '—' : `${ind.global.toFixed(1)}%`}</p>
           <p className="field-hint">
@@ -94,9 +94,9 @@ export default function ReportesTab({ expedientes, loading, isOnline = true, onA
             <Barra label="En revisión" n={ind.revision} total={ind.total} tono="warn" />
             <Barra label="No conformes" n={ind.noConformes} total={ind.total} tono="bad" />
           </ul>
-        </article>
+        </Card>
 
-        <article className="card report-card">
+        <Card as="article" className="report-card">
           <p className="eyebrow">Alertas por severidad · {ind.alertas.length}</p>
           <ul className="dist-list">
             {ind.porSeveridad.map(([s, n]) => (
@@ -110,9 +110,9 @@ export default function ReportesTab({ expedientes, loading, isOnline = true, onA
               <Barra key={c} label={ALERTA_META[c]?.label || c} n={n} total={ind.alertas.length} />
             ))}
           </ul>
-        </article>
+        </Card>
 
-        <article className="card report-card">
+        <Card as="article" className="report-card">
           <p className="eyebrow">Hallazgos por área · {ind.alertas.length}</p>
           <ul className="dist-list">
             {ind.porArea.map((a) => (
@@ -133,19 +133,21 @@ export default function ReportesTab({ expedientes, loading, isOnline = true, onA
           </ul>
           <p className="eyebrow report-sub">Reporte global</p>
           <p className="field-hint">Indicadores, expedientes y alertas con recomendación.</p>
-          <label className="select-inline report-select">
-            <span className="sr-only">Tipo de expediente del reporte</span>
-            <select value={tipoGlobal} onChange={(e) => setTipoGlobal(e.target.value)}>
-              <option value="">Todos los expedientes</option>
-              {TIPOS_EXPEDIENTE.map((t) => (
-                <option key={t.value} value={t.value}>
-                  Solo {t.label.toLowerCase()}s
-                </option>
-              ))}
-            </select>
-          </label>
+          <Select
+            etiqueta="Tipo de expediente del reporte"
+            claseContenedor="report-select"
+            value={tipoGlobal}
+            onChange={(e) => setTipoGlobal(e.target.value)}
+          >
+            <option value="">Todos los expedientes</option>
+            {TIPOS_EXPEDIENTE.map((t) => (
+              <option key={t.value} value={t.value}>
+                Solo {t.label.toLowerCase()}s
+              </option>
+            ))}
+          </Select>
           <ExportarReporte ruta="/reportes/cumplimiento" params={{ tipo_expediente: tipoGlobal }} disabled={!isOnline} />
-        </article>
+        </Card>
       </section>
 
       <TableroOperativo expedientes={expedientes} onAbrirExpediente={onAbrirExpediente} />
@@ -154,7 +156,7 @@ export default function ReportesTab({ expedientes, loading, isOnline = true, onA
         <SearchBox value={busqueda} onChange={setBusqueda} placeholder="Folio, nombre, empresa o RFC…" label="Buscar expediente" />
       </div>
 
-      <div className="card table-card">
+      <Card className="table-card">
         <div className="table-scroll">
           <table className="data-table">
             <colgroup>
@@ -200,13 +202,12 @@ export default function ReportesTab({ expedientes, loading, isOnline = true, onA
                         </span>
                       </td>
                       <td>
-                        <span className="tag tag--type">{TIPO_EXPEDIENTE_LABEL[e.tipo_expediente] || e.tipo_expediente}</span>
+                        <Tag tipo>{TIPO_EXPEDIENTE_LABEL[e.tipo_expediente] || e.tipo_expediente}</Tag>
                       </td>
                       <td>
-                        <span className={`badge badge--${meta.tono}`}>
-                          <span className={`status-dot status-dot--${meta.tono}`} aria-hidden="true" />
+                        <Badge tono={meta.tono} punto>
                           {meta.label}
-                        </span>
+                        </Badge>
                       </td>
                       <td className="col-right tabular">{Number(e.porcentaje_completitud || 0).toFixed(0)}%</td>
                       <td className="col-right tabular">{e.evaluacion?.alertas?.length || 0}</td>
@@ -219,7 +220,7 @@ export default function ReportesTab({ expedientes, loading, isOnline = true, onA
             </tbody>
           </table>
         </div>
-      </div>
+      </Card>
     </div>
   )
 }

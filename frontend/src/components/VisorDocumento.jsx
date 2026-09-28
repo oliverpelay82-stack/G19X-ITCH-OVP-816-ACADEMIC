@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { ChevronLeft, ChevronRight, Loader2, ScanText, X } from 'lucide-react'
-import { Segmented } from './ui/index.js'
+import { Badge, IconButton, Segmented } from './ui/index.js'
 import { getVisorDocumento, urlPaginaDocumento } from '../services/api.js'
 
 const ZOOMS = [
@@ -173,41 +173,27 @@ export default function VisorDocumento({ doc, busqueda, onCerrar }) {
             <p className="visor-meta">
               {total ? `Página ${pagina} de ${total}` : 'Cargando…'}
               {datosPagina && (
-                <span className="badge badge--neutral">
-                  {datosPagina.metodo === 'VECTORIAL' ? 'Capa de texto' : 'Escaneo · OCR'}
-                </span>
+                <Badge>{datosPagina.metodo === 'VECTORIAL' ? 'Capa de texto' : 'Escaneo · OCR'}</Badge>
               )}
             </p>
           </div>
         </div>
-        <button type="button" className="icon-button icon-button--sm" onClick={onCerrar} aria-label="Cerrar el visor">
+        <IconButton etiqueta="Cerrar el visor" compacto onClick={onCerrar}>
           <X size={15} />
-        </button>
+        </IconButton>
       </header>
 
       <div className="visor-controles">
         <div className="visor-paginacion">
-          <button
-            type="button"
-            className="icon-button icon-button--sm"
-            onClick={() => irA(pagina - 1)}
-            disabled={pagina <= 1}
-            aria-label="Página anterior"
-          >
+          <IconButton etiqueta="Página anterior" compacto onClick={() => irA(pagina - 1)} disabled={pagina <= 1}>
             <ChevronLeft size={15} />
-          </button>
+          </IconButton>
           <span className="tabular visor-contador">
             {total ? `${pagina} / ${total}` : '— / —'}
           </span>
-          <button
-            type="button"
-            className="icon-button icon-button--sm"
-            onClick={() => irA(pagina + 1)}
-            disabled={!total || pagina >= total}
-            aria-label="Página siguiente"
-          >
+          <IconButton etiqueta="Página siguiente" compacto onClick={() => irA(pagina + 1)} disabled={!total || pagina >= total}>
             <ChevronRight size={15} />
-          </button>
+          </IconButton>
         </div>
         <Segmented label="Zoom del visor" valor={zoom} onChange={setZoom} opciones={ZOOMS} />
       </div>

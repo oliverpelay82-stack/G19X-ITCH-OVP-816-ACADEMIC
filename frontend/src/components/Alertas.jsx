@@ -1,4 +1,5 @@
 import { ArrowUpRight, Lightbulb } from 'lucide-react'
+import { Badge, Tag } from './ui/index.js'
 import { ALERTA_META, getSeveridadMeta, SEVERIDADES } from '../constants.js'
 
 /**
@@ -13,11 +14,10 @@ export function AlertaItem({ alerta, expediente, onAbrirExpediente }) {
   return (
     <li className={`alerta alerta--${sev.tono}`}>
       <div className="alerta-head">
-        <span className={`badge badge--${sev.tono}`}>
-          <span className={`status-dot status-dot--${sev.tono}`} aria-hidden="true" />
+        <Badge tono={sev.tono} punto>
           {sev.label}
-        </span>
-        <span className="tag">{categoria}</span>
+        </Badge>
+        <Tag>{categoria}</Tag>
         {alerta.regla && <span className="mono cell-muted alerta-regla">{alerta.regla}</span>}
         {expediente && (
           <button type="button" className="alerta-exp" onClick={() => onAbrirExpediente?.(expediente.id)}>
@@ -66,10 +66,9 @@ export function ListaAlertasAgrupadas({ alertas }) {
         return (
           <details key={sev || 'otras'} className="alerta-grupo" open={sev === 'CRITICA' || sev === 'ALTA'}>
             <summary>
-              <span className={`badge badge--${meta.tono}`}>
-                <span className={`status-dot status-dot--${meta.tono}`} aria-hidden="true" />
+              <Badge tono={meta.tono} punto>
                 {sev ? meta.label : 'Otras'}
-              </span>
+              </Badge>
               <span className="tabular cell-muted">{items.length}</span>
             </summary>
             <ListaAlertas alertas={items} />

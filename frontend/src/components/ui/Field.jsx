@@ -59,9 +59,10 @@ export function Input({ estado, className, ...props }) {
  * Lista desplegable. Dentro de un Field no lleva `etiqueta`. Con `etiqueta`
  * es un filtro de barra de herramientas (`.select-inline`): la etiqueta queda
  * solo para lectores de pantalla, porque la primera opción ya dice qué filtra
- * («Todo tipo de expediente»).
+ * («Todo tipo de expediente»); `claseContenedor` añade una clase de
+ * maquetación a ese contenedor (p. ej. `report-select`).
  */
-export function Select({ etiqueta, className, children, ...props }) {
+export function Select({ etiqueta, className, claseContenedor, children, ...props }) {
   const select = (
     <select className={className} {...props}>
       {children}
@@ -69,7 +70,7 @@ export function Select({ etiqueta, className, children, ...props }) {
   )
   if (!etiqueta) return select
   return (
-    <label className="select-inline">
+    <label className={cx('select-inline', claseContenedor)}>
       <span className="sr-only">{etiqueta}</span>
       {select}
     </label>
