@@ -3,7 +3,7 @@ import { BellOff, SearchX } from 'lucide-react'
 import { SkeletonCards } from './Skeleton.jsx'
 import { AlertaItem } from './Alertas.jsx'
 import useDebounce from '../hooks/useDebounce.js'
-import { EmptyState, Segmented, SearchBox } from './ui.jsx'
+import { EmptyState, SearchBox, Segmented } from './ui/index.js'
 import {
   ALERTA_META,
   getSeveridadMeta,

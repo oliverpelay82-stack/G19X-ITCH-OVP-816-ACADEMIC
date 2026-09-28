@@ -3,7 +3,10 @@ Regresión visual del frontend (RNF-07: escritorio y portátiles desde 1366x768)
 
 Captura cada vista de la interfaz con los datos reales del entorno local en
 1366x768 y 1920x1080, en tema claro y oscuro, y compara píxel a píxel contra
-una referencia. Sirve para demostrar que una refactorización del sistema de
+una referencia. Además de las seis pestañas cubre los estados que no se ven
+al entrar: la tabla de Empresas, el detalle de un expediente, los modales de
+alta de empresa, apertura de expediente, ingesta y nueva regla, y el modal
+del documento completo (dictamen, verificación de contenido y chat). Sirve para demostrar que una refactorización del sistema de
 diseño no altera la interfaz, o para acotar exactamente dónde la altera.
 
 Requisitos: los tres microservicios y el frontend (`npm run dev`) en marcha,
@@ -75,6 +78,50 @@ def _ir_a(pagina: Page, vista: str) -> None:
     pagina.wait_for_timeout(600)
 
 
+def _esperar(pagina: Page, ms: int = 600) -> None:
+    pagina.wait_for_load_state("networkidle")
+    pagina.wait_for_timeout(ms)
+
+
+def _capturar_modal(pagina: Page, ruta: Path) -> None:
+    """
+    Captura el modal completo, también lo que queda bajo el pliegue.
+
+    El velo es `position: fixed` y es él quien hace scroll, así que fuera del
+    viewport no pinta nada: se desplaza el velo por tramos y se guarda una
+    captura por tramo (`_1`, `_2`…), recortada a la columna del panel. El
+    panel está en coordenadas fraccionales (6vh de margen) y el redondeo
+    mezclaría en sus bordes lo que hay detrás del velo, que varía entre
+    corridas; por eso el recorte deja fuera 1 px por lado.
+    """
+    caja = pagina.evaluate(
+        """() => {
+          const v = document.querySelector('.modal-overlay'), m = document.querySelector('.modal').getBoundingClientRect()
+          return { x: m.x, ancho: m.width, total: v.scrollHeight, visible: v.clientHeight }
+        }"""
+    )
+    x = int(caja["x"]) + 2
+    ancho = int(caja["ancho"]) - 4
+    alto = caja["visible"]
+    maximo = max(caja["total"] - alto, 0)
+    posiciones = list(dict.fromkeys([*range(0, maximo, alto), maximo]))
+    for n, arriba in enumerate(posiciones, start=1):
+        pagina.evaluate(f"document.querySelector('.modal-overlay').scrollTop = {arriba}")
+        pagina.wait_for_timeout(150)
+        destino = ruta if len(posiciones) == 1 else ruta.with_name(f"{ruta.stem}_{n}{ruta.suffix}")
+        # Captura del viewport completo y recorte después: con `clip`, Chrome
+        # rasteriza la región por otra ruta y el antialiasing de algunos
+        # glifos variaba hasta 25 niveles entre corridas.
+        pagina.screenshot(path=str(destino), animations="disabled")
+        Image.open(destino).crop((x, 0, x + ancho, alto)).save(destino)
+    pagina.evaluate("document.querySelector('.modal-overlay').scrollTop = 0")
+
+
+def _cerrar_modal(pagina: Page) -> None:
+    pagina.keyboard.press("Escape")
+    pagina.wait_for_timeout(300)
+
+
 def capturar(destino: str) -> None:
     carpeta = SALIDA / destino
     carpeta.mkdir(parents=True, exist_ok=True)
@@ -89,19 +136,49 @@ def capturar(destino: str) -> None:
                     _ir_a(pagina, vista)
                     _capturar(pagina, carpeta / f"{prefijo}_{vista}.png")
 
+                # Empresas: vista de tabla densa y modal de alta con la validación del RFC a la vista.
+                _ir_a(pagina, "Empresas")
+                pagina.locator("[data-tooltip='Tabla densa']").click()
+                _esperar(pagina, 300)
+                _capturar(pagina, carpeta / f"{prefijo}_Empresas_tabla.png")
+                pagina.locator("[data-tooltip='Tarjetas de perfil']").click()
+                pagina.locator("button", has_text="Alta de empresa").first.click()
+                pagina.locator(".modal input").first.fill("PLU20")
+                pagina.wait_for_timeout(300)
+                _capturar_modal(pagina, carpeta / f"{prefijo}_modal_alta_empresa.png")
+                _cerrar_modal(pagina)
+
                 # Detalle del expediente: la vista con más densidad de la pestaña.
                 _ir_a(pagina, "Expedientes")
                 pagina.locator("[aria-expanded]").first.click()
-                pagina.wait_for_load_state("networkidle")
-                pagina.wait_for_timeout(1200)
+                _esperar(pagina, 1200)
                 _capturar(pagina, carpeta / f"{prefijo}_expediente_detalle.png")
+                pagina.locator("button", has_text="Aperturar expediente").first.click()
+                pagina.wait_for_timeout(300)
+                _capturar_modal(pagina, carpeta / f"{prefijo}_modal_apertura.png")
+                _cerrar_modal(pagina)
 
-                # Modal del documento (metadatos, dictamen y visor) desde la Bóveda.
+                # Modal de ingesta y modal del documento (metadatos, dictamen, verificación y chat).
                 _ir_a(pagina, "Bóveda")
+                pagina.locator("button", has_text="Custodiar documento").first.click()
+                pagina.wait_for_timeout(300)
+                _capturar_modal(pagina, carpeta / f"{prefijo}_modal_ingesta.png")
+                _cerrar_modal(pagina)
                 pagina.locator("table tbody tr").first.locator("button").last.click()
-                pagina.wait_for_load_state("networkidle")
-                pagina.wait_for_timeout(2000)
+                _esperar(pagina, 2000)
                 _capturar(pagina, carpeta / f"{prefijo}_modal_documento.png", completa=False)
+                _capturar_modal(pagina, carpeta / f"{prefijo}_modal_documento_completo.png")
+                pagina.locator(".modal .segmented-item", has_text="Chat").click()
+                _esperar(pagina, 800)
+                _capturar_modal(pagina, carpeta / f"{prefijo}_modal_documento_chat.png")
+                _cerrar_modal(pagina)
+
+                # Formulario de una regla nueva del catálogo (DOC-05).
+                _ir_a(pagina, "Reglas")
+                pagina.locator("button", has_text="Nueva regla").first.click()
+                pagina.wait_for_timeout(300)
+                _capturar_modal(pagina, carpeta / f"{prefijo}_modal_regla.png")
+                _cerrar_modal(pagina)
                 pagina.close()
         navegador.close()
     print(f"{len(list(carpeta.glob('*.png')))} capturas en {carpeta}")

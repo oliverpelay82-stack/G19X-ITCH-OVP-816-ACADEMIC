@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { History, Loader2, ShieldAlert, UserCheck } from 'lucide-react'
 import { Skeleton } from './Skeleton.jsx'
-import { Segmented } from './ui.jsx'
+import { Segmented } from './ui/index.js'
 import useToast from '../hooks/useToast.js'
 import { getDictamenes, ratificarDictamen } from '../services/api.js'
 import { formatFecha, formatRelativo, hashCorto } from '../utils/format.js'

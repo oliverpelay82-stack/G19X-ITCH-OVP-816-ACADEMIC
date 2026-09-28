@@ -4,7 +4,7 @@ import ExportarReporte from './ExportarReporte.jsx'
 import TableroOperativo from './TableroOperativo.jsx'
 import { SkeletonRows } from './Skeleton.jsx'
 import useDebounce from '../hooks/useDebounce.js'
-import { EmptyRow, SearchBox } from './ui.jsx'
+import { EmptyRow, SearchBox } from './ui/index.js'
 import {
   ALERTA_META,
   getEstadoBadge,

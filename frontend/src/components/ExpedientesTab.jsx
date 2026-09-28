@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Check, ChevronDown, FolderKanban, Loader2, Maximize2, Minus, Plus, SearchX, Sparkles, X } from 'lucide-react'
-import Modal from './Modal.jsx'
+import { EmptyState, Modal, SearchBox, Segmented } from './ui/index.js'
 import { SkeletonCards } from './Skeleton.jsx'
 import useToast from '../hooks/useToast.js'
 import DropZone from './DropZone.jsx'
@@ -9,7 +9,6 @@ import { ListaAlertasAgrupadas } from './Alertas.jsx'
 import DetalleDocumentoModal from './DetalleDocumentoModal.jsx'
 import HistorialExpediente from './HistorialExpediente.jsx'
 import useDebounce from '../hooks/useDebounce.js'
-import { EmptyState, Segmented, SearchBox } from './ui.jsx'
 import { analizarDocumento, createExpediente, getExpedienteById, uploadDocumento } from '../services/api.js'
 import {
   ESTADO_DOCUMENTO,

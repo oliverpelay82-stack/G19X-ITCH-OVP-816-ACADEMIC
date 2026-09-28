@@ -3,7 +3,7 @@ import { ArrowUp, Check, FileText, Loader2, MessageSquareText, Minus, Sparkles, 
 import { Skeleton } from './Skeleton.jsx'
 import DictamenesGuardados, { AvisoIntegridad } from './DictamenesGuardados.jsx'
 import { useEvidencia } from './evidencia-context.js'
-import { EmptyState, Segmented } from './ui.jsx'
+import { EmptyState, Segmented } from './ui/index.js'
 import useToast from '../hooks/useToast.js'
 import { analizarDocumento, getVisorDocumento, prepararDocumento, preguntarSobreDocumento } from '../services/api.js'
 import { TIPO_DOCUMENTO_LABEL } from '../constants.js'

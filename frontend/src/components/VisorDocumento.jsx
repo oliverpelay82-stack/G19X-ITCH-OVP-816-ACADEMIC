@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { ChevronLeft, ChevronRight, Loader2, ScanText, X } from 'lucide-react'
-import { Segmented } from './ui.jsx'
+import { Segmented } from './ui/index.js'
 import { getVisorDocumento, urlPaginaDocumento } from '../services/api.js'
 
 const ZOOMS = [

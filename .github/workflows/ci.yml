@@ -5,7 +5,8 @@
 #              rules-service (BD de pruebas plurione_compliance_test) y del
 #              ai-service (offline: Groq, core y rules se simulan; la suite de
 #              los Niveles 3 y 4 se omite porque requiere el servicio en vivo).
-#   frontend — lint (oxlint) y build de producción de la interfaz React 19.
+#   frontend — lint (oxlint), equivalencia de marcado del sistema de diseño
+#              (npm run test:ui) y build de producción de la interfaz React 19.
 name: CI
 
 on:
@@ -83,4 +84,6 @@ jobs:
 
       - run: npm ci
       - run: npm run lint
+      - name: Equivalencia de marcado del sistema de diseño (src/components/ui/)
+        run: npm run test:ui
       - run: npm run build

@@ -1,10 +1,9 @@
 import { Fragment, useMemo, useState } from 'react'
 import { Loader2, Plus, Scale, SearchX, ServerOff } from 'lucide-react'
-import Modal from './Modal.jsx'
+import { EmptyRow, EmptyState, Modal, SearchBox, Segmented } from './ui/index.js'
 import { SkeletonRows } from './Skeleton.jsx'
 import useToast from '../hooks/useToast.js'
 import useDebounce from '../hooks/useDebounce.js'
-import { EmptyRow, EmptyState, Segmented, SearchBox } from './ui.jsx'
 import { createRegla, toggleRegla } from '../services/api.js'
 import {
   FAMILIA_META,
