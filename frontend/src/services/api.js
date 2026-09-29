@@ -91,8 +91,6 @@ export const createExpediente = (data) => request(CORE_BASE_URL, '/expedientes',
 
 /* ── M1: Documentos / Bóveda (Core Service :8001) ───────────────── */
 export const getDocumentos = () => request(CORE_BASE_URL, '/documentos', { tiempoLimite: LIMITE_SONDEO_MS })
-export const getDocumentosPorExpediente = (expedienteId) =>
-  request(CORE_BASE_URL, `/documentos/expediente/${expedienteId}`)
 export const uploadDocumento = (formData) =>
   request(CORE_BASE_URL, '/documentos/upload', { method: 'POST', body: formData, isFormData: true })
 
@@ -105,9 +103,6 @@ export const ratificarDictamen = (dictamenId, data) =>
   request(CORE_BASE_URL, `/dictamenes/${dictamenId}/ratificar`, { method: 'POST', body: data })
 
 export const getBitacora = (params) => request(CORE_BASE_URL, '/bitacora', { params })
-
-/* ── M5: Alertas y recomendaciones (Core Service :8001) ─────────── */
-export const getAlertas = (params) => request(CORE_BASE_URL, '/alertas', { params })
 
 /* ── M6: Reportes exportables (Core Service :8001) ──────────────── */
 /**
@@ -151,9 +146,6 @@ export { ApiError }
 
 
 /* ── Nivel 3 y 4: Análisis con IA (AI Service :8003) ────────────── */
-export const extraerTextoDocumento = (formData) =>
-  request(AI_BASE_URL, '/ai/extraer-texto', { method: 'POST', body: formData, isFormData: true })
-
 /** Resuelve el texto del documento (Nivel 3) sin llamar al modelo: primera etapa de la auditoría. */
 export const prepararDocumento = (documentoId) =>
   request(AI_BASE_URL, `/ai/documentos/${documentoId}/preparar`, { method: 'POST' })

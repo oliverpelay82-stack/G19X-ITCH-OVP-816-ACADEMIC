@@ -91,7 +91,7 @@ motor de validacion/
 ├── scripts/             # Utilidades de BD: setup_postgres.py, crear_tablas.py, seed_reglas_validacion.py
 │                        # (orquestan subprocesos por servicio; ver comentarios en cada script)
 │                        # y regresión visual: regresion_visual.py + regresion_visual_escenarios.py
-├── tests/               # Pruebas: test_conexion.py, test_pipeline_nivel1.py, test_dictamenes_semaforo.py, test_tipos_anexos_alertas.py (core, BD de pruebas vía bd_pruebas.py), test_rules_service.py
+├── tests/               # Pruebas: test_conexion.py, test_pipeline_nivel1.py, test_dictamenes_semaforo.py, test_tipos_anexos_alertas.py, test_ingesta_robustez.py, test_errores_core.py (core, BD de pruebas vía bd_pruebas.py), test_rules_service.py, test_errores_rules.py
 ├── storage_vault/       # Bóveda física de binarios (desacoplada de los servicios)
 ├── docs/                # Fuente oficial de la verdad (DOC-01 a DOC-08)
 └── CLAUDE.md
@@ -125,10 +125,13 @@ El motor opera en un pipeline estricto de 5 niveles:
 * **Correr suite de pruebas de integridad (core-service):** `python tests/test_pipeline_nivel1.py` — expediente temporal `EXP-TEST-TMP` sobre la BD de pruebas.
 * **Pruebas de dictámenes, semáforo, RIE-03 y ratificación (core-service):** `python tests/test_dictamenes_semaforo.py`.
 * **Pruebas de tipo de expediente, anexos RIE-02, vigencia recalculada, alertas, búsqueda, reportes, verificación de contenido y reevaluación programada (core-service):** `python tests/test_tipos_anexos_alertas.py`.
+* **Robustez de la ingesta (core-service):** `python tests/test_ingesta_robustez.py` — lectura acotada a 15 MB + 1 byte y `/health` responde mientras una carga espera al rules-service (el endpoint de carga es `def` a propósito: todo su trabajo es síncrono).
+* **Errores no controlados con JSON y CORS:** `tests/test_errores_core.py`, `tests/test_errores_rules.py` y `services/ai-service/tests/test_errores_no_controlados.py`. Cada `main.py` registra el middleware `errores_no_controlados` antes de CORS: sin él, un 500 salía sin cabeceras CORS y el frontend lo mostraba como servicio caído.
 * **CI:** `.github/workflows/ci.yml` (PostgreSQL 17 + `setup_postgres.py`, pytest de los tres servicios y, en el frontend, lint, `npm run test:ui` y build).
 * **Equivalencia de marcado del sistema de diseño:** `cd frontend && npm run test:ui`.
 * **Catálogo del sistema de diseño (solo desarrollo):** con `npm run dev`, abrir `http://127.0.0.1:5173/#/ui`.
 * **Regresión visual del frontend** (servicios y `npm run dev` en marcha; Playwright con Chrome): `python scripts/regresion_visual.py capturar base` antes del cambio, `capturar actual` después y `comparar` (0 capturas distintas = sin cambios visuales; reporta como RUIDO diferencias de menos de 5 px). Las capturas quedan en `frontend/.regresion-visual/`, fuera del repositorio.
+* **Pruebas de comportamiento del frontend** (mismos requisitos; interceptan la red, no escriben en la base): `python scripts/prueba_sondeo_colgado.py` (con un servicio que no responde, el sondeo de 15 s nunca deja más de una petición pendiente: las lecturas del sondeo caducan a los 10 s y un ciclo no arranca si el anterior sigue en curso) y `python scripts/prueba_carga_fallida.py` (una carga rechazada no deja promesas sin capturar y conserva el archivo, en la Bóveda y en el expediente).
 * **Aislamiento de las pruebas del core:** ambas suites llaman a `tests/bd_pruebas.py`, que recrea `plurione_compliance_test` en cada ejecución y apunta la bóveda a un directorio temporal. Nunca deben correr contra `plurione_compliance`: la bitácora y los dictámenes son inmutables y lo escrito ahí no puede borrarse.
 * **Pruebas del rules-service (solo lectura):** `python tests/test_rules_service.py` (incluye el motor de vigencia con fechas fijas y el endpoint `evaluar-vigencia`; requiere RCV-02 precargada con `python scripts/seed_reglas_validacion.py`)
 * **Pruebas de sellos en tinta de color (ai-service, usa Tesseract):** `cd services/ai-service && python tests/test_sellos.py`

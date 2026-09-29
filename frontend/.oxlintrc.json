@@ -3,6 +3,8 @@
   "plugins": ["react", "oxc"],
   "rules": {
     "react/rules-of-hooks": "error",
+    "react/exhaustive-deps": "error",
+    "eslint/no-unused-vars": "error",
     "react/only-export-components": ["warn", { "allowConstantExport": true }]
   }
 }

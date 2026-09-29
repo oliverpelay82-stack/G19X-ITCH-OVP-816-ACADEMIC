@@ -1051,7 +1051,7 @@ select option {
   transition: background-color var(--dur) var(--ease);
 }
 
-.data-table tbody tr:not(.group-row):not(.row-detail):not(.empty-row):not(.skeleton-row):hover {
+.data-table tbody tr:not(.group-row):not(.empty-row):not(.skeleton-row):hover {
   background: var(--bg-canvas);
 }
 
@@ -1218,12 +1218,6 @@ select option {
   float: right;
   font-size: var(--fs-micro);
   color: var(--text-muted);
-}
-
-.row-detail td {
-  padding: var(--s-4) var(--cell-x) var(--s-5);
-  background: var(--bg-canvas);
-  white-space: normal;
 }
 
 /* Chip de copiado (hash SHA-256, RFC) */
@@ -1910,10 +1904,6 @@ select option {
 
 .detail-grid--3 {
   grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.detail-grid--4 {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .detail-item {
@@ -3491,7 +3481,6 @@ select option {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .detail-grid--4,
   .registro-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }

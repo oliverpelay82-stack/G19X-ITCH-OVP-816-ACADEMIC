@@ -72,18 +72,6 @@ export function iniciales(nombre) {
   return (palabras[0][0] + palabras[1][0]).toUpperCase()
 }
 
-/**
- * Tono estable del avatar derivado del texto: la misma empresa conserva
- * siempre su color aunque cambie de posición en la lista.
- */
-export function tonoDesdeTexto(texto) {
-  let h = 0
-  for (let i = 0; i < (texto || '').length; i += 1) {
-    h = (h * 31 + texto.charCodeAt(i)) % 360
-  }
-  return h
-}
-
 /* ── RFC (SAT) ─────────────────────────────────────────────────────
    Persona moral: 3 letras + 6 dígitos de fecha + 3 de homoclave = 12.
    Persona física: 4 letras + 6 dígitos de fecha + 3 de homoclave = 13. */
