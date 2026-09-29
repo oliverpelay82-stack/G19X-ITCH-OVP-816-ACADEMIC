@@ -81,24 +81,32 @@ function InspectorDocumento({ doc, expediente, iaOnline, onRefresh, onVisor, onO
     <EvidenciaContext.Provider value={contexto}>
       <div className={`inspector ${visorAbierto ? 'inspector--visor' : ''}`}>
         <div className="inspector-principal">
-          {children}
+          {/* El dictamen primero: es lo que el analista viene a revisar. Los
+              datos técnicos del archivo quedan plegados al final. */}
           <div className="inspector-acciones">
             <Button
               compacto
               icono={visorAbierto ? PanelRightClose : PanelRightOpen}
               onClick={() => alternarVisor(!visorAbierto)}
               disabled={!iaOnline}
-              title={iaOnline ? undefined : 'El visor lo sirve el ai-service (:8003), que no responde'}
+              title={
+                iaOnline
+                  ? 'Un clic en una cita del dictamen o del chat la resalta en el documento'
+                  : 'El visor no está disponible: el servicio de análisis no responde'
+              }
             >
               {visorAbierto ? 'Ocultar documento' : 'Ver documento'}
             </Button>
-            <span className="field-hint">Un clic en una cita del dictamen o del chat la resalta en el documento.</span>
-          </div>
-          <div className="inspector-acciones">
-            <span className="field-hint">Ficha de custodia (huellas, versiones, dictámenes y sellos de la bitácora):</span>
-            <ExportarReporte ruta={`/reportes/documentos/${doc.id}/custodia`} compacto />
+            <span className="inspector-custodia">
+              <span className="field-hint">Ficha de custodia</span>
+              <ExportarReporte ruta={`/reportes/documentos/${doc.id}/custodia`} compacto />
+            </span>
           </div>
           <DocumentoIaPanel doc={doc} expediente={expediente} iaOnline={iaOnline} onCambio={onRefresh} onOcupado={onOcupado} />
+          <details className="inspector-datos">
+            <summary className="eyebrow">Datos del archivo: huella SHA-256, formato, tamaño e integridad</summary>
+            {children}
+          </details>
         </div>
         {visorAbierto && <VisorDocumento doc={doc} busqueda={busqueda} onCerrar={() => alternarVisor(false)} />}
       </div>

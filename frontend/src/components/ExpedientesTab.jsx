@@ -228,7 +228,36 @@ function MotivosSemaforo({ estado, motivos = [] }) {
   )
 }
 
-/** Detalle desplegado: motivos, documentos requeridos, alertas, historial, carga y exportación. */
+/**
+ * Carga de un documento en el expediente. Si faltan obligatorios es la tarea
+ * principal y la zona queda abierta; con todo completo se pliega tras un
+ * botón (cargar un archivo del mismo tipo sustituye al vigente).
+ */
+function CustodiarDocumento({ faltantes, subiendo, tipos, onArchivo }) {
+  const [abierta, setAbierta] = useState(false)
+  const visible = faltantes > 0 || abierta || subiendo
+  return (
+    <>
+      <p className="eyebrow">Custodiar documento</p>
+      <p className="field-hint">
+        {faltantes === 0
+          ? 'Obligatorios completos. Cargar otro archivo del mismo tipo sustituye al vigente.'
+          : faltantes === 1
+            ? 'Falta 1 documento obligatorio.'
+            : `Faltan ${faltantes} documentos obligatorios.`}
+      </p>
+      {visible ? (
+        <DropZone compacto subiendo={subiendo} tipos={tipos} onArchivo={onArchivo} />
+      ) : (
+        <Button variante="secondary" compacto icono={Plus} onClick={() => setAbierta(true)}>
+          Custodiar otro documento
+        </Button>
+      )}
+    </>
+  )
+}
+
+/** Detalle desplegado: índice, motivos, qué hacer, documentos requeridos, historial, carga y exportación. */
 function DetalleExpediente({ exp, subiendo, onSubir, iaOnline, onRefresh, documentos, onAbrirDocumento }) {
   const evaluacion = exp.evaluacion
   const filas = filasDetalle(evaluacion)
@@ -251,6 +280,18 @@ function DetalleExpediente({ exp, subiendo, onSubir, iaOnline, onRefresh, docume
         />
         <MotivosSemaforo estado={exp.estado_cumplimiento} motivos={evaluacion?.motivos} />
 
+        {/* Qué hacer, justo debajo de por qué: la recomendación a la vista y el
+            detalle plegado, para no repetir los motivos del semáforo. */}
+        {alertas.length > 0 && (
+          <section className="exp-alertas" aria-label="Qué hacer">
+            <p className="eyebrow">
+              Qué hacer <span className="tabular cell-muted">· {alertas.length} {alertas.length === 1 ? 'recomendación' : 'recomendaciones'}</span>
+            </p>
+            <ListaAlertasAgrupadas alertas={alertas} compacto />
+          </section>
+        )}
+
+        <p className="eyebrow">Documentos requeridos</p>
         <Card className="table-card table-card--flat">
           <table className="data-table data-table--inner">
             <colgroup>
@@ -334,15 +375,6 @@ function DetalleExpediente({ exp, subiendo, onSubir, iaOnline, onRefresh, docume
           </table>
         </Card>
 
-        {alertas.length > 0 && (
-          <section className="exp-alertas" aria-label="Alertas del expediente">
-            <p className="eyebrow">
-              Alertas y recomendaciones <span className="tabular cell-muted">· {alertas.length}</span>
-            </p>
-            <ListaAlertasAgrupadas alertas={alertas} />
-          </section>
-        )}
-
         {evaluacion?.advertencia && <p className="notice notice--warn">{evaluacion.advertencia}</p>}
         {evaluacion?.sustituidos > 0 && (
           <p className="field-hint">
@@ -356,15 +388,12 @@ function DetalleExpediente({ exp, subiendo, onSubir, iaOnline, onRefresh, docume
 
       <aside className="exp-detail-side">
         <AuditarPendientes exp={exp} iaOnline={iaOnline} onTerminado={onRefresh} />
-        <p className="eyebrow">Custodiar documento</p>
-        <p className="field-hint">
-          {faltantes.length === 0
-            ? 'Obligatorios completos. Cargar otro archivo del mismo tipo sustituye al vigente.'
-            : faltantes.length === 1
-              ? 'Falta 1 documento obligatorio.'
-              : `Faltan ${faltantes.length} documentos obligatorios.`}
-        </p>
-        <DropZone compacto subiendo={subiendo} tipos={tiposCarga} onArchivo={(archivo, tipo) => onSubir(exp.id, archivo, tipo)} />
+        <CustodiarDocumento
+          faltantes={faltantes.length}
+          subiendo={subiendo}
+          tipos={tiposCarga}
+          onArchivo={(archivo, tipo) => onSubir(exp.id, archivo, tipo)}
+        />
 
         <div className="exp-export">
           <p className="eyebrow">Dictamen de cumplimiento</p>
@@ -382,8 +411,11 @@ function DetalleExpediente({ exp, subiendo, onSubir, iaOnline, onRefresh, docume
  * rules-service para su tipo, con el estado y la vigencia de cada uno, las
  * alertas con su recomendación y la exportación del dictamen.
  *
- * `foco` es el expediente que debe abrirse al llegar desde Empresas o
- * Alertas; `apertura`, el titular para el que se pidió abrir un expediente.
+ * `foco` es el expediente desplegado, que decide la URL (#/expedientes/<folio>):
+ * al llegar desde Empresas, Alertas o un enlace se despliega y se desplaza
+ * hasta él. Desplegar o plegar avisa con `onAlternar`; sin ese manejador, la
+ * vista guarda el expediente abierto por su cuenta. `apertura` es el titular
+ * para el que se pidió abrir un expediente.
  */
 export default function ExpedientesTab({
   expedientes,
@@ -394,7 +426,7 @@ export default function ExpedientesTab({
   iaOnline = true,
   documentos = [],
   foco = null,
-  onFocoAtendido,
+  onAlternar,
   apertura = null,
   onAperturaAtendida,
 }) {
@@ -415,11 +447,15 @@ export default function ExpedientesTab({
   const [documentoAbierto, setDocumentoAbierto] = useState(null)
 
   const consulta = useDebounce(busqueda, 220)
-  // El expediente enfocado desde otra vista se abre hasta que el operador interactúa.
-  const abiertoId = foco ?? expandido
+  const abiertoId = onAlternar ? foco : expandido
+  // Lo que el operador desplegó con un clic ya está a la vista: solo se
+  // desplaza la página cuando el foco llega de fuera (otra vista o un enlace).
+  const ultimoClic = useRef(null)
 
   useEffect(() => {
-    if (foco && !loading) tarjetas.current.get(foco)?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+    if (foco && !loading && foco !== ultimoClic.current) {
+      tarjetas.current.get(foco)?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+    }
   }, [foco, loading])
 
   // Apertura pedida desde Empresas: el modal llega con el titular preseleccionado.
@@ -464,8 +500,10 @@ export default function ExpedientesTab({
   const hayFiltros = filtroTipo !== 'TODOS' || desde || hasta
 
   const alternar = (id) => {
-    setExpandido(abiertoId === id ? null : id)
-    onFocoAtendido?.()
+    const siguiente = abiertoId === id ? null : id
+    ultimoClic.current = siguiente
+    if (onAlternar) onAlternar(siguiente)
+    else setExpandido(siguiente)
   }
 
   const cerrarModal = () => {
@@ -489,8 +527,10 @@ export default function ExpedientesTab({
       cerrarModal()
       await onRefresh()
       if (creado?.id) {
-        setExpandido(creado.id)
-        onFocoAtendido?.()
+        // El expediente nuevo se despliega y se lleva a la vista.
+        ultimoClic.current = null
+        if (onAlternar) onAlternar(creado.id, creado.codigo_expediente)
+        else setExpandido(creado.id)
       }
     } catch (err) {
       setError(err.message)

@@ -1161,6 +1161,12 @@ select option {
   color: var(--text-secondary);
 }
 
+/* Bóveda: folios, tamaños y fechas en una línea (a 1366 px se partían). */
+.data-table--boveda .cell-mono,
+.data-table--boveda .cell-num {
+  white-space: nowrap;
+}
+
 .cell-action-text {
   font-size: var(--fs-small);
 }
@@ -3442,6 +3448,18 @@ select option {
   color: var(--text-secondary);
 }
 
+/* Alerta compacta (detalle del expediente): el detalle se pliega. */
+.alerta-mas summary {
+  width: fit-content;
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.alerta-mas[open] summary {
+  margin-bottom: var(--s-1);
+}
+
 .alerta-recomendacion {
   display: flex;
   align-items: flex-start;
@@ -3901,7 +3919,23 @@ select option {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: space-between;
   gap: var(--s-2) var(--s-3);
+}
+
+.inspector-custodia {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+
+/* Datos técnicos del archivo, plegados después del dictamen. */
+.inspector-datos summary {
+  cursor: pointer;
+}
+
+.inspector-datos[open] summary {
+  margin-bottom: var(--s-3);
 }
 
 /* Sellos detectados por el Nivel 3: información, no estado (recuadro neutro) */

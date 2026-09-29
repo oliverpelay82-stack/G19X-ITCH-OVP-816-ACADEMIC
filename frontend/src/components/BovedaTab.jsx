@@ -9,10 +9,32 @@ import useToast from '../hooks/useToast.js'
 import useDebounce from '../hooks/useDebounce.js'
 import { uploadDocumento } from '../services/api.js'
 import { avisarCarga } from '../utils/nivel1.js'
-import { TIPO_DOCUMENTO_LABEL, TIPO_EXPEDIENTE_LABEL, TIPOS_DOCUMENTO, tiposParaCarga } from '../constants.js'
+import { ESTADO_DOCUMENTO, TIPO_DOCUMENTO_LABEL, TIPO_EXPEDIENTE_LABEL, TIPOS_DOCUMENTO, tiposParaCarga } from '../constants.js'
 import { formatBytes, formatFecha, formatFechaCorta, hashCorto } from '../utils/format.js'
 
 const COLUMNAS = 7
+
+/**
+ * Estado del documento en la Bóveda: el de su dictamen si es la versión
+ * vigente de su tipo en el expediente, o «Sustituido» si hay una posterior
+ * (se conserva con sus dictámenes, RF-04). Sin evaluación del expediente, «—».
+ */
+function EstadoEnBoveda({ estado, evaluado }) {
+  if (estado) {
+    const meta = ESTADO_DOCUMENTO[estado] || ESTADO_DOCUMENTO.SIN_DICTAMEN
+    return (
+      <Badge tono={meta.tono} punto>
+        {meta.label}
+      </Badge>
+    )
+  }
+  if (!evaluado) return <span className="cell-muted">—</span>
+  return (
+    <Tag title="Una versión más reciente del mismo tipo es la vigente; esta se conserva con sus dictámenes">
+      Sustituido
+    </Tag>
+  )
+}
 
 /**
  * Consola de custodia (Nivel 1): documentos con su huella SHA-256, filtro
@@ -31,6 +53,14 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
   const consulta = useDebounce(busqueda, 220)
 
   const mapaExpedientes = useMemo(() => Object.fromEntries(expedientes.map((e) => [e.id, e])), [expedientes])
+
+  // Estado de cada documento vigente según la evaluación de su expediente; un
+  // documento que no figura ahí fue sustituido por una versión posterior de su tipo.
+  const estadoVigente = useMemo(
+    () =>
+      new Map(expedientes.flatMap((e) => (e.evaluacion?.documentos || []).map((d) => [d.documento_id, d.estado]))),
+    [expedientes]
+  )
 
   /** Solo se ofrecen como filtro los tipos que realmente hay en la bóveda. */
   const opcionesTipo = useMemo(() => {
@@ -103,14 +133,14 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
 
       <Card className="table-card">
         <div className="table-scroll">
-          <table className="data-table">
+          <table className="data-table data-table--boveda">
             <colgroup>
-              <col style={{ width: '30%' }} />
-              <col style={{ width: '11%' }} />
-              <col style={{ width: '17%' }} />
-              <col style={{ width: '19%' }} />
-              <col style={{ width: '9%' }} />
+              <col style={{ width: '27%' }} />
               <col style={{ width: '10%' }} />
+              <col style={{ width: '17%' }} />
+              <col style={{ width: '13%' }} />
+              <col style={{ width: '18%' }} />
+              <col style={{ width: '11%' }} />
               <col style={{ width: 52 }} />
             </colgroup>
             <thead>
@@ -118,8 +148,8 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
                 <th>Documento</th>
                 <th>Tipo</th>
                 <th>Expediente</th>
+                <th>Estado</th>
                 <th>SHA-256</th>
-                <th className="col-right">Tamaño</th>
                 <th className="col-right">Ingesta</th>
                 <th aria-label="Acciones" />
               </tr>
@@ -157,7 +187,7 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
                             )}
                           </span>
                           <span className="cell-sub">
-                            {firma.label} · {exp?.titular?.razon_social || 'Sin titular'}
+                            {firma.label} · {formatBytes(doc.tamanio_bytes)} · {exp?.titular?.razon_social || 'Sin titular'}
                           </span>
                         </div>
                       </td>
@@ -168,9 +198,11 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
                       </td>
                       <td className="mono cell-mono">{exp ? exp.codigo_expediente : <span className="cell-muted">—</span>}</td>
                       <td>
+                        <EstadoEnBoveda estado={estadoVigente.get(doc.id)} evaluado={Boolean(exp?.evaluacion)} />
+                      </td>
+                      <td>
                         <CopyChip valor={doc.hash_sha256} visible={hashCorto(doc.hash_sha256, 8, 6)} etiqueta="hash SHA-256" />
                       </td>
-                      <td className="col-right mono cell-num">{formatBytes(doc.tamanio_bytes)}</td>
                       <td className="col-right mono cell-num" title={formatFecha(doc.creado_en)}>
                         {formatFechaCorta(doc.creado_en)}
                       </td>
@@ -182,7 +214,7 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
                             e.stopPropagation()
                             setDetalle(doc)
                           }}
-                          title="Inspeccionar"
+                          title="Abrir auditoría y visor"
                         >
                           <ScanSearch size={14} />
                         </IconButton>

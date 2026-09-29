@@ -10,6 +10,7 @@ import AlertasTab from './components/AlertasTab.jsx'
 import ReportesTab from './components/ReportesTab.jsx'
 import useToast from './hooks/useToast.js'
 import useTheme from './hooks/useTheme.js'
+import useRuta from './hooks/useRuta.js'
 import {
   getDocumentos,
   getExpedientes,
@@ -35,7 +36,14 @@ const SECCIONES = {
 }
 
 /** Sección a la que lleva el clic en el grupo de las migas. */
-const INICIO_GRUPO = { Cumplimiento: 'titulares', Auditoría: 'alertas', Configuración: 'reglas' }
+const INICIO_GRUPO = { Cumplimiento: 'expedientes', Auditoría: 'alertas', Configuración: 'reglas' }
+
+/**
+ * Las tarjetas de métricas solo acompañan a las vistas de seguimiento. En
+ * Empresas, Bóveda, Alertas y Reglas ocupaban la primera sexta parte de la
+ * pantalla a 1366 × 768 sin aportar a la tarea (revisión del frontend, Lote 3).
+ */
+const CON_METRICAS = new Set(['expedientes', 'reportes'])
 
 const INTERVALO_REFRESCO = 15000
 
@@ -64,7 +72,10 @@ export default function App() {
   const toast = useToast()
   const { isDark, toggleTheme } = useTheme()
 
-  const [tabActiva, setTabActiva] = useState('titulares')
+  // La URL es la fuente de verdad de la sección y del expediente desplegado.
+  const [ruta, ir] = useRuta()
+  const tabActiva = ruta.seccion
+  const setTabActiva = useCallback((seccion) => ir(seccion), [ir])
   const [health, setHealth] = useState(HEALTH_INICIAL)
   const [loading, setLoading] = useState(true)
   const [refrescando, setRefrescando] = useState(false)
@@ -73,8 +84,6 @@ export default function App() {
   const [expedientes, setExpedientes] = useState([])
   const [documentos, setDocumentos] = useState([])
   const [reglas, setReglas] = useState([])
-  // Expediente que la vista de Expedientes debe desplegar al abrirse desde Empresas o Alertas.
-  const [focoExpediente, setFocoExpediente] = useState(null)
   // Titular para el que se pidió aperturar un expediente desde Empresas.
   const [aperturaTitular, setAperturaTitular] = useState(null)
 
@@ -179,15 +188,37 @@ export default function App() {
     { id: tabActiva, label: seccion.miga },
   ]
 
-  const abrirExpediente = useCallback((expedienteId) => {
-    setFocoExpediente(expedienteId)
-    setTabActiva('expedientes')
-  }, [])
+  // Expediente desplegado según la URL (#/expedientes/<folio>), una vez cargada la lista.
+  const focoExpediente = useMemo(
+    () => (ruta.folio ? expedientes.find((e) => e.codigo_expediente === ruta.folio)?.id ?? null : null),
+    [ruta.folio, expedientes]
+  )
+  const folioDe = useCallback(
+    (expedienteId) => expedientes.find((e) => e.id === expedienteId)?.codigo_expediente ?? null,
+    [expedientes]
+  )
 
-  const aperturarExpediente = useCallback((titularId) => {
-    setAperturaTitular(titularId)
-    setTabActiva('expedientes')
-  }, [])
+  // Desde Empresas o Alertas: una entrada nueva del historial («Atrás» regresa).
+  const abrirExpediente = useCallback((expedienteId) => ir('expedientes', folioDe(expedienteId)), [ir, folioDe])
+  // Desplegar o plegar en la lista: sustituye la entrada, no la acumula. Un
+  // expediente recién aperturado llega con su folio (aún no está en la lista).
+  const alternarExpediente = useCallback(
+    (expedienteId, folio = null) =>
+      ir('expedientes', expedienteId ? folio || folioDe(expedienteId) : null, { reemplazar: true }),
+    [ir, folioDe]
+  )
+
+  const aperturarExpediente = useCallback(
+    (titularId) => {
+      setAperturaTitular(titularId)
+      ir('expedientes')
+    },
+    [ir]
+  )
+
+  useEffect(() => {
+    document.title = `${seccion.titulo} · PluriOne`
+  }, [seccion.titulo])
 
   return (
     <div className="app-shell">
@@ -207,13 +238,9 @@ export default function App() {
         />
 
         <main className="app-content">
-          <MetricsCards
-            titulares={titulares}
-            expedientes={expedientes}
-            documentos={documentos}
-            loading={loading}
-          />
-
+          {CON_METRICAS.has(tabActiva) && (
+            <MetricsCards titulares={titulares} expedientes={expedientes} documentos={documentos} loading={loading} />
+          )}
 
           <div className="tab-region" key={tabActiva}>
             {tabActiva === 'titulares' && (
@@ -237,7 +264,7 @@ export default function App() {
                 iaOnline={health.ai.online}
                 documentos={documentos}
                 foco={focoExpediente}
-                onFocoAtendido={() => setFocoExpediente(null)}
+                onAlternar={alternarExpediente}
                 apertura={aperturaTitular}
                 onAperturaAtendida={() => setAperturaTitular(null)}
               />
