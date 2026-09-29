@@ -224,27 +224,44 @@
   }
 }
 
-.inspector-acciones {
+/* Encabezado de veredicto del modal: estado del documento a la izquierda
+   y acciones principales (ratificar, ver documento) a la derecha. */
+.doc-veredicto {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: var(--s-2) var(--s-3);
+  gap: var(--s-4);
+  padding: var(--s-4) var(--s-5);
+  border: var(--border-default);
+  border-radius: var(--r-md);
+  background: var(--bg-subtle);
 }
 
-.inspector-custodia {
-  display: inline-flex;
-  align-items: center;
+.doc-veredicto-estado {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--s-2);
+  min-width: 0;
+}
+
+.doc-veredicto-nota {
+  font-size: var(--fs-small);
+  color: var(--text-secondary);
+}
+
+.doc-veredicto-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   gap: var(--s-2);
 }
 
-/* Datos técnicos del archivo, plegados después del dictamen. */
-.inspector-datos summary {
-  cursor: pointer;
-}
-
-.inspector-datos[open] summary {
-  margin-bottom: var(--s-3);
+.inspector-custodia {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
 }
 
 /* Sellos detectados por el Nivel 3: información, no estado (recuadro neutro) */

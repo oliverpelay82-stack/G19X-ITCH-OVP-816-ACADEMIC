@@ -246,7 +246,12 @@ function DictamenVigente({ dictamen, puedeRatificar, onRatificar }) {
  * la ratificación humana cuando está EN_REVISION y el historial completo.
  * `recarga` es un contador: el padre lo incrementa tras cada auditoría.
  */
-export default function DictamenesGuardados({ doc, recarga = 0, onCambio }) {
+/**
+ * Dictamen vigente del documento, su ratificación y el historial.
+ * `solicitudRatificar` es un contador: cada incremento (el botón «Ratificar
+ * dictamen» del encabezado del modal) abre el formulario si el dictamen lo admite.
+ */
+export default function DictamenesGuardados({ doc, recarga = 0, onCambio, solicitudRatificar = 0 }) {
   const [dictamenes, setDictamenes] = useState(null)
   const [error, setError] = useState('')
   const [ratificando, setRatificando] = useState(false)
@@ -270,6 +275,17 @@ export default function DictamenesGuardados({ doc, recarga = 0, onCambio }) {
       vigente = false
     }
   }, [doc.id, recarga, recargaLocal])
+
+  // Solicitud del encabezado del modal: se atiende al renderizar, en cuanto
+  // los dictámenes están cargados (mismo patrón que la apertura en Expedientes).
+  const [solicitudAtendida, setSolicitudAtendida] = useState(solicitudRatificar)
+  if (dictamenes?.length && solicitudRatificar !== solicitudAtendida) {
+    setSolicitudAtendida(solicitudRatificar)
+    const [primero] = dictamenes
+    if (primero.estatus === 'EN_REVISION' && !primero.revisado_por_humano && primero.origen !== 'RIE-03') {
+      setRatificando(true)
+    }
+  }
 
   if (dictamenes === null) {
     return (

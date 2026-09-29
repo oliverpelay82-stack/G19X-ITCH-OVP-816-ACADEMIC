@@ -63,6 +63,7 @@
   --header-h: 60px;
   --cell-y: 10px;
   --cell-x: 14px;
+  --contenido-max: 1480px; /* ancho máximo del contenido; la cabecera se alinea con él */
   --squircle: 28px;
   --squircle-lg: 32px;
   /* Altura de los controles: la misma para botones, campos y filtros que

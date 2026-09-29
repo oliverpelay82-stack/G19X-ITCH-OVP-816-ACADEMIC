@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { ChevronDown, ChevronUp, PanelRightClose, PanelRightOpen } from 'lucide-react'
+import { ChevronDown, ChevronUp, PanelRightClose, PanelRightOpen, UserCheck } from 'lucide-react'
 import { Badge, Button, CopyChip, IconButton, KeyValue, KeyValueList, Modal } from './ui/index.js'
 import DocumentoIaPanel from './DocumentoIaPanel.jsx'
 import ExportarReporte from './ExportarReporte.jsx'
 import VisorDocumento from './VisorDocumento.jsx'
 import { EvidenciaContext } from './evidencia-context.js'
 import { localizarCita } from '../services/api.js'
-import { TIPO_DOCUMENTO_LABEL } from '../constants.js'
+import { ESTADO_DOCUMENTO, TIPO_DOCUMENTO_LABEL } from '../constants.js'
 import { firmaDeMime, tipoCorto } from '../utils/documentos.js'
-import { formatBytes, formatFecha } from '../utils/format.js'
+import { formatBytes, formatDia, formatFecha } from '../utils/format.js'
 
 function Dato({ label, children, ancho = false }) {
   return (
@@ -19,7 +19,43 @@ function Dato({ label, children, ancho = false }) {
 }
 
 /**
- * Metadatos, auditoría con IA y, a la derecha, el visor del documento
+ * Estado del documento para el encabezado del modal, a partir de la evaluación
+ * de su expediente: el del dictamen si es la versión vigente de su tipo,
+ * «Sustituido» si hay una posterior y «Alterado» si su huella ya no coincide.
+ */
+function estadoEnExpediente(doc, expediente) {
+  if (doc.estado_integridad === 'ALTERADO') {
+    return { tono: 'bad', label: 'Alterado', nota: 'La huella ya no coincide con la de la carga: el documento está bloqueado.' }
+  }
+  const evaluacion = expediente?.evaluacion
+  const estado = evaluacion?.documentos?.find((d) => d.documento_id === doc.id)
+  if (!estado) {
+    return evaluacion
+      ? { tono: 'neutral', label: 'Sustituido', nota: 'Una versión más reciente del mismo tipo es la vigente.' }
+      : null
+  }
+  const meta = ESTADO_DOCUMENTO[estado.estado] || ESTADO_DOCUMENTO.SIN_DICTAMEN
+  const fecha = estado.fecha_caducidad ? formatDia(estado.fecha_caducidad) : null
+  const vigencia =
+    estado.vigencia === 'VENCIDO'
+      ? `Vencido desde el ${fecha}`
+      : estado.vigencia === 'PROXIMO_A_VENCER'
+        ? `Vence el ${fecha}`
+        : estado.vigencia === 'VIGENTE'
+          ? `Vigente hasta el ${fecha}`
+          : estado.estado === 'SIN_DICTAMEN'
+            ? 'Aún no tiene dictamen'
+            : 'Sin fecha de vencimiento'
+  return {
+    tono: estado.vigencia === 'VENCIDO' ? 'bad' : meta.tono,
+    label: estado.vigencia === 'VENCIDO' ? 'Vencido' : meta.label,
+    nota: [vigencia, estado.revisado_por_humano && 'ratificado por un analista'].filter(Boolean).join(' · '),
+    ratificable: estado.estado === 'EN_REVISION' && !estado.revisado_por_humano,
+  }
+}
+
+/**
+ * Encabezado de veredicto, auditoría con IA por secciones y, a la derecha, el visor del documento
  * original. Un clic en una cita del dictamen o del chat abre el visor en la
  * página donde está y la resalta (HU-20). Se monta con `key={doc.id}` para
  * reiniciar el visor al cambiar de documento.
@@ -27,6 +63,14 @@ function Dato({ label, children, ancho = false }) {
 function InspectorDocumento({ doc, expediente, iaOnline, onRefresh, onVisor, onOcupado, visorInicial, children }) {
   // Al pasar al documento siguiente el visor sigue abierto si lo estaba.
   const [visorAbierto, setVisorAbierto] = useState(Boolean(visorInicial) && iaOnline)
+  // Sección del panel de IA y solicitudes de ratificación desde el encabezado.
+  const [vista, setVista] = useState('resultado')
+  const [solicitudRatificar, setSolicitudRatificar] = useState(0)
+  const estado = estadoEnExpediente(doc, expediente)
+  const ratificar = () => {
+    setVista('resultado')
+    setSolicitudRatificar((n) => n + 1)
+  }
   const [busqueda, setBusqueda] = useState(null)
   const alternarVisor = (abierto) => {
     setVisorAbierto(abierto)
@@ -81,32 +125,68 @@ function InspectorDocumento({ doc, expediente, iaOnline, onRefresh, onVisor, onO
     <EvidenciaContext.Provider value={contexto}>
       <div className={`inspector ${visorAbierto ? 'inspector--visor' : ''}`}>
         <div className="inspector-principal">
-          {/* El dictamen primero: es lo que el analista viene a revisar. Los
-              datos técnicos del archivo quedan plegados al final. */}
-          <div className="inspector-acciones">
-            <Button
-              compacto
-              icono={visorAbierto ? PanelRightClose : PanelRightOpen}
-              onClick={() => alternarVisor(!visorAbierto)}
-              disabled={!iaOnline}
-              title={
-                iaOnline
-                  ? 'Un clic en una cita del dictamen o del chat la resalta en el documento'
-                  : 'El visor no está disponible: el servicio de análisis no responde'
-              }
-            >
-              {visorAbierto ? 'Ocultar documento' : 'Ver documento'}
-            </Button>
-            <span className="inspector-custodia">
-              <span className="field-hint">Ficha de custodia</span>
-              <ExportarReporte ruta={`/reportes/documentos/${doc.id}/custodia`} compacto />
-            </span>
+          {/* Encabezado de veredicto: el estado del documento y las acciones
+              principales, antes que cualquier detalle. */}
+          <div className={`doc-veredicto doc-veredicto--${estado?.tono || 'neutral'}`}>
+            <div className="doc-veredicto-estado">
+              <p className="eyebrow">Estado del documento</p>
+              {estado ? (
+                <>
+                  <Badge tono={estado.tono} punto grande>
+                    {estado.label}
+                  </Badge>
+                  <p className="doc-veredicto-nota">{estado.nota}</p>
+                </>
+              ) : (
+                <p className="doc-veredicto-nota">Sin evaluación del expediente.</p>
+              )}
+            </div>
+            <div className="doc-veredicto-acciones">
+              {estado?.ratificable && (
+                <Button variante="primary" compacto icono={UserCheck} onClick={ratificar}>
+                  Ratificar dictamen
+                </Button>
+              )}
+              <Button
+                compacto
+                icono={visorAbierto ? PanelRightClose : PanelRightOpen}
+                onClick={() => alternarVisor(!visorAbierto)}
+                disabled={!iaOnline}
+                title={
+                  iaOnline
+                    ? 'Un clic en una cita del dictamen o del chat la resalta en el documento'
+                    : 'El visor no está disponible: el servicio de análisis no responde'
+                }
+              >
+                {visorAbierto ? 'Ocultar documento' : 'Ver documento'}
+              </Button>
+            </div>
           </div>
-          <DocumentoIaPanel doc={doc} expediente={expediente} iaOnline={iaOnline} onCambio={onRefresh} onOcupado={onOcupado} />
-          <details className="inspector-datos">
-            <summary className="eyebrow">Datos del archivo: huella SHA-256, formato, tamaño e integridad</summary>
-            {children}
-          </details>
+          <DocumentoIaPanel
+            doc={doc}
+            expediente={expediente}
+            iaOnline={iaOnline}
+            onCambio={onRefresh}
+            onOcupado={onOcupado}
+            vista={vista}
+            onVista={setVista}
+            solicitudRatificar={solicitudRatificar}
+            registroTecnico={
+              <>
+                <section className="ia-bloque" aria-label="Ficha de custodia">
+                  <p className="eyebrow">Ficha de custodia</p>
+                  <div className="inspector-custodia">
+                    <p className="field-hint">Huellas, versiones, dictámenes y sellos de la bitácora del documento.</p>
+                    <ExportarReporte ruta={`/reportes/documentos/${doc.id}/custodia`} compacto />
+                  </div>
+                </section>
+                <section className="ia-bloque" aria-label="Datos del archivo">
+                  <p className="eyebrow">Datos del archivo</p>
+                  {children}
+                </section>
+              </>
+            }
+          />
         </div>
         {visorAbierto && <VisorDocumento doc={doc} busqueda={busqueda} onCerrar={() => alternarVisor(false)} />}
       </div>

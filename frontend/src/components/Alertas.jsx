@@ -13,6 +13,31 @@ import { ALERTA_META, getSeveridadMeta, SEVERIDADES } from '../constants.js'
 export function AlertaItem({ alerta, expediente, onAbrirExpediente, compacto = false }) {
   const sev = getSeveridadMeta(alerta.severidad)
   const categoria = ALERTA_META[alerta.codigo]?.label || alerta.codigo
+  if (compacto) {
+    // La severidad ya la dice el grupo (ListaAlertasAgrupadas) y el filete de
+    // color: la tarjeta compacta deja título, categoría y recomendación.
+    return (
+      <li className={`alerta alerta--${sev.tono} alerta--compacta`}>
+        <div className="alerta-compacta-cabecera">
+          <p className="alerta-titulo">{alerta.titulo}</p>
+          <Tag>{categoria}</Tag>
+        </div>
+        <p className="alerta-recomendacion alerta-recomendacion--plana">
+          <Lightbulb size={13} aria-hidden="true" />
+          <span>
+            <span className="sr-only">Recomendación: </span>
+            {alerta.recomendacion}
+          </span>
+        </p>
+        {alerta.detalle && (
+          <details className="alerta-mas">
+            <summary>Ver detalle</summary>
+            <p className="alerta-detalle">{alerta.detalle}</p>
+          </details>
+        )}
+      </li>
+    )
+  }
   return (
     <li className={`alerta alerta--${sev.tono}`}>
       <div className="alerta-head">
@@ -30,16 +55,7 @@ export function AlertaItem({ alerta, expediente, onAbrirExpediente, compacto = f
         )}
       </div>
       <p className="alerta-titulo">{alerta.titulo}</p>
-      {compacto ? (
-        alerta.detalle && (
-          <details className="alerta-mas">
-            <summary>Ver detalle</summary>
-            <p className="alerta-detalle">{alerta.detalle}</p>
-          </details>
-        )
-      ) : (
-        <p className="alerta-detalle">{alerta.detalle}</p>
-      )}
+      <p className="alerta-detalle">{alerta.detalle}</p>
       <p className="alerta-recomendacion">
         <Lightbulb size={13} aria-hidden="true" />
         <span>

@@ -34,6 +34,8 @@ function porDocumento(reglas) {
  * los segmentos de la barra llevan su conteo y su etiqueta.
  */
 export default function IndiceCumplimiento({ indice, presentes, obligatorios }) {
+  // Resumen para la columna lateral del detalle; la tabla de reglas evaluadas
+  // vive en la columna principal (ReglasEvaluadas), donde cabe.
   if (!indice) return null
   const conteos = [
     ['CUMPLIDA', indice.cumplidas],
@@ -42,12 +44,7 @@ export default function IndiceCumplimiento({ indice, presentes, obligatorios }) 
   ]
   return (
     <section className="indice" aria-label="Índice de cumplimiento">
-      <div className="indice-cabecera">
-        <p className="eyebrow">Índice de cumplimiento</p>
-        <p className="field-hint tabular">
-          Documentos obligatorios: {presentes} de {obligatorios}
-        </p>
-      </div>
+      <p className="eyebrow">Índice de cumplimiento</p>
       <div className="indice-cifra">
         <span className="indice-valor tabular">{formatIndice(indice.porcentaje)}</span>
         <span className="field-hint">
@@ -79,6 +76,9 @@ export default function IndiceCumplimiento({ indice, presentes, obligatorios }) 
           </p>
         </>
       )}
+      <p className="indice-obligatorios field-hint tabular">
+        Documentos obligatorios presentes: {presentes} de {obligatorios}
+      </p>
       {indice.bloqueado && (
         <div className="notice notice--bad indice-bloqueo">
           <p className="indice-bloqueo-titulo">
@@ -92,9 +92,16 @@ export default function IndiceCumplimiento({ indice, presentes, obligatorios }) 
           </ul>
         </div>
       )}
-      {indice.reglas.length > 0 && (
-        <details className="indice-detalle">
-          <summary className="eyebrow">Ver las {indice.reglas.length} reglas evaluadas</summary>
+    </section>
+  )
+}
+
+/** Tabla de las reglas evaluadas por documento, plegada: la evidencia del índice. */
+export function ReglasEvaluadas({ indice }) {
+  if (!indice?.reglas?.length) return null
+  return (
+    <details className="indice-detalle">
+          <summary className="eyebrow">Reglas evaluadas para el índice · {indice.reglas.length}</summary>
           <p className="field-hint">
             Cada regla vale lo mismo. Lo pendiente cuenta hasta que se audita o se ratifica; al auditar un documento
             pendiente se suman sus reglas de contenido, así que el índice puede bajar.
@@ -134,8 +141,6 @@ export default function IndiceCumplimiento({ indice, presentes, obligatorios }) 
               </tbody>
             ))}
           </table>
-        </details>
-      )}
-    </section>
+    </details>
   )
 }

@@ -4,20 +4,38 @@ import { AuditoriaIa } from './documento-ia/Auditoria.jsx'
 import { ChatDocumento } from './documento-ia/Chat.jsx'
 
 const VISTAS = [
-  { id: 'auditoria', label: 'Auditoría' },
+  { id: 'resultado', label: 'Resultado' },
+  { id: 'evidencia', label: 'Evidencia' },
+  { id: 'registro', label: 'Registro técnico' },
   { id: 'chat', label: 'Chat' },
 ]
 
 /**
- * Panel de inteligencia documental dentro del detalle de un documento:
- * dictamen (Niveles 2 a 4) y conversación en lenguaje natural contra el
- * ai-service (:8003), que a su vez consulta Groq Cloud.
+ * Panel de inteligencia documental dentro del detalle de un documento, en
+ * secciones: resultado (auditar, veredicto, dictamen vigente y ratificación),
+ * evidencia (cotejo, contenido, vigencia, sellos y observaciones), registro
+ * técnico (lectura, modelo y los datos del archivo que pasa el modal en
+ * `registroTecnico`) y chat.
  *
+ * La sección puede controlarla el modal (`vista` y `onVista`: el encabezado
+ * lleva a Resultado al pedir la ratificación); si no, el panel la guarda.
  * El padre debe montarlo con `key={doc.id}` para que el dictamen y el hilo
  * se reinicien al cambiar de documento.
  */
-export default function DocumentoIaPanel({ doc, expediente, iaOnline = true, onCambio, onOcupado }) {
-  const [vista, setVista] = useState('auditoria')
+export default function DocumentoIaPanel({
+  doc,
+  expediente,
+  iaOnline = true,
+  onCambio,
+  onOcupado,
+  vista: vistaControlada,
+  onVista,
+  solicitudRatificar = 0,
+  registroTecnico = null,
+}) {
+  const [vistaPropia, setVistaPropia] = useState('resultado')
+  const vista = vistaControlada ?? vistaPropia
+  const setVista = onVista ?? setVistaPropia
 
   return (
     <section className="ai-panel" aria-label="Análisis con inteligencia artificial">
@@ -26,12 +44,22 @@ export default function DocumentoIaPanel({ doc, expediente, iaOnline = true, onC
           <h4 className="section-title">Inteligencia documental</h4>
           <p className="section-desc">Clasificación y verificación del contenido con IA</p>
         </div>
-        <Segmented role="tablist" label="Vista del panel de IA" valor={vista} onChange={setVista} opciones={VISTAS} />
+        <Segmented role="tablist" label="Sección del panel de IA" valor={vista} onChange={setVista} opciones={VISTAS} />
       </header>
 
-      {/* Ambas vistas permanecen montadas para no perder el dictamen ni el hilo al alternar. */}
-      <div hidden={vista !== 'auditoria'}>
-        <AuditoriaIa doc={doc} expediente={expediente} iaOnline={iaOnline} onCambio={onCambio} onOcupado={onOcupado} />
+      {/* Todas las secciones permanecen montadas para no perder el dictamen ni el hilo al alternar. */}
+      <div hidden={vista === 'chat'}>
+        <AuditoriaIa
+          doc={doc}
+          expediente={expediente}
+          iaOnline={iaOnline}
+          onCambio={onCambio}
+          onOcupado={onOcupado}
+          seccion={vista}
+          solicitudRatificar={solicitudRatificar}
+          onIrSeccion={setVista}
+          registroTecnico={registroTecnico}
+        />
       </div>
       <div hidden={vista !== 'chat'}>
         <ChatDocumento doc={doc} iaOnline={iaOnline} />

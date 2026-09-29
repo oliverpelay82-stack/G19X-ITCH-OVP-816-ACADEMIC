@@ -6,7 +6,7 @@ import DropZone from '../DropZone.jsx'
 import ExportarReporte from '../ExportarReporte.jsx'
 import { ListaAlertasAgrupadas } from '../Alertas.jsx'
 import HistorialExpediente from '../HistorialExpediente.jsx'
-import IndiceCumplimiento from '../IndiceCumplimiento.jsx'
+import IndiceCumplimiento, { ReglasEvaluadas } from '../IndiceCumplimiento.jsx'
 import {
   ESTADO_DOCUMENTO,
   getEstadoBadge,
@@ -64,21 +64,59 @@ const TITULO_MOTIVOS = {
   NO_CONFORME: 'Por qué no está conforme',
 }
 
+/**
+ * Un motivo del core («Acta de Asamblea (legado.pdf): dictamen no conforme.»)
+ * separado en documento, archivo y causa para leerlo como fila; los motivos
+ * generales («Faltan documentos obligatorios: …») quedan como texto.
+ */
+function partesMotivo(motivo) {
+  // El archivo es el último paréntesis: el nombre del documento puede llevar uno («… (SAT)»).
+  const m = /^(.+) \(([^()]+)\): (.+)$/.exec(motivo)
+  return m ? { documento: m[1], archivo: m[2], causa: m[3] } : { causa: motivo }
+}
+
+/** Tono del punto de cada motivo; el texto dice la causa (el color nunca va solo). */
+function tonoMotivo(causa) {
+  const texto = causa.toLowerCase()
+  if (/no conforme|cambió|vencido desde|protegido|faltan documentos obligatorios de severidad|no acreditada|requiere su anexo/.test(texto)) {
+    return 'bad'
+  }
+  if (/sin auditar|pendiente|vence el|faltan documentos/.test(texto)) return 'warn'
+  return 'ok'
+}
+
 function MotivosSemaforo({ estado, motivos = [] }) {
   if (!motivos.length) return null
   const meta = getEstadoBadge(estado)
   return (
-    <div className={`exp-motivos exp-motivos--${meta.tono}`}>
+    <section className="exp-motivos" aria-label={TITULO_MOTIVOS[estado] || 'Motivos del semáforo'}>
       <p className="exp-motivos-titulo">
         <span className={`status-dot status-dot--${meta.tono}`} aria-hidden="true" />
         {TITULO_MOTIVOS[estado] || 'Motivos del semáforo'}
+        <span className="tabular cell-muted"> · {motivos.length}</span>
       </p>
-      <ul>
-        {motivos.map((m) => (
-          <li key={m}>{m}</li>
-        ))}
+      <ul className="exp-motivos-lista">
+        {motivos.map((m) => {
+          const { documento, archivo, causa } = partesMotivo(m)
+          return (
+            <li key={m} className="exp-motivo">
+              <span className={`status-dot status-dot--${tonoMotivo(causa)}`} aria-hidden="true" />
+              {documento ? (
+                <span className="exp-motivo-doc">
+                  <span className="exp-motivo-nombre">{documento}</span>
+                  <span className="cell-sub exp-motivo-archivo" title={archivo}>
+                    {archivo}
+                  </span>
+                </span>
+              ) : null}
+              <span className={documento ? 'exp-motivo-causa' : 'exp-motivo-causa exp-motivo-causa--sola'}>
+                {causa.replace(/\.$/, '')}
+              </span>
+            </li>
+          )
+        })}
       </ul>
-    </div>
+    </section>
   )
 }
 
@@ -127,11 +165,6 @@ export function DetalleExpediente({ exp, subiendo, onSubir, iaOnline, onRefresh,
   return (
     <div className="exp-detail">
       <div className="exp-detail-main">
-        <IndiceCumplimiento
-          indice={evaluacion?.indice_cumplimiento}
-          presentes={(evaluacion?.obligatorios || []).filter((o) => o.presente).length}
-          obligatorios={(evaluacion?.obligatorios || []).length}
-        />
         <MotivosSemaforo estado={exp.estado_cumplimiento} motivos={evaluacion?.motivos} />
 
         {/* Qué hacer, justo debajo de por qué: la recomendación a la vista y el
@@ -229,6 +262,8 @@ export function DetalleExpediente({ exp, subiendo, onSubir, iaOnline, onRefresh,
           </table>
         </Card>
 
+        <ReglasEvaluadas indice={evaluacion?.indice_cumplimiento} />
+
         {evaluacion?.advertencia && <p className="notice notice--warn">{evaluacion.advertencia}</p>}
         {evaluacion?.sustituidos > 0 && (
           <p className="field-hint">
@@ -240,16 +275,29 @@ export function DetalleExpediente({ exp, subiendo, onSubir, iaOnline, onRefresh,
         <HistorialExpediente expedienteId={exp.id} documentos={todos} />
       </div>
 
+      {/* Columna lateral fija al desplazarse: el tablero del expediente
+          (índice y acciones) acompaña a la lectura de la columna principal. */}
       <aside className="exp-detail-side">
-        <AuditarPendientes exp={exp} iaOnline={iaOnline} onTerminado={onRefresh} />
-        <CustodiarDocumento
-          faltantes={faltantes.length}
-          subiendo={subiendo}
-          tipos={tiposCarga}
-          onArchivo={(archivo, tipo) => onSubir(exp.id, archivo, tipo)}
-        />
+        <div className="exp-lateral-bloque">
+          <IndiceCumplimiento
+            indice={evaluacion?.indice_cumplimiento}
+            presentes={(evaluacion?.obligatorios || []).filter((o) => o.presente).length}
+            obligatorios={(evaluacion?.obligatorios || []).length}
+          />
+        </div>
+        <div className="exp-lateral-bloque">
+          <AuditarPendientes exp={exp} iaOnline={iaOnline} onTerminado={onRefresh} />
+        </div>
+        <div className="exp-lateral-bloque">
+          <CustodiarDocumento
+            faltantes={faltantes.length}
+            subiendo={subiendo}
+            tipos={tiposCarga}
+            onArchivo={(archivo, tipo) => onSubir(exp.id, archivo, tipo)}
+          />
+        </div>
 
-        <div className="exp-export">
+        <div className="exp-lateral-bloque">
           <p className="eyebrow">Dictamen de cumplimiento</p>
           <p className="field-hint">Reporte formal con documentos, evidencia de cada dictamen, alertas y bitácora.</p>
           <ExportarReporte ruta={`/reportes/expedientes/${exp.id}`} compacto />

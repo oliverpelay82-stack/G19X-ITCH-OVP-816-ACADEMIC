@@ -1,19 +1,44 @@
-// Flujo de la auditoría: etapas, dictamen, registro de auditoría y cotejo de representación.
-import { useEffect, useState } from 'react'
-import { Sparkles } from 'lucide-react'
+// Flujo de la auditoría repartido en secciones: resultado (auditar, veredicto, dictamen vigente
+// con su ratificación y cotejo de representación), evidencia y registro técnico.
+import { useEffect, useId, useState } from 'react'
+import { FileSearch, Sparkles } from 'lucide-react'
 import { Skeleton } from '../Skeleton.jsx'
 import DictamenesGuardados, { AvisoIntegridad } from '../DictamenesGuardados.jsx'
 import CotejoRepresentacion from '../CotejoRepresentacion.jsx'
-import { Button } from '../ui/index.js'
+import { Button, EmptyState } from '../ui/index.js'
 import useToast from '../../hooks/useToast.js'
 import { analizarDocumento, getVisorDocumento, prepararDocumento } from '../../services/api.js'
-import { DictamenIa } from './Dictamen.jsx'
+import { DictamenEvidencia, DictamenResultado, DictamenTecnico } from './Dictamen.jsx'
 import { Stepper } from './Etapas.jsx'
 import { ETAPAS_INICIALES, fallarEnCascada } from './etapas.js'
 import { FUENTE_TEXTO, avisarFallo, cronometrar, detalleReglas, formatDuracion, nombreModelo } from './formato.js'
 
-export function AuditoriaIa({ doc, expediente, iaOnline, onCambio, onOcupado }) {
+/**
+ * `seccion` decide qué parte se ve ('resultado', 'evidencia' o 'registro');
+ * las tres quedan montadas para no perder el dictamen ni la ratificación al
+ * alternar. `solicitudRatificar` (un contador) abre la ratificación desde el
+ * encabezado del modal; `onIrSeccion` cambia de sección (del resumen a la
+ * evidencia) y `registroTecnico` son los datos del archivo que pone el modal.
+ */
+export function AuditoriaIa({
+  doc,
+  expediente,
+  iaOnline,
+  onCambio,
+  onOcupado,
+  seccion = 'resultado',
+  solicitudRatificar = 0,
+  onIrSeccion,
+  registroTecnico = null,
+}) {
   const toast = useToast()
+  const base = useId()
+  const ids = { cotejo: `${base}-cotejo`, contenido: `${base}-contenido`, sellos: `${base}-sellos`, fechas: `${base}-fechas` }
+  // Del resumen a su evidencia: se cambia de sección y, ya visible, se desplaza al bloque.
+  const irEvidencia = (id) => {
+    onIrSeccion?.('evidencia')
+    requestAnimationFrame(() => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
+  }
   const [etapas, setEtapas] = useState(null)
   const [recarga, setRecarga] = useState(0)
   // La ratificación cambia el cotejo de representación (RN-05): se vuelve a consultar.
@@ -105,60 +130,78 @@ export function AuditoriaIa({ doc, expediente, iaOnline, onCambio, onOcupado }) 
 
   return (
     <div className="ai-view">
-      <div className="ai-cta">
-        <p className="ai-cta-desc">
-          Clasifica el documento, coteja su titularidad, verifica la vigencia con las reglas del catálogo y localiza
-          los elementos que el catálogo exige a su tipo. Al proveedor de IA solo viaja el texto extraído, nunca el
-          archivo.
-        </p>
-        <Button
-          variante={dictamen ? 'secondary' : 'primary'}
-          icono={Sparkles}
-          cargando={analizando}
-          onClick={auditar}
-          disabled={!iaOnline || alterado}
-          title={alterado ? 'Documento bloqueado: el archivo cambió después de custodiarse' : iaOnline ? undefined : 'El servicio de análisis con IA no responde'}
-        >
-          {analizando ? 'Auditando…' : dictamen ? 'Volver a auditar' : 'Auditar documento'}
-        </Button>
-      </div>
-
-      {!iaOnline && !dictamen && (
-        <p className="field-hint">El ai-service (:8003) no responde; la auditoría no está disponible.</p>
-      )}
-
-      {etapas && <Stepper etapas={etapas} compacto={!analizando} />}
-
-      {analizando && (
-        <div className="ai-loading" aria-hidden="true">
-          <Skeleton w="30%" h={24} />
-          <Skeleton w="72%" />
-          <Skeleton w="100%" h={3} r="var(--r-full)" />
-          <Skeleton w="54%" />
+      {/* ── Resultado ── */}
+      <div className="ai-seccion" hidden={seccion !== 'resultado'}>
+        <div className="ai-cta">
+          <p className="ai-cta-desc">
+            Clasifica el documento, coteja su titularidad, verifica su vigencia y localiza lo que el catálogo exige a
+            su tipo. Al proveedor de IA solo viaja el texto extraído, nunca el archivo.
+          </p>
+          <Button
+            variante={dictamen ? 'secondary' : 'primary'}
+            icono={Sparkles}
+            cargando={analizando}
+            onClick={auditar}
+            disabled={!iaOnline || alterado}
+            title={alterado ? 'Documento bloqueado: el archivo cambió después de custodiarse' : iaOnline ? undefined : 'El servicio de análisis con IA no responde'}
+          >
+            {analizando ? 'Auditando…' : dictamen ? 'Volver a auditar' : 'Auditar documento'}
+          </Button>
         </div>
-      )}
 
-      {alterado && <AvisoIntegridad />}
+        {!iaOnline && !dictamen && (
+          <p className="field-hint">El servicio de análisis con IA no responde; la auditoría no está disponible.</p>
+        )}
 
-      {!analizando && dictamen && (
-        <DictamenIa dictamen={dictamen} expediente={expediente} tipoRegistrado={doc.tipo_documento} duracion={duracion} />
-      )}
+        {etapas && <Stepper etapas={etapas} compacto={!analizando} />}
 
-      <div className="registro-auditoria">
-        <h5 className="section-title section-title--sm">Registro de auditoría</h5>
-        <DictamenesGuardados
-          doc={doc}
-          recarga={recarga}
-          onCambio={() => {
-            setRatificaciones((n) => n + 1)
-            onCambio?.()
-          }}
-        />
+        {analizando && (
+          <div className="ai-loading" aria-hidden="true">
+            <Skeleton w="30%" h={24} />
+            <Skeleton w="72%" />
+            <Skeleton w="100%" h={3} r="var(--r-full)" />
+            <Skeleton w="54%" />
+          </div>
+        )}
+
+        {alterado && <AvisoIntegridad />}
+
+        {!analizando && dictamen && <DictamenResultado dictamen={dictamen} ids={ids} onIrEvidencia={irEvidencia} />}
+
+        <section className="ia-bloque" aria-label="Dictamen vigente">
+          <p className="eyebrow">Dictamen vigente</p>
+          <DictamenesGuardados
+            doc={doc}
+            recarga={recarga}
+            solicitudRatificar={solicitudRatificar}
+            onCambio={() => {
+              setRatificaciones((n) => n + 1)
+              onCambio?.()
+            }}
+          />
+        </section>
+
+        <CotejoRepresentacion doc={doc} recarga={recarga + ratificaciones} />
       </div>
 
-      <CotejoRepresentacion doc={doc} recarga={recarga + ratificaciones} />
+      {/* ── Evidencia ── */}
+      <div className="ai-seccion" hidden={seccion !== 'evidencia'}>
+        {dictamen ? (
+          <DictamenEvidencia dictamen={dictamen} expediente={expediente} tipoRegistrado={doc.tipo_documento} ids={ids} />
+        ) : (
+          <EmptyState
+            icon={FileSearch}
+            titulo="Sin evidencia de esta sesión"
+            descripcion="La evidencia detallada (cotejo, contenido con sus citas, vigencia, sellos y observaciones) se muestra al auditar el documento. El dictamen vigente conserva el resultado de cada regla."
+          />
+        )}
+      </div>
+
+      {/* ── Registro técnico ── */}
+      <div className="ai-seccion" hidden={seccion !== 'registro'}>
+        {dictamen && <DictamenTecnico dictamen={dictamen} duracion={duracion} />}
+        {registroTecnico}
+      </div>
     </div>
   )
 }
-
-/* ── Chat ───────────────────────────────────────────────────────── */

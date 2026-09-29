@@ -8,7 +8,8 @@ ratificación humana del Nivel 5, el visor de evidencia, el panel de
 inteligencia documental tras auditar y preguntar, la cadena de custodia
 íntegra y comprometida en el historial (P3) y el cotejo del firmante con el
 apoderado en el detalle de un contrato, acreditado y no acreditado (P2),
-y el catálogo de reglas con una familia y una regla desplegadas.
+el catálogo de reglas con una familia y una regla desplegadas, las secciones
+Evidencia y Registro técnico del panel de IA y la Bóveda con el histórico completo.
 
 Nada de lo que se hace aquí escribe en la base ni consume Groq:
 - La ratificación se captura sin enviarla.
@@ -275,6 +276,13 @@ def capturar_escenarios(navegador: Browser, carpeta: Path, ancho: int, alto: int
     h._esperar(pagina, 1500)
     pagina.locator(".modal").click(position={"x": 5, "y": 5})
     h._capturar_modal(pagina, carpeta / f"{prefijo}_panel_auditoria.png")
+    # Las otras secciones del panel con el mismo dictamen simulado.
+    for seccion, nombre in (("Evidencia", "evidencia"), ("Registro técnico", "registro")):
+        pagina.locator(".modal .segmented-item", has_text=seccion).click()
+        pagina.wait_for_timeout(300)
+        pagina.locator(".modal").click(position={"x": 5, "y": 5})
+        h._capturar_modal(pagina, carpeta / f"{prefijo}_panel_{nombre}.png")
+    pagina.locator(".modal .segmented-item", has_text="Resultado").click()
     pagina.locator(".modal .segmented-item", has_text="Chat").click()
     pagina.wait_for_timeout(300)
     pagina.locator(".composer textarea").fill("¿Quién administra la sociedad?")
@@ -326,6 +334,14 @@ def capturar_escenarios(navegador: Browser, carpeta: Path, ancho: int, alto: int
     pagina.locator(".modal").click(position={"x": 5, "y": 5})
     h._capturar_modal(pagina, carpeta / f"{prefijo}_regla_por_tipo.png")
     h._cerrar_modal(pagina)
+
+    # Bóveda con el histórico completo (la vista entra con solo los vigentes).
+    h._ir_a(pagina, "Bóveda")
+    pagina.locator(".segmented-item", has_text="Histórico completo").click()
+    pagina.wait_for_timeout(300)
+    pagina.locator("body").click(position={"x": 5, "y": 5})
+    h._capturar(pagina, carpeta / f"{prefijo}_boveda_historico.png")
+    h._ir_a(pagina, "Reglas")
 
     # Catálogo con una familia desplegada y el detalle de su primera regla
     # (la vista entra con las familias plegadas).
@@ -408,7 +424,7 @@ def _escenarios_representacion(navegador: Browser, carpeta: Path, ancho: int, al
         estado["cotejo"] = cotejo
         pagina.locator("table tbody tr").first.locator("button").last.click()
         h._esperar(pagina, 2000)
-        bloque = pagina.locator(".modal .registro-auditoria", has_text="Representación legal")
+        bloque = pagina.locator(".modal .ia-bloque", has_text="Representación legal")
         _capturar_elemento(pagina, bloque, carpeta / f"{prefijo}_cotejo_{cotejo.lower()}.png")
         h._cerrar_modal(pagina)
     pagina.close()

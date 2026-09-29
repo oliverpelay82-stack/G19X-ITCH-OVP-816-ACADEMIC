@@ -439,12 +439,18 @@
   vertical-align: 1px;
 }
 
-.observations ul {
-  margin-top: var(--s-2);
-  padding-left: var(--s-4);
+/* Observaciones del dictamen como tarjetas, no como viñetas apretadas. */
+.observaciones-lista {
   display: flex;
   flex-direction: column;
-  gap: var(--s-1);
+  gap: var(--s-2);
+  list-style: none;
+}
+
+.observacion {
+  padding: var(--s-2) var(--s-3);
+  border-radius: var(--r-sm);
+  background: var(--bg-subtle);
   font-size: var(--fs-small);
   line-height: 1.55;
   color: var(--text-secondary);
@@ -476,13 +482,36 @@
   color: var(--text-muted);
 }
 
-/* ── Registro de auditoría (dictámenes persistidos) ────────────── */
-.registro-auditoria {
+/* ── Secciones del panel de IA y sus bloques ───────────────────── */
+.ai-seccion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+}
+
+.ai-seccion[hidden] {
+  display: none;
+}
+
+/* Bloque delimitado (dictamen vigente, cotejo, contenido, vigencia, sellos,
+   observaciones, datos del archivo): borde, radio de tarjeta y relleno
+   equilibrado en lugar de secciones encimadas. */
+.ia-bloque {
   display: flex;
   flex-direction: column;
   gap: var(--s-3);
-  padding-top: var(--s-4);
-  border-top: var(--border-subtle);
+  padding: var(--s-4);
+  border: var(--border-default);
+  border-radius: var(--r-md);
+  background: var(--bg-surface);
+}
+
+.ia-bloque .table-card--flat {
+  box-shadow: none;
+}
+
+.dictamen--evidencia {
+  gap: var(--s-3);
 }
 
 .dictamenes-guardados {

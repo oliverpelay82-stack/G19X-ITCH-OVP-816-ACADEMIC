@@ -144,6 +144,17 @@
   color: var(--text-secondary);
 }
 
+/* Bóveda, histórico completo: las versiones sustituidas se atenúan para que
+   las vigentes se distingan de un vistazo (el estado lo dice su etiqueta). */
+.data-table--boveda tr.is-sustituido td {
+  color: var(--text-muted);
+}
+
+.data-table--boveda tr.is-sustituido .identity-name {
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+
 /* Bóveda: folios, tamaños y fechas en una línea (a 1366 px se partían). */
 .data-table--boveda .cell-mono,
 .data-table--boveda .cell-num {

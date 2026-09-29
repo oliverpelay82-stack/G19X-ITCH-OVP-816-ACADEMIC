@@ -1,5 +1,5 @@
-// Dictamen de la auditoría: veredicto, cotejo, contenido verificado, sellos y resumen.
-import { useId } from 'react'
+// Dictamen de la auditoría en tres vistas: resultado (veredicto y resumen), evidencia
+// (cotejo, contenido, vigencia, sellos y observaciones) y datos técnicos de la lectura.
 import { useEvidencia } from '../evidencia-context.js'
 import { Badge, Card, KeyValue, KeyValueList } from '../ui/index.js'
 import { TIPO_DOCUMENTO_LABEL } from '../../constants.js'
@@ -233,7 +233,7 @@ function SellosDetectados({ sellos = [], selloDigital }) {
  * Franja de resumen del dictamen: cada aspecto con su resultado y un clic que
  * lleva a su sección. Solo resume datos que el dictamen ya trae.
  */
-function ResumenDictamen({ dictamen, vigencia, ids }) {
+function ResumenDictamen({ dictamen, vigencia, ids, onIr }) {
   const verificaciones = dictamen.verificaciones || []
   const localizados = verificaciones.filter((v) => v.resultado === 'CUMPLE').length
   const paginasConSello = new Set((dictamen.sellos || []).map((s) => s.pagina)).size
@@ -260,11 +260,10 @@ function ResumenDictamen({ dictamen, vigencia, ids }) {
       destino: ids.sellos,
     },
   ].filter(Boolean)
-  const ir = (id) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   return (
     <nav className="resumen-dictamen" aria-label="Resumen del dictamen">
       {puntos.map((p) => (
-        <button key={p.etiqueta} type="button" className="resumen-punto" onClick={() => ir(p.destino)}>
+        <button key={p.etiqueta} type="button" className="resumen-punto" onClick={() => onIr?.(p.destino)}>
           <span className="resumen-etiqueta">{p.etiqueta}</span>
           <span className={`resumen-valor resumen-valor--${p.tono}`}>
             <span className={`status-dot status-dot--${p.tono}`} aria-hidden="true" />
@@ -294,14 +293,8 @@ function AccionesRecomendadas({ recomendaciones = [] }) {
 
 /* ── Dictamen ───────────────────────────────────────────────────── */
 
-export function DictamenIa({ dictamen, expediente, tipoRegistrado, duracion }) {
-  const base = useId()
-  const ids = { cotejo: `${base}-cotejo`, contenido: `${base}-contenido`, sellos: `${base}-sellos`, fechas: `${base}-fechas` }
-  const estatus = ESTATUS_IA[dictamen.estatus_preliminar] || {
-    tono: 'neutral',
-    label: dictamen.estatus_preliminar || 'Sin dictamen',
-  }
-  const { motivo, resto } = separarMotivo(dictamen.observaciones)
+/** Vigencia del dictamen en texto y tono; la comparten el resultado y la evidencia. */
+function vigenciaDe(dictamen) {
   const dias = diasRestantes(dictamen)
   const textoVencimiento =
     dias === null
@@ -312,26 +305,44 @@ export function DictamenIa({ dictamen, expediente, tipoRegistrado, duracion }) {
           ? 'Vence hoy'
           : `${numero(dias)} ${dias === 1 ? 'día restante' : 'días restantes'}`
   const segunReglas = vigenciaSegunReglas(dictamen.vigencia_nivel_2, textoVencimiento)
-  const tonoVigencia = segunReglas?.tono ?? (dias === null ? 'neutral' : dias < 0 ? 'bad' : dias <= 30 ? 'warn' : 'ok')
-  const vigenciaCorta =
+  const tono = segunReglas?.tono ?? (dias === null ? 'neutral' : dias < 0 ? 'bad' : dias <= 30 ? 'warn' : 'ok')
+  const corta =
     RESULTADO_VIGENCIA[dictamen.vigencia_nivel_2?.resultado]?.label ?? (dias === null ? 'sin vencimiento' : textoVencimiento)
+  return { dias, tono, texto: segunReglas?.texto ?? textoVencimiento, corta: corta.charAt(0).toUpperCase() + corta.slice(1) }
+}
 
+/** Bloque delimitado de la evidencia; sin `titulo` cuando el contenido trae el suyo. */
+function Bloque({ id, titulo, etiqueta, children }) {
+  return (
+    <section id={id} className="ia-bloque ancla" aria-label={titulo || etiqueta}>
+      {titulo && <p className="eyebrow">{titulo}</p>}
+      {children}
+    </section>
+  )
+}
+
+/**
+ * Resultado de la auditoría recién hecha: la franja de resumen (cada punto
+ * lleva a su evidencia), el veredicto con la confianza y las acciones
+ * recomendadas. `onIrEvidencia(id)` cambia a la sección de evidencia.
+ */
+export function DictamenResultado({ dictamen, ids, onIrEvidencia }) {
+  const estatus = ESTATUS_IA[dictamen.estatus_preliminar] || {
+    tono: 'neutral',
+    label: dictamen.estatus_preliminar || 'Sin dictamen',
+  }
+  const { motivo } = separarMotivo(dictamen.observaciones)
+  const vigencia = vigenciaDe(dictamen)
   return (
     <div className="dictamen">
-      <ResumenDictamen
-        dictamen={dictamen}
-        vigencia={{ tono: tonoVigencia, texto: vigenciaCorta.charAt(0).toUpperCase() + vigenciaCorta.slice(1) }}
-        ids={ids}
-      />
-
       <div className={`verdict verdict--${estatus.tono}`}>
         <div className="verdict-main">
-          <p className="eyebrow">Dictamen preliminar</p>
+          <p className="eyebrow">Resultado de la auditoría</p>
           <p className="verdict-word">{estatus.label}</p>
           {motivo && <p className="verdict-reason">{motivo}</p>}
-          <p className={`vigencia-line vigencia-line--${tonoVigencia}`}>
-            <span className={`status-dot status-dot--${tonoVigencia}`} aria-hidden="true" />
-            <span className="tabular">{segunReglas?.texto ?? textoVencimiento}</span>
+          <p className={`vigencia-line vigencia-line--${vigencia.tono}`}>
+            <span className={`status-dot status-dot--${vigencia.tono}`} aria-hidden="true" />
+            <span className="tabular">{vigencia.texto}</span>
           </p>
           {dictamen.requiere_revision_humana && (
             <div className="badge-row">
@@ -342,45 +353,74 @@ export function DictamenIa({ dictamen, expediente, tipoRegistrado, duracion }) {
         <Confianza dictamen={dictamen} />
       </div>
 
+      <ResumenDictamen dictamen={dictamen} vigencia={{ tono: vigencia.tono, texto: vigencia.corta }} ids={ids} onIr={onIrEvidencia} />
+
       <AccionesRecomendadas recomendaciones={dictamen.recomendaciones} />
+    </div>
+  )
+}
 
-      <div id={ids.cotejo} className="ancla">
+/**
+ * Evidencia de la auditoría en bloques delimitados: titularidad y tipo,
+ * contenido exigido, vigencia, sellos y observaciones.
+ */
+export function DictamenEvidencia({ dictamen, expediente, tipoRegistrado, ids }) {
+  const { resto } = separarMotivo(dictamen.observaciones)
+  const vigencia = vigenciaDe(dictamen)
+  const haySellos = (dictamen.sellos || []).length > 0 || dictamen.sello_digital_sat
+  return (
+    <div className="dictamen dictamen--evidencia">
+      <Bloque id={ids.cotejo} titulo="Titularidad y tipo documental">
         <Cotejo dictamen={dictamen} expediente={expediente} tipoRegistrado={tipoRegistrado} />
-      </div>
+      </Bloque>
 
-      <div id={ids.contenido} className="ancla">
-        <VerificacionContenido verificaciones={dictamen.verificaciones} />
-      </div>
-
-      <div id={ids.sellos} className="ancla">
-        <SellosDetectados sellos={dictamen.sellos} selloDigital={dictamen.sello_digital_sat} />
-      </div>
-
-      <KeyValueList id={ids.fechas} className="detail-grid detail-grid--3 ancla">
-        <KeyValue etiqueta="Emisión" className="detail-item" valorClassName="mono">
-          {fechaIso(dictamen.fecha_emision)}
-        </KeyValue>
-        <KeyValue etiqueta="Vencimiento" className="detail-item" valorClassName="mono">
-          {fechaIso(dictamen.fecha_vencimiento)}
-        </KeyValue>
-        <KeyValue etiqueta="Días para el vencimiento" className="detail-item" valorClassName="mono">
-          {dias === null ? '—' : numero(dias)}
-        </KeyValue>
-      </KeyValueList>
-
-      {resto.length > 0 && (
-        <div className="observations">
-          <p className="eyebrow">Observaciones</p>
-          <ul>
-            {resto.map((obs, i) => (
-              <li key={i}>{obs}</li>
-            ))}
-          </ul>
-        </div>
+      {(dictamen.verificaciones || []).length > 0 && (
+        <Bloque id={ids.contenido} etiqueta="Contenido que exige el catálogo">
+          <VerificacionContenido verificaciones={dictamen.verificaciones} />
+        </Bloque>
       )}
 
-      <EstadoLectura lectura={dictamen.extraccion_nivel_3} contexto={dictamen.contexto_llm} />
+      <Bloque id={ids.fechas} titulo="Vigencia">
+        <KeyValueList className="detail-grid detail-grid--3">
+          <KeyValue etiqueta="Emisión" className="detail-item" valorClassName="mono">
+            {fechaIso(dictamen.fecha_emision)}
+          </KeyValue>
+          <KeyValue etiqueta="Vencimiento" className="detail-item" valorClassName="mono">
+            {fechaIso(dictamen.fecha_vencimiento)}
+          </KeyValue>
+          <KeyValue etiqueta="Días para el vencimiento" className="detail-item" valorClassName="mono">
+            {vigencia.dias === null ? '—' : numero(vigencia.dias)}
+          </KeyValue>
+        </KeyValueList>
+      </Bloque>
 
+      {haySellos && (
+        <Bloque id={ids.sellos} etiqueta="Sellos">
+          <SellosDetectados sellos={dictamen.sellos} selloDigital={dictamen.sello_digital_sat} />
+        </Bloque>
+      )}
+
+      {resto.length > 0 && (
+        <Bloque titulo="Observaciones">
+          <ul className="observaciones-lista">
+            {resto.map((obs, i) => (
+              <li key={i} className="observacion">
+                {obs}
+              </li>
+            ))}
+          </ul>
+        </Bloque>
+      )}
+    </div>
+  )
+}
+
+/** Datos técnicos de la auditoría: cómo se leyó el documento y qué modelo respondió. */
+export function DictamenTecnico({ dictamen, duracion }) {
+  return (
+    <div className="ia-bloque">
+      <p className="eyebrow">Lectura y análisis</p>
+      <EstadoLectura lectura={dictamen.extraccion_nivel_3} contexto={dictamen.contexto_llm} />
       <p className="verdict-foot">
         <MetaInferencia modelo={dictamen.modelo_utilizado} duracion={duracion} />
         <span>{nombreModelo(dictamen.modelo_utilizado)} · temperatura 0.0</span>
@@ -388,5 +428,3 @@ export function DictamenIa({ dictamen, expediente, tipoRegistrado, duracion }) {
     </div>
   )
 }
-
-/* ── Auditoría ──────────────────────────────────────────────────── */

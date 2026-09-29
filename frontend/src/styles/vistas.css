@@ -122,9 +122,12 @@
   gap: var(--s-2);
 }
 
+/* overflow: clip recorta el filete de color igual que hidden, pero no crea
+   un contenedor de desplazamiento: la columna lateral del detalle puede
+   quedar fija (sticky) al desplazar la página. */
 .exp-card {
   position: relative;
-  overflow: hidden;
+  overflow: clip;
   animation: rise-in var(--dur-slow) var(--ease);
   transition: box-shadow var(--dur) var(--ease), border-color var(--dur) var(--ease);
 }
@@ -196,9 +199,10 @@
 
 .exp-detail {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 320px;
-  gap: var(--s-5);
-  padding: var(--s-4) var(--s-4) var(--s-5) var(--s-5);
+  grid-template-columns: minmax(0, 1fr) 340px;
+  align-items: start;
+  gap: var(--s-6);
+  padding: var(--s-5) var(--s-5) var(--s-6) var(--s-6);
   border-top: var(--border-subtle);
   background: var(--bg-canvas);
   animation: fade-in var(--dur-slow) var(--ease);
@@ -208,17 +212,80 @@
 .exp-detail-side {
   display: flex;
   flex-direction: column;
-  gap: var(--s-3);
+  gap: var(--s-4);
   min-width: 0;
 }
 
-.exp-motivos ul {
-  margin-top: 6px;
-  padding-left: var(--s-4);
+/* La columna lateral acompaña al desplazamiento: sus tarjetas (índice,
+   validación, custodia y dictamen) no dejan un hueco junto a una columna
+   principal larga. */
+.exp-detail-side {
+  position: sticky;
+  top: calc(var(--header-h) + var(--s-4));
+}
+
+.exp-lateral-bloque {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: var(--s-2);
+  padding: var(--s-4);
+  border: var(--border-default);
+  border-radius: var(--r-md);
+  background: var(--bg-surface);
+}
+
+.exp-lateral-bloque .indice {
+  padding: 0;
+  border: 0;
+  background: none;
+}
+
+/* Motivos del semáforo: una fila por motivo (documento, archivo y causa),
+   con aire entre filas; el tono lo da el punto junto a su texto. */
+.exp-motivos-lista {
+  display: flex;
+  flex-direction: column;
+  margin-top: var(--s-2);
+  list-style: none;
+}
+
+.exp-motivo {
+  display: grid;
+  grid-template-columns: 8px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-2) 0;
+  border-top: var(--border-subtle);
   font-size: var(--fs-small);
-  line-height: 1.5;
+}
+
+.exp-motivo:first-child {
+  border-top: 0;
+}
+
+.exp-motivo-doc {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.exp-motivo-nombre {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.exp-motivo-archivo {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.exp-motivo-causa {
   color: var(--text-secondary);
+  text-align: right;
+}
+
+.exp-motivo-causa--sola {
+  grid-column: 2 / -1;
+  text-align: left;
 }

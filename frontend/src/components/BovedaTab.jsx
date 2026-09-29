@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { FileLock2, ScanSearch, SearchX, Upload } from 'lucide-react'
 import { Badge, Button, Card, CopyChip, EmptyRow, Field, IconButton, Modal, SearchBox, Segmented, Select, Tag } from './ui/index.js'
 import DropZone from './DropZone.jsx'
@@ -48,6 +48,9 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
   const [ingestaAbierta, setIngestaAbierta] = useState(false)
   const [busqueda, setBusqueda] = useState('')
   const [filtroTipo, setFiltroTipo] = useState('TODOS')
+  // Por defecto solo los documentos vigentes: los sustituidos (RF-04) se
+  // conservan, pero en la vista diaria opacaban a los activos.
+  const [alcance, setAlcance] = useState('VIGENTES')
   const [detalle, setDetalle] = useState(null)
 
   const consulta = useDebounce(busqueda, 220)
@@ -62,21 +65,34 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
     [expedientes]
   )
 
-  /** Solo se ofrecen como filtro los tipos que realmente hay en la bóveda. */
+  // Sin evaluación del expediente no se sabe si fue sustituido: se muestra como vigente.
+  const esVigente = useCallback(
+    (d) => estadoVigente.has(d.id) || !mapaExpedientes[d.expediente_id]?.evaluacion,
+    [estadoVigente, mapaExpedientes]
+  )
+  const vigentes = useMemo(() => documentos.filter(esVigente), [documentos, esVigente])
+  const enAlcance = alcance === 'VIGENTES' ? vigentes : documentos
+
+  const opcionesAlcance = [
+    { id: 'VIGENTES', label: 'Vigentes', conteo: vigentes.length, tooltip: 'La versión vigente de cada tipo en su expediente' },
+    { id: 'HISTORICO', label: 'Histórico completo', conteo: documentos.length, tooltip: 'Incluye las versiones sustituidas, con sus dictámenes' },
+  ]
+
+  /** Solo se ofrecen como filtro los tipos que realmente hay en el alcance elegido. */
   const opcionesTipo = useMemo(() => {
     const conteo = new Map()
-    for (const d of documentos) conteo.set(d.tipo_documento, (conteo.get(d.tipo_documento) || 0) + 1)
+    for (const d of enAlcance) conteo.set(d.tipo_documento, (conteo.get(d.tipo_documento) || 0) + 1)
     const orden = [...TIPOS_DOCUMENTO.map((t) => t.value), 'OTRO']
     const tipos = [...conteo.keys()].sort((a, b) => orden.indexOf(a) - orden.indexOf(b))
     return [
-      { id: 'TODOS', label: 'Todos', conteo: documentos.length },
+      { id: 'TODOS', label: 'Todos', conteo: enAlcance.length },
       ...tipos.map((t) => ({ id: t, label: tipoCorto(t), conteo: conteo.get(t), tooltip: TIPO_DOCUMENTO_LABEL[t] })),
     ]
-  }, [documentos])
+  }, [enAlcance])
 
   const filtrados = useMemo(() => {
     const q = consulta.trim().toLowerCase()
-    return documentos.filter((d) => {
+    return enAlcance.filter((d) => {
       const tipoOk = filtroTipo === 'TODOS' || d.tipo_documento === filtroTipo
       const busquedaOk =
         !q ||
@@ -86,7 +102,7 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
         mapaExpedientes[d.expediente_id]?.titular?.razon_social?.toLowerCase().includes(q)
       return tipoOk && busquedaOk
     })
-  }, [documentos, consulta, filtroTipo, mapaExpedientes])
+  }, [enAlcance, consulta, filtroTipo, mapaExpedientes])
 
   const subir = async (archivo, tipo) => {
     setSubiendo(true)
@@ -118,7 +134,7 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
           placeholder="Archivo, folio, titular o hash…"
           label="Buscar en la bóveda"
         />
-        <Segmented label="Filtrar por tipo documental" valor={filtroTipo} onChange={setFiltroTipo} opciones={opcionesTipo} />
+        <Segmented label="Versiones a mostrar" valor={alcance} onChange={setAlcance} opciones={opcionesAlcance} />
         <Button
           variante="primary"
           icono={Upload}
@@ -131,16 +147,20 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
         </Button>
       </div>
 
+      <div className="toolbar toolbar--sub">
+        <Segmented label="Filtrar por tipo documental" valor={filtroTipo} onChange={setFiltroTipo} opciones={opcionesTipo} />
+      </div>
+
       <Card className="table-card">
         <div className="table-scroll">
           <table className="data-table data-table--boveda">
             <colgroup>
-              <col style={{ width: '27%' }} />
+              <col style={{ width: '31%' }} />
               <col style={{ width: '10%' }} />
               <col style={{ width: '17%' }} />
               <col style={{ width: '13%' }} />
-              <col style={{ width: '18%' }} />
-              <col style={{ width: '11%' }} />
+              <col style={{ width: '15%' }} />
+              <col style={{ width: '10%' }} />
               <col style={{ width: 52 }} />
             </colgroup>
             <thead>
@@ -165,7 +185,9 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
                   descripcion={
                     documentos.length === 0
                       ? 'Custodia el primer documento para generar su huella criptográfica inmutable.'
-                      : 'Ningún documento coincide con la búsqueda o el tipo elegido.'
+                      : alcance === 'VIGENTES' && vigentes.length === 0
+                        ? 'No hay documentos vigentes; el histórico completo conserva las versiones sustituidas.'
+                        : 'Ningún documento coincide con la búsqueda o el tipo elegido.'
                   }
                 />
               )}
@@ -175,7 +197,11 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
                   const exp = mapaExpedientes[doc.expediente_id]
                   const firma = firmaDeMime(doc.mime_type)
                   return (
-                    <tr key={doc.id} className="row-clickable" onClick={() => setDetalle(doc)}>
+                    <tr
+                      key={doc.id}
+                      className={`row-clickable ${esVigente(doc) ? '' : 'is-sustituido'}`}
+                      onClick={() => setDetalle(doc)}
+                    >
                       <td>
                         <div className="cell-stack">
                           <span className="identity-name">
