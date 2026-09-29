@@ -108,13 +108,17 @@ export default function HistorialExpediente({ expedienteId, documentos = [] }) {
   }
 
   return (
-    <details className="exp-historial" onToggle={(e) => e.currentTarget.open && !eventos && !cargando && cargar()}>
+    // Se consulta cada vez que se despliega: una auditoría, una ratificación o la
+    // reevaluación programada agregan eventos mientras el expediente sigue abierto.
+    // Al reconsultar se conservan los eventos ya mostrados, sin aviso de carga,
+    // para que la lista no salte.
+    <details className="exp-historial" onToggle={(e) => e.currentTarget.open && !cargando && cargar()}>
       <summary className="eyebrow eyebrow--icon">
         <History size={12} aria-hidden="true" />
         Historial del expediente
         {eventos && <span className="tabular cell-muted"> · {eventos.length}</span>}
       </summary>
-      {cargando && (
+      {cargando && !eventos && (
         <p className="field-hint">
           <Loader2 className="spin" size={12} aria-hidden="true" /> Consultando la bitácora…
         </p>

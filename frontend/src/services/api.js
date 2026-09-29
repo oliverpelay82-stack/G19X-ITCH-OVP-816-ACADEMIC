@@ -23,7 +23,15 @@ class ApiError extends Error {
   }
 }
 
-async function request(baseUrl, path, { method = 'GET', body, isFormData = false, params } = {}) {
+/**
+ * Tiempo máximo de las lecturas que el panel repite cada 15 s (salud y listas).
+ * Sin límite, un servicio que acepta la conexión pero no responde dejaba cada
+ * ciclo pendiente sobre el anterior. La auditoría y el chat no lo llevan: un
+ * documento escaneado largo puede tardar más de 25 s (RNF-02).
+ */
+const LIMITE_SONDEO_MS = 10000
+
+async function request(baseUrl, path, { method = 'GET', body, isFormData = false, params, tiempoLimite } = {}) {
   let url = `${baseUrl}${path}`
 
   if (params) {
@@ -34,6 +42,7 @@ async function request(baseUrl, path, { method = 'GET', body, isFormData = false
   }
 
   const options = { method, headers: {} }
+  if (tiempoLimite) options.signal = AbortSignal.timeout(tiempoLimite)
 
   if (body !== undefined) {
     if (isFormData) {
@@ -47,7 +56,10 @@ async function request(baseUrl, path, { method = 'GET', body, isFormData = false
   let response
   try {
     response = await fetch(url, options)
-  } catch {
+  } catch (err) {
+    if (err?.name === 'TimeoutError') {
+      throw new ApiError(`${baseUrl} no respondió en ${tiempoLimite / 1000} s.`, 0, null)
+    }
     throw new ApiError(`No fue posible conectar con ${baseUrl} (¿el microservicio está corriendo?).`, 0, null)
   }
 
@@ -63,22 +75,22 @@ async function request(baseUrl, path, { method = 'GET', body, isFormData = false
 }
 
 /* ── Salud de los microservicios ────────────────────────────────── */
-export const getHealthCore = () => request(CORE_BASE_URL, '/health')
-export const getHealthRules = () => request(RULES_BASE_URL, '/health')
-export const getHealthAi = () => request(AI_BASE_URL, '/health')
+export const getHealthCore = () => request(CORE_BASE_URL, '/health', { tiempoLimite: LIMITE_SONDEO_MS })
+export const getHealthRules = () => request(RULES_BASE_URL, '/health', { tiempoLimite: LIMITE_SONDEO_MS })
+export const getHealthAi = () => request(AI_BASE_URL, '/health', { tiempoLimite: LIMITE_SONDEO_MS })
 
 /* ── M1: Titulares (Core Service :8001) ─────────────────────────── */
-export const getTitulares = () => request(CORE_BASE_URL, '/titulares')
+export const getTitulares = () => request(CORE_BASE_URL, '/titulares', { tiempoLimite: LIMITE_SONDEO_MS })
 export const createTitular = (data) => request(CORE_BASE_URL, '/titulares', { method: 'POST', body: data })
 
 /* ── M1: Expedientes (Core Service :8001) ───────────────────────── */
 /** Filtros opcionales (RF-05): { q, tipo_expediente, estado, desde, hasta }. */
-export const getExpedientes = (params) => request(CORE_BASE_URL, '/expedientes', { params })
+export const getExpedientes = (params) => request(CORE_BASE_URL, '/expedientes', { params, tiempoLimite: LIMITE_SONDEO_MS })
 export const getExpedienteById = (id) => request(CORE_BASE_URL, `/expedientes/${id}`)
 export const createExpediente = (data) => request(CORE_BASE_URL, '/expedientes', { method: 'POST', body: data })
 
 /* ── M1: Documentos / Bóveda (Core Service :8001) ───────────────── */
-export const getDocumentos = () => request(CORE_BASE_URL, '/documentos')
+export const getDocumentos = () => request(CORE_BASE_URL, '/documentos', { tiempoLimite: LIMITE_SONDEO_MS })
 export const getDocumentosPorExpediente = (expedienteId) =>
   request(CORE_BASE_URL, `/documentos/expediente/${expedienteId}`)
 export const uploadDocumento = (formData) =>
@@ -130,7 +142,7 @@ export async function descargarReporte(ruta, params) {
 }
 
 /* ── M2: Reglas de Validación (Rules Service :8002) ─────────────── */
-export const getReglas = (params) => request(RULES_BASE_URL, '/reglas', { params })
+export const getReglas = (params) => request(RULES_BASE_URL, '/reglas', { params, tiempoLimite: LIMITE_SONDEO_MS })
 export const createRegla = (data) => request(RULES_BASE_URL, '/reglas', { method: 'POST', body: data })
 export const toggleRegla = (id, activo) =>
   request(RULES_BASE_URL, `/reglas/${id}/activo`, { method: 'PATCH', params: { activo } })

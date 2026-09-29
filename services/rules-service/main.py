@@ -5,10 +5,12 @@ RSC, RDS) y su CRUD / activación-desactivación.
 Puerto: 8002.
 """
 import os
+import traceback
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from config.database import engine, init_db
 from controllers.regla_controller import router as regla_router
@@ -35,6 +37,23 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan,
 )
+
+
+# Un error no controlado se responde aquí, dentro de la pila y antes de CORS
+# (que se registra después y la envuelve). Sin esto, Starlette lo resuelve en
+# su capa más externa, sin cabeceras CORS, y el navegador oculta la respuesta:
+# el frontend decía «¿el microservicio está corriendo?» aunque estuviera en línea.
+@app.middleware("http")
+async def errores_no_controlados(request: Request, call_next):
+    try:
+        return await call_next(request)
+    except Exception:
+        traceback.print_exc()  # el detalle queda en el registro del servidor
+        return JSONResponse(
+            status_code=500,
+            content={"detail": "Error interno del rules-service; el detalle quedó en el registro del servidor."},
+        )
+
 
 # Permitir llamadas CORS desde el frontend
 app.add_middleware(

@@ -81,6 +81,7 @@ export default function App() {
   // Evita avisar de la misma caída en cada ciclo de sondeo.
   const caidasAvisadas = useRef(new Set())
   const primeraCarga = useRef(true)
+  const cicloEnCurso = useRef(false)
 
   const cargarTodo = useCallback(async () => {
     const [t, e, d, r] = await Promise.allSettled([
@@ -136,9 +137,18 @@ export default function App() {
     let montado = true
 
     // Un solo ciclo de sondeo, reutilizado por la carga inicial y el intervalo.
-    // Al ser asíncrono, ningún setState ocurre durante el propio efecto.
+    // Al ser asíncrono, ningún setState ocurre durante el propio efecto. Si el
+    // ciclo anterior sigue esperando a un servicio lento, el siguiente no se
+    // apila sobre él (las lecturas del sondeo además caducan a los 10 s). La
+    // marca vive en una ref para valer también entre montajes del efecto.
     const ciclo = async () => {
-      await Promise.all([cargarTodo(), chequearSalud()])
+      if (cicloEnCurso.current) return
+      cicloEnCurso.current = true
+      try {
+        await Promise.all([cargarTodo(), chequearSalud()])
+      } finally {
+        cicloEnCurso.current = false
+      }
     }
 
     ciclo()

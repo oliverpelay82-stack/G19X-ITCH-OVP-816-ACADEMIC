@@ -61,9 +61,15 @@ export default function DropZone({
     if (inputRef.current) inputRef.current.value = ''
   }
 
+  // Si la carga falla, quien la hace ya avisó del error (onArchivo rechaza): el
+  // archivo se conserva para reintentar y la promesa no queda sin capturar.
   const confirmar = async () => {
     if (!archivo || !tipoActivo) return
-    await onArchivo(archivo, tipoActivo)
+    try {
+      await onArchivo(archivo, tipoActivo)
+    } catch {
+      return
+    }
     limpiar()
   }
 

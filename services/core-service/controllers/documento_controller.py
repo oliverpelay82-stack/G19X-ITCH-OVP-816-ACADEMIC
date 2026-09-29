@@ -47,6 +47,14 @@ def _documento_o_404(db: Session, documento_id: str) -> Documento:
     return documento
 
 
+def _leer_acotado(archivo) -> bytes:
+    """
+    Lee a lo sumo el límite del Nivel 1 más un byte: basta para saber si el
+    archivo lo excede, sin cargar a memoria un archivo arbitrariamente grande.
+    """
+    return archivo.read(MAX_FILE_SIZE_BYTES + 1)
+
+
 def _leer_verificado(db: Session, documento: Documento, request: Request) -> bytes:
     """Lectura con RIE-03: 409 si la huella del binario no coincide con la registrada."""
     try:
@@ -61,7 +69,12 @@ def _leer_verificado(db: Session, documento: Documento, request: Request) -> byt
     status_code=status.HTTP_201_CREATED,
     summary="Subir un archivo PDF o imagen a un expediente (Validación Nivel 1)",
 )
-async def subir_documento(
+# Función síncrona a propósito: todo su trabajo es bloqueante (consultas
+# SQLAlchemy, SHA-256, escritura en la bóveda y la consulta al rules-service al
+# reevaluar el semáforo). FastAPI la ejecuta en su pool de hilos; declarada
+# `async`, ese trabajo detenía el bucle de eventos y el servicio completo
+# dejaba de responder mientras duraba la carga.
+def subir_documento(
     request: Request,
     expediente_id: str = Form(..., description="ID del expediente al que se vinculará"),
     tipo_documento: TipoDocumentoEnum = Form(
@@ -93,8 +106,8 @@ async def subir_documento(
             detail=f"Expediente con ID '{expediente_id}' no encontrado.",
         )
 
-    # 2. Leer contenido binario
-    contenido = await file.read()
+    # 2. Leer contenido binario (acotado al límite del Nivel 1 más un byte)
+    contenido = _leer_acotado(file.file)
     tamanio_bytes = len(contenido)
 
     # 3. Validación Nivel 1: Archivo vacío o excede tamaño máximo

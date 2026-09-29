@@ -522,6 +522,7 @@ export default function ExpedientesTab({
       onRefresh()
     } catch (err) {
       toast.error('Carga rechazada', err.message)
+      throw err // DropZone conserva el archivo para reintentar, igual que en la Bóveda
     } finally {
       setSubiendoEn(null)
     }
