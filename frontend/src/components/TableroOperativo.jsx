@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ArrowUpRight, CalendarClock, ClipboardCheck, TrendingUp } from 'lucide-react'
-import { Card } from './ui/index.js'
+import { ArrowUpRight, CalendarCheck, CalendarClock, ClipboardCheck, TrendingUp } from 'lucide-react'
+import { Card, EmptyState } from './ui/index.js'
 import { getBitacora } from '../services/api.js'
 import { ALERTA_META, getEstadoBadge, TIPO_DOCUMENTO_LABEL } from '../constants.js'
 import { formatFecha } from '../utils/format.js'
@@ -37,7 +37,12 @@ function ProximosVencimientos({ expedientes, onAbrirExpediente }) {
         Vencimientos · {lista.length}
       </p>
       {lista.length === 0 ? (
-        <p className="field-hint">Ningún documento vencido ni próximo a vencer.</p>
+        <EmptyState
+          className="empty-state--tarjeta"
+          icon={CalendarCheck}
+          titulo="Sin vencimientos"
+          descripcion="Ningún documento vencido ni próximo a vencer."
+        />
       ) : (
         <ul className="tablero-lista">
           {lista.slice(0, MAX_FILAS).map((d) => {
@@ -84,7 +89,12 @@ function PendientesAnalista({ expedientes, onAbrirExpediente }) {
         Pendientes del analista · {total}
       </p>
       {total === 0 ? (
-        <p className="field-hint">Nada pendiente: todos los dictámenes están resueltos.</p>
+        <EmptyState
+          className="empty-state--tarjeta"
+          icon={ClipboardCheck}
+          titulo="Nada pendiente"
+          descripcion="Todos los dictámenes están resueltos."
+        />
       ) : (
         <ul className="tablero-lista">
           {grupos
@@ -104,7 +114,8 @@ function PendientesAnalista({ expedientes, onAbrirExpediente }) {
                       title={expediente.titular?.razon_social || undefined}
                     >
                       <span className="mono">{expediente.codigo_expediente}</span>
-                      {n > 1 ? ` · ${n}` : ''}
+                      {/* Espacio de no separación: el chip es inline-flex y recorta el espacio inicial del texto. */}
+                      {n > 1 ? ` · ${n}` : ''}
                     </button>
                   ))}
                 </div>

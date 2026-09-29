@@ -10,9 +10,10 @@ const contar = (lista, prueba) => lista.reduce((n, x) => n + (prueba(x) ? 1 : 0)
 const enMB = (bytes) => `${(bytes / (1024 * 1024)).toLocaleString('es-MX', { maximumFractionDigits: 1 })} MB`
 
 /**
- * Fila de KPIs compacta (~75 px): cuatro tarjetas horizontales con icono en
- * micro-squircle, etiqueta en versales, cifra tabular y un desglose que
- * explica de dónde sale el número. Se elevan 1 px al pasar el cursor.
+ * Fila de KPIs compacta: cuatro tarjetas de igual ancho con icono en
+ * micro-squircle, etiqueta en versales, cifra tabular y, debajo, un desglose
+ * que explica de dónde sale el número (nunca se recorta). Se elevan 1 px al
+ * pasar el cursor.
  */
 export default function MetricsCards({ titulares, expedientes, documentos, loading }) {
   const datos = useMemo(() => {
@@ -25,9 +26,9 @@ export default function MetricsCards({ titulares, expedientes, documentos, loadi
       morales,
       fisicas: titulares.length - morales,
       semaforo: [
-        { id: 'ok', label: 'Conformes', titulo: 'expedientes conformes', n: contar(expedientes, (e) => e.estado_cumplimiento === 'CONFORME') },
-        { id: 'warn', label: 'Revisión', titulo: 'expedientes en revisión', n: contar(expedientes, (e) => e.estado_cumplimiento === 'EN_REVISION') },
-        { id: 'bad', label: 'No conformes', titulo: 'expedientes no conformes', n: contar(expedientes, (e) => e.estado_cumplimiento === 'NO_CONFORME') },
+        { id: 'ok', label: ['conforme', 'conformes'], n: contar(expedientes, (e) => e.estado_cumplimiento === 'CONFORME') },
+        { id: 'warn', label: ['en revisión', 'en revisión'], n: contar(expedientes, (e) => e.estado_cumplimiento === 'EN_REVISION') },
+        { id: 'bad', label: ['no conforme', 'no conformes'], n: contar(expedientes, (e) => e.estado_cumplimiento === 'NO_CONFORME') },
       ],
       bytes,
       completitud,
@@ -51,12 +52,12 @@ export default function MetricsCards({ titulares, expedientes, documentos, loadi
       label: 'Expedientes',
       valor: expedientes.length,
       pie: (
-        <span className="metric-pills" aria-label="Semáforo de expedientes">
+        <span className="metric-estados" aria-label="Semáforo de expedientes">
           {datos.semaforo.map((s) => (
-            <span key={s.id} className={`pill pill--${s.id}`} title={`${s.n} ${s.titulo}`}>
+            <span key={s.id} className={`metric-estado metric-estado--${s.id}`}>
               <span className={`status-dot status-dot--${s.id}`} aria-hidden="true" />
-              <span className="tabular">{s.n}</span>
-              <span className="pill-label">{s.label}</span>
+              <strong className="tabular">{s.n}</strong>
+              {s.label[s.n === 1 ? 0 : 1]}
             </span>
           ))}
         </span>

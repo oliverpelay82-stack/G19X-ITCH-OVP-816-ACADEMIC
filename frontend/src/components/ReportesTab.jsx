@@ -82,6 +82,26 @@ export default function ReportesTab({ expedientes, loading, isOnline = true, onA
 
   return (
     <div className="tab-panel">
+      {/* El reporte global es una acción de toda la pestaña: va en la barra, como
+          la acción principal de las demás vistas, y no dentro de una tarjeta. */}
+      <div className="toolbar">
+        <p className="toolbar-nota">
+          <span className="eyebrow">Reporte global</span>
+          Indicadores, expedientes y alertas con recomendación (RF-23, RF-24).
+        </p>
+        <div className="toolbar-action toolbar-grupo">
+          <Select etiqueta="Tipo de expediente del reporte" value={tipoGlobal} onChange={(e) => setTipoGlobal(e.target.value)}>
+            <option value="">Todos los expedientes</option>
+            {TIPOS_EXPEDIENTE.map((t) => (
+              <option key={t.value} value={t.value}>
+                Solo {t.label.toLowerCase()}s
+              </option>
+            ))}
+          </Select>
+          <ExportarReporte ruta="/reportes/cumplimiento" params={{ tipo_expediente: tipoGlobal }} disabled={!isOnline} />
+        </div>
+      </div>
+
       <section className="report-grid" aria-label="Indicadores de cumplimiento">
         <Card as="article" className="report-card">
           <p className="eyebrow">Cumplimiento global</p>
@@ -131,22 +151,6 @@ export default function ReportesTab({ expedientes, loading, isOnline = true, onA
               </li>
             ))}
           </ul>
-          <p className="eyebrow report-sub">Reporte global</p>
-          <p className="field-hint">Indicadores, expedientes y alertas con recomendación.</p>
-          <Select
-            etiqueta="Tipo de expediente del reporte"
-            claseContenedor="report-select"
-            value={tipoGlobal}
-            onChange={(e) => setTipoGlobal(e.target.value)}
-          >
-            <option value="">Todos los expedientes</option>
-            {TIPOS_EXPEDIENTE.map((t) => (
-              <option key={t.value} value={t.value}>
-                Solo {t.label.toLowerCase()}s
-              </option>
-            ))}
-          </Select>
-          <ExportarReporte ruta="/reportes/cumplimiento" params={{ tipo_expediente: tipoGlobal }} disabled={!isOnline} />
         </Card>
       </section>
 

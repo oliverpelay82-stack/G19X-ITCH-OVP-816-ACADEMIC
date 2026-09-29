@@ -10,6 +10,7 @@ import {
   Badge,
   Button,
   Card,
+  EmptyState,
   Field,
   IconButton,
   Input,
@@ -274,6 +275,19 @@ export const CASOS = [
         b9ea8ab3
       </KeyValue>
     ),
+  },
+  {
+    nombre: 'EmptyState sin variante (tablas y vistas vacías)',
+    actual: (
+      <div className="empty-state">
+        <span className="squircle squircle--lg empty-icon" aria-hidden="true">
+          <X size={16} />
+        </span>
+        <p className="empty-title">Sin coincidencias</p>
+        <p className="empty-desc">Ajusta la búsqueda.</p>
+      </div>
+    ),
+    nuevo: <EmptyState icon={X} titulo="Sin coincidencias" descripcion="Ajusta la búsqueda." />,
   },
   {
     nombre: 'Tooltip sobre un botón de icono (Header)',

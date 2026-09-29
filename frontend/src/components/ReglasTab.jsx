@@ -215,6 +215,15 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
           label="Buscar reglas"
         />
         <Segmented label="Filtrar por familia normativa" valor={filtroFamilia} onChange={setFiltroFamilia} opciones={opcionesFamilia} />
+
+        <Button variante="primary" icono={Plus} className="toolbar-action" onClick={() => setModalAbierto(true)}>
+          Nueva regla
+        </Button>
+      </div>
+
+      {/* Los filtros secundarios van en su propio renglón, como en Expedientes: a
+          1366 px (RNF-07) no caben en una sola línea con el buscador y la acción. */}
+      <div className="toolbar toolbar--sub">
         <Segmented label="Filtrar por estado" valor={filtroEstado} onChange={setFiltroEstado} opciones={opcionesEstado} />
 
         <Select etiqueta="Filtrar por severidad" value={filtroSeveridad} onChange={(e) => setFiltroSeveridad(e.target.value)}>
@@ -234,10 +243,6 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
             </option>
           ))}
         </Select>
-
-        <Button variante="primary" icono={Plus} className="toolbar-action" onClick={() => setModalAbierto(true)}>
-          Nueva regla
-        </Button>
       </div>
 
       <Card className="table-card">

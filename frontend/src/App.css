@@ -457,7 +457,7 @@
 }
 
 .btn-icon {
-  width: 32px;
+  width: var(--control-md);
   padding: 0;
 }
 
@@ -601,44 +601,6 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--s-1);
-}
-
-/* Micro-pills del semáforo en la métrica de expedientes. */
-.pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  height: 20px;
-  padding: 0 7px;
-  border: 1px solid var(--neutral-border);
-  border-radius: var(--r-full);
-  background: var(--neutral-bg);
-  font-size: var(--fs-micro);
-  font-weight: 500;
-  color: var(--neutral);
-  white-space: nowrap;
-}
-
-.pill--ok {
-  background: var(--ok-bg);
-  border-color: var(--ok-border);
-  color: var(--ok);
-}
-
-.pill--warn {
-  background: var(--warn-bg);
-  border-color: var(--warn-border);
-  color: var(--warn);
-}
-
-.pill--bad {
-  background: var(--bad-bg);
-  border-color: var(--bad-border);
-  color: var(--bad);
-}
-
-.pill-label {
-  font-weight: 400;
 }
 
 /* Etiquetas y chips neutros */
@@ -1362,6 +1324,14 @@ select option {
   text-align: center;
 }
 
+/* Dentro de una tarjeta que la fila estira: el estado vacío ocupa el alto
+   libre y se centra, en lugar de dejar un renglón suelto sobre un hueco. */
+.empty-state--tarjeta {
+  flex: 1;
+  justify-content: center;
+  padding: var(--s-4) var(--s-2);
+}
+
 .empty-icon {
   margin-bottom: var(--s-2);
 }
@@ -1388,7 +1358,7 @@ select option {
 /* ══════════════════════ 5. MÉTRICAS ═════════════════════════════ */
 .metrics-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr) minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: var(--s-3);
 }
 
@@ -1414,10 +1384,13 @@ select option {
   color: var(--icon-hover);
 }
 
+/* El texto se alinea arriba: etiquetas y cifras quedan en la misma línea en
+   las cuatro tarjetas aunque una tenga barra o un desglose de dos renglones. */
 .metric-text {
   display: flex;
   flex: 1;
   flex-direction: column;
+  align-self: flex-start;
   gap: 3px;
   min-width: 0;
 }
@@ -1430,11 +1403,12 @@ select option {
   color: var(--text-muted);
 }
 
+/* Cifra y desglose en dos renglones: las cuatro tarjetas tienen la misma
+   estructura y el desglose nunca se recorta, en ningún ancho. */
 .metric-body {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 4px var(--s-2);
+  flex-direction: column;
+  gap: 2px;
   min-width: 0;
 }
 
@@ -1447,20 +1421,43 @@ select option {
 }
 
 .metric-foot {
-  flex: 1 1 0;
-  min-width: 0;
   font-size: var(--fs-micro);
+  line-height: 1.5;
   color: var(--text-muted);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
-.metric-pills {
-  display: inline-flex;
+/* Semáforo de expedientes: punto y conteo con su etiqueta, sin cápsula,
+   para que quepa en el ancho de una tarjeta. */
+.metric-estados {
+  display: flex;
   flex-wrap: wrap;
-  gap: 4px;
-  min-width: 0;
+  gap: 0 var(--s-3);
+  font-size: var(--fs-micro);
+  line-height: 1.5;
+}
+
+.metric-estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  color: var(--text-secondary);
+}
+
+.metric-estado strong {
+  font-weight: 600;
+}
+
+.metric-estado--ok strong {
+  color: var(--ok);
+}
+
+.metric-estado--warn strong {
+  color: var(--warn);
+}
+
+.metric-estado--bad strong {
+  color: var(--bad);
 }
 
 .metric-bar {
@@ -3051,12 +3048,15 @@ select option {
   margin-top: calc(-1 * var(--s-1));
 }
 
+/* La etiqueta del rango de fechas va en un solo renglón, a la altura de sus
+   campos (a 1366 px se partía en «Apertura / desde»). */
 .date-inline {
   display: inline-flex;
   align-items: center;
   gap: var(--s-2);
   font-size: var(--fs-small);
   color: var(--text-muted);
+  white-space: nowrap;
 }
 
 .date-inline input {
@@ -3377,8 +3377,21 @@ select option {
   margin-top: var(--s-2);
 }
 
-.report-select select {
-  width: 100%;
+/* Barra del reporte global: la nota a la izquierda y el filtro con la
+   exportación juntos a la derecha. */
+.toolbar-nota {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-2);
+  min-width: 0;
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+}
+
+.toolbar-grupo {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
 }
 
 .dist-list {
