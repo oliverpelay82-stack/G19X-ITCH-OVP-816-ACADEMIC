@@ -1,0 +1,87 @@
+@startuml p1-casos-de-uso-ingesta-blindada
+' P1 — Ingesta blindada (extensión PLUS del PRD, sección 21).
+' Trazabilidad: PLUS-01 (HU-34), PLUS-02 (HU-35), PLUS-03 (HU-36);
+' RF-02, RF-03, RF-04, RF-16, RF-18; DOC-05 Nivel 1 (Tabla 1) y regla de
+' caducidad estricta (RCV); MRD MR-11 y MR-20.
+' Actualiza los casos de uso de F1 (carga) y F3 (auditoría) del PRD §6.
+
+title P1 — Ingesta blindada: casos de uso
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+skinparam usecase {
+  BackgroundColor<<PLUS>> #FFFBEB
+  BorderColor<<PLUS>> #B45309
+}
+
+actor "Responsable de\nCumplimiento" as RC
+actor "Administrador\ndel Sistema" as ADM
+actor "Auditor" as AUD
+actor "rules-service\n(Nivel 2)" as RULES <<sistema>>
+
+rectangle "Motor de Validación de Cumplimiento Documental" {
+
+  package "M1 — Gestión de Expedientes" {
+    usecase "Cargar documento\nen un expediente\n(RF-02, HU-03)" as UC_CARGA
+    usecase "Validar estructura (Nivel 1):\nfirma binaria, 15 MB\ny huella SHA-256 (RF-03)" as UC_N1
+    usecase "Verificar unicidad de la\nhuella en el expediente\n(PLUS-01, HU-34)" as UC_UNICO <<PLUS>>
+    usecase "Rechazar duplicado\n(409 con el documento\nya custodiado)" as UC_DUP <<PLUS>>
+    usecase "Detectar PDF protegido\ncon contraseña\n(PLUS-02, HU-35)" as UC_PROT <<PLUS>>
+    usecase "Custodiar como No conforme\n«Archivo protegido,\nno procesable»" as UC_PROT_NC <<PLUS>>
+  }
+
+  package "M3 / M4 — Auditoría del documento" {
+    usecase "Auditar documento\n(F3, HU-19)" as UC_AUD
+    usecase "Evaluar vigencia\n(RCV-01 a RCV-03)" as UC_VIG
+    usecase "Aplicar caducidad de 30 días\nde la opinión 32-D\n(RCV-04, PLUS-03)" as UC_RCV4 <<PLUS>>
+    usecase "Leer el sentido de la opinión\n(RSC-OPIN-SENT, PLUS-03)" as UC_SENT <<PLUS>>
+    usecase "Ratificar dictamen\n(Nivel 5, RN-05)" as UC_RAT
+  }
+
+  package "M2 / M5 — Reglas y alertas" {
+    usecase "Pausar o reactivar\nreglas del catálogo\n(RF-06, RF-08)" as UC_REGLAS
+    usecase "Consultar alertas con\nrecomendación\n(RF-18, RF-21)" as UC_ALERTAS
+  }
+}
+
+RC --> UC_CARGA
+RC --> UC_AUD
+RC --> UC_RAT
+RC --> UC_ALERTAS
+AUD --> UC_ALERTAS
+ADM --> UC_REGLAS
+
+UC_CARGA ..> UC_N1 : <<include>>
+UC_CARGA ..> UC_UNICO : <<include>>
+UC_CARGA ..> UC_PROT : <<include>>
+UC_DUP .up.> UC_UNICO : <<extend>>\n[huella ya custodiada\ne íntegra en el expediente]
+UC_PROT_NC .up.> UC_PROT : <<extend>>\n[PDF con contraseña\nde apertura]
+
+UC_AUD ..> UC_VIG : <<include>>
+UC_RCV4 .up.> UC_VIG : <<extend>>\n[tipo OPINION_CUMPLIMIENTO\ny RCV-04 activa]
+UC_SENT .up.> UC_AUD : <<extend>>\n[tipo OPINION_CUMPLIMIENTO y\nRSC-OPIN-SENT activa]
+UC_VIG -- RULES
+
+note right of UC_DUP
+  Un documento ALTERADO (RIE-03) no cuenta
+  como duplicado: recargar el original es
+  justamente la corrección que indica su alerta.
+end note
+
+note right of UC_PROT_NC
+  El archivo se custodia (evidencia de lo
+  entregado) con un dictamen NO_CONFORME de
+  origen Nivel 1. No admite ratificación:
+  se corrige cargando una versión sin
+  contraseña, que lo sustituye.
+end note
+
+note right of UC_SENT
+  Lectura determinista del texto (sin IA):
+  NEGATIVO -> NO_CONFORME;
+  POSITIVO -> elemento cumplido con cita;
+  otro sentido o sin localizar -> EN_REVISION.
+end note
+
+@enduml

@@ -1,0 +1,78 @@
+@startuml p1-actividad-carga-documento
+' P1 — Actividad de carga de un documento con la ingesta blindada.
+' Actualiza el flujo F1 del PRD §6 (Nivel 1 del DOC-05).
+' Trazabilidad: RF-02, RF-03, RF-04; PLUS-01 (HU-34), PLUS-02 (HU-35);
+' DOC-05 Tabla 1 («Archivo protegido con contraseña»); MRD MR-11 y MR-20.
+' Implementación: services/core-service/controllers/documento_controller.py
+
+title P1 — Carga de un documento (Nivel 1 blindado)
+
+|Responsable de Cumplimiento|
+start
+:Selecciona expediente, tipo documental\ny archivo (PDF, JPG o PNG);
+:Envía la carga\n(POST /api/v1/documentos/upload);
+
+|core-service (Nivel 1)|
+if (¿El expediente existe?) then (no)
+  :404 Expediente no encontrado;
+  stop
+endif
+:Lee el archivo acotado a 15 MB + 1 byte;
+if (¿Vacío o mayor a 15 MB?) then (sí)
+  :400 [Nivel 1] tamaño inválido;
+  stop
+endif
+if (¿MIME y firma binaria válidos?) then (no)
+  :415 / 400 [Nivel 1] formato o\nestructura binaria inválida;
+  stop
+endif
+:Calcula la huella SHA-256 (RF-03);
+:Toma el candado del expediente\n(pg_advisory_xact_lock)\npara serializar cargas simultáneas;
+if (¿La misma huella ya está custodiada\nen este expediente y el documento\nno está ALTERADO? (PLUS-01)) then (sí)
+  :409 Conflict: «el archivo ya está custodiado
+  como <tipo> (<nombre>, <fecha>)»;
+  note right
+    No se escribe en la bóveda
+    ni se crea un documento nuevo:
+    el dictamen vigente se conserva.
+  end note
+  stop
+else (no)
+endif
+if (¿Es PDF con contraseña de apertura? (PLUS-02)) then (sí)
+  :Marca la carga como protegida;
+  note right
+    Un PDF con solo contraseña de
+    propietario (permisos) se abre
+    sin clave: NO cuenta como protegido.
+  end note
+else (no)
+endif
+
+|Bóveda y PostgreSQL|
+:Guarda el binario en storage_vault\n(<huella12>_<nombre>);
+:Inserta el documento (INTEGRO)\ny el evento INGESTA_DOCUMENTO;
+if (¿Carga protegida?) then (sí)
+  :Inserta dictamen NO_CONFORME
+  de origen NIVEL_1 «Archivo protegido,
+  no procesable» y el evento
+  ARCHIVO_PROTEGIDO en la bitácora;
+else (no)
+endif
+:Reevalúa el semáforo del expediente\n(RIE-01; subir nunca aprueba);
+:COMMIT;
+
+|core-service (Nivel 1)|
+:201 Created con el documento\n(y la advertencia de Nivel 1 si aplica);
+
+|Responsable de Cumplimiento|
+if (¿Trae advertencia de Nivel 1?) then (sí)
+  :Ve el aviso «Archivo protegido» y la alerta
+  DICTAMEN_NO_CONFORME con la recomendación:
+  cargar una versión sin contraseña;
+else (no)
+  :Ve «Documento custodiado»;
+endif
+stop
+
+@enduml

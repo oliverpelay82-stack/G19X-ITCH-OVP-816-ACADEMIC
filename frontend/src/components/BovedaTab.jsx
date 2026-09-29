@@ -8,6 +8,7 @@ import { SkeletonRows } from './Skeleton.jsx'
 import useToast from '../hooks/useToast.js'
 import useDebounce from '../hooks/useDebounce.js'
 import { uploadDocumento } from '../services/api.js'
+import { avisarCarga } from '../utils/nivel1.js'
 import { TIPO_DOCUMENTO_LABEL, TIPO_EXPEDIENTE_LABEL, TIPOS_DOCUMENTO, tiposParaCarga } from '../constants.js'
 import { formatBytes, formatFecha, formatFechaCorta, hashCorto } from '../utils/format.js'
 
@@ -64,8 +65,8 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
       formData.append('expediente_id', expedienteId)
       formData.append('tipo_documento', tipo)
       formData.append('file', archivo)
-      await uploadDocumento(formData)
-      toast.exito('Documento custodiado', `${archivo.name} · huella registrada en la bóveda`)
+      const documento = await uploadDocumento(formData)
+      avisarCarga(toast, documento, `${archivo.name} · huella registrada en la bóveda`)
       setIngestaAbierta(false)
       onRefresh()
     } catch (err) {

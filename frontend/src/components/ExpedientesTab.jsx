@@ -10,6 +10,7 @@ import DetalleDocumentoModal from './DetalleDocumentoModal.jsx'
 import HistorialExpediente from './HistorialExpediente.jsx'
 import useDebounce from '../hooks/useDebounce.js'
 import { analizarDocumento, createExpediente, getExpedienteById, uploadDocumento } from '../services/api.js'
+import { avisarCarga } from '../utils/nivel1.js'
 import {
   ESTADO_DOCUMENTO,
   getEstadoBadge,
@@ -517,8 +518,8 @@ export default function ExpedientesTab({
       formData.append('expediente_id', expedienteId)
       formData.append('tipo_documento', tipoDocumento)
       formData.append('file', archivo)
-      await uploadDocumento(formData)
-      toast.exito('Documento custodiado', `${archivo.name} → bóveda criptográfica`)
+      const documento = await uploadDocumento(formData)
+      avisarCarga(toast, documento, `${archivo.name} → bóveda criptográfica`)
       onRefresh()
     } catch (err) {
       toast.error('Carga rechazada', err.message)

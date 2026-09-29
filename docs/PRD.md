@@ -11,11 +11,11 @@
 | Desarrollo (Scrum Master / Desarrollador) | Oliver Villanueva Pelay, residente (No. de control 21520500) |
 | Stakeholder evaluador | Edgar Loheffelmman (PluriOne) |
 | Asesor interno | Dr. Wilfrido Campos Francisco |
-| Versión del documento | 1.2 — 28 de septiembre de 2026 (1.0: 27 de septiembre de 2026) |
+| Versión del documento | 1.3 — 29 de septiembre de 2026 (1.2: 28 de septiembre; 1.0: 27 de septiembre de 2026) |
 | Estado del producto | En desarrollo: Sprints 1 y 2 implementados, Sprint 3 implementado parcialmente, Sprint 4 implementado salvo HU-31, Módulo 7 pendiente |
 | Documento hermano | [MRD.md](MRD.md) — requerimientos de mercado |
 
-> **Fuentes.** Este PRD no introduce requisitos nuevos: consolida los documentos oficiales del proyecto —el anteproyecto de residencia, los entregables DOC-01 a DOC-08 ([ESPECIFICACIONES_DOC01_A_DOC08.txt](ESPECIFICACIONES_DOC01_A_DOC08.txt)) y el DOCUMENTO GENERAL que los integra— y el estado verificado del sistema en el repositorio. Cada sección indica su fuente entre corchetes; «DG» es el DOCUMENTO GENERAL.
+> **Fuentes.** Salvo las extensiones PLUS de la [sección 21](#21-extensiones-plus), que se marcan como tales y citan la norma que las respalda, este PRD no introduce requisitos nuevos: consolida los documentos oficiales del proyecto —el anteproyecto de residencia, los entregables DOC-01 a DOC-08 ([ESPECIFICACIONES_DOC01_A_DOC08.txt](ESPECIFICACIONES_DOC01_A_DOC08.txt)) y el DOCUMENTO GENERAL que los integra— y el estado verificado del sistema en el repositorio. Cada sección indica su fuente entre corchetes; «DG» es el DOCUMENTO GENERAL.
 
 ---
 
@@ -41,7 +41,8 @@
 18. [Dependencias y supuestos](#18-dependencias-y-supuestos)
 19. [Cambios respecto del anteproyecto](#19-cambios-respecto-del-anteproyecto)
 20. [Pendientes y preguntas abiertas](#20-pendientes-y-preguntas-abiertas)
-21. [Glosario](#21-glosario)
+21. [Extensiones PLUS](#21-extensiones-plus)
+22. [Glosario](#22-glosario)
 
 ---
 
@@ -296,8 +297,8 @@ Prioridad tomada de las historias de usuario asociadas (Cap. VII); «—» cuand
 | Familia | Alcance | Reglas definidas |
 |---|---|---|
 | RIE — Integridad y Estructura | Niveles 1 y 2 | RIE-01 Completitud del expediente; RIE-02 Vinculación obligatoria de anexos; RIE-03 Integridad criptográfica del archivo. |
-| RCV — Cronológicas y de Vigencia | Nivel 2 | RCV-01 Vigencia mandatoria (vencido < 0 días, próximo 0–30, vigente > 30); RCV-02 Caducidad del comprobante de domicilio (90 días desde la emisión); RCV-03 Caducidad de la constancia de situación fiscal (90 días). |
-| RSC — Semánticas y Contractuales | Nivel 4 (IA) | RSC-01 Cláusulas esenciales (confidencialidad, penalización, vigencia y terminación); RSC-02 Datos del firmante. |
+| RCV — Cronológicas y de Vigencia | Nivel 2 | RCV-01 Vigencia mandatoria (vencido < 0 días, próximo 0–30, vigente > 30); RCV-02 Caducidad del comprobante de domicilio (90 días desde la emisión); RCV-03 Caducidad de la constancia de situación fiscal (90 días); RCV-04 Caducidad de la opinión de cumplimiento 32-D (30 días; extensión PLUS-03). |
+| RSC — Semánticas y Contractuales | Nivel 4 (IA) | RSC-01 Cláusulas esenciales (confidencialidad, penalización, vigencia y terminación) y elementos de contenido por tipo, entre ellos el sentido de la opinión 32-D (RSC-OPIN-SENT, lectura determinista; extensión PLUS-03); RSC-02 Datos del firmante. |
 | RDS — Dinámicas y Sectoriales | Configurables | RDS-01 Alta dinámica de requisitos; RDS-02 Criterio en lenguaje natural para la IA; RDS-03 Ejecución supervisada obligatoria. |
 
 Severidades: Crítica, Alta, Media-Alta y Media [RF-08]. Toda regla puede pausarse sin borrarse [DG Tabla 24].
@@ -332,8 +333,8 @@ Los demás documentos obligatorios de los inventarios del DOC-02 (poderes, estat
 
 | Nivel | Responsable | Qué hace |
 |---|---|---|
-| 1. Estructural y criptográfico | core-service | Firma binaria (`%PDF-`, `FF D8 FF`, `89 50 4E 47`), máximo 15 MB y huella SHA-256 (NOM-151-SCFI-2016). |
-| 2. Determinista | core-service y rules-service | Completitud por tipo de expediente (RIE-01), anexos (RIE-02) y vigencia (RCV-01 a RCV-03). No usa IA. |
+| 1. Estructural y criptográfico | core-service | Firma binaria (`%PDF-`, `FF D8 FF`, `89 50 4E 47`), máximo 15 MB, huella SHA-256 (NOM-151-SCFI-2016), unicidad de la huella en el expediente (PLUS-01) y detección de PDF protegido con contraseña (PLUS-02). |
+| 2. Determinista | core-service y rules-service | Completitud por tipo de expediente (RIE-01), anexos (RIE-02) y vigencia (RCV-01 a RCV-04). No usa IA. |
 | 3. Extracción de texto | ai-service | Capa vectorial con PyMuPDF; si una página rinde menos de 120 caracteres, rasterizado a 300 ppp y OCR con Tesseract 5.4 (español e inglés) tras preprocesamiento OpenCV. Texto persistido por huella SHA-256. |
 | 4. Análisis semántico | ai-service + Groq Cloud | Qwen 3.8 (27B) a temperatura 0.0 con salida JSON estricta. **El modelo solo extrae datos**; el veredicto lo calculan reglas deterministas. |
 | 5. Gobernanza humana | Analista | Confianza ≥ 0.85: Conforme; 0.70–0.84: revisión humana; < 0.70: lectura no fiable, revisión humana. **Una confianza baja nunca produce un rechazo.** |
@@ -374,7 +375,7 @@ Cada alerta incluye su recomendación correctiva (RF-21). Las alertas se derivan
 |---|---|---|
 | Documento ilegible | Se notifica que debe recargarse con mejor resolución. | Amarillo |
 | Servicio de IA no disponible | Reintentos con espera progresiva; si persiste, el documento queda pendiente sin perderse. | Alerta interna |
-| Archivo protegido con contraseña | El Nivel 1 detecta que no puede procesarse. | Rojo |
+| Archivo protegido con contraseña | El Nivel 1 detecta la contraseña de apertura en la carga, custodia el archivo y emite un dictamen No conforme «Archivo protegido, no procesable» (PLUS-02). | Rojo |
 
 Una falla en un documento nunca detiene la validación del resto del expediente.
 
@@ -661,7 +662,55 @@ Riesgos adicionales identificados en la implementación [DG §8.7 y §10.7]:
 
 ---
 
-## 21. Glosario
+## 21. Extensiones PLUS
+
+Requerimientos que **no forman parte del DOC-04** y se agregan para robustecer el motor sin salir del marco normativo de la documentación (DOC-03: ISO 30301, NOM-151-SCFI-2016, Código Fiscal de la Federación y LFPDPPP). Cada uno se documenta con sus diagramas UML en [`docs/uml/`](uml/README.md) antes de implementarse. El Módulo 7 (RF-25, RF-26) queda para la fase final del proyecto.
+
+### 21.1 P1 — Ingesta blindada
+
+| ID | Requerimiento | Fundamento | Estado |
+|---|---|---|---|
+| PLUS-01 | **Unicidad de la huella en el expediente.** Si el archivo cargado tiene la misma huella SHA-256 que un documento ya custodiado en el mismo expediente, la carga se rechaza con 409 e identifica el documento existente (tipo, nombre y fecha). Un documento ALTERADO (RIE-03) no cuenta: recargar su original es la corrección que indica su alerta. La misma huella en **otro** expediente sí se admite. | RF-03 y RF-04; ISO 30301 (integridad del expediente). Sin la regla, recargar el mismo archivo lo convierte en la versión vigente sin dictamen y deja como histórico el que ya estaba auditado. | Implementado |
+| PLUS-02 | **PDF protegido detectado en el Nivel 1.** Un PDF con contraseña de apertura se custodia (evidencia de lo entregado) con un dictamen No conforme de origen `NIVEL_1` y el evento `ARCHIVO_PROTEGIDO` en la bitácora. El dictamen no admite ratificación: se corrige cargando una versión sin contraseña, que lo sustituye. Un PDF con solo contraseña de propietario (permisos) se abre sin clave y no cuenta como protegido. | DOC-05, Tabla 1: «Archivo protegido con contraseña… El Nivel 1 detecta que el archivo no puede abrirse ni procesarse. Rojo». Hasta ahora se detectaba en el Nivel 3, al auditar. | Implementado |
+| PLUS-03 | **Opinión de cumplimiento 32-D.** RCV-04: caducidad estricta de 30 días naturales desde la emisión. RSC-OPIN-SENT: el sentido de la opinión se lee del texto con reglas deterministas (sin IA): **negativo → No conforme**; positivo → elemento cumplido con su cita; sin localizar, ambiguo u otro sentido (sin obligaciones, no inscrito) → revisión humana. Ambas reglas se pausan desde el catálogo. | DOC-05, caducidad estricta: «opiniones de cumplimiento fiscal con vigencia de 30 días naturales a partir de su emisión»; CFF Art. 32-D (DOC-03). | Implementado |
+
+**Historias de usuario**
+
+| ID | Historia | Módulo | Prioridad | Estado |
+|---|---|---|---|---|
+| HU-34 | Como responsable de cumplimiento, quiero que el sistema rechace un archivo que ya está custodiado en el expediente, para no perder el dictamen vigente ni auditar dos veces el mismo documento. | M1 | Alta | Implementado |
+| HU-35 | Como responsable de cumplimiento, quiero saber al cargarlo que un PDF está protegido con contraseña, para pedir al emisor una versión procesable. | M1 | Alta | Implementado |
+| HU-36 | Como responsable de cumplimiento, quiero que una opinión 32-D vencida (más de 30 días) o en sentido negativo deje el documento No conforme, con la cita que lo sustenta. | M4 | Alta | Implementado |
+
+**Criterios de aceptación**
+
+- Cargar dos veces el mismo archivo en un expediente responde 409 la segunda vez; no crea documento, no escribe en la bóveda ni cambia el semáforo.
+- Dos cargas simultáneas del mismo archivo en el mismo expediente dejan un solo documento (candado por expediente en PostgreSQL).
+- Recargar el original de un documento ALTERADO se acepta.
+- Un PDF con contraseña de apertura queda custodiado, No conforme, con la alerta `DICTAMEN_NO_CONFORME` y su recomendación; su ratificación responde 409.
+- Una opinión emitida hace más de 30 días queda vencida por RCV-04 y la alerta `DOCUMENTO_VENCIDO` cita RCV-04; una en sentido negativo queda No conforme aunque esté vigente.
+- Los dictámenes previos no cambian (son inmutables): RCV-04 aplica a las opiniones auditadas después de su alta.
+
+**Implementación y pruebas** (versión 1.3):
+
+| Pieza | Dónde | Pruebas |
+|---|---|---|
+| PLUS-01: 409 por huella repetida y candado `pg_advisory_xact_lock` por expediente | `core-service/controllers/documento_controller.py` | `tests/test_ingesta_blindada.py` (casos 1–5; el de concurrencia falla sin el candado) |
+| PLUS-02: detección con pypdf y dictamen de origen `NIVEL_1` | `core-service/motor/archivo_protegido.py` | `tests/test_ingesta_blindada.py` (casos 6–9) |
+| PLUS-03: RCV-04 y RSC-OPIN-SENT en el catálogo | `rules-service/seed_reglas_validacion.py` | `tests/test_rules_service.py` |
+| PLUS-03: lectura determinista del sentido (sin Groq) y resultado `NO_CUMPLE` | `ai-service/pipelines/opinion_cumplimiento.py`, `verificacion_contenido.py` | `services/ai-service/tests/test_opinion_cumplimiento.py` (20 casos) |
+| PLUS-03: alerta con la cita y la recomendación de la regla incumplida; RCV-04 citada al vencer | `core-service/motor/cumplimiento.py` | `tests/test_ingesta_blindada.py` (casos 10–11) |
+| Avisos de la carga, origen `NIVEL_1`, resultado «Incumple», evento `ARCHIVO_PROTEGIDO` | `frontend/src/utils/nivel1.js` y componentes | Verificación en vivo con Playwright |
+
+Verificado en vivo el 29/09/2026 con los tres servicios y Groq (core sobre la base de pruebas): una opinión negativa vigente queda No conforme con su cita sin consultar al modelo para el sentido (la verificación de contenido no gastó tokens); una positiva de 40 días queda vencida por RCV-04; la leyenda «en caso de que la opinión sea en sentido negativo» no se toma como declaración.
+
+**Nombre de la regla.** El diseño la llamó RSC-01-OPIN-SENT; se implementó como **RSC-OPIN-SENT**, la convención del catálogo para los elementos que no son cláusulas contractuales (RSC-ACTA-*, RSC-PODER-*): RSC-01 es la regla de cláusulas contractuales del DOC-05.
+
+**Diagramas:** [casos de uso](uml/p1-casos-de-uso-ingesta-blindada.puml), [actividad de carga](uml/p1-actividad-carga-documento.puml) y [actividad de auditoría de la opinión 32-D](uml/p1-actividad-auditoria-opinion-32d.puml).
+
+---
+
+## 22. Glosario
 
 | Término | Definición |
 |---|---|

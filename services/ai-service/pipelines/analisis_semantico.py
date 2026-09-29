@@ -464,11 +464,14 @@ def analizar(
         rfc_localizado=rfc_detectado is not None,
         tipo_coincide=tipo_coincide,
         elementos_pendientes=[v["nombre_regla"] for v in verificacion.pendientes],
+        elementos_incumplidos=verificacion.incumplidos,
         verificacion_incompleta=not verificacion.disponible,
         reglas_dinamicas=verificacion.incluye_reglas_dinamicas,
     )
     observaciones.extend(motivos)
-    recomendaciones = [v["recomendacion"] for v in verificacion.pendientes if v.get("recomendacion")]
+    recomendaciones = [
+        v["recomendacion"] for v in verificacion.incumplidos + verificacion.pendientes if v.get("recomendacion")
+    ]
 
     return ResultadoAnalisis(
         tipo_documento_detectado=tipo,
@@ -555,6 +558,7 @@ def _dictaminar(
     rfc_localizado: bool = True,
     tipo_coincide: bool | None = None,
     elementos_pendientes: list[str] | None = None,
+    elementos_incumplidos: list[dict[str, Any]] | None = None,
     verificacion_incompleta: bool = False,
     reglas_dinamicas: bool = False,
 ) -> tuple[str, bool, list[str]]:
@@ -582,6 +586,18 @@ def _dictaminar(
             ESTATUS_NO_CONFORME,
             False,
             motivos + ["Dictamen NO_CONFORME: el documento no pertenece al titular del expediente."],
+        )
+
+    # Un elemento que el documento contradice de forma explícita (hoy, una
+    # opinión 32-D en sentido negativo) es un hecho del documento, como la
+    # vigencia expirada: pesa más que cualquier duda sobre la titularidad.
+    if elementos_incumplidos:
+        detalle = "; ".join(f"{v['nombre_regla']} ({v['codigo_regla']}): {v['observacion']}"
+                            for v in elementos_incumplidos)
+        return (
+            ESTATUS_NO_CONFORME,
+            False,
+            motivos + [f"Dictamen NO_CONFORME: el documento incumple un requisito de forma explícita. {detalle}"],
         )
 
     if rfc_esperado is None:

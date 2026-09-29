@@ -21,3 +21,7 @@ requests>=2.32.0
 # Reportes exportables (RF-23, RF-24): Excel (.xlsx) y PDF
 openpyxl>=3.1.0
 reportlab>=4.2.0
+
+# Nivel 1 — detección de PDF con contraseña de apertura (PLUS-02, DOC-05 Tabla 1).
+# El descifrado AES que usa pypdf se apoya en cryptography (ya declarada arriba).
+pypdf>=5.0.0

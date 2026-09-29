@@ -15,6 +15,11 @@ Por último, RIE-02-CONT-ANX vincula los anexos legales al contrato de
 prestación de servicios (RIE-02, RF-07). Las reglas RSC declaran los elementos
 de contenido que el Nivel 4 localiza en cada tipo de documento (DOC-05, RSC-01).
 
+Extensión PLUS-03 (PRD §21.1): RCV-04 aplica la misma caducidad estricta a la
+opinión de cumplimiento del artículo 32-D (30 días, el ejemplo literal del
+DOC-05) y RSC-OPIN-SENT declara el sentido de la opinión, que el ai-service
+lee con reglas deterministas y no con el modelo.
+
 La precarga es idempotente: solo inserta las reglas que no existen y nunca
 modifica las que el administrador ya editó. El rules-service la ejecuta al
 arrancar (AUTO_SEED=true, por defecto), de modo que un despliegue nuevo con
@@ -203,6 +208,29 @@ REGLAS_BASE = [
         "documento_obligatorio": True,
         "dias_maximos_vigencia": 90,
     },
+    # Caducidad estricta de la opinión de cumplimiento (PLUS-03). El DOC-05 la
+    # pone como ejemplo de la regla: «opiniones de cumplimiento fiscal con
+    # vigencia de 30 días naturales a partir de su emisión».
+    {
+        "codigo_regla": "RCV-04",
+        "nombre_regla": "Caducidad Estricta de la Opinión de Cumplimiento (32-D)",
+        "familia_regla": "RCV",
+        "descripcion": (
+            "La opinión de cumplimiento de obligaciones fiscales (artículo 32-D del Código Fiscal de la Federación) "
+            "tiene una vigencia de 30 días naturales a partir de su emisión (DOC-05, caducidad estricta). El "
+            "sistema calcula la diferencia entre la fecha de evaluación y la fecha de emisión; si supera los 30 "
+            "días, la opinión se marca como vencida. Si el documento no declara fecha de emisión, el caso se turna "
+            "a revisión humana."
+        ),
+        "severidad": "ALTA",
+        "accion": (
+            "Más de 30 días desde la emisión: opinión vencida, Semáforo Rojo y solicitud de una opinión "
+            "actualizada al portal del SAT."
+        ),
+        "tipo_documento": "OPINION_CUMPLIMIENTO",
+        "documento_obligatorio": False,
+        "dias_maximos_vigencia": 30,
+    },
 ]
 
 
@@ -282,6 +310,31 @@ _RSC = [
      "La licencia indica el giro o la actividad que autoriza a operar.",
      "Verificar que la licencia corresponda al giro empresarial del titular; si no lo indica, solicitar la "
      "licencia completa."),
+]
+REGLAS_BASE += [
+    # Sentido de la opinión 32-D (PLUS-03). Es un hecho declarado por el SAT en
+    # un formato fijo: el ai-service lo lee del texto con reglas deterministas
+    # (pipelines/opinion_cumplimiento.py), sin consultar al modelo. A diferencia
+    # de los demás elementos RSC, un sentido NEGATIVO sí deja el dictamen
+    # NO_CONFORME: no es una omisión dudosa, es lo que el documento afirma.
+    {
+        "codigo_regla": "RSC-OPIN-SENT",
+        "nombre_regla": "Sentido positivo de la opinión de cumplimiento",
+        "familia_regla": "RSC",
+        "descripcion": (
+            "La opinión de cumplimiento declara expresamente su sentido. Positivo: el contribuyente está al "
+            "corriente de sus obligaciones fiscales. Negativo: el dictamen es NO_CONFORME. Sin obligaciones, no "
+            "inscrito o sin sentido legible: revisión humana."
+        ),
+        "severidad": "ALTA",
+        "accion": (
+            "Solicitar al titular una opinión de cumplimiento en sentido positivo emitida en los últimos 30 días; "
+            "si es negativa, debe regularizar su situación fiscal ante el SAT antes de continuar."
+        ),
+        "tipo_documento": "OPINION_CUMPLIMIENTO",
+        "documento_obligatorio": False,
+        "dias_maximos_vigencia": None,
+    },
 ]
 REGLAS_BASE += [
     {

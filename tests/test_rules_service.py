@@ -10,7 +10,8 @@ Verifica, en proceso y sin modificar el catálogo:
 6. Una regla con datos inválidos se rechaza con 422 sin llegar a la BD.
 7. Motor de vigencia (unitario, fechas fijas, sin BD): límites de la caducidad
    estricta de 90 días, casos indeterminados, reglas pausadas y RCV-01.
-8. Endpoint /reglas/evaluar-vigencia contra el catálogo real con RCV-02.
+8. Endpoint /reglas/evaluar-vigencia contra el catálogo real con RCV-02, RCV-03
+   y RCV-04 (opinión 32-D, PLUS-03), y la regla RSC-OPIN-SENT en el catálogo.
 9. Inventario de documentos obligatorios (HU-09): agregación unitaria de las
    reglas RIE y endpoint /reglas/documentos-obligatorios (solo lectura).
 
@@ -151,6 +152,24 @@ def prueba_endpoint_vigencia() -> None:
     r = post(tipo_documento="CSF_SAT", fecha_emision=(ref - timedelta(days=91)).isoformat()).json()
     verificar(r["resultado"] == "VENCIDO" and any(e["codigo_regla"] == "RCV-03" for e in r["evaluaciones"]),
               "Constancia fiscal con 91 días: VENCIDA por RCV-03", r["resultado"])
+
+    # PLUS-03: caducidad estricta de la opinión 32-D (30 días desde la emisión, DOC-05).
+    rcv04 = next((r for r in reglas if r["codigo_regla"] == "RCV-04"), None)
+    verificar(rcv04 is not None and rcv04["activo"] and rcv04["tipo_documento"] == "OPINION_CUMPLIMIENTO"
+              and rcv04["dias_maximos_vigencia"] == 30,
+              "RCV-04 está activa en el catálogo para OPINION_CUMPLIMIENTO con 30 días")
+    r = post(tipo_documento="OPINION_CUMPLIMIENTO", fecha_emision=(ref - timedelta(days=30)).isoformat()).json()
+    verificar(r["resultado"] == "VIGENTE", "Opinión 32-D con 30 días: VIGENTE (límite inclusivo)", r["resultado"])
+    r = post(tipo_documento="OPINION_CUMPLIMIENTO", fecha_emision=(ref - timedelta(days=31)).isoformat()).json()
+    verificar(r["resultado"] == "VENCIDO" and any(e["codigo_regla"] == "RCV-04" for e in r["evaluaciones"]),
+              "Opinión 32-D con 31 días: VENCIDA por RCV-04", r["resultado"])
+    r = post(tipo_documento="OPINION_CUMPLIMIENTO").json()
+    verificar(r["resultado"] == "INDETERMINADO", "Opinión sin fecha de emisión: INDETERMINADO (revisión humana)",
+              r["resultado"])
+    sentido = next((r for r in client.get("/api/v1/reglas", params={"familia_regla": "RSC"}).json()
+                    if r["codigo_regla"] == "RSC-OPIN-SENT"), None)
+    verificar(sentido is not None and sentido["activo"] and sentido["tipo_documento"] == "OPINION_CUMPLIMIENTO",
+              "RSC-OPIN-SENT está activa en el catálogo para OPINION_CUMPLIMIENTO")
 
 
 def prueba_documentos_obligatorios() -> None:

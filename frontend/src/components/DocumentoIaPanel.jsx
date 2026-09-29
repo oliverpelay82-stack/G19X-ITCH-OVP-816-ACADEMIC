@@ -42,6 +42,8 @@ const RESULTADO_CONTENIDO = {
   CUMPLE: { tono: 'ok', label: 'Localizado' },
   NO_LOCALIZADO: { tono: 'bad', label: 'No localizado' },
   NO_VERIFICABLE: { tono: 'warn', label: 'No verificado' },
+  // Regla determinista (RSC-OPIN-SENT): el documento contradice el requisito, con su cita.
+  NO_CUMPLE: { tono: 'bad', label: 'Incumple' },
 }
 
 const ESTATUS_IA = {

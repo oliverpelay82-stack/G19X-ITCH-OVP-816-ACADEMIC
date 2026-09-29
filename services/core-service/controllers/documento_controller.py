@@ -10,14 +10,16 @@ import uuid
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, Response, UploadFile, status
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from config.boveda import ruta_en_boveda
+from config.catalogo import etiqueta_documento
 from config.database import get_db
 from models.bitacora import EVENTO_INGESTA_DOCUMENTO
 from models.documento import Documento
 from models.expediente import Expediente
-from motor import bitacora, cumplimiento, integridad
+from motor import archivo_protegido, bitacora, cumplimiento, integridad
 from schemas.documento_schema import DocumentoResponse, TipoDocumentoEnum
 
 router = APIRouter(prefix="/api/v1/documentos", tags=["Documentos"])
@@ -55,6 +57,47 @@ def _leer_acotado(archivo) -> bytes:
     return archivo.read(MAX_FILE_SIZE_BYTES + 1)
 
 
+def _bloquear_expediente(db: Session, expediente_id: str) -> None:
+    """
+    Serializa las cargas de un mismo expediente hasta el fin de la transacción
+    (PLUS-01): sin el candado, dos cargas simultáneas del mismo archivo pasan
+    ambas la verificación de unicidad. En otros motores no hay candado y la
+    unicidad queda garantizada solo entre cargas sucesivas.
+    """
+    if db.get_bind().dialect.name == "postgresql":
+        db.execute(text("SELECT pg_advisory_xact_lock(hashtext(:clave))"), {"clave": f"ingesta:{expediente_id}"})
+
+
+def _custodiado_en_expediente(db: Session, expediente_id: str, hash_sha256: str) -> Documento | None:
+    """
+    Documento del expediente con la misma huella (PLUS-01). Un documento
+    ALTERADO (RIE-03) no cuenta: recargar su archivo original es precisamente
+    la corrección que indica su alerta.
+    """
+    return (
+        db.query(Documento)
+        .filter(
+            Documento.expediente_id == expediente_id,
+            Documento.hash_sha256 == hash_sha256,
+            Documento.estado_integridad != integridad.ALTERADO,
+        )
+        .order_by(Documento.creado_en.desc())
+        .first()
+    )
+
+
+def _folios_con_huella(db: Session, expediente_id: str, hash_sha256: str) -> list[str]:
+    """Folios de otros expedientes que custodian el mismo archivo (se admite; solo se informa)."""
+    filas = (
+        db.query(Expediente.codigo_expediente)
+        .join(Documento, Documento.expediente_id == Expediente.id)
+        .filter(Documento.hash_sha256 == hash_sha256, Documento.expediente_id != expediente_id)
+        .distinct()
+        .all()
+    )
+    return sorted(folio for (folio,) in filas)
+
+
 def _leer_verificado(db: Session, documento: Documento, request: Request) -> bytes:
     """Lectura con RIE-03: 409 si la huella del binario no coincide con la registrada."""
     try:
@@ -68,6 +111,7 @@ def _leer_verificado(db: Session, documento: Documento, request: Request) -> byt
     response_model=DocumentoResponse,
     status_code=status.HTTP_201_CREATED,
     summary="Subir un archivo PDF o imagen a un expediente (Validación Nivel 1)",
+    responses={409: {"description": "El mismo archivo ya está custodiado en el expediente (PLUS-01)."}},
 )
 # Función síncrona a propósito: todo su trabajo es bloqueante (consultas
 # SQLAlchemy, SHA-256, escritura en la bóveda y la consulta al rules-service al
@@ -91,7 +135,10 @@ def subir_documento(
     2. Valida tipo documental contra catálogo oficial (TipoDocumentoEnum).
     3. Valida tamaño de archivo (máx. 15 MB) y rechaza archivos vacíos.
     4. Valida MIME Type y cabecera binaria (Magic Bytes) para evitar archivos corruptos o extensiones falsas.
-    5. Calcula el Hash criptográfico inmutable SHA-256 (Principio NOM-151).
+    5. Calcula el Hash criptográfico inmutable SHA-256 (Principio NOM-151) y
+       rechaza con 409 un archivo ya custodiado en el expediente (PLUS-01).
+       Un PDF con contraseña de apertura se custodia con un dictamen
+       NO_CONFORME de origen NIVEL_1 (PLUS-02, DOC-05 Tabla 1).
     6. Almacena el binario en la bóveda 'storage_vault/' con prefijo de hash para evitar colisiones.
     7. Registra metadatos en la tabla 'documentos' y el evento INGESTA_DOCUMENTO en la bitácora.
     8. Reevalúa el semáforo del expediente: la completitud se mide contra los
@@ -141,6 +188,25 @@ def subir_documento(
     # 5. Nivel 1: Cálculo del Hash SHA-256 inmutable
     hash_sha256 = hashlib.sha256(contenido).hexdigest()
 
+    # 5.1 PLUS-01: unicidad de la huella en el expediente. Una segunda carga del
+    #     mismo archivo pasaría a ser la versión vigente sin dictamen y dejaría
+    #     como histórico al documento ya auditado (RF-04).
+    _bloquear_expediente(db, expediente.id)
+    existente = _custodiado_en_expediente(db, expediente.id, hash_sha256)
+    if existente:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=(
+                f"[Nivel 1] Este archivo ya está custodiado en el expediente como "
+                f"{etiqueta_documento(existente.tipo_documento)} («{existente.nombre_archivo_original}», "
+                f"cargado el {existente.creado_en:%d/%m/%Y %H:%M} UTC). No se admite una segunda carga del mismo "
+                "archivo: reemplazaría al documento vigente sin su dictamen."
+            ),
+        )
+
+    # 5.2 PLUS-02: un PDF con contraseña de apertura se custodia, pero como NO_CONFORME.
+    protegido = content_type == "application/pdf" and archivo_protegido.pdf_protegido(contenido)
+
     # 6. Almacenamiento en bóveda física. El nombre se reduce a su base para que
     #    un nombre con separadores de ruta no pueda escribir fuera de la bóveda.
     nombre_original = os.path.basename(file.filename or "documento")
@@ -180,6 +246,9 @@ def subir_documento(
             },
         )
 
+        if protegido:
+            archivo_protegido.registrar(db, nuevo_documento, usuario, _ip(request))
+
         # 8. Semáforo consolidado del expediente (RIE-01 contra el catálogo de reglas)
         cumplimiento.reevaluar(db, expediente, causa="INGESTA_DOCUMENTO", usuario=usuario, ip_origen=_ip(request))
         db.commit()
@@ -191,6 +260,8 @@ def subir_documento(
         raise
 
     db.refresh(nuevo_documento)
+    nuevo_documento.huella_en_otros_expedientes = _folios_con_huella(db, expediente.id, hash_sha256)
+    nuevo_documento.advertencia_nivel_1 = archivo_protegido.ADVERTENCIA if protegido else None
     return nuevo_documento
 
 

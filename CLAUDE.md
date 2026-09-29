@@ -91,7 +91,7 @@ motor de validacion/
 ├── scripts/             # Utilidades de BD: setup_postgres.py, crear_tablas.py, seed_reglas_validacion.py
 │                        # (orquestan subprocesos por servicio; ver comentarios en cada script)
 │                        # y regresión visual: regresion_visual.py + regresion_visual_escenarios.py
-├── tests/               # Pruebas: test_conexion.py, test_pipeline_nivel1.py, test_dictamenes_semaforo.py, test_tipos_anexos_alertas.py, test_ingesta_robustez.py, test_errores_core.py (core, BD de pruebas vía bd_pruebas.py), test_rules_service.py, test_errores_rules.py
+├── tests/               # Pruebas: test_conexion.py, test_pipeline_nivel1.py, test_dictamenes_semaforo.py, test_tipos_anexos_alertas.py, test_ingesta_robustez.py, test_ingesta_blindada.py, test_errores_core.py (core, BD de pruebas vía bd_pruebas.py), test_rules_service.py, test_errores_rules.py
 ├── storage_vault/       # Bóveda física de binarios (desacoplada de los servicios)
 ├── docs/                # Fuente oficial de la verdad (DOC-01 a DOC-08)
 └── CLAUDE.md
@@ -125,6 +125,7 @@ El motor opera en un pipeline estricto de 5 niveles:
 * **Correr suite de pruebas de integridad (core-service):** `python tests/test_pipeline_nivel1.py` — expediente temporal `EXP-TEST-TMP` sobre la BD de pruebas.
 * **Pruebas de dictámenes, semáforo, RIE-03 y ratificación (core-service):** `python tests/test_dictamenes_semaforo.py`.
 * **Pruebas de tipo de expediente, anexos RIE-02, vigencia recalculada, alertas, búsqueda, reportes, verificación de contenido y reevaluación programada (core-service):** `python tests/test_tipos_anexos_alertas.py`.
+* **Ingesta blindada, P1 (core-service; PRD §21.1, diagramas en `docs/uml/`):** `python -m pytest tests/test_ingesta_blindada.py` — PLUS-01: la misma huella SHA-256 en el expediente responde 409 (un documento ALTERADO no cuenta; en otro expediente se admite y la respuesta trae `huella_en_otros_expedientes`), con `pg_advisory_xact_lock` por expediente; PLUS-02: un PDF con contraseña de apertura (pypdf, `motor/archivo_protegido.py`) se custodia con un dictamen NO_CONFORME de origen `NIVEL_1`, evento `ARCHIVO_PROTEGIDO` y `advertencia_nivel_1`, sin ratificación; PLUS-03: RCV-04 (opinión 32-D, 30 días) y RSC-OPIN-SENT, cuyo sentido lee el ai-service sin el modelo (`pipelines/opinion_cumplimiento.py`; `NO_CUMPLE` → NO_CONFORME). La alerta DOCUMENTO_VENCIDO cita la regla RCV del dictamen y DICTAMEN_NO_CONFORME, la regla incumplida con su cita.
 * **Robustez de la ingesta (core-service):** `python tests/test_ingesta_robustez.py` — lectura acotada a 15 MB + 1 byte y `/health` responde mientras una carga espera al rules-service (el endpoint de carga es `def` a propósito: todo su trabajo es síncrono).
 * **Errores no controlados con JSON y CORS:** `tests/test_errores_core.py`, `tests/test_errores_rules.py` y `services/ai-service/tests/test_errores_no_controlados.py`. Cada `main.py` registra el middleware `errores_no_controlados` antes de CORS: sin él, un 500 salía sin cabeceras CORS y el frontend lo mostraba como servicio caído.
 * **CI:** `.github/workflows/ci.yml` (PostgreSQL 17 + `setup_postgres.py`, pytest de los tres servicios y, en el frontend, lint, `npm run test:ui` y build).
@@ -138,6 +139,7 @@ El motor opera en un pipeline estricto de 5 niveles:
 * **Pruebas offline del visor de evidencia (ai-service):** `cd services/ai-service && python tests/test_visor_documento.py` (genera PDFs vectoriales y escaneados; el escaneado usa Tesseract)
 * **Pruebas offline de titularidad, tipo documental, verificación de contenido y chat (ai-service):** `cd services/ai-service && python tests/test_contenido_titularidad.py`
 * **Pruebas offline de optimización del ai-service:** `cd services/ai-service && python tests/test_optimizaciones.py`
+* **Pruebas offline de la opinión de cumplimiento 32-D (ai-service, PLUS-03):** `cd services/ai-service && python -m pytest tests/test_opinion_cumplimiento.py`
 * **Pruebas offline del dictamen con las reglas de vigencia (RCV):** `cd services/ai-service && python tests/test_vigencia_dictamen.py`
 * **Pruebas offline de la persistencia del dictamen y RIE-03 en el ai-service:** `cd services/ai-service && python tests/test_persistencia_dictamen.py`
 * **Pruebas offline del caché de inferencias y de la lectura completa bajo demanda (solo desde el chat):** `cd services/ai-service && python tests/test_cache_y_lectura.py`

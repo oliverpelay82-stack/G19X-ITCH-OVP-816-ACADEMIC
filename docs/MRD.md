@@ -9,7 +9,7 @@
 | Línea de negocio | Portafolio de soluciones LegalTech de PluriOne |
 | Patrocinador de negocio | Lic. Juan Méndez Herrera, Director Comercial (asesor empresarial y Product Owner) |
 | Elaborado por | Oliver Villanueva Pelay, residente — Instituto Tecnológico de Chilpancingo |
-| Versión del documento | 1.1 — 28 de septiembre de 2026 (1.0: 27 de septiembre de 2026) |
+| Versión del documento | 1.2 — 29 de septiembre de 2026 (1.1: 28 de septiembre; 1.0: 27 de septiembre de 2026) |
 | Documento hermano | [PRD.md](PRD.md) — requerimientos del producto |
 
 > **Fuentes.** Este MRD se construye exclusivamente con el anteproyecto de residencia, los entregables DOC-01 a DOC-08 ([ESPECIFICACIONES_DOC01_A_DOC08.txt](ESPECIFICACIONES_DOC01_A_DOC08.txt)) y el DOCUMENTO GENERAL («DG»). La información de mercado que esas fuentes no contienen —tamaño de mercado, precio o modelo comercial— no se estima: se declara en la [sección 13](#13-información-de-mercado-no-documentada) como pendiente de definir con PluriOne.
@@ -270,6 +270,7 @@ Cada requisito de mercado (MR) expresa **qué necesita el mercado**; el PRD defi
 | MR-17 | Operar dentro de la infraestructura de PluriOne, con despliegue reproducible y sin hardware especializado. | Anteproyecto (viabilidad); DG §6.7 | Importante |
 | MR-18 | Buscar expedientes por nombre, empresa, tipo, fecha y estatus. | Anteproyecto, Módulo 1 | Importante |
 | MR-19 | Buscar conceptualmente dentro del acervo documental. | Anteproyecto (Azure AI Search), ISO 30301 | Deseable |
+| MR-20 | Rechazar en la recepción los archivos que no aportan evidencia válida —duplicados del mismo expediente, PDF protegidos con contraseña y opiniones 32-D caducas o negativas— antes de que consuman revisión. | DOC-05 (Tabla 1 y caducidad estricta); CFF Art. 32-D; ISO 30301. Extensión PLUS (PRD §21) | Importante |
 
 ---
 
@@ -353,7 +354,7 @@ Derivados de los objetivos y umbrales documentados [Anteproyecto; DG Caps. IV, V
 | MR-01 Completitud del expediente | RF-06, RIE-01, HU-09, HU-12 | Implementado |
 | MR-02 Tipos de expediente | RF-01, HU-01, HU-02 | Implementado |
 | MR-03 Anexos obligatorios | RF-07, RIE-02, HU-10 | Implementado |
-| MR-04 Vigencia y alertas anticipadas | RF-15, RF-16, RF-17, RCV-01 a RCV-03, HU-13, HU-14 | Implementado (umbrales por configuración) |
+| MR-04 Vigencia y alertas anticipadas | RF-15, RF-16, RF-17, RCV-01 a RCV-04, HU-13, HU-14 | Implementado (umbrales por configuración) |
 | MR-05 Reglas configurables por sector | RF-06, RF-08, HU-09, HU-11 | Implementado |
 | MR-06 Nuevos tipos de documento con criterios para la IA | RF-09, RDS-01, RDS-02, HU-24 | Parcial |
 | MR-07 Lectura de PDF nativos y escaneados | RF-10, HU-18 | Implementado |
@@ -369,3 +370,4 @@ Derivados de los objetivos y umbrales documentados [Anteproyecto; DG Caps. IV, V
 | MR-17 Despliegue en la infraestructura de PluriOne | RNF-11 | Implementado |
 | MR-18 Búsqueda de expedientes | RF-05, HU-04 | Implementado |
 | MR-19 Búsqueda conceptual en el acervo | RF-12 | Parcial |
+| MR-20 Recepción blindada de la evidencia | PLUS-01, PLUS-02, PLUS-03 (RCV-04, RSC-OPIN-SENT), HU-34 a HU-36 | Implementado (PRD §21.1; diagramas en `docs/uml/`) |

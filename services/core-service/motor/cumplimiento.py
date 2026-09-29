@@ -50,7 +50,7 @@ from sqlalchemy.orm import Session
 from clients import rules_client
 from config.catalogo import etiqueta_documento
 from models.bitacora import EVENTO_EVALUACION_REGLAS
-from models.dictamen import DictamenAuditoria
+from models.dictamen import ORIGEN_NIVEL_1, DictamenAuditoria
 from models.documento import Documento
 from models.expediente import Expediente
 from motor import bitacora
@@ -158,6 +158,7 @@ class _Vigencia:
     dias: int
     criterio: str
     limite_dias: int | None
+    regla: str | None = None           # regla RCV que fija la caducidad (RCV-01, RCV-02…)
 
 
 def ultimos_dictamenes(db: Session, documento_ids: list[str]) -> dict[str, DictamenAuditoria]:
@@ -189,10 +190,10 @@ def vigencia_actual(dictamen: DictamenAuditoria | None, hoy: date) -> _Vigencia 
     """
     if dictamen is None:
         return None
-    caducidades: list[tuple[date, str, int | None]] = []
+    caducidades: list[tuple[date, str, int | None, str | None]] = []
     ventana = DIAS_PROXIMO_A_VENCER
     if dictamen.fecha_vencimiento_extraida:
-        caducidades.append((dictamen.fecha_vencimiento_extraida, CRITERIO_VENCIMIENTO, None))
+        caducidades.append((dictamen.fecha_vencimiento_extraida, CRITERIO_VENCIMIENTO, None, "RCV-01"))
     for regla in dictamen.reglas_aplicadas or []:
         limite = regla.get("limite_dias")
         if limite is None:
@@ -206,10 +207,10 @@ def vigencia_actual(dictamen: DictamenAuditoria | None, hoy: date) -> _Vigencia 
             ventana = int(limite)
         elif dictamen.fecha_emision_extraida:
             caducidades.append((dictamen.fecha_emision_extraida + timedelta(days=int(limite)), CRITERIO_ANTIGUEDAD,
-                                int(limite)))
+                                int(limite), regla.get("codigo_regla")))
     if not caducidades:
         return None
-    fecha, criterio, limite = min(caducidades, key=lambda c: c[0])
+    fecha, criterio, limite, codigo = min(caducidades, key=lambda c: c[0])
     dias = (fecha - hoy).days
     if dias < 0:
         estado = VENCIDO
@@ -217,7 +218,7 @@ def vigencia_actual(dictamen: DictamenAuditoria | None, hoy: date) -> _Vigencia 
         estado = PROXIMO_A_VENCER
     else:
         estado = VIGENTE
-    return _Vigencia(estado, fecha, dias, criterio, limite)
+    return _Vigencia(estado, fecha, dias, criterio, limite, codigo)
 
 
 def rango_severidad(severidad: str | None) -> int:
@@ -341,6 +342,8 @@ def evaluar(
             causa = "alteración criptográfica (RIE-03)"
         elif e.vigencia == VENCIDO:
             causa = f"vencido desde el {e.fecha_caducidad.isoformat()} (RN-02)"
+        elif e.dictamen_id and dictamenes[e.documento_id].origen == ORIGEN_NIVEL_1:
+            causa = "archivo protegido con contraseña, no procesable (Nivel 1)"
         else:
             causa = "dictamen NO_CONFORME"
         motivos.append(f"{e.tipo_documento} ({e.nombre_archivo_original}): {causa}.")
@@ -474,15 +477,39 @@ def _alertas(
                 ),
                 recomendacion=recomendacion,
                 tipo_documento=e.tipo_documento,
-                regla="RCV-02" if vigencia.criterio == CRITERIO_ANTIGUEDAD and e.tipo_documento == "COMP_DOMICILIO"
-                else "RCV-01" if vigencia.criterio == CRITERIO_VENCIMIENTO else None,
+                regla=vigencia.regla,
                 documento_id=e.documento_id,
             ))
             continue
 
         if e.estado == NO_CONFORME and dictamen is not None:
             observacion = next((o for o in (dictamen.observaciones or []) if o), None)
-            if dictamen.match_titular is False:
+            # Un elemento que el documento contradice de forma explícita (p. ej. una
+            # opinión 32-D negativa, RSC-OPIN-SENT) trae su cita y la recomendación
+            # de su regla: son más precisas que la observación general del modelo.
+            incumplida = next(
+                (r for r in dictamen.reglas_aplicadas or []
+                 if r.get("resultado") == "NO_CUMPLE" and r.get("recomendacion")),
+                None,
+            )
+            if incumplida:
+                cita = f" Cita: «{incumplida['cita']}»." if incumplida.get("cita") else ""
+                alertas.append(Alerta(
+                    codigo=ALERTA_DICTAMEN_NO_CONFORME,
+                    severidad="ALTA",
+                    titulo=f"Dictamen no conforme: {nombre}",
+                    detalle=f"{incumplida.get('detalle') or incumplida.get('nombre_regla')}{cita}",
+                    recomendacion=incumplida["recomendacion"],
+                    tipo_documento=e.tipo_documento, regla=incumplida.get("codigo_regla"),
+                    documento_id=e.documento_id,
+                ))
+                continue
+            if dictamen.origen == ORIGEN_NIVEL_1:
+                recomendacion = (
+                    "Solicitar al emisor una versión del documento sin contraseña de apertura y custodiarla: "
+                    "sustituye a la protegida. Este dictamen no admite ratificación porque su contenido no pudo leerse."
+                )
+            elif dictamen.match_titular is False:
                 recomendacion = (
                     "El RFC del documento no corresponde al titular del expediente: verificar que el documento "
                     "pertenezca a la empresa y custodiar el correcto."

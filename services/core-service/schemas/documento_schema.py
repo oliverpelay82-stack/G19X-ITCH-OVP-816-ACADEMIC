@@ -4,7 +4,7 @@ Equivalente a las clases DTO / Response en Spring Boot.
 """
 from datetime import datetime
 from enum import Enum
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class TipoDocumentoEnum(str, Enum):
@@ -51,5 +51,11 @@ class DocumentoResponse(BaseModel):
     mime_type: str
     estado_integridad: str = "INTEGRO"
     creado_en: datetime
+    # Solo en la respuesta de la carga: folios de otros expedientes que ya
+    # custodian el mismo archivo (PLUS-01 lo admite y solo lo informa).
+    huella_en_otros_expedientes: list[str] = Field(default_factory=list)
+    # Solo en la respuesta de la carga: el PDF exige contraseña de apertura y
+    # quedó custodiado como NO_CONFORME (PLUS-02).
+    advertencia_nivel_1: str | None = None
 
     model_config = ConfigDict(from_attributes=True)

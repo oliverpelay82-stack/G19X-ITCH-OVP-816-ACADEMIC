@@ -1,0 +1,73 @@
+@startuml p1-actividad-auditoria-opinion-32d
+' P1 — Auditoría de la opinión de cumplimiento (Art. 32-D del CFF).
+' Actualiza el flujo F3 del PRD §6 para el tipo OPINION_CUMPLIMIENTO.
+' Trazabilidad: PLUS-03 (HU-36); RF-15, RF-16, RF-18; RCV-04 (caducidad
+' estricta del DOC-05: «opiniones de cumplimiento fiscal con vigencia de
+' 30 días naturales a partir de su emisión»); RSC-OPIN-SENT; MRD MR-04 y MR-20.
+' Implementación: services/ai-service/pipelines/analisis_semantico.py,
+' services/ai-service/pipelines/opinion_cumplimiento.py y
+' services/rules-service/seed_reglas_validacion.py
+
+title P1 — Auditoría de una opinión de cumplimiento 32-D
+
+|Responsable de Cumplimiento|
+start
+:Solicita la auditoría del documento\n(o «Auditar pendientes», HU-32);
+
+|ai-service|
+:Lee el binario verificado por RIE-03\ny extrae el texto (Nivel 3);
+:Consulta las reglas RSC/RDS activas\ndel tipo OPINION_CUMPLIMIENTO;
+fork
+  :Nivel 4: el modelo extrae tipo, RFC,\nrazón social y fecha de emisión;
+fork again
+  if (¿RSC-OPIN-SENT activa?) then (sí)
+    :Lee el sentido de la opinión en el texto
+    con reglas deterministas, sin IA
+    (tolerante a acentos y errores de OCR);
+    note right
+      Solo cuenta una declaración explícita
+      («sentido: positivo», «en sentido negativo»).
+      Si aparecen dos sentidos distintos, el
+      caso se turna a un analista: nunca se
+      rechaza por una lectura ambigua.
+    end note
+  else (no)
+  endif
+end fork
+
+|rules-service|
+:Evalúa la vigencia (POST /reglas/evaluar-vigencia);
+if (¿RCV-04 activa?) then (no)
+  :SIN_REGLAS de caducidad\n(solo RCV-01 si declara vencimiento);
+elseif (¿Fecha de emisión disponible?) then (no)
+  :INDETERMINADO\n(revisión humana);
+elseif (¿Más de 30 días desde la emisión?) then (sí)
+  :VENCIDO (RCV-04);
+else (no)
+  :VIGENTE;
+endif
+
+|ai-service|
+:Dictamen determinista;
+if (¿Vigencia VENCIDA o RFC ajeno?) then (sí)
+  :NO_CONFORME;
+elseif (¿Sentido NEGATIVO?) then (sí)
+  :NO_CONFORME\n«la opinión es en sentido negativo»;
+elseif (¿Sentido no localizado, ambiguo\no distinto de positivo?) then (sí)
+  :EN_REVISION con la recomendación\nde RSC-OPIN-SENT;
+else (positivo con cita)
+  :CONFORME si la confianza ≥ 0.85\n(bandas del DOC-08 §6.2);
+endif
+:Persiste el dictamen en el core\n(POST /api/v1/dictamenes);
+
+|core-service|
+:Guarda el dictamen con las reglas aplicadas\n(RCV-04 con su límite de 30 días);
+:Reevalúa el semáforo: la caducidad se
+recalcula en cada consulta (RN-02),
+la alerta DOCUMENTO_VENCIDO cita RCV-04;
+
+|Responsable de Cumplimiento|
+:Consulta el dictamen, la cita del sentido\ny las alertas con recomendación;
+stop
+
+@enduml

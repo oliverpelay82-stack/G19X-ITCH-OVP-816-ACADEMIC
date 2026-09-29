@@ -76,6 +76,8 @@ function describir(evento, nombres) {
       }
     case 'ALERTA_INTEGRIDAD':
       return { titulo: 'Integridad comprometida (RIE-03)', detalle: documento, tono: 'bad' }
+    case 'ARCHIVO_PROTEGIDO':
+      return { titulo: 'PDF protegido con contraseña (Nivel 1)', detalle: documento, tono: 'bad' }
     case 'EXPORTACION_REPORTE':
       return { titulo: `Reporte exportado (${String(d.formato || '').toUpperCase()})`, tono: 'neutral' }
     default:

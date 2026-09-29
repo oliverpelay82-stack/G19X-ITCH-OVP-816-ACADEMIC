@@ -20,6 +20,8 @@ from config.database import Base
 
 ORIGEN_NIVEL_4 = "NIVEL_4_IA"
 ORIGEN_RIE_03 = "RIE-03"
+# PDF protegido con contraseña detectado en la carga (PLUS-02, DOC-05 Tabla 1).
+ORIGEN_NIVEL_1 = "NIVEL_1"
 
 
 class DictamenAuditoria(Base):

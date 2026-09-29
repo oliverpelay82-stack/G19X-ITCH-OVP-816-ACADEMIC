@@ -24,6 +24,12 @@ const RESULTADO_REGLA = {
   NO_VERIFICABLE: 'warn',
 }
 
+/** Qué emitió el dictamen, cuando no fue el Nivel 4 (dictámenes de integridad y del Nivel 1). */
+const ORIGEN = {
+  'RIE-03': 'Integridad RIE-03',
+  NIVEL_1: 'Nivel 1 · PDF protegido',
+}
+
 const VIGENCIA = {
   VIGENTE: 'Vigente',
   PROXIMO_A_VENCER: 'Próximo a vencer',
@@ -172,7 +178,6 @@ function FormularioRatificacion({ dictamen, onRatificado, onCancelar }) {
 /** Dictamen vigente del documento: estatus, datos clave, reglas aplicadas y ratificación. */
 function DictamenVigente({ dictamen, puedeRatificar, onRatificar }) {
   const ratificado = dictamen.revisado_por_humano
-  const esIntegridad = dictamen.origen === 'RIE-03'
   return (
     <article className="registro-card">
       <header className="registro-head">
@@ -183,7 +188,7 @@ function DictamenVigente({ dictamen, puedeRatificar, onRatificar }) {
             Ratificado
           </Badge>
         )}
-        <span className="registro-origen">{esIntegridad ? 'Integridad RIE-03' : 'Nivel 4 + reglas del Nivel 2'}</span>
+        <span className="registro-origen">{ORIGEN[dictamen.origen] || 'Nivel 4 + reglas del Nivel 2'}</span>
         <span className="registro-fecha">
           <Momento valor={dictamen.creado_en} />
         </span>
@@ -311,7 +316,7 @@ export default function DictamenesGuardados({ doc, recarga = 0, onCambio }) {
               <li key={d.id} className="historial-item">
                 <EstatusBadge estatus={d.estatus} />
                 <span className="cell-muted">
-                  {d.origen === 'RIE-03' ? 'Integridad RIE-03' : `Confianza ${pct(d.nivel_confianza)}`}
+                  {ORIGEN[d.origen] || `Confianza ${pct(d.nivel_confianza)}`}
                   {d.revisado_por_humano && ` · ratificado por ${d.revisado_por}`}
                 </span>
                 <span className="cell-muted historial-fecha">

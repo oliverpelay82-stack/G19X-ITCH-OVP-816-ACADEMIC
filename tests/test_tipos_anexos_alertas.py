@@ -27,6 +27,7 @@ import io
 import os
 import sys
 from datetime import date, timedelta
+from types import SimpleNamespace
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import bd_pruebas  # noqa: E402
@@ -219,6 +220,17 @@ def prueba_vigencia_y_alertas(ctx: dict) -> None:
     verificar(alerta is not None and "90 días" in alerta["recomendacion"],
               "Alerta DOCUMENTO_VENCIDO recomienda un comprobante no mayor a 90 días",
               alerta["recomendacion"] if alerta else "sin alerta")
+    verificar(alerta is not None and alerta["regla"] == "RCV-02", "La alerta cita la regla que venció el recibo",
+              alerta["regla"] if alerta else "sin alerta")
+    # La regla citada es la del dictamen, no una deducida del tipo: una constancia
+    # vencida por RCV-03 no puede quedar sin regla (antes solo se citaba RCV-02).
+    dictamen_csf = SimpleNamespace(
+        fecha_vencimiento_extraida=None, fecha_emision_extraida=hoy - timedelta(days=120),
+        reglas_aplicadas=[{"codigo_regla": "RCV-03", "limite_dias": 90, "criterio": "ANTIGUEDAD_DESDE_EMISION"}],
+    )
+    vig_csf = cumplimiento.vigencia_actual(dictamen_csf, hoy)
+    verificar(vig_csf.estado == "VENCIDO" and vig_csf.regla == "RCV-03",
+              "Una constancia vencida por antigüedad cita RCV-03", f"{vig_csf.estado} {vig_csf.regla}")
 
     dom2 = subir(exp_id, "COMP_DOMICILIO", "recibo_nuevo.pdf")
     dictaminar(dom2["id"], vigencia=vigencia_rcv02, fecha_emision=(hoy - timedelta(days=10)).isoformat())

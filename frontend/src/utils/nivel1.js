@@ -36,3 +36,23 @@ export async function analizarNivel1(file) {
     conforme: Boolean(magic) && tamanioOk,
   }
 }
+
+/**
+ * Avisos de la respuesta de una carga aceptada por el core-service:
+ *  - advertencia_nivel_1: el PDF exige contraseña de apertura y quedó
+ *    custodiado como No conforme (PLUS-02, DOC-05 Tabla 1).
+ *  - huella_en_otros_expedientes: el mismo archivo ya está custodiado en otros
+ *    expedientes; se admite y solo se informa (PLUS-01).
+ * Una carga repetida en el mismo expediente no llega aquí: el core responde 409.
+ */
+export function avisarCarga(toast, documento, exito) {
+  if (documento?.advertencia_nivel_1) {
+    toast.alerta('PDF protegido con contraseña', documento.advertencia_nivel_1)
+  } else {
+    toast.exito('Documento custodiado', exito)
+  }
+  const otros = documento?.huella_en_otros_expedientes || []
+  if (otros.length) {
+    toast.info('Archivo presente en otros expedientes', `El mismo archivo también está custodiado en ${otros.join(', ')}.`)
+  }
+}

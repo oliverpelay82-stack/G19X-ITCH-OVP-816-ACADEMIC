@@ -17,9 +17,15 @@ transcribe la cita que lo sustenta; el resultado lo decide código determinista:
   * NO_VERIFICABLE  el modelo dice que cumple, pero su cita no está en el texto
                     (posible alucinación), o no pudo decidirlo.
 
-Ningún resultado de esta verificación rechaza el documento: una omisión es una
-«Omisión Contractual Relevante» (RSC-01, semáforo amarillo) que resuelve el
-analista en el Nivel 5, igual que las reglas dinámicas (RDS-03).
+Una omisión no rechaza el documento: es una «Omisión Contractual Relevante»
+(RSC-01, semáforo amarillo) que resuelve el analista en el Nivel 5, igual que
+las reglas dinámicas (RDS-03).
+
+Excepción: las reglas de ``DETERMINISTAS`` se evalúan con código y sin el
+modelo, porque verifican un hecho que el documento declara en un formato fijo.
+Solo ellas producen NO_CUMPLE —el documento afirma lo contrario de lo exigido,
+con su cita—, que sí deja el dictamen NO_CONFORME. Hoy es RSC-OPIN-SENT: una
+opinión de cumplimiento 32-D en sentido negativo (PLUS-03).
 """
 from __future__ import annotations
 
@@ -33,11 +39,12 @@ from typing import Any
 from clients import groq_client
 from clients.groq_client import GroqNoDisponibleError, GroqRespuestaInvalidaError
 from config import settings
-from pipelines import fragmentos
+from pipelines import fragmentos, opinion_cumplimiento
 
 CUMPLE = "CUMPLE"
 NO_LOCALIZADO = "NO_LOCALIZADO"
 NO_VERIFICABLE = "NO_VERIFICABLE"
+NO_CUMPLE = "NO_CUMPLE"
 
 # Una cita más corta no prueba nada: cualquier palabra suelta aparece en el texto.
 MIN_CARACTERES_CITA = 12
@@ -72,7 +79,13 @@ class ResultadoVerificacion:
 
     @property
     def pendientes(self) -> list[dict[str, Any]]:
-        return [v for v in self.verificaciones if v["resultado"] != CUMPLE]
+        """Elementos que un analista debe confirmar (no localizados o no verificados)."""
+        return [v for v in self.verificaciones if v["resultado"] in (NO_LOCALIZADO, NO_VERIFICABLE)]
+
+    @property
+    def incumplidos(self) -> list[dict[str, Any]]:
+        """Elementos que el documento contradice de forma explícita (solo reglas deterministas)."""
+        return [v for v in self.verificaciones if v["resultado"] == NO_CUMPLE]
 
     @property
     def incluye_reglas_dinamicas(self) -> bool:
@@ -221,6 +234,44 @@ Devuelve EXACTAMENTE este objeto JSON, con una entrada por cada código de la li
 }}"""
 
 
+def _verificacion(criterio: dict[str, Any], resultado: str, cita: str | None, observacion: str) -> dict[str, Any]:
+    return {
+        "codigo_regla": criterio["codigo_regla"],
+        "nombre_regla": criterio["nombre_regla"],
+        "familia_regla": criterio["familia_regla"],
+        "severidad": criterio["severidad"],
+        "resultado": resultado,
+        "cita": cita,
+        "observacion": observacion,
+        "recomendacion": None if resultado == CUMPLE else criterio["recomendacion"],
+    }
+
+
+def _sentido_opinion(texto: str, criterio: dict[str, Any]) -> dict[str, Any]:
+    """RSC-OPIN-SENT: el sentido de la opinión 32-D, leído del texto sin el modelo (PLUS-03)."""
+    sentido = opinion_cumplimiento.leer_sentido(texto)
+    if sentido.valor == opinion_cumplimiento.POSITIVO:
+        return _verificacion(criterio, CUMPLE, sentido.cita, "La opinión se emitió en sentido positivo.")
+    if sentido.valor == opinion_cumplimiento.NEGATIVO:
+        return _verificacion(criterio, NO_CUMPLE, sentido.cita,
+                             "La opinión de cumplimiento se emitió en sentido NEGATIVO: el contribuyente no está al "
+                             "corriente de sus obligaciones fiscales.")
+    if sentido.valor == opinion_cumplimiento.AMBIGUO:
+        return _verificacion(criterio, NO_VERIFICABLE, sentido.cita,
+                             "El texto declara más de un sentido; un analista debe confirmar cuál es el de la opinión.")
+    if sentido.valor in (opinion_cumplimiento.SIN_OBLIGACIONES, opinion_cumplimiento.NO_INSCRITO):
+        leyenda = "inscrito sin obligaciones" if sentido.valor == opinion_cumplimiento.SIN_OBLIGACIONES else "no inscrito"
+        return _verificacion(criterio, NO_VERIFICABLE, sentido.cita,
+                             f"La opinión declara «{leyenda}», no un sentido positivo; un analista debe decidir si "
+                             "basta para el expediente.")
+    return _verificacion(criterio, NO_LOCALIZADO, None,
+                         "No se localizó en el texto la declaración del sentido de la opinión.")
+
+
+# Reglas que se verifican con código y sin el modelo: código de regla -> evaluador.
+DETERMINISTAS = {opinion_cumplimiento.CODIGO_REGLA: _sentido_opinion}
+
+
 def verificar(texto: str, criterios: list[dict[str, Any]], paginas: list[dict] | None = None) -> ResultadoVerificacion:
     """
     Localiza en el texto los elementos que exigen las reglas RSC y RDS del tipo
@@ -232,15 +283,26 @@ def verificar(texto: str, criterios: list[dict[str, Any]], paginas: list[dict] |
     if not criterios:
         return ResultadoVerificacion(disponible=True)
 
-    consultas = [f"{c['nombre_regla']} {c['criterio']}" for c in criterios]
+    locales = {
+        c["codigo_regla"].upper(): DETERMINISTAS[c["codigo_regla"].upper()](texto, c)
+        for c in criterios if c["codigo_regla"].upper() in DETERMINISTAS
+    }
+    para_modelo = [c for c in criterios if c["codigo_regla"].upper() not in locales]
+    if not para_modelo:
+        return ResultadoVerificacion(disponible=True, verificaciones=[locales[c["codigo_regla"].upper()] for c in criterios])
+
+    consultas = [f"{c['nombre_regla']} {c['criterio']}" for c in para_modelo]
     seleccion = fragmentos.seleccionar_por_criterios(
         texto, consultas, presupuesto=settings.MAX_CARACTERES_VERIFICACION, paginas=paginas
     )
     try:
-        crudo = groq_client.generar_json(prompt=_prompt(seleccion.texto, criterios), system=SYSTEM_PROMPT)
+        crudo = groq_client.generar_json(prompt=_prompt(seleccion.texto, para_modelo), system=SYSTEM_PROMPT)
     except (GroqNoDisponibleError, GroqRespuestaInvalidaError) as exc:
+        # Lo verificado sin el modelo sigue valiendo: una opinión negativa no
+        # debe pasar inadvertida porque Groq no respondió.
         return ResultadoVerificacion(
             disponible=False,
+            verificaciones=list(locales.values()),
             nota=f"La verificación de contenido no pudo completarse ({exc.__class__.__name__}); "
                  "los elementos del documento deben revisarse manualmente.",
         )
@@ -252,6 +314,9 @@ def verificar(texto: str, criterios: list[dict[str, Any]], paginas: list[dict] |
 
     verificaciones = []
     for criterio in criterios:
+        if criterio["codigo_regla"].upper() in locales:
+            verificaciones.append(locales[criterio["codigo_regla"].upper()])
+            continue
         v = respuestas.get(criterio["codigo_regla"].upper(), {})
         cita = v.get("cita") if isinstance(v.get("cita"), str) and v.get("cita").strip() else None
         observacion = str(v.get("observacion") or "").strip()
@@ -271,14 +336,5 @@ def verificar(texto: str, criterios: list[dict[str, Any]], paginas: list[dict] |
                                "documento; debe confirmarse manualmente.")
             elif not v:
                 observacion = "El modelo no evaluó este elemento."
-        verificaciones.append({
-            "codigo_regla": criterio["codigo_regla"],
-            "nombre_regla": criterio["nombre_regla"],
-            "familia_regla": criterio["familia_regla"],
-            "severidad": criterio["severidad"],
-            "resultado": resultado,
-            "cita": cita if resultado == CUMPLE else None,
-            "observacion": observacion,
-            "recomendacion": None if resultado == CUMPLE else criterio["recomendacion"],
-        })
+        verificaciones.append(_verificacion(criterio, resultado, cita if resultado == CUMPLE else None, observacion))
     return ResultadoVerificacion(disponible=True, verificaciones=verificaciones, uso_tokens=groq_client.uso_de(crudo))

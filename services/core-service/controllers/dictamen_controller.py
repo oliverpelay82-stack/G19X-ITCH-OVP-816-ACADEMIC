@@ -17,7 +17,7 @@ from sqlalchemy.orm import Session
 
 from config.database import get_db
 from models.bitacora import EVENTO_DICTAMEN_IA, EVENTO_RATIFICACION_HUMANA
-from models.dictamen import ORIGEN_NIVEL_4, ORIGEN_RIE_03, DictamenAuditoria
+from models.dictamen import ORIGEN_NIVEL_1, ORIGEN_NIVEL_4, ORIGEN_RIE_03, DictamenAuditoria
 from models.documento import Documento
 from models.expediente import Expediente
 from motor import bitacora, cumplimiento, integridad
@@ -202,7 +202,8 @@ def ratificar_dictamen(dictamen_id: str, dto: RatificacionRequest, request: Requ
     No admiten ratificación: un dictamen ya ratificado (la decisión humana es
     definitiva), uno sustituido por una auditoría posterior del mismo
     documento, ni una alteración criptográfica RIE-03 (un archivo alterado no
-    puede declararse conforme: debe recargarse).
+    puede declararse conforme: debe recargarse), ni un PDF protegido con
+    contraseña (PLUS-02: su contenido no pudo leerse).
     """
     dictamen = _dictamen_o_404(db, dictamen_id)
     if dictamen.revisado_por_humano:
@@ -214,6 +215,12 @@ def ratificar_dictamen(dictamen_id: str, dto: RatificacionRequest, request: Requ
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="[RIE-03] Una alteración criptográfica no admite ratificación: recargue el archivo original.",
+        )
+    if dictamen.origen == ORIGEN_NIVEL_1:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="[Nivel 1] Un PDF protegido con contraseña no admite ratificación: su contenido no pudo "
+                   "leerse. Cargue una versión sin contraseña de apertura.",
         )
     documento = db.query(Documento).filter(Documento.id == dictamen.documento_id).first()
     if documento and documento.estado_integridad == integridad.ALTERADO:
