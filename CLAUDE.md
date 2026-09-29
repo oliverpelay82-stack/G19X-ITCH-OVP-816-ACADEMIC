@@ -12,6 +12,8 @@ Operar como **Ingeniero de Software Senior y Especialista en Arquitectura de Com
 Antes de implementar cualquier módulo, tabla o regla, debes consultar:
 * **`docs/ESPECIFICACIONES_DOC01_A_DOC08.txt`:** Contiene el texto íntegro de los 8 documentos aprobados (DOC-01 Entrevistas, DOC-02 Requisitos, DOC-03 Regulaciones, DOC-04 SRS Requerimientos, DOC-05 Estrategia de Validación en 5 Niveles y Reglas, DOC-06 Propuesta, DOC-07 Backlog de Sprints, DOC-08 Arquitectura y BD).
 * **`docs/AUDITORIA_TECNICA.md`:** La auditoría detallada de lo que ya existe y lo que falta por Sprint.
+* **`docs/PRD.md`:** Product Requirements Document — requerimientos funcionales y no funcionales, historias de usuario, reglas de negocio, arquitectura, criterios de aceptación y estado de implementación de cada requerimiento, consolidados de los DOC-01 a DOC-08.
+* **`docs/MRD.md`:** Market Requirements Document — problema de mercado, segmentos, voz del cliente (DOC-01), entorno regulatorio, soluciones similares, propuesta de valor y requisitos de mercado trazados al PRD.
 * **Regla de Oro:** **PROHIBIDO inventar** tablas, nombres de producto, roles o categorías (como inventar categorías que no existan). Toda decisión técnica debe estar fundamentada en estos documentos oficiales.
 
 ---
