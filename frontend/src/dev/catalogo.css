@@ -1,0 +1,124 @@
+/* Maquetación del catálogo del sistema de diseño (solo desarrollo, #/ui).
+   Se importa desde CatalogoUI.jsx: viaja en el fragmento diferido y nunca en
+   el build de producción. Solo consume tokens de index.css. */
+
+.catalogo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-8);
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: var(--s-8) var(--s-6) var(--s-10);
+}
+
+.catalogo-cabecera {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--s-4);
+}
+
+.catalogo-titulo {
+  margin: var(--s-1) 0;
+  font-size: var(--fs-h1);
+  font-weight: 600;
+}
+
+.catalogo-seccion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+
+.catalogo-seccion-head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+}
+
+.catalogo-rejilla {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: var(--s-3);
+}
+
+.catalogo-color,
+.catalogo-estado {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+  font-size: var(--fs-small);
+}
+
+.catalogo-color-muestra {
+  height: 48px;
+  border: var(--border-default);
+  border-radius: var(--r-md);
+}
+
+.catalogo-color-muestra--linea {
+  border-width: 3px;
+  border-style: solid;
+  background: var(--bg-surface);
+}
+
+.catalogo-estado {
+  align-items: flex-start;
+  padding: var(--s-3);
+  border: 1px solid;
+  border-radius: var(--r-md);
+}
+
+.catalogo-lista {
+  display: flex;
+  flex-direction: column;
+}
+
+.catalogo-muestra {
+  display: grid;
+  grid-template-columns: 160px minmax(0, 1fr);
+  align-items: center;
+  gap: var(--s-4);
+  padding: var(--s-3) var(--s-4);
+  border-bottom: var(--border-subtle);
+}
+
+.catalogo-muestra:last-child {
+  border-bottom: 0;
+}
+
+.catalogo-muestra-etiqueta {
+  font-size: var(--fs-micro);
+  color: var(--text-muted);
+}
+
+.catalogo-muestra-cuerpo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2);
+}
+
+.catalogo-barra {
+  display: block;
+  height: 12px;
+  border-radius: var(--r-xs);
+  background: var(--text-tertiary);
+}
+
+.catalogo-radio {
+  width: 40px;
+  height: 40px;
+  border: var(--border-default);
+  background: var(--bg-subtle);
+}
+
+.catalogo-tarjeta {
+  padding: var(--s-4);
+}
+
+.catalogo-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s-4);
+}
