@@ -1,0 +1,96 @@
+/* ══════════════════════ RESPONSIVE ══════════════════════════════ */
+@media (max-width: 1320px) {
+  .health-model,
+  .health-port {
+    display: none;
+  }
+}
+
+@media (max-width: 1100px) {
+  .metrics-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .exp-summary {
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
+  }
+
+  .exp-summary .progress,
+  .exp-updated {
+    display: none;
+  }
+
+  .exp-detail {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .registro-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .registro-grid > div:nth-child(3) {
+    border-left: 0;
+  }
+
+  .toolbar-action {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 900px) {
+  .health-strip {
+    display: none;
+  }
+}
+
+@media (max-width: 760px) {
+  :root {
+    --sidebar-w: 0px;
+  }
+
+  .sidebar {
+    display: none;
+  }
+
+  .app-header,
+  .app-content {
+    padding-left: var(--s-4);
+    padding-right: var(--s-4);
+  }
+
+  .metrics-grid,
+  .detail-grid,
+  .detail-grid--3,
+  .inspect-grid,
+  .stepper,
+  .verdict,
+  .profile-grid,
+  .ratificacion-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .inspect-grid .detail-item {
+    border-left: 0 !important;
+  }
+
+  .confidence {
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .step + .step {
+    border-left: 0;
+    border-top: var(--border-subtle);
+  }
+
+  .search-box {
+    max-width: none;
+  }
+
+  .ai-cta,
+  .ai-panel-head,
+  .registro-accion {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

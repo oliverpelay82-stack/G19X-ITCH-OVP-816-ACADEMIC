@@ -1,0 +1,147 @@
+/* ══════════════════════ 8. MODAL ════════════════════════════════ */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 6vh var(--s-4) var(--s-4);
+  overflow-y: auto;
+  background: var(--overlay);
+  animation: fade-in var(--dur) var(--ease);
+}
+
+.modal {
+  width: 100%;
+  padding: var(--s-6);
+  background: var(--bg-surface);
+  border: var(--border-default);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-modal);
+  outline: none;
+  animation: rise-in var(--dur-slow) var(--ease);
+}
+
+.modal--md {
+  max-width: 560px;
+}
+
+.modal--lg {
+  max-width: 900px;
+}
+
+.modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--s-4);
+  margin-bottom: var(--s-5);
+}
+
+.modal-heading {
+  min-width: 0;
+}
+
+.modal-title {
+  font-size: var(--fs-title);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.modal-subtitle {
+  margin-top: 2px;
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+}
+
+.modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-5);
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--s-2);
+  padding-top: var(--s-2);
+}
+
+/* Datos: etiqueta en versales arriba, valor debajo */
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s-4) var(--s-6);
+  margin: 0;
+}
+
+.detail-grid--3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+  min-width: 0;
+}
+
+.detail-item--full {
+  grid-column: 1 / -1;
+}
+
+.detail-item dt {
+  font-size: var(--fs-micro);
+  font-weight: 500;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.detail-item dd {
+  margin: 0;
+  font-size: var(--fs-body);
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+
+.detail-item dd.mono {
+  font-size: var(--fs-small);
+}
+
+/* Cabecera de inspección: metadatos del archivo en dos columnas. */
+.inspect-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+  border: var(--border-default);
+  border-radius: var(--r-md);
+  background: var(--bg-canvas);
+  overflow: hidden;
+}
+
+.inspect-grid .detail-item {
+  padding: var(--s-3) var(--s-4);
+  border-bottom: var(--border-subtle);
+}
+
+/* La huella ocupa la primera fila completa; debajo, pares de columnas. */
+.inspect-grid .detail-item--full {
+  background: var(--bg-surface);
+}
+
+.inspect-grid .detail-item:not(.detail-item--full):nth-child(odd) {
+  border-left: var(--border-subtle);
+}
+
+.inspect-grid .detail-item:last-child,
+.inspect-grid .detail-item:not(.detail-item--full):nth-last-child(2):nth-child(even) {
+  border-bottom: 0;
+}
+
+.inspect-grid .detail-item dd .mono {
+  font-size: var(--fs-small);
+}

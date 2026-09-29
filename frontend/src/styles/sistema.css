@@ -1,0 +1,157 @@
+/* ══════════════════════ 11. SISTEMA ═════════════════════════════ */
+
+/* Esqueletos */
+.skeleton {
+  display: block;
+  background: var(--bg-muted);
+  animation: skeleton 1.4s ease-in-out infinite;
+}
+
+@keyframes skeleton {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.skeleton-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  padding: var(--s-5);
+}
+
+/* Toasts */
+.toast-stack {
+  position: fixed;
+  right: var(--s-6);
+  bottom: var(--s-6);
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  width: min(360px, calc(100vw - 32px));
+  pointer-events: none;
+}
+
+.toast {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-3);
+  padding: var(--s-3);
+  background: var(--bg-surface);
+  border: var(--border-default);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-pop);
+  pointer-events: auto;
+  animation: rise-in var(--dur-slow) var(--ease);
+  transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+
+.toast.is-leaving {
+  opacity: 0;
+  transform: translateY(4px);
+}
+
+.toast-dot {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  margin-top: 7px;
+  border-radius: 50%;
+  background: var(--off-solid);
+}
+
+.toast--exito .toast-dot {
+  background: var(--ok-solid);
+}
+
+.toast--alerta .toast-dot {
+  background: var(--warn-solid);
+}
+
+.toast--error .toast-dot {
+  background: var(--bad-solid);
+}
+
+.toast-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.toast-title {
+  font-size: var(--fs-body);
+  font-weight: 500;
+}
+
+.toast-detail {
+  margin-top: 2px;
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
+
+.toast-close {
+  display: inline-flex;
+  padding: 2px;
+  border-radius: var(--r-xs);
+  color: var(--text-muted);
+  transition: color var(--dur) var(--ease), background-color var(--dur) var(--ease);
+}
+
+.toast-close:hover {
+  background: var(--bg-subtle);
+  color: var(--text-primary);
+}
+
+/* Tooltips */
+[data-tooltip] {
+  position: relative;
+}
+
+[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 6px);
+  z-index: 50;
+  padding: var(--s-1) var(--s-2);
+  border-radius: var(--r-sm);
+  background: var(--bg-inverse);
+  color: var(--text-inverse);
+  font-family: var(--font-sans);
+  font-size: var(--fs-micro);
+  font-weight: 500;
+  letter-spacing: normal;
+  text-transform: none;
+  line-height: 1.4;
+  white-space: nowrap;
+  box-shadow: var(--shadow-pop);
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 2px);
+  transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+
+[data-tooltip]:hover::after,
+[data-tooltip]:focus-visible::after {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* En la cabecera el tooltip se abre hacia abajo y alineado a la derecha. */
+.app-header-tools [data-tooltip]::after {
+  top: calc(100% + 6px);
+  bottom: auto;
+  left: auto;
+  right: 0;
+  transform: translateY(-2px);
+}
+
+.app-header-tools [data-tooltip]:hover::after,
+.app-header-tools [data-tooltip]:focus-visible::after {
+  transform: none;
+}

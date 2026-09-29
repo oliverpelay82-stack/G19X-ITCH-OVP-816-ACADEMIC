@@ -1,0 +1,313 @@
+/* ══════════════════════ 1. APP SHELL ════════════════════════════ */
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+.app-main {
+  flex: 1;
+  min-width: 0;
+  margin-left: var(--sidebar-w);
+  display: flex;
+  flex-direction: column;
+}
+
+.app-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+  width: 100%;
+  max-width: 1480px;
+  padding: var(--s-5) var(--s-6) var(--s-10);
+}
+
+.tab-region {
+  animation: rise-in var(--dur-slow) var(--ease);
+}
+
+.tab-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+
+/* ── Sidebar ───────────────────────────────────────────────────── */
+.sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  width: var(--sidebar-w);
+  padding: var(--s-4) var(--s-3);
+  background: var(--bg-canvas);
+  border-right: var(--border-default);
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 var(--s-1);
+  margin-bottom: var(--s-6);
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.25;
+}
+
+.brand-name {
+  font-size: var(--fs-title);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--text-primary);
+}
+
+.brand-sub {
+  font-size: var(--fs-micro);
+  color: var(--text-muted);
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-5);
+}
+
+.nav-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sidebar-label {
+  padding: 0 var(--s-2) 6px;
+  font-size: var(--fs-micro);
+  font-weight: 500;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 40px;
+  padding: 0 var(--s-2) 0 6px;
+  border: 1px solid transparent;
+  border-radius: var(--r-md);
+  font-size: var(--fs-body);
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-align: left;
+  transition: background-color var(--dur) var(--ease), border-color var(--dur) var(--ease),
+    color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+}
+
+.nav-item:hover {
+  background: var(--bg-subtle);
+  color: var(--text-primary);
+}
+
+/* Ítem activo: tarjeta blanca elevada con micro-borde. */
+.nav-item.is-active {
+  background: var(--bg-surface);
+  border: var(--border-default);
+  box-shadow: var(--shadow-hairline);
+  color: var(--text-primary);
+}
+
+.nav-item:hover .squircle,
+.nav-item.is-active .squircle {
+  background: var(--squircle-bg-hover);
+  border-color: var(--squircle-border-hover);
+  color: var(--icon-hover);
+}
+
+.nav-label {
+  flex: 1;
+}
+
+.nav-count {
+  min-width: 22px;
+  height: 20px;
+  padding: 0 7px;
+  border-radius: var(--r-full);
+  background: var(--bg-subtle);
+  border: var(--border-subtle);
+  font-size: var(--fs-micro);
+  font-weight: 500;
+  line-height: 18px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.nav-item.is-active .nav-count {
+  border-color: var(--line);
+  color: var(--text-secondary);
+}
+
+.sidebar-foot {
+  margin-top: auto;
+  padding: var(--s-3) var(--s-1) 0;
+  border-top: var(--border-subtle);
+}
+
+.version-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 24px;
+  padding: 0 var(--s-2);
+  border: var(--border-default);
+  border-radius: var(--r-full);
+  background: var(--bg-surface);
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  color: var(--text-secondary);
+}
+
+/* ── Header ────────────────────────────────────────────────────── */
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-4);
+  min-height: var(--header-h);
+  padding: var(--s-2) var(--s-6);
+  background: var(--bg-canvas);
+  border-bottom: var(--border-default);
+}
+
+.app-header-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.app-title {
+  font-size: var(--fs-h1);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  color: var(--text-primary);
+}
+
+.breadcrumbs ol {
+  display: flex;
+  align-items: center;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.breadcrumbs li {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+}
+
+.breadcrumbs li svg {
+  color: var(--text-tertiary);
+}
+
+.breadcrumbs button {
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+  border-radius: var(--r-xs);
+  transition: color var(--dur) var(--ease);
+}
+
+.breadcrumbs button:hover {
+  color: var(--text-primary);
+}
+
+.breadcrumbs [aria-current='page'] {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.app-header-tools {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+
+.header-divider {
+  width: 1px;
+  height: 20px;
+  margin: 0 var(--s-1);
+  background: var(--line);
+}
+
+/* ── System Health Strip ───────────────────────────────────────── */
+.health-strip {
+  display: flex;
+  align-items: stretch;
+  height: 32px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: var(--border-default);
+  border-radius: var(--r-sm);
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+.health-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 var(--s-3);
+  font-size: var(--fs-small);
+  color: var(--text-secondary);
+  white-space: nowrap;
+  cursor: default;
+  transition: background-color var(--dur) var(--ease);
+}
+
+.health-item + .health-item {
+  border-left: var(--border-subtle);
+}
+
+.health-item:hover {
+  background: var(--bg-subtle);
+}
+
+.health-name {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.health-port,
+.health-metric,
+.health-model {
+  font-size: var(--fs-micro);
+  color: var(--text-muted);
+}
+
+.health-model {
+  padding: 1px 6px;
+  border-radius: var(--r-xs);
+  background: var(--bg-subtle);
+  color: var(--text-secondary);
+}
+
+.health-item--bad .health-metric {
+  color: var(--bad);
+}
+
+.health-item--warn .health-metric {
+  color: var(--warn);
+}

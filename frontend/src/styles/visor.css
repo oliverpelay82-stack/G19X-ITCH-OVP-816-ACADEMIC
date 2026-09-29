@@ -1,0 +1,333 @@
+/* ══════════════════════ VISOR DE EVIDENCIA (HU-20, RF-13) ═══════ */
+/* Con el visor abierto el modal del documento se ensancha a dos columnas:
+   el detalle y la auditoría a la izquierda, el documento a la derecha. */
+.modal--xl {
+  max-width: 1480px;
+}
+
+.inspector {
+  display: grid;
+  gap: var(--s-5);
+}
+
+.inspector--visor {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  align-items: start;
+}
+
+.inspector-principal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-5);
+  min-width: 0;
+}
+
+.visor {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  min-width: 0;
+  max-height: calc(100vh - 12vh);
+  padding: var(--s-4);
+  border: var(--border-default);
+  border-radius: var(--r-md);
+  background: var(--bg-subtle);
+}
+
+.visor-head,
+.visor-controles {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+}
+
+.visor-titulo {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  min-width: 0;
+}
+
+.visor-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  font-size: var(--fs-small);
+  color: var(--text-secondary);
+}
+
+.visor-paginacion {
+  display: flex;
+  align-items: center;
+  gap: var(--s-1);
+}
+
+.visor-contador {
+  min-width: 56px;
+  text-align: center;
+  font-size: var(--fs-small);
+  color: var(--text-secondary);
+}
+
+.visor-aviso {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2);
+  padding: var(--s-2) var(--s-3);
+  border: 1px solid var(--neutral-border);
+  border-radius: var(--r-sm);
+  background: var(--bg-surface);
+  font-size: var(--fs-small);
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.visor-aviso--ok {
+  background: var(--ok-bg);
+  border-color: var(--ok-border);
+  color: var(--ok);
+}
+
+.visor-aviso--warn {
+  background: var(--warn-bg);
+  border-color: var(--warn-border);
+  color: var(--warn);
+}
+
+.visor-aviso-paginas {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+}
+
+.chip--xs {
+  height: 22px;
+  padding: 0 var(--s-2);
+  font-size: var(--fs-micro);
+}
+
+.visor-lienzo {
+  flex: 1;
+  min-height: 320px;
+  overflow: auto;
+  border-radius: var(--r-sm);
+  outline: none;
+}
+
+.visor-lienzo:focus-visible {
+  box-shadow: 0 0 0 2px var(--line-strong);
+}
+
+.visor-pagina {
+  position: relative;
+  margin: 0 auto;
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-card);
+}
+
+.visor-pagina img {
+  display: block;
+  width: 100%;
+  height: auto;
+  user-select: none;
+}
+
+.visor-cargando {
+  position: absolute;
+  inset: 0;
+  border-radius: 0;
+}
+
+/* Recuadro de evidencia: borde y relleno translúcido del color del estado;
+   el punteado indica una ubicación aproximada. */
+.visor-recuadro {
+  position: absolute;
+  margin: -3px;
+  padding: 3px;
+  box-sizing: content-box;
+  border: 2px solid var(--ok-solid);
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--ok-solid) 14%, transparent);
+  pointer-events: none;
+  animation: evidencia-in var(--dur-slow) var(--ease);
+}
+
+.visor-recuadro--warn {
+  border-color: var(--warn-solid);
+  background: color-mix(in srgb, var(--warn-solid) 16%, transparent);
+}
+
+.visor-recuadro--bad {
+  border-color: var(--bad-solid);
+  background: color-mix(in srgb, var(--bad-solid) 12%, transparent);
+}
+
+.visor-recuadro--aprox {
+  border-style: dashed;
+}
+
+@keyframes evidencia-in {
+  from {
+    opacity: 0;
+    transform: scale(1.04);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Citas que abren el visor */
+.cita-enlace {
+  display: inline;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  text-decoration: underline;
+  text-decoration-color: var(--line-strong);
+  text-underline-offset: 3px;
+  cursor: pointer;
+  transition: text-decoration-color var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+.cita-enlace:hover {
+  color: var(--text-primary);
+  text-decoration-color: currentColor;
+}
+
+.cita-enlace:focus-visible {
+  outline: 2px solid var(--line-strong);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+@media (max-width: 1100px) {
+  .inspector--visor {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .visor {
+    position: static;
+    max-height: none;
+  }
+
+  .visor-lienzo {
+    max-height: 70vh;
+  }
+}
+
+.inspector-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2) var(--s-3);
+}
+
+.inspector-custodia {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+
+/* Datos técnicos del archivo, plegados después del dictamen. */
+.inspector-datos summary {
+  cursor: pointer;
+}
+
+.inspector-datos[open] summary {
+  margin-bottom: var(--s-3);
+}
+
+/* Sellos detectados por el Nivel 3: información, no estado (recuadro neutro) */
+.sellos-fila {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-1) var(--s-2);
+  margin: var(--s-2) 0 var(--s-1);
+}
+
+.visor-recuadro--neutral {
+  border-color: var(--text-muted);
+  border-style: dashed;
+  background: color-mix(in srgb, var(--text-muted) 8%, transparent);
+}
+
+/* Resumen del dictamen y acciones recomendadas */
+.resumen-dictamen {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+}
+
+.resumen-punto {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 108px;
+  padding: var(--s-2) var(--s-3);
+  border: var(--border-default);
+  border-radius: var(--r-sm);
+  background: var(--bg-surface);
+  text-align: left;
+  transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+}
+
+.resumen-punto:hover {
+  border-color: var(--line-strong);
+  box-shadow: var(--shadow-card);
+}
+
+.resumen-punto:focus-visible {
+  outline: 2px solid var(--line-strong);
+  outline-offset: 2px;
+}
+
+.resumen-etiqueta {
+  font-size: var(--fs-micro);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.resumen-valor {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-small);
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.acciones {
+  padding: var(--s-3) var(--s-4);
+  border: 1px solid var(--warn-border);
+  border-radius: var(--r-sm);
+  background: var(--warn-bg);
+}
+
+.acciones ol {
+  margin-top: var(--s-2);
+  padding-left: var(--s-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+  font-size: var(--fs-small);
+  line-height: 1.5;
+  color: var(--text-primary);
+}
+
+/* Al saltar desde el resumen, la sección no queda pegada al borde superior. */
+.ancla {
+  scroll-margin-top: var(--s-6);
+}

@@ -1,0 +1,190 @@
+/* ══════════════════════ 10. CHAT ════════════════════════════════ */
+.chat-thread {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  max-height: 400px;
+  min-height: 180px;
+  overflow-y: auto;
+  padding: var(--s-3);
+  border: var(--border-default);
+  border-radius: var(--r-md);
+  background: var(--bg-canvas);
+}
+
+.chat-thread .empty-state {
+  padding: var(--s-8) var(--s-4);
+}
+
+.bubble {
+  max-width: 85%;
+  padding: 10px var(--s-3);
+  border-radius: var(--r-md);
+  font-size: var(--fs-body);
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+  animation: rise-in var(--dur-slow) var(--ease);
+}
+
+.bubble--user {
+  align-self: flex-end;
+  border-bottom-right-radius: var(--r-xs);
+  background: var(--bg-inverse);
+  color: var(--text-inverse);
+  white-space: pre-wrap;
+}
+
+.bubble--bot {
+  align-self: flex-start;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  border: var(--border-default);
+  border-bottom-left-radius: var(--r-xs);
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-card);
+  color: var(--text-primary);
+}
+
+.bubble-text {
+  white-space: pre-wrap;
+}
+
+.bubble--error {
+  align-self: flex-start;
+  border: 1px solid var(--bad-border);
+  background: var(--bad-bg);
+  color: var(--bad);
+}
+
+/* Citas de cláusulas: chips interactivos con vista previa. */
+.citations-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+
+.citations {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-1);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.citation {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  height: 24px;
+  padding: 0 var(--s-2);
+  border: var(--border-default);
+  border-radius: var(--r-sm);
+  background: var(--bg-subtle);
+  font-size: var(--fs-micro);
+  color: var(--text-secondary);
+  transition: background-color var(--dur) var(--ease), border-color var(--dur) var(--ease),
+    color var(--dur) var(--ease);
+}
+
+.citation:hover,
+.citation.is-active {
+  border-color: var(--line-strong);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+}
+
+.citation svg {
+  flex: none;
+  color: var(--text-muted);
+}
+
+.citation-title {
+  min-width: 0;
+  max-width: 280px;
+  font-size: var(--fs-micro);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.citation-pos {
+  flex: none;
+  color: var(--text-muted);
+}
+
+.citation-preview {
+  padding: var(--s-2) var(--s-3);
+  border-radius: var(--r-sm);
+  background: var(--bg-canvas);
+  box-shadow: inset 2px 0 0 var(--line-strong);
+}
+
+.citation-preview p {
+  font-size: var(--fs-small);
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+.citation-preview footer {
+  margin-top: 2px;
+  font-size: var(--fs-micro);
+  color: var(--text-muted);
+}
+
+.typing {
+  display: inline-flex;
+  flex-direction: row;
+  gap: 4px;
+  padding: var(--s-3);
+}
+
+.typing span {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--text-tertiary);
+  animation: typing 1.2s ease-out infinite;
+}
+
+.typing span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.typing span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes typing {
+  0%,
+  60%,
+  100% {
+    opacity: 0.3;
+  }
+  30% {
+    opacity: 1;
+  }
+}
+
+.chat-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.composer {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--s-2);
+}
+
+.composer textarea {
+  flex: 1;
+  min-height: 34px;
+  max-height: 120px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+  resize: none;
+}

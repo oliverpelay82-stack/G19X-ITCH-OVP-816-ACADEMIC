@@ -1,0 +1,392 @@
+// Dictamen de la auditoría: veredicto, cotejo, contenido verificado, sellos y resumen.
+import { useId } from 'react'
+import { useEvidencia } from '../evidencia-context.js'
+import { Badge, Card, KeyValue, KeyValueList } from '../ui/index.js'
+import { TIPO_DOCUMENTO_LABEL } from '../../constants.js'
+import { EstadoLectura, MetaInferencia } from './Lectura.jsx'
+import {
+  ESTATUS_IA,
+  RESULTADO_CONTENIDO,
+  RESULTADO_COTEJO,
+  RESULTADO_VIGENCIA,
+  TIPO_IA_LABEL,
+  TITULARIDAD,
+  diasRestantes,
+  fechaIso,
+  nombreModelo,
+  numero,
+  resultadoTipo,
+  separarMotivo,
+  vigenciaSegunReglas,
+} from './formato.js'
+
+/** Barra de confianza de 3 px con el porcentaje y la banda a la que pertenece. */
+function Confianza({ dictamen }) {
+  const valor = dictamen.nivel_confianza || 0
+  const conforme = dictamen.umbral_confianza_conforme ?? 0.85
+  const hitl = dictamen.umbral_confianza_hitl ?? 0.7
+  const tono = valor >= conforme ? 'ok' : valor >= hitl ? 'warn' : 'bad'
+  return (
+    <div className="confidence">
+      <div className="confidence-head">
+        <span className="eyebrow">Confianza</span>
+        <span className={`confidence-value confidence-value--${tono} tabular`}>{Math.round(valor * 100)}%</span>
+      </div>
+      <span className="confidence-bar" aria-hidden="true">
+        <span className={`confidence-fill confidence-fill--${tono}`} style={{ width: `${valor * 100}%` }} />
+        <span className="confidence-mark" style={{ left: `${conforme * 100}%` }} />
+      </span>
+      <span className="confidence-foot">Conforme desde {Math.round(conforme * 100)}%</span>
+    </div>
+  )
+}
+
+/**
+ * Tabla de cotejo documental: lo que registra el expediente frente a lo que
+ * extrajo el modelo, con el resultado que calculó el dictamen determinista.
+ * La titularidad se acredita con el RFC o, si el documento no lo incluye,
+ * con la razón social; un documento sin ninguno de los dos pasa a revisión.
+ */
+function Cotejo({ dictamen, expediente, tipoRegistrado }) {
+  const rfcTitular = expediente?.titular?.rfc || null
+  const titularidad = dictamen.titularidad
+  const filas = [
+    {
+      campo: 'RFC',
+      esperado: rfcTitular,
+      detectado: dictamen.rfc_detectado,
+      mono: true,
+      // Sin RFC en el documento no hay rechazo: la titularidad se busca por razón social.
+      resultado: !rfcTitular ? 'na' : !dictamen.rfc_detectado ? 'ausente' : dictamen.match_titular ? 'ok' : 'bad',
+      nota: dictamen.rfc_detectado && !dictamen.rfc_estructura_valida ? 'Estructura SAT inválida' : null,
+    },
+    {
+      campo: 'Razón social',
+      esperado: expediente?.titular?.razon_social,
+      detectado: dictamen.razon_social_detectada,
+      resultado: titularidad === 'RAZON_SOCIAL' ? 'ok' : titularidad === 'NO_LOCALIZADA' ? 'bad' : 'info',
+      nota: titularidad === 'RAZON_SOCIAL' ? 'Acredita la titularidad' : null,
+    },
+    {
+      campo: 'Tipo documental',
+      esperado: TIPO_DOCUMENTO_LABEL[tipoRegistrado] || tipoRegistrado,
+      detectado: TIPO_IA_LABEL[dictamen.tipo_documento_detectado] || TIPO_IA_LABEL.OTRO,
+      resultado: resultadoTipo(dictamen, tipoRegistrado),
+    },
+  ]
+  return (
+    <Card className="table-card table-card--flat">
+      <table className="data-table data-table--inner cotejo">
+        <colgroup>
+          <col style={{ width: '18%' }} />
+          <col />
+          <col />
+          {/* Ancho fijo: la etiqueta del resultado nunca se recorta, ni con el visor abierto. */}
+          <col style={{ width: '132px' }} />
+        </colgroup>
+        <thead>
+          <tr>
+            <th>Campo</th>
+            <th>Esperado · expediente</th>
+            <th>Detectado · documento</th>
+            <th className="col-right">Resultado</th>
+          </tr>
+        </thead>
+        <tbody>
+          {filas.map((f) => {
+            const r = RESULTADO_COTEJO[f.resultado]
+            return (
+              <tr key={f.campo}>
+                <td className="cell-muted">{f.campo}</td>
+                <td className={f.mono ? 'mono cell-mono' : ''}>{f.esperado || <span className="cell-muted">—</span>}</td>
+                <td className={f.mono ? 'mono cell-mono' : ''}>
+                  {f.detectado || <span className="cell-muted">No localizado</span>}
+                  {f.nota && <span className={`cell-sub ${f.resultado === 'ok' ? '' : 'cell-bad'}`}>{f.nota}</span>}
+                </td>
+                <td className="col-right">
+                  <Badge tono={r.tono}>{r.label}</Badge>
+                </td>
+              </tr>
+            )
+          })}
+        </tbody>
+      </table>
+    </Card>
+  )
+}
+
+/**
+ * Elementos que el catálogo exige al tipo de documento (reglas RSC/RDS) con su
+ * resultado: la cita literal que lo sustenta si se localizó, o la
+ * recomendación del catálogo si falta. Una omisión no rechaza el documento:
+ * lo deja en revisión para el analista (RSC-01).
+ */
+function VerificacionContenido({ verificaciones }) {
+  const evidencia = useEvidencia()
+  if (!verificaciones?.length) return null
+  const pendientes = verificaciones.filter((v) => v.resultado !== 'CUMPLE').length
+  return (
+    <div className="contenido">
+      <div className="contenido-head">
+        <p className="eyebrow">Verificación de contenido</p>
+        <span className="cell-muted tabular">
+          {verificaciones.length - pendientes} de {verificaciones.length} localizados
+        </span>
+      </div>
+      <Card className="table-card table-card--flat">
+        <table className="data-table data-table--inner contenido-tabla">
+          <colgroup>
+            <col style={{ width: '30%' }} />
+            <col />
+            <col style={{ width: '132px' }} />
+          </colgroup>
+          <thead>
+            <tr>
+              <th>Elemento · regla</th>
+              <th>Evidencia o recomendación</th>
+              <th className="col-right">Resultado</th>
+            </tr>
+          </thead>
+          <tbody>
+            {verificaciones.map((v) => {
+              const r = RESULTADO_CONTENIDO[v.resultado] || RESULTADO_CONTENIDO.NO_VERIFICABLE
+              return (
+                <tr key={v.codigo_regla}>
+                  <td>
+                    {v.nombre_regla || v.codigo_regla}
+                    <span className="cell-sub mono">{v.codigo_regla}</span>
+                  </td>
+                  <td>
+                    {v.resultado === 'CUMPLE' && v.cita ? (
+                      evidencia ? (
+                        <button
+                          type="button"
+                          className="cita-enlace contenido-cita"
+                          onClick={() => evidencia.mostrar({ cita: v.cita, tono: 'ok' })}
+                          title="Ver la cita resaltada en el documento"
+                        >
+                          <q>{v.cita}</q>
+                        </button>
+                      ) : (
+                        <q className="contenido-cita">{v.cita}</q>
+                      )
+                    ) : (
+                      <>
+                        {v.observacion && <span className="cell-muted">{v.observacion} </span>}
+                        {v.recomendacion && <span className="contenido-recomendacion">{v.recomendacion}</span>}
+                      </>
+                    )}
+                  </td>
+                  <td className="col-right">
+                    <Badge tono={r.tono}>{r.label}</Badge>
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </Card>
+    </div>
+  )
+}
+
+/**
+ * Sellos que detectó el Nivel 3 (tinta de color) y el Sello Digital SAT
+ * (DOC-08). Son evidencia informativa: un clic en la página los resalta en el
+ * visor del documento.
+ */
+function SellosDetectados({ sellos = [], selloDigital }) {
+  const evidencia = useEvidencia()
+  if (!sellos.length && !selloDigital) return null
+  const porPagina = new Map()
+  for (const s of sellos) porPagina.set(s.pagina, [...(porPagina.get(s.pagina) || []), s])
+  return (
+    <div className="sellos">
+      <p className="eyebrow">Sellos</p>
+      <div className="sellos-fila">
+        {selloDigital && <Badge>Sello Digital SAT</Badge>}
+        {[...porPagina.entries()].map(([pagina, zonas]) =>
+          evidencia ? (
+            <button
+              key={pagina}
+              type="button"
+              className="chip chip--xs"
+              onClick={() => evidencia.mostrarZonas(pagina, zonas)}
+              title="Ver el sello resaltado en el documento"
+            >
+              p. {pagina}
+              {zonas.length > 1 ? ` · ${zonas.length}` : ''}
+            </button>
+          ) : (
+            <Badge key={pagina}>p. {pagina}</Badge>
+          )
+        )}
+      </div>
+      {sellos.length > 0 && (
+        <p className="field-hint">Sellos en tinta de color detectados en el documento original.</p>
+      )}
+    </div>
+  )
+}
+
+/**
+ * Franja de resumen del dictamen: cada aspecto con su resultado y un clic que
+ * lleva a su sección. Solo resume datos que el dictamen ya trae.
+ */
+function ResumenDictamen({ dictamen, vigencia, ids }) {
+  const verificaciones = dictamen.verificaciones || []
+  const localizados = verificaciones.filter((v) => v.resultado === 'CUMPLE').length
+  const paginasConSello = new Set((dictamen.sellos || []).map((s) => s.pagina)).size
+  const titularidad = TITULARIDAD[dictamen.titularidad]
+  const puntos = [
+    titularidad && { etiqueta: 'Titularidad', ...titularidad, destino: ids.cotejo },
+    {
+      etiqueta: 'Tipo',
+      tono: dictamen.tipo_coincide === true ? 'ok' : dictamen.tipo_coincide === false ? 'bad' : 'neutral',
+      texto: dictamen.tipo_coincide === true ? 'Coincide' : dictamen.tipo_coincide === false ? 'Distinto' : 'Sin contraste',
+      destino: ids.cotejo,
+    },
+    { etiqueta: 'Vigencia', tono: vigencia.tono, texto: vigencia.texto, destino: ids.fechas },
+    verificaciones.length > 0 && {
+      etiqueta: 'Contenido',
+      tono: localizados === verificaciones.length ? 'ok' : 'warn',
+      texto: `${localizados} de ${verificaciones.length}`,
+      destino: ids.contenido,
+    },
+    paginasConSello > 0 && {
+      etiqueta: 'Sellos',
+      tono: 'neutral',
+      texto: `${paginasConSello} ${paginasConSello === 1 ? 'página' : 'páginas'}`,
+      destino: ids.sellos,
+    },
+  ].filter(Boolean)
+  const ir = (id) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  return (
+    <nav className="resumen-dictamen" aria-label="Resumen del dictamen">
+      {puntos.map((p) => (
+        <button key={p.etiqueta} type="button" className="resumen-punto" onClick={() => ir(p.destino)}>
+          <span className="resumen-etiqueta">{p.etiqueta}</span>
+          <span className={`resumen-valor resumen-valor--${p.tono}`}>
+            <span className={`status-dot status-dot--${p.tono}`} aria-hidden="true" />
+            {p.texto}
+          </span>
+        </button>
+      ))}
+    </nav>
+  )
+}
+
+/** Recomendaciones del motor como pasos a seguir (las mismas que acompañan a cada elemento pendiente). */
+function AccionesRecomendadas({ recomendaciones = [] }) {
+  const unicas = [...new Set(recomendaciones.filter(Boolean))]
+  if (!unicas.length) return null
+  return (
+    <div className="acciones">
+      <p className="eyebrow">Acciones recomendadas</p>
+      <ol>
+        {unicas.map((r) => (
+          <li key={r}>{r}</li>
+        ))}
+      </ol>
+    </div>
+  )
+}
+
+/* ── Dictamen ───────────────────────────────────────────────────── */
+
+export function DictamenIa({ dictamen, expediente, tipoRegistrado, duracion }) {
+  const base = useId()
+  const ids = { cotejo: `${base}-cotejo`, contenido: `${base}-contenido`, sellos: `${base}-sellos`, fechas: `${base}-fechas` }
+  const estatus = ESTATUS_IA[dictamen.estatus_preliminar] || {
+    tono: 'neutral',
+    label: dictamen.estatus_preliminar || 'Sin dictamen',
+  }
+  const { motivo, resto } = separarMotivo(dictamen.observaciones)
+  const dias = diasRestantes(dictamen)
+  const textoVencimiento =
+    dias === null
+      ? 'Sin fecha de vencimiento'
+      : dias < 0
+        ? `Vencido hace ${numero(Math.abs(dias))} ${Math.abs(dias) === 1 ? 'día' : 'días'}`
+        : dias === 0
+          ? 'Vence hoy'
+          : `${numero(dias)} ${dias === 1 ? 'día restante' : 'días restantes'}`
+  const segunReglas = vigenciaSegunReglas(dictamen.vigencia_nivel_2, textoVencimiento)
+  const tonoVigencia = segunReglas?.tono ?? (dias === null ? 'neutral' : dias < 0 ? 'bad' : dias <= 30 ? 'warn' : 'ok')
+  const vigenciaCorta =
+    RESULTADO_VIGENCIA[dictamen.vigencia_nivel_2?.resultado]?.label ?? (dias === null ? 'sin vencimiento' : textoVencimiento)
+
+  return (
+    <div className="dictamen">
+      <ResumenDictamen
+        dictamen={dictamen}
+        vigencia={{ tono: tonoVigencia, texto: vigenciaCorta.charAt(0).toUpperCase() + vigenciaCorta.slice(1) }}
+        ids={ids}
+      />
+
+      <div className={`verdict verdict--${estatus.tono}`}>
+        <div className="verdict-main">
+          <p className="eyebrow">Dictamen preliminar</p>
+          <p className="verdict-word">{estatus.label}</p>
+          {motivo && <p className="verdict-reason">{motivo}</p>}
+          <p className={`vigencia-line vigencia-line--${tonoVigencia}`}>
+            <span className={`status-dot status-dot--${tonoVigencia}`} aria-hidden="true" />
+            <span className="tabular">{segunReglas?.texto ?? textoVencimiento}</span>
+          </p>
+          {dictamen.requiere_revision_humana && (
+            <div className="badge-row">
+              <Badge tono="warn">Requiere revisión de un analista</Badge>
+            </div>
+          )}
+        </div>
+        <Confianza dictamen={dictamen} />
+      </div>
+
+      <AccionesRecomendadas recomendaciones={dictamen.recomendaciones} />
+
+      <div id={ids.cotejo} className="ancla">
+        <Cotejo dictamen={dictamen} expediente={expediente} tipoRegistrado={tipoRegistrado} />
+      </div>
+
+      <div id={ids.contenido} className="ancla">
+        <VerificacionContenido verificaciones={dictamen.verificaciones} />
+      </div>
+
+      <div id={ids.sellos} className="ancla">
+        <SellosDetectados sellos={dictamen.sellos} selloDigital={dictamen.sello_digital_sat} />
+      </div>
+
+      <KeyValueList id={ids.fechas} className="detail-grid detail-grid--3 ancla">
+        <KeyValue etiqueta="Emisión" className="detail-item" valorClassName="mono">
+          {fechaIso(dictamen.fecha_emision)}
+        </KeyValue>
+        <KeyValue etiqueta="Vencimiento" className="detail-item" valorClassName="mono">
+          {fechaIso(dictamen.fecha_vencimiento)}
+        </KeyValue>
+        <KeyValue etiqueta="Días para el vencimiento" className="detail-item" valorClassName="mono">
+          {dias === null ? '—' : numero(dias)}
+        </KeyValue>
+      </KeyValueList>
+
+      {resto.length > 0 && (
+        <div className="observations">
+          <p className="eyebrow">Observaciones</p>
+          <ul>
+            {resto.map((obs, i) => (
+              <li key={i}>{obs}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <EstadoLectura lectura={dictamen.extraccion_nivel_3} contexto={dictamen.contexto_llm} />
+
+      <p className="verdict-foot">
+        <MetaInferencia modelo={dictamen.modelo_utilizado} duracion={duracion} />
+        <span>{nombreModelo(dictamen.modelo_utilizado)} · temperatura 0.0</span>
+      </p>
+    </div>
+  )
+}
+
+/* ── Auditoría ──────────────────────────────────────────────────── */

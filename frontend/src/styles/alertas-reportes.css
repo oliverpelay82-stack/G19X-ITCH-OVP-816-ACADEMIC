@@ -1,0 +1,539 @@
+/* ══════════════════ 10. TIPOS, ALERTAS Y REPORTES ═══════════════ */
+/* Segunda fila de filtros (tipo de expediente y fechas de apertura, RF-05). */
+.toolbar--sub {
+  margin-top: calc(-1 * var(--s-1));
+}
+
+/* La etiqueta del rango de fechas va en un solo renglón, a la altura de sus
+   campos (a 1366 px se partía en «Apertura / desde»). */
+.date-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.date-inline input {
+  width: auto;
+  min-width: 140px;
+}
+
+.cell-warn {
+  color: var(--warn);
+}
+
+/* Códigos de regla (RIE-01-JUR-PODER…): una sola línea, recortada con su título completo. */
+.cell-code {
+  font-size: var(--fs-micro);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Identidad de la tarjeta de expediente: razón social + tipo. */
+.exp-identity-row {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-width: 0;
+}
+
+.exp-identity-row .tag {
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.exp-nombre {
+  color: var(--text-secondary);
+}
+
+.exp-nalertas {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+/* Por qué el semáforo tiene su color (RNF-08): visible arriba de la tabla */
+/* Índice de cumplimiento del DOC-05 (C6): cifra, barra segmentada con su
+   leyenda (el color nunca va solo), bloqueo y tabla de reglas evaluadas. */
+.indice {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  padding: var(--s-3) var(--s-4);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--bg-surface);
+}
+
+.indice-cabecera {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-3);
+}
+
+.indice-cifra {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-3);
+}
+
+.indice-valor {
+  font-size: var(--fs-metric);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+  color: var(--text-primary);
+}
+
+.indice-barra {
+  display: flex;
+  gap: 2px;
+  height: 6px;
+  border-radius: var(--r-full);
+  background: var(--bg-muted);
+  overflow: hidden;
+}
+
+.indice-segmento {
+  display: block;
+  height: 100%;
+}
+
+.indice-segmento--ok {
+  background: var(--ok-solid);
+}
+
+.indice-segmento--bad {
+  background: var(--bad-solid);
+}
+
+.indice-segmento--warn {
+  background: var(--warn-solid);
+}
+
+.indice-leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-4);
+  font-size: var(--fs-small);
+  color: var(--text-secondary);
+}
+
+.indice-leyenda-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.indice-bloqueo ul {
+  margin: var(--s-1) 0 0;
+  padding-left: var(--s-5);
+}
+
+.indice-bloqueo-titulo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+}
+
+.indice-detalle summary {
+  cursor: pointer;
+}
+
+.indice-detalle[open] summary {
+  margin-bottom: var(--s-2);
+}
+
+.indice-tabla {
+  margin-top: var(--s-2);
+}
+
+.indice-grupo th {
+  padding-top: var(--s-3);
+  font-weight: 600;
+  text-align: left;
+  color: var(--text-primary);
+  background: var(--bg-subtle);
+}
+
+.exp-motivos {
+  padding: var(--s-3) var(--s-4);
+  border: 1px solid var(--neutral-border);
+  border-radius: var(--r-sm);
+  background: var(--bg-subtle);
+}
+
+.exp-motivos--ok {
+  background: var(--ok-bg);
+  border-color: var(--ok-border);
+}
+
+.exp-motivos--warn {
+  background: var(--warn-bg);
+  border-color: var(--warn-border);
+}
+
+.exp-motivos--bad {
+  background: var(--bad-bg);
+  border-color: var(--bad-border);
+}
+
+.exp-motivos-titulo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--fs-small);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.exp-motivos ul {
+  color: var(--text-primary);
+}
+
+.exp-auditar {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--s-2);
+  padding-bottom: var(--s-3);
+  border-bottom: var(--border-subtle);
+}
+
+.exp-export {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  padding-top: var(--s-3);
+  border-top: var(--border-subtle);
+}
+
+.export-row {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+}
+
+.col-right .export-row {
+  justify-content: flex-end;
+}
+
+/* Selector del tipo de expediente en el alta (RF-01): tres opciones con su descripción. */
+.type-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--s-2);
+}
+
+.type-option {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--s-2) var(--s-3);
+  border: var(--border-default);
+  border-radius: var(--r-sm);
+  background: var(--bg-surface);
+  cursor: pointer;
+  transition: border-color var(--dur) var(--ease), background-color var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease);
+}
+
+.type-option:hover {
+  border-color: var(--line-strong);
+  background: var(--bg-subtle);
+}
+
+.type-option.is-active {
+  border-color: var(--text-primary);
+  box-shadow: var(--shadow-hairline);
+}
+
+.type-option:focus-within {
+  box-shadow: var(--focus-ring);
+}
+
+.type-option input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.type-option-label {
+  font-size: var(--fs-body);
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.type-option-desc {
+  font-size: var(--fs-micro);
+  line-height: 1.4;
+  color: var(--text-muted);
+}
+
+/* Selector de documentos de una regla, agrupado por tipo de expediente. */
+.type-picker-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+  width: 100%;
+}
+
+.type-picker-label {
+  font-size: var(--fs-micro);
+  font-weight: 500;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* Alertas con recomendación (RF-18, RF-21). */
+.exp-alertas {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+
+.alerta-lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  list-style: none;
+}
+
+.alerta {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: var(--s-3) var(--s-3) var(--s-3) var(--s-4);
+  border: var(--border-default);
+  border-radius: var(--r-sm);
+  background: var(--bg-surface);
+  overflow: hidden;
+}
+
+/* Filete con el color de la severidad; la etiqueta siempre lo acompaña. */
+.alerta::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: var(--off-solid);
+}
+
+.alerta--bad::before {
+  background: var(--bad-solid);
+}
+
+.alerta--warn::before {
+  background: var(--warn-solid);
+}
+
+.alerta-lista--bandeja .alerta {
+  box-shadow: var(--shadow-card);
+  animation: rise-in var(--dur-slow) var(--ease);
+}
+
+.alerta-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+}
+
+.alerta-head .tag {
+  height: 20px;
+}
+
+.alerta-regla {
+  font-size: var(--fs-micro);
+}
+
+.alerta-exp {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  max-width: 55%;
+  padding: 2px var(--s-2);
+  border-radius: var(--r-xs);
+  font-size: var(--fs-small);
+  color: var(--text-secondary);
+  transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+.alerta-exp:hover {
+  background: var(--bg-subtle);
+  color: var(--text-primary);
+}
+
+.alerta-exp .mono {
+  font-size: var(--fs-micro);
+}
+
+.alerta-exp-nombre {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.alerta-titulo {
+  font-size: var(--fs-body);
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.alerta-detalle {
+  font-size: var(--fs-small);
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+/* Alerta compacta (detalle del expediente): el detalle se pliega. */
+.alerta-mas summary {
+  width: fit-content;
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.alerta-mas[open] summary {
+  margin-bottom: var(--s-1);
+}
+
+.alerta-recomendacion {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-2);
+  margin-top: 2px;
+  padding: var(--s-2) var(--s-3);
+  border-radius: var(--r-xs);
+  background: var(--bg-subtle);
+  font-size: var(--fs-small);
+  line-height: 1.5;
+  color: var(--text-primary);
+}
+
+.alerta-recomendacion svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--icon);
+}
+
+/* Reportes: indicadores globales (RF-22) y distribución en barras. */
+.report-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--s-3);
+}
+
+.report-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  padding: var(--s-4);
+}
+
+.report-kpi {
+  font-size: var(--fs-display);
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--text-primary);
+}
+
+.report-sub {
+  margin-top: var(--s-2);
+}
+
+/* Barra del reporte global: la nota a la izquierda y el filtro con la
+   exportación juntos a la derecha. */
+.toolbar-nota {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-2);
+  min-width: 0;
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+}
+
+.toolbar-grupo {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+
+.dist-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  list-style: none;
+}
+
+.dist-row {
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr) 32px;
+  align-items: center;
+  gap: var(--s-2);
+  font-size: var(--fs-small);
+}
+
+.dist-label {
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dist-track {
+  height: 6px;
+  border-radius: var(--r-full);
+  background: var(--bg-muted);
+  overflow: hidden;
+}
+
+.dist-fill {
+  display: block;
+  height: 100%;
+  border-radius: var(--r-full);
+  background: var(--text-tertiary);
+  transition: width var(--dur-slow) var(--ease);
+}
+
+.dist-fill--ok {
+  background: var(--ok-solid);
+}
+
+.dist-fill--warn {
+  background: var(--warn-solid);
+}
+
+.dist-fill--bad {
+  background: var(--bad-solid);
+}
+
+.dist-value {
+  text-align: right;
+  color: var(--text-primary);
+}
+
+@media (max-width: 1100px) {
+  .report-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 760px) {
+  .type-options {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .alerta-exp {
+    margin-left: 0;
+    max-width: 100%;
+  }
+}

@@ -1,0 +1,117 @@
+/* Tablero operativo (RF-22): vencimientos, pendientes y evolución */
+.tablero-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  list-style: none;
+}
+
+.tablero-fila {
+  display: grid;
+  grid-template-columns: 8px minmax(0, 1fr) auto 12px;
+  align-items: center;
+  gap: var(--s-2);
+  width: 100%;
+  padding: 6px var(--s-2);
+  border: 0;
+  border-radius: var(--r-sm);
+  background: none;
+  text-align: left;
+  color: var(--text-muted);
+  transition: background-color var(--dur) var(--ease);
+}
+
+.tablero-fila:hover {
+  background: var(--bg-subtle);
+}
+
+.tablero-fila-texto {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.tablero-fila-titulo {
+  font-size: var(--fs-small);
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tablero-fila-sub {
+  font-size: var(--fs-micro);
+  color: var(--text-muted);
+}
+
+.tablero-fila-dato {
+  font-size: var(--fs-micro);
+  white-space: nowrap;
+}
+
+.tablero-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px 0;
+}
+
+.tablero-grupo + .tablero-grupo {
+  border-top: var(--border-subtle);
+}
+
+.tablero-grupo-titulo {
+  font-size: var(--fs-small);
+  color: var(--text-primary);
+}
+
+.tablero-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tablero-cifras {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--s-2);
+}
+
+.tablero-cifra {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--s-2);
+  border: var(--border-subtle);
+  border-radius: var(--r-sm);
+}
+
+.tablero-cifra-valor {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.tablero-cifra-etiqueta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-micro);
+  color: var(--text-muted);
+}
+
+.area-fila {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.area-fila .dist-row {
+  list-style: none;
+}
+
+.area-sub {
+  padding-left: 118px;
+  font-size: var(--fs-micro);
+  color: var(--text-muted);
+}

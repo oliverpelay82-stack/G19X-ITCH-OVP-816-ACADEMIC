@@ -1,0 +1,360 @@
+/* ══════════════════════ 2. PRIMITIVAS ═══════════════════════════ */
+
+/* Micro-squircle: el contenedor de icono de toda la interfaz. */
+.squircle {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--squircle);
+  height: var(--squircle);
+  border: 1px solid var(--squircle-border);
+  border-radius: var(--r-squircle);
+  background: var(--squircle-bg);
+  color: var(--icon);
+  transition: background-color var(--dur) var(--ease), border-color var(--dur) var(--ease),
+    color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+}
+
+.squircle--lg {
+  width: var(--squircle-lg);
+  height: var(--squircle-lg);
+}
+
+/* Isotipo: el único squircle invertido, para anclar la marca. */
+.squircle--brand {
+  background: var(--bg-inverse);
+  border-color: var(--bg-inverse);
+  color: var(--text-inverse);
+}
+
+/* Botones de icono: squircle interactivo. */
+.icon-button {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--squircle-lg);
+  height: var(--squircle-lg);
+  border: 1px solid var(--squircle-border);
+  border-radius: var(--r-squircle);
+  background: var(--squircle-bg);
+  color: var(--icon);
+  transition: background-color var(--dur) var(--ease), border-color var(--dur) var(--ease),
+    color var(--dur) var(--ease), box-shadow var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+
+.icon-button:hover:not(:disabled) {
+  background: var(--squircle-bg-hover);
+  border-color: var(--squircle-border-hover);
+  box-shadow: var(--shadow-hairline);
+  color: var(--icon-hover);
+}
+
+.icon-button:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+.icon-button:disabled {
+  opacity: 0.55;
+}
+
+.icon-button--sm {
+  width: var(--squircle);
+  height: var(--squircle);
+}
+
+/* Refresco: giro suave mientras se consultan los servicios. */
+.icon-button.is-busy {
+  opacity: 1;
+}
+
+.icon-button.is-busy .refresh-icon {
+  animation: spin 0.7s var(--ease) infinite;
+}
+
+/* Botones */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: var(--control-md);
+  padding: 0 var(--s-3);
+  border: 1px solid transparent;
+  border-radius: var(--r-sm);
+  font-size: var(--fs-body);
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background-color var(--dur) var(--ease), border-color var(--dur) var(--ease),
+    color var(--dur) var(--ease), box-shadow var(--dur) var(--ease), opacity var(--dur) var(--ease);
+}
+
+.btn:disabled {
+  opacity: 0.45;
+}
+
+.btn-primary {
+  background: var(--bg-inverse);
+  border-color: var(--bg-inverse);
+  color: var(--text-inverse);
+  box-shadow: var(--shadow-hairline);
+}
+
+/* Deshabilitado, el primario se lee como «falta un paso», no como un bloque
+   gris apagado: superficie atenuada con borde y texto legible. Un botón
+   deshabilitado está exento del contraste WCAG, pero su etiqueta debe leerse. */
+.btn-primary:disabled {
+  background: var(--bg-muted);
+  border-color: var(--line);
+  color: var(--text-muted);
+  box-shadow: none;
+  opacity: 1;
+}
+
+.btn-primary:hover:not(:disabled) {
+  opacity: 0.88;
+}
+
+.btn-secondary {
+  background: var(--bg-surface);
+  border-color: var(--line);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-hairline);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  border-color: var(--line-strong);
+  background: var(--bg-subtle);
+}
+
+.btn-sm {
+  height: var(--control-sm);
+  padding: 0 10px;
+  font-size: var(--fs-small);
+}
+
+.btn-icon {
+  width: var(--control-md);
+  padding: 0;
+}
+
+/* Tarjetas */
+.card {
+  background: var(--bg-surface);
+  border: var(--border-default);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-card);
+}
+
+.section-title {
+  font-size: var(--fs-title);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.4;
+}
+
+.section-title--sm {
+  font-size: var(--fs-micro);
+  font-weight: 500;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.section-desc {
+  margin-top: 2px;
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+}
+
+.eyebrow {
+  font-size: var(--fs-micro);
+  font-weight: 500;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.eyebrow--icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Puntos de estado */
+.status-dot {
+  display: inline-block;
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--off-solid);
+}
+
+.status-dot--ok {
+  background: var(--ok-solid);
+}
+
+.status-dot--warn {
+  background: var(--warn-solid);
+}
+
+.status-dot--bad {
+  background: var(--bad-solid);
+}
+
+.status-dot--off,
+.status-dot--neutral,
+.status-dot--skip {
+  background: var(--off-solid);
+}
+
+/* Badges: texto · fondo · borde del estado. */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 22px;
+  padding: 0 var(--s-2);
+  border: 1px solid var(--neutral-border);
+  border-radius: var(--r-sm);
+  background: var(--neutral-bg);
+  font-size: var(--fs-micro);
+  font-weight: 500;
+  line-height: 1;
+  color: var(--neutral);
+  white-space: nowrap;
+}
+
+.badge--ok {
+  background: var(--ok-bg);
+  border-color: var(--ok-border);
+  color: var(--ok);
+}
+
+.badge--warn {
+  background: var(--warn-bg);
+  border-color: var(--warn-border);
+  color: var(--warn);
+}
+
+.badge--bad {
+  background: var(--bad-bg);
+  border-color: var(--bad-border);
+  color: var(--bad);
+}
+
+.badge--neutral,
+.badge--skip,
+.badge--vault,
+.badge--brand {
+  background: var(--neutral-bg);
+  border-color: var(--neutral-border);
+  color: var(--neutral);
+}
+
+/* Semáforo grande de las tarjetas de expediente. */
+.badge--lg {
+  height: 28px;
+  padding: 0 var(--s-3);
+  gap: var(--s-2);
+  font-size: var(--fs-micro);
+  font-weight: 600;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+}
+
+.badge--lg .status-dot {
+  width: 7px;
+  height: 7px;
+}
+
+.badge--inline {
+  margin-left: var(--s-2);
+  vertical-align: middle;
+}
+
+.badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-1);
+}
+
+/* Etiquetas y chips neutros */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 var(--s-2);
+  border: var(--border-default);
+  border-radius: var(--r-sm);
+  background: var(--bg-surface);
+  font-size: var(--fs-micro);
+  font-weight: 500;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.tag--type {
+  background: var(--bg-subtle);
+  border-color: var(--line-subtle);
+}
+
+.tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-1);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 var(--s-3);
+  border: var(--border-default);
+  border-radius: var(--r-full);
+  background: var(--bg-surface);
+  font-size: var(--fs-small);
+  color: var(--text-secondary);
+  transition: background-color var(--dur) var(--ease), border-color var(--dur) var(--ease),
+    color var(--dur) var(--ease);
+}
+
+.chip:hover:not(:disabled) {
+  border-color: var(--line-strong);
+  background: var(--bg-subtle);
+  color: var(--text-primary);
+}
+
+.chip.is-active {
+  background: var(--bg-inverse);
+  border-color: var(--bg-inverse);
+  color: var(--text-inverse);
+}
+
+.chip:disabled {
+  opacity: 0.5;
+}
+
+/* Avisos */
+.notice {
+  padding: var(--s-2) var(--s-3);
+  border: 1px solid var(--neutral-border);
+  border-radius: var(--r-sm);
+  background: var(--neutral-bg);
+  font-size: var(--fs-small);
+  color: var(--neutral);
+}
+
+.notice--warn {
+  background: var(--warn-bg);
+  border-color: var(--warn-border);
+  color: var(--warn);
+}
+
+.notice--bad {
+  background: var(--bad-bg);
+  border-color: var(--bad-border);
+  color: var(--bad);
+}

@@ -1,0 +1,342 @@
+/* ══════════════════════ 4. TABLAS ═══════════════════════════════ */
+.table-card {
+  overflow: hidden;
+}
+
+.table-card--flat {
+  box-shadow: none;
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  min-width: 760px;
+  table-layout: fixed;
+  border-collapse: collapse;
+  font-size: var(--fs-body);
+}
+
+.data-table th {
+  height: 36px;
+  padding: 0 var(--cell-x);
+  border-bottom: var(--border-default);
+  background: var(--bg-subtle);
+  font-size: var(--fs-micro);
+  font-weight: 500;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--text-muted);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.data-table td {
+  height: 46px;
+  padding: var(--cell-y) var(--cell-x);
+  border-bottom: var(--border-subtle);
+  vertical-align: middle;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-variant-numeric: tabular-nums;
+}
+
+.data-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.data-table tbody tr {
+  transition: background-color var(--dur) var(--ease);
+}
+
+.data-table tbody tr:not(.group-row):not(.empty-row):not(.skeleton-row):hover {
+  background: var(--bg-canvas);
+}
+
+/* Tabla anidada (detalle de expediente, cotejo): sin ancho mínimo. */
+.data-table--inner {
+  min-width: 0;
+}
+
+.data-table--inner th {
+  height: 32px;
+}
+
+.data-table--inner td {
+  height: 42px;
+}
+
+.data-table .col-right {
+  text-align: right;
+}
+
+.data-table .col-action {
+  padding-left: 0;
+  padding-right: var(--s-3);
+  overflow: visible;
+  text-overflow: clip;
+  text-align: right;
+}
+
+.row-clickable {
+  cursor: pointer;
+}
+
+.chevron {
+  transition: transform var(--dur-slow) var(--ease);
+}
+
+.is-paused td {
+  opacity: 0.5;
+}
+
+.is-paused td:last-child {
+  opacity: 1;
+}
+
+.cell-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.cell-sub {
+  display: block;
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cell-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cell-clamp {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  white-space: normal;
+}
+
+.cell-wide {
+  white-space: normal;
+}
+
+.cell-muted {
+  color: var(--text-muted);
+}
+
+.cell-bad {
+  color: var(--bad);
+}
+
+.cell-mono,
+.cell-num {
+  font-size: var(--fs-small);
+  color: var(--text-secondary);
+}
+
+/* Bóveda: folios, tamaños y fechas en una línea (a 1366 px se partían). */
+.data-table--boveda .cell-mono,
+.data-table--boveda .cell-num {
+  white-space: nowrap;
+}
+
+.cell-action-text {
+  font-size: var(--fs-small);
+}
+
+.identity {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.identity-name {
+  font-weight: 500;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Nombres del catálogo que deben leerse completos (el tipo de documento en
+   el detalle del expediente): pasan a un segundo renglón en vez de recortarse. */
+.identity-name--completo {
+  white-space: normal;
+}
+
+.avatar {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--squircle);
+  height: var(--squircle);
+  border: 1px solid var(--squircle-border);
+  border-radius: var(--r-squircle);
+  background: var(--squircle-bg);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--text-secondary);
+}
+
+.avatar--lg {
+  width: 40px;
+  height: 40px;
+  border-radius: 9px;
+  font-size: var(--fs-small);
+}
+
+/* Filas de agrupación (catálogo de reglas por familia) */
+.group-row td {
+  height: 34px;
+  background: var(--bg-subtle);
+  border-bottom: var(--border-subtle);
+}
+
+.group-row td > span + span {
+  margin-left: var(--s-3);
+}
+
+.group-code {
+  font-size: var(--fs-micro);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.group-name {
+  font-size: var(--fs-small);
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.group-meta {
+  font-size: var(--fs-micro);
+  color: var(--text-muted);
+}
+
+.group-count {
+  float: right;
+  font-size: var(--fs-micro);
+  color: var(--text-muted);
+}
+
+/* Chip de copiado (hash SHA-256, RFC) */
+.copy-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  height: 24px;
+  padding: 0 var(--s-2);
+  border: 1px solid transparent;
+  border-radius: var(--r-sm);
+  font-size: var(--fs-micro);
+  color: var(--text-secondary);
+  transition: background-color var(--dur) var(--ease), border-color var(--dur) var(--ease),
+    color var(--dur) var(--ease);
+}
+
+.copy-chip .mono {
+  font-size: var(--fs-micro);
+}
+
+.copy-chip:hover {
+  background: var(--bg-subtle);
+  border-color: var(--line);
+  color: var(--text-primary);
+}
+
+.copy-chip svg {
+  flex: none;
+  color: var(--text-tertiary);
+}
+
+.copy-chip .copy-ok {
+  color: var(--ok);
+}
+
+.copy-chip--full {
+  height: auto;
+  padding: var(--s-2);
+  margin-left: calc(var(--s-2) * -1);
+  text-align: left;
+}
+
+.copy-chip--full .mono {
+  overflow-wrap: anywhere;
+  color: var(--text-primary);
+}
+
+/* Progreso */
+/* Columna de la fila del expediente: índice de cumplimiento (C6) y, debajo,
+   los documentos obligatorios presentes. */
+.exp-indice {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.exp-indice-valor {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.exp-indice-valor .cell-muted {
+  font-weight: 400;
+}
+
+/* Estados vacíos */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-1);
+  padding: var(--s-10) var(--s-4);
+  text-align: center;
+}
+
+/* Dentro de una tarjeta que la fila estira: el estado vacío ocupa el alto
+   libre y se centra, en lugar de dejar un renglón suelto sobre un hueco. */
+.empty-state--tarjeta {
+  flex: 1;
+  justify-content: center;
+  padding: var(--s-4) var(--s-2);
+}
+
+.empty-icon {
+  margin-bottom: var(--s-2);
+}
+
+.empty-title {
+  font-size: var(--fs-body);
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.empty-desc {
+  max-width: 420px;
+  font-size: var(--fs-small);
+  line-height: 1.55;
+  color: var(--text-muted);
+  white-space: normal;
+}
+
+.empty-row td {
+  height: auto;
+  white-space: normal;
+}

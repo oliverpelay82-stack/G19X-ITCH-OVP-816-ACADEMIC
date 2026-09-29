@@ -1,0 +1,117 @@
+/* ══════════════════════ 7. CARGA (NIVEL 1) ══════════════════════ */
+.dropzone-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+
+.dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-1);
+  padding: var(--s-8) var(--s-4);
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--r-md);
+  background: var(--bg-surface);
+  text-align: center;
+  cursor: pointer;
+  transition: border-color var(--dur) var(--ease), background-color var(--dur) var(--ease);
+}
+
+.dropzone:hover,
+.dropzone:focus-visible {
+  border-color: var(--text-tertiary);
+  background: var(--bg-subtle);
+}
+
+.dropzone.is-dragging {
+  border-style: solid;
+  border-color: var(--text-secondary);
+  background: var(--bg-subtle);
+}
+
+.dropzone-wrap--compact .dropzone {
+  padding: var(--s-5) var(--s-4);
+}
+
+.dropzone-icon {
+  margin-bottom: var(--s-1);
+  color: var(--text-muted);
+}
+
+.dropzone-title {
+  font-size: var(--fs-body);
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.dropzone-hint {
+  font-size: var(--fs-micro);
+  color: var(--text-muted);
+}
+
+.dropzone-controls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+
+.analysis {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  padding: var(--s-3);
+  border: var(--border-default);
+  border-radius: var(--r-md);
+  background: var(--bg-surface);
+  animation: fade-in var(--dur) var(--ease);
+}
+
+.analysis--loading {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--s-2);
+  font-size: var(--fs-body);
+  color: var(--text-secondary);
+}
+
+.analysis-file {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-width: 0;
+}
+
+.analysis-file-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--fs-body);
+  font-weight: 500;
+}
+
+.analysis-file-size {
+  font-size: var(--fs-micro);
+  color: var(--text-muted);
+}
+
+.analysis-checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-1);
+}
+
+.analysis-hash {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+}
+
+.analysis-hash code {
+  font-size: var(--fs-micro);
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+}

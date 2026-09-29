@@ -1,0 +1,122 @@
+/* ══════════════════════ 5. MÉTRICAS ═════════════════════════════ */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--s-3);
+}
+
+.metric-card {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  min-height: 75px;
+  padding: var(--s-3) var(--s-4);
+  transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease),
+    border-color var(--dur) var(--ease);
+}
+
+.metric-card:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-card-hover);
+  border-color: var(--line-strong);
+}
+
+.metric-card:hover .squircle {
+  background: var(--squircle-bg-hover);
+  border-color: var(--squircle-border-hover);
+  color: var(--icon-hover);
+}
+
+/* El texto se alinea arriba: etiquetas y cifras quedan en la misma línea en
+   las cuatro tarjetas aunque una tenga barra o un desglose de dos renglones. */
+.metric-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-self: flex-start;
+  gap: 3px;
+  min-width: 0;
+}
+
+.metric-label {
+  font-size: var(--fs-micro);
+  font-weight: 500;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* Cifra y desglose en dos renglones: las cuatro tarjetas tienen la misma
+   estructura y el desglose nunca se recorta, en ningún ancho. */
+.metric-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.metric-value {
+  font-size: var(--fs-metric);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+  color: var(--text-primary);
+}
+
+.metric-foot {
+  font-size: var(--fs-micro);
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+/* Semáforo de expedientes: punto y conteo con su etiqueta, sin cápsula,
+   para que quepa en el ancho de una tarjeta. */
+.metric-estados {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--s-3);
+  font-size: var(--fs-micro);
+  line-height: 1.5;
+}
+
+.metric-estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  color: var(--text-secondary);
+}
+
+.metric-estado strong {
+  font-weight: 600;
+}
+
+.metric-estado--ok strong {
+  color: var(--ok);
+}
+
+.metric-estado--warn strong {
+  color: var(--warn);
+}
+
+.metric-estado--bad strong {
+  color: var(--bad);
+}
+
+.metric-bar {
+  display: block;
+  height: 3px;
+  margin-top: 3px;
+  border-radius: var(--r-full);
+  background: var(--bg-muted);
+  overflow: hidden;
+}
+
+/* Neutra por lo mismo que .progress-fill. */
+.metric-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: var(--r-full);
+  background: var(--text-tertiary);
+  transition: width 0.5s var(--ease);
+}
