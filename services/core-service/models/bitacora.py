@@ -10,7 +10,7 @@ registro de un evento debe sobrevivir a la entidad que lo originó.
 from datetime import datetime, timezone
 import uuid
 
-from sqlalchemy import JSON, Column, DateTime, String
+from sqlalchemy import JSON, BigInteger, Column, DateTime, String
 
 from config.database import Base
 
@@ -25,6 +25,8 @@ EVENTO_ALERTA_INTEGRIDAD = "ALERTA_INTEGRIDAD"
 EVENTO_ARCHIVO_PROTEGIDO = "ARCHIVO_PROTEGIDO"
 # Módulo 6 — Reportes (RF-23, RF-24).
 EVENTO_EXPORTACION_REPORTE = "EXPORTACION_REPORTE"
+# P3 — primer evento sellado: resume con su huella el historial previo al sellado.
+EVENTO_SELLO_GENESIS = "SELLO_GENESIS"
 
 
 class BitacoraAuditoria(Base):
@@ -39,6 +41,12 @@ class BitacoraAuditoria(Base):
     ip_origen = Column(String(45), nullable=True)
     detalle = Column(JSON, nullable=False, default=dict)
     creado_en = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc), index=True)
+
+    # P3 (PLUS-04): sello encadenado. Nulos en los eventos anteriores al
+    # sellado, que cubre la huella del evento SELLO_GENESIS (motor/bitacora.py).
+    secuencia = Column(BigInteger, nullable=True, unique=True)
+    hash_anterior = Column(String(64), nullable=True)
+    hash_evento = Column(String(64), nullable=True)
 
     def __repr__(self):
         return f"<Bitacora {self.evento} {self.creado_en}>"

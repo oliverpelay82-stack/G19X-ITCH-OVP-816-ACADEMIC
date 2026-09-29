@@ -1,0 +1,71 @@
+@startuml p3-casos-de-uso-custodia
+' P3 — Cadena de custodia sellada y ficha de trazabilidad (extensión PLUS, PRD §21.3).
+' Trazabilidad: RF-03, RF-23, RF-24, RF-27; HU-07, HU-30; PLUS-04 (HU-39),
+' PLUS-05 (HU-40), PLUS-06 (HU-41); DOC-03 (ISO 30301, NOM-151-SCFI-2016);
+' DOC-05 protocolo de auditoría y trazabilidad; MRD MR-10, MR-11 y MR-21.
+' Actualiza los casos de uso de F6 (reportes) y de la bitácora del PRD §6.
+
+title P3 — Cadena de custodia sellada: casos de uso
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+skinparam usecase {
+  BackgroundColor<<PLUS>> #FFFBEB
+  BorderColor<<PLUS>> #B45309
+}
+
+actor "Responsable de\nCumplimiento" as RC
+actor "Auditor\n(interno o externo)" as AUD
+actor "Administrador\ndel Sistema" as ADM
+actor "Microservicios\n(core, ai)" as SIS <<sistema>>
+
+rectangle "Motor de Validación de Cumplimiento Documental" {
+
+  package "M7 — Bitácora inmutable (RF-27)" {
+    usecase "Registrar un evento\n(ingesta, dictamen, ratificación,\nalerta, exportación…)" as UC_REG
+    usecase "Sellar el evento en la cadena:\nsecuencia, hash_anterior\ny hash_evento (SHA-256)\n(PLUS-04, HU-39)" as UC_SELLO <<PLUS>>
+    usecase "Sellar el historial previo\ncon un evento génesis\n(una sola vez)" as UC_GEN <<PLUS>>
+    usecase "Verificar la cadena\nGET /bitacora/verificar-cadena\n(PLUS-05, HU-40)" as UC_VER <<PLUS>>
+    usecase "Consultar el historial del\nexpediente con el indicador\nde integridad (HU-30)" as UC_HIST
+  }
+
+  package "M6 — Reportes (RF-23, RF-24)" {
+    usecase "Descargar la ficha de custodia\nde un documento (PDF o Excel)\n(PLUS-06, HU-41)" as UC_FICHA <<PLUS>>
+    usecase "Recalcular la huella del\nbinario (RIE-03)" as UC_RIE
+    usecase "Registrar la exportación\n(EXPORTACION_REPORTE)" as UC_EXP
+  }
+}
+
+SIS --> UC_REG
+RC --> UC_HIST
+RC --> UC_FICHA
+AUD --> UC_HIST
+AUD --> UC_FICHA
+AUD --> UC_VER
+ADM --> UC_VER
+
+UC_REG ..> UC_SELLO : <<include>>
+UC_GEN .up.> UC_SELLO : <<extend>>\n[primer evento sellado:\nhay historial sin sellar]
+UC_HIST ..> UC_VER : <<include>>
+UC_FICHA ..> UC_RIE : <<include>>
+UC_FICHA ..> UC_VER : <<include>>
+UC_FICHA ..> UC_EXP : <<include>>
+
+note right of UC_SELLO
+  pg_advisory_xact_lock serializa los sellos
+  y un índice único en la secuencia impide
+  una bifurcación aunque falle el candado.
+  Los triggers ya impiden UPDATE y DELETE;
+  el sello además delata una alteración hecha
+  con los triggers desactivados.
+end note
+
+note right of UC_FICHA
+  Alineada con ISO 30301 y NOM-151-SCFI-2016:
+  NO sustituye la constancia de conservación
+  que emite un Prestador de Servicios de
+  Certificación acreditado.
+end note
+
+@enduml

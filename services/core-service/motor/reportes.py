@@ -516,3 +516,167 @@ def global_pdf(evaluados: list[tuple[Expediente, EvaluacionExpediente]]) -> byte
                    [ancho * p for p in (0.2, 0.1, 0.28, 0.42)], e, ["Folio", "Severidad", "Alerta", "Recomendación"]),
         ]
     return _documento_pdf(historia, "Reporte de Cumplimiento Documental")
+
+
+
+# ═══════════════════ Ficha de custodia (P3, PLUS-06) ═══════════════════
+LEYENDA_CUSTODIA = (
+    "Ficha alineada con ISO 30301 (integridad, metadatos y trazabilidad del documento) y con NOM-151-SCFI-2016 "
+    "(conservación íntegra de mensajes de datos). No sustituye la constancia de conservación que emite un "
+    "Prestador de Servicios de Certificación acreditado."
+)
+
+
+@dataclass
+class DatosCustodia:
+    """Ciclo de vida de un documento para una auditoría externa (P3, PLUS-06)."""
+    documento: Any                                   # models.documento.Documento
+    expediente: Expediente
+    integro: bool                                    # la huella recalculada coincide con la de la carga (RIE-03)
+    hash_actual: str | None                          # huella recalculada; None si el binario no está en la bóveda
+    versiones: list[Any] = field(default_factory=list)          # documentos del mismo tipo en el expediente
+    dictamenes: list[DictamenAuditoria] = field(default_factory=list)
+    eventos: list[BitacoraAuditoria] = field(default_factory=list)
+    cadena: dict[str, Any] = field(default_factory=dict)       # motor.bitacora.verificar_cadena
+
+
+def _ficha_custodia(datos: DatosCustodia) -> list[tuple[str, Any]]:
+    doc, exp = datos.documento, datos.expediente
+    titular = exp.titular
+    posicion = next((i for i, v in enumerate(datos.versiones, start=1) if v.id == doc.id), None)
+    vigente = bool(datos.versiones) and datos.versiones[-1].id == doc.id
+    estado_version = "vigente" if vigente else "sustituida por una versión posterior"
+    return [
+        ("Documento", doc.nombre_archivo_original),
+        ("Tipo documental", etiqueta_documento(doc.tipo_documento)),
+        ("Expediente", f"{exp.codigo_expediente} · {etiqueta_expediente(exp.tipo_expediente)}"),
+        ("Titular", f"{titular.razon_social} ({titular.rfc})" if titular else "—"),
+        ("Ingesta", _fecha(doc.creado_en)),
+        ("Tamaño y formato", f"{doc.tamanio_bytes} bytes · {doc.mime_type}"),
+        ("Huella SHA-256 de la carga", doc.hash_sha256),
+        ("Huella recalculada al emitir", datos.hash_actual or "El binario no está en la bóveda"),
+        ("Integridad (RIE-03)", "Íntegro: las huellas coinciden" if datos.integro
+         else "ALTERADO: la huella ya no coincide; el documento está bloqueado"),
+        ("Versión (RF-04)", f"{posicion or '—'} de {len(datos.versiones)} · {estado_version}"),
+        ("Ficha emitida", _ahora()),
+    ]
+
+
+def _texto_cadena(cadena: dict[str, Any]) -> str:
+    if not cadena.get("sellada"):
+        return "La bitácora aún no tiene eventos sellados."
+    estado = "ÍNTEGRA" if cadena.get("integra") else f"COMPROMETIDA ({cadena.get('total_hallazgos', 0)} hallazgos)"
+    return (f"Cadena de la bitácora {estado}: {cadena.get('eventos_sellados')} eventos sellados y "
+            f"{cadena.get('eventos_previos')} previos al sellado, cubiertos por el génesis.")
+
+
+def _filas_versiones(datos: DatosCustodia) -> list[dict[str, Any]]:
+    ultimo = datos.versiones[-1].id if datos.versiones else None
+    return [{
+        "n": i, "archivo": v.nombre_archivo_original, "fecha": _fecha(v.creado_en), "hash": v.hash_sha256,
+        "estado": "Vigente" if v.id == ultimo else "Sustituida",
+        "integridad": v.estado_integridad or "INTEGRO", "esta": "← esta ficha" if v.id == datos.documento.id else "",
+    } for i, v in enumerate(datos.versiones, start=1)]
+
+
+def _filas_dictamenes_custodia(datos: DatosCustodia) -> list[dict[str, Any]]:
+    filas = []
+    for d in datos.dictamenes:
+        filas.append({
+            "fecha": _fecha(d.creado_en),
+            "origen": d.origen,
+            "resultado": f"{ESTADO_LEGIBLE.get(d.estatus_preliminar, d.estatus_preliminar)} → "
+                         f"{ESTADO_LEGIBLE.get(d.estatus, d.estatus)}",
+            "confianza": f"{d.nivel_confianza * 100:.0f} %" if d.nivel_confianza is not None else "—",
+            "huella": ("Coincide con la carga" if d.hash_sha256 == datos.documento.hash_sha256
+                       else f"Distinta: {d.hash_sha256}"),
+            "ratificacion": (f"{d.revisado_por} ({_fecha(d.revisado_en)}): {d.justificacion_humana}"
+                             if d.revisado_por_humano else "Sin ratificar"),
+            "modelo": d.modelo_utilizado or "—",
+        })
+    return filas
+
+
+def _filas_eventos_custodia(datos: DatosCustodia) -> list[dict[str, Any]]:
+    return [{
+        "secuencia": e.secuencia if e.secuencia is not None else "previo",
+        "fecha": _fecha(e.creado_en), "evento": e.evento, "usuario": e.usuario, "ip": e.ip_origen or "—",
+        "hash": e.hash_evento or "cubierto por el génesis", "detalle": _resumen_detalle(e.detalle),
+    } for e in datos.eventos]
+
+
+def ficha_custodia_xlsx(datos: DatosCustodia) -> bytes:
+    libro = Workbook()
+    hoja = libro.active
+    hoja.title = "Ficha"
+    pares = _ficha_custodia(datos) + [("Cadena de la bitácora", _texto_cadena(datos.cadena)),
+                                      ("Último sello", datos.cadena.get("ultimo_hash") or "—"),
+                                      ("Algoritmo", datos.cadena.get("algoritmo") or "—"),
+                                      ("Alcance normativo", LEYENDA_CUSTODIA)]
+    _hoja_ficha(hoja, "Ficha de Custodia Documental", pares)
+    _hoja_tabla(libro.create_sheet("Versiones"), [
+        ("n", "#", 5), ("archivo", "Archivo", 40), ("fecha", "Ingesta", 17), ("hash", "SHA-256", 68),
+        ("estado", "Estado", 12), ("integridad", "Integridad", 12), ("esta", "", 14),
+    ], _filas_versiones(datos))
+    _hoja_tabla(libro.create_sheet("Dictámenes"), [
+        ("fecha", "Fecha", 17), ("origen", "Origen", 12), ("resultado", "Preliminar → vigente", 28),
+        ("confianza", "Confianza", 11), ("huella", "Huella evaluada", 40), ("ratificacion", "Ratificación humana", 60),
+        ("modelo", "Modelo", 20),
+    ], _filas_dictamenes_custodia(datos))
+    _hoja_tabla(libro.create_sheet("Eventos"), [
+        ("secuencia", "Secuencia", 10), ("fecha", "Fecha", 17), ("evento", "Evento", 24), ("usuario", "Usuario", 22),
+        ("ip", "IP de origen", 16), ("hash", "Sello (hash_evento)", 68), ("detalle", "Detalle", 80),
+    ], _filas_eventos_custodia(datos))
+    _hoja_tabla(libro.create_sheet("Cadena"), [
+        ("secuencia", "Secuencia", 10), ("evento_id", "Evento", 38), ("problema", "Hallazgo", 90),
+    ], datos.cadena.get("hallazgos") or [])
+    return _guardar(libro)
+
+
+def ficha_custodia_pdf(datos: DatosCustodia) -> bytes:
+    e = _estilos()
+    ancho = letter[0] - 32 * mm
+    doc = datos.documento
+    integra = datos.cadena.get("integra", True)
+    estado = "CONFORME" if datos.integro and integra else "NO_CONFORME"
+    sello = ("Documento íntegro" if datos.integro else "Documento ALTERADO") + " · " + _texto_cadena(datos.cadena)
+    historia: list = [
+        Paragraph("Ficha de Custodia Documental", e["titulo"]),
+        Paragraph(f"{_esc(doc.nombre_archivo_original)} · emitida el {_ahora()}", e["subtitulo"]),
+        _sello_estado(estado, sello, e, ancho),
+        Spacer(1, 8),
+        _ficha(_ficha_custodia(datos), e, ancho),
+        Paragraph("Versiones del documento en el expediente (RF-04)", e["seccion"]),
+        _tabla([[f["n"], f["archivo"], f["fecha"], Paragraph(_esc(f["hash"]), e["celda_mono"]), f["estado"]]
+                for f in _filas_versiones(datos)],
+               [ancho * p for p in (0.05, 0.25, 0.15, 0.42, 0.13)], e,
+               ["#", "Archivo", "Ingesta", "SHA-256", "Estado"]),
+    ]
+    dictamenes = _filas_dictamenes_custodia(datos)
+    historia.append(Paragraph("Dictámenes y ratificaciones (RN-05)", e["seccion"]))
+    if dictamenes:
+        historia.append(_tabla(
+            [[f["fecha"], f["origen"], f["resultado"], f["confianza"], f["huella"], f["ratificacion"]]
+             for f in dictamenes],
+            [ancho * p for p in (0.13, 0.11, 0.19, 0.09, 0.18, 0.30)], e,
+            ["Fecha", "Origen", "Preliminar → vigente", "Confianza", "Huella evaluada", "Ratificación"]))
+    else:
+        historia.append(Paragraph("El documento no tiene dictámenes.", e["texto"]))
+    historia += [
+        Paragraph("Eventos de la bitácora del documento, con su sello", e["seccion"]),
+        _tabla([[f["secuencia"], f["fecha"], f["evento"], f["usuario"], Paragraph(_esc(f["hash"]), e["celda_mono"])]
+                for f in _filas_eventos_custodia(datos)],
+               [ancho * p for p in (0.09, 0.15, 0.2, 0.16, 0.4)], e,
+               ["Secuencia", "Fecha", "Evento", "Usuario", "Sello (hash_evento)"]),
+        Paragraph("Verificación de la cadena de custodia", e["seccion"]),
+        _ficha([
+            ("Resultado", _texto_cadena(datos.cadena)),
+            ("Último sello", datos.cadena.get("ultimo_hash") or "—"),
+            ("Verificada el", datos.cadena.get("verificado_en") or "—"),
+            ("Algoritmo", datos.cadena.get("algoritmo") or "—"),
+        ], e, ancho),
+    ]
+    for h in (datos.cadena.get("hallazgos") or [])[:10]:
+        historia.append(Paragraph(f"• Secuencia {_esc(h.get('secuencia'))}: {_esc(h.get('problema'))}", e["texto"]))
+    historia += [Spacer(1, 10), Paragraph(_esc(LEYENDA_CUSTODIA), e["subtitulo"])]
+    return _documento_pdf(historia, f"Ficha de custodia {doc.nombre_archivo_original}")

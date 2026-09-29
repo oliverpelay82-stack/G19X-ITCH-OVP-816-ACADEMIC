@@ -13,6 +13,9 @@ Estos diagramas complementan los del DOCUMENTO GENERAL (Cap. IV, Figuras 1–6, 
 | P1 — Ingesta blindada | [p1-actividad-auditoria-opinion-32d.puml](p1-actividad-auditoria-opinion-32d.puml) | Actividades | Actualiza F3 | PLUS-03; RCV-04, RSC-OPIN-SENT | MR-04, MR-20 |
 | P2 — Cotejo de representación legal | [p2-casos-de-uso-representacion-legal.puml](p2-casos-de-uso-representacion-legal.puml) | Casos de uso | F3, F4 | §21.2 RSC-02, HU-23, HU-37, HU-38; RN-03 | MR-08 |
 | P2 — Cotejo de representación legal | [p2-actividad-cotejo-representacion.puml](p2-actividad-cotejo-representacion.puml) | Actividades | Actualiza F3 y F4 | RSC-02, RN-03, RCV-01, RN-05; alerta REPRESENTACION_NO_ACREDITADA | MR-08 |
+| P3 — Custodia sellada | [p3-casos-de-uso-custodia.puml](p3-casos-de-uso-custodia.puml) | Casos de uso | F6 y bitácora | §21.3 PLUS-04 a PLUS-06; HU-39 a HU-41 | MR-10, MR-11, MR-21 |
+| P3 — Custodia sellada | [p3-actividad-sellado-verificacion.puml](p3-actividad-sellado-verificacion.puml) | Actividades | Bitácora (RF-27) | PLUS-04, PLUS-05 | MR-21 |
+| P3 — Custodia sellada | [p3-actividad-ficha-custodia.puml](p3-actividad-ficha-custodia.puml) | Actividades | Actualiza F6 | PLUS-06; RF-23, RF-24 | MR-10, MR-21 |
 
 ## Generar las imágenes
 

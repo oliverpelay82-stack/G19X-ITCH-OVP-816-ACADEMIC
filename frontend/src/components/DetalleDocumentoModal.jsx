@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { ChevronDown, ChevronUp, PanelRightClose, PanelRightOpen } from 'lucide-react'
 import { Badge, Button, CopyChip, IconButton, KeyValue, KeyValueList, Modal } from './ui/index.js'
 import DocumentoIaPanel from './DocumentoIaPanel.jsx'
+import ExportarReporte from './ExportarReporte.jsx'
 import VisorDocumento from './VisorDocumento.jsx'
 import { EvidenciaContext } from './evidencia-context.js'
 import { localizarCita } from '../services/api.js'
@@ -92,6 +93,10 @@ function InspectorDocumento({ doc, expediente, iaOnline, onRefresh, onVisor, onO
               {visorAbierto ? 'Ocultar documento' : 'Ver documento'}
             </Button>
             <span className="field-hint">Un clic en una cita del dictamen o del chat la resalta en el documento.</span>
+          </div>
+          <div className="inspector-acciones">
+            <span className="field-hint">Ficha de custodia (huellas, versiones, dictámenes y sellos de la bitácora):</span>
+            <ExportarReporte ruta={`/reportes/documentos/${doc.id}/custodia`} compacto />
           </div>
           <DocumentoIaPanel doc={doc} expediente={expediente} iaOnline={iaOnline} onCambio={onRefresh} onOcupado={onOcupado} />
         </div>

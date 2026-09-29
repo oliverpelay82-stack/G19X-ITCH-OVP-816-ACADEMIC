@@ -296,6 +296,9 @@ def prueba_busqueda(ctx: dict) -> None:
 def prueba_reportes(ctx: dict) -> None:
     print("\n[6] Reportes exportables (RF-23, RF-24)")
     exp_id = ctx["juridico"]["id"]
+    # La base de pruebas es compartida: se cuentan solo las exportaciones de esta sección.
+    previas = {e["id"] for e in client.get("/api/v1/bitacora", params={"evento": "EXPORTACION_REPORTE",
+                                                                      "limite": 500}).json()}
     pdf = client.get(f"/api/v1/reportes/expedientes/{exp_id}", params={"formato": "pdf"})
     verificar(pdf.status_code == 200 and pdf.content.startswith(b"%PDF-")
               and pdf.headers["content-type"] == "application/pdf"
@@ -321,7 +324,8 @@ def prueba_reportes(ctx: dict) -> None:
     verificar(client.get("/api/v1/reportes/cumplimiento", params={"formato": "docx"}).status_code == 422,
               "Un formato no admitido responde 422")
     verificar(client.get("/api/v1/reportes/expedientes/no-existe").status_code == 404, "Expediente inexistente: 404")
-    eventos = client.get("/api/v1/bitacora", params={"evento": "EXPORTACION_REPORTE"}).json()
+    eventos = [e for e in client.get("/api/v1/bitacora", params={"evento": "EXPORTACION_REPORTE", "limite": 500}).json()
+               if e["id"] not in previas]
     verificar(len(eventos) == 4 and {e["detalle"]["formato"] for e in eventos} == {"pdf", "xlsx"},
               "Cada exportación queda en la bitácora", f"{len(eventos)} eventos")
 

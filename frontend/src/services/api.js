@@ -122,6 +122,8 @@ export const ratificarDictamen = (dictamenId, data) =>
   request(CORE_BASE_URL, `/dictamenes/${dictamenId}/ratificar`, { method: 'POST', body: data })
 
 export const getBitacora = (params) => request(CORE_BASE_URL, '/bitacora', { params })
+/** P3: recalcula la cadena sellada de la bitácora (hashes, enlaces y génesis). */
+export const verificarCadena = () => request(CORE_BASE_URL, '/bitacora/verificar-cadena')
 
 /* ── M6: Reportes exportables (Core Service :8001) ──────────────── */
 /**

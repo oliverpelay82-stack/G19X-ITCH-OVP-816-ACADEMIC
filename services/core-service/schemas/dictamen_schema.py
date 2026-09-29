@@ -103,5 +103,29 @@ class BitacoraResponse(BaseModel):
     ip_origen: Optional[str] = None
     detalle: dict[str, Any]
     creado_en: datetime
+    # P3: sello encadenado (nulos en los eventos anteriores al sellado).
+    secuencia: Optional[int] = None
+    hash_anterior: Optional[str] = None
+    hash_evento: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class HallazgoCadenaResponse(BaseModel):
+    secuencia: Optional[int] = None
+    evento_id: Optional[str] = None
+    problema: str
+
+
+class VerificacionCadenaResponse(BaseModel):
+    """Resultado de recalcular la cadena de la bitácora (P3, PLUS-05)."""
+    integra: bool
+    sellada: bool
+    eventos_sellados: int
+    eventos_previos: int
+    ultimo_hash: Optional[str] = None
+    ultima_secuencia: Optional[int] = None
+    verificado_en: Optional[str] = None
+    algoritmo: str
+    total_hallazgos: int = 0
+    hallazgos: list[HallazgoCadenaResponse] = Field(default_factory=list)

@@ -45,6 +45,15 @@ def ruta_binario(documento: Documento) -> str:
     return ruta
 
 
+def huella_actual(documento: Documento) -> str | None:
+    """SHA-256 del binario tal como está hoy en la bóveda (None si ya no está). Solo lee: no registra nada."""
+    ruta = ruta_binario(documento)
+    if not os.path.isfile(ruta):
+        return None
+    with open(ruta, "rb") as archivo:
+        return hashlib.sha256(archivo.read()).hexdigest()
+
+
 def _registrar_violacion(
     db: Session, documento: Documento, hash_actual: str | None, motivo: str, usuario: str, ip_origen: str | None
 ) -> None:

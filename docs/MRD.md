@@ -9,7 +9,7 @@
 | Línea de negocio | Portafolio de soluciones LegalTech de PluriOne |
 | Patrocinador de negocio | Lic. Juan Méndez Herrera, Director Comercial (asesor empresarial y Product Owner) |
 | Elaborado por | Oliver Villanueva Pelay, residente — Instituto Tecnológico de Chilpancingo |
-| Versión del documento | 1.3 — 29 de septiembre de 2026 (1.2: P1; 1.1: 28 de septiembre; 1.0: 27 de septiembre de 2026) |
+| Versión del documento | 1.4 — 29 de septiembre de 2026 (1.3: P2; 1.2: P1; 1.1: 28 de septiembre; 1.0: 27 de septiembre de 2026) |
 | Documento hermano | [PRD.md](PRD.md) — requerimientos del producto |
 
 > **Fuentes.** Este MRD se construye exclusivamente con el anteproyecto de residencia, los entregables DOC-01 a DOC-08 ([ESPECIFICACIONES_DOC01_A_DOC08.txt](ESPECIFICACIONES_DOC01_A_DOC08.txt)) y el DOCUMENTO GENERAL («DG»). La información de mercado que esas fuentes no contienen —tamaño de mercado, precio o modelo comercial— no se estima: se declara en la [sección 13](#13-información-de-mercado-no-documentada) como pendiente de definir con PluriOne.
@@ -271,6 +271,7 @@ Cada requisito de mercado (MR) expresa **qué necesita el mercado**; el PRD defi
 | MR-18 | Buscar expedientes por nombre, empresa, tipo, fecha y estatus. | Anteproyecto, Módulo 1 | Importante |
 | MR-19 | Buscar conceptualmente dentro del acervo documental. | Anteproyecto (Azure AI Search), ISO 30301 | Deseable |
 | MR-20 | Rechazar en la recepción los archivos que no aportan evidencia válida —duplicados del mismo expediente, PDF protegidos con contraseña y opiniones 32-D caducas o negativas— antes de que consuman revisión. | DOC-05 (Tabla 1 y caducidad estricta); CFF Art. 32-D; ISO 30301. Extensión PLUS (PRD §21) | Importante |
+| MR-21 | Demostrar ante un auditor externo que la bitácora no se alteró y entregar la historia completa de un documento (huellas, versiones, dictámenes, ratificaciones). | DOC-03 (ISO 30301; NOM-151: «sustento en auditorías externas»); DOC-05 (protocolo de auditoría). Extensión PLUS (PRD §21.3) | Importante |
 
 ---
 
@@ -371,3 +372,4 @@ Derivados de los objetivos y umbrales documentados [Anteproyecto; DG Caps. IV, V
 | MR-18 Búsqueda de expedientes | RF-05, HU-04 | Implementado |
 | MR-19 Búsqueda conceptual en el acervo | RF-12 | Parcial |
 | MR-20 Recepción blindada de la evidencia | PLUS-01, PLUS-02, PLUS-03 (RCV-04, RSC-OPIN-SENT), HU-34 a HU-36 | Implementado (PRD §21.1; diagramas en `docs/uml/`) |
+| MR-21 Custodia verificable ante auditorías externas | PLUS-04, PLUS-05, PLUS-06, HU-39 a HU-41 | Implementado (PRD §21.3; diagramas en `docs/uml/`) |

@@ -1,0 +1,74 @@
+@startuml p3-actividad-sellado-verificacion
+' P3 — Sellado de cada evento de la bitácora y verificación de la cadena.
+' Trazabilidad: RF-27, HU-07; PLUS-04 (HU-39), PLUS-05 (HU-40); DOC-05
+' protocolo de auditoría («registros inmutables»); ISO 30301, NOM-151.
+' Implementación: services/core-service/motor/bitacora.py y
+' controllers/bitacora_controller.py
+
+title P3 — Sellado y verificación de la cadena de custodia
+
+|Microservicio (misma transacción del evento)|
+start
+:Ocurre un evento auditable
+(ingesta, dictamen, ratificación, alerta…);
+
+|core-service · motor/bitacora.py|
+:pg_advisory_xact_lock('bitacora_cadena'):
+un solo sello a la vez hasta el COMMIT;
+:Lee el último evento sellado;
+if (¿Hay eventos sellados?) then (no)
+  :Calcula la huella del historial previo:
+  SHA-256 de cada evento sin sellar,
+  en orden de creación;
+  :Inserta SELLO_GENESIS con secuencia 1,
+  hash_anterior = 64 ceros y la huella
+  y el número de eventos previos;
+else (sí)
+endif
+:Fecha del evento con el reloj de la base
+(la misma que quedará guardada);
+:hash_evento = SHA-256 del JSON canónico:
+secuencia, evento, expediente, documento,
+dictamen, usuario, IP, detalle, fecha
+y hash_anterior;
+:Inserta el evento con su secuencia
+(índice único: no puede haber dos iguales);
+
+|Base de datos|
+:COMMIT del evento junto con su efecto;
+note right
+  Los triggers siguen impidiendo
+  UPDATE y DELETE (RF-27).
+end note
+
+|Auditor|
+:Consulta GET /api/v1/bitacora/verificar-cadena
+(o abre el historial del expediente);
+
+|core-service · verificación|
+:Recorre los eventos sellados por secuencia;
+repeat
+  if (¿La secuencia es contigua y hash_anterior\nes el hash del evento previo?) then (no)
+    :Registra el quiebre (secuencia y motivo);
+  else (sí)
+  endif
+  if (¿El hash recalculado coincide\ncon hash_evento?) then (no)
+    :Registra la alteración del evento;
+  else (sí)
+  endif
+repeat while (¿Quedan eventos?) is (sí)
+->no;
+:Recalcula la huella del historial previo
+y la compara con la del génesis;
+:Busca eventos sin sellar posteriores
+al génesis (insertados por fuera del motor);
+if (¿Sin hallazgos?) then (sí)
+  :Cadena ÍNTEGRA: eventos sellados,
+  eventos previos y último hash;
+else (no)
+  :Cadena COMPROMETIDA con la lista
+  de hallazgos (primeros 20);
+endif
+stop
+
+@enduml

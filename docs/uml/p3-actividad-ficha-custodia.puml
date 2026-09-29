@@ -1,0 +1,47 @@
+@startuml p3-actividad-ficha-custodia
+' P3 — Generación de la ficha de custodia de un documento.
+' Trazabilidad: RF-03, RF-04, RF-23, RF-24, RN-05; PLUS-06 (HU-41);
+' ISO 30301 (ciclo de vida y trazabilidad), NOM-151-SCFI-2016.
+' Implementación: services/core-service/controllers/reporte_controller.py
+' y motor/reportes.py (ficha_custodia_pdf y ficha_custodia_xlsx)
+
+title P3 — Ficha de custodia de un documento
+
+|Auditor o Responsable|
+start
+:Pide la ficha desde el detalle del documento
+(GET /reportes/documentos/{id}/custodia?formato=pdf|xlsx);
+
+|core-service|
+if (¿El documento existe?) then (no)
+  :404;
+  stop
+endif
+:Recalcula la huella SHA-256 del binario (RIE-03);
+if (¿Coincide con la registrada en la carga?) then (sí)
+  :Íntegro a la fecha de la ficha;
+else (no)
+  :ALTERADO: RIE-03 lo bloquea, deja su
+  dictamen y su alerta; la ficha lo reporta;
+endif
+:Reúne el ciclo de vida:
+versiones del mismo tipo en el expediente (RF-04),
+dictámenes con la huella evaluada,
+ratificaciones (quién, cuándo, justificación),
+eventos de la bitácora del documento con su sello;
+:Verifica la cadena de la bitácora completa;
+:Genera la ficha en PDF o Excel;
+:Registra EXPORTACION_REPORTE
+(FICHA_CUSTODIA) en la cadena sellada;
+
+|Auditor o Responsable|
+:Descarga la ficha;
+note right
+  Leyenda de la ficha: alineada con
+  NOM-151-SCFI-2016 e ISO 30301; no
+  sustituye la constancia de conservación
+  de un PSC acreditado.
+end note
+stop
+
+@enduml

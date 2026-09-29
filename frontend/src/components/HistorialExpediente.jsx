@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { History, Loader2 } from 'lucide-react'
 import { Badge, Button } from './ui/index.js'
-import { getBitacora } from '../services/api.js'
+import { getBitacora, verificarCadena } from '../services/api.js'
 import { getEstadoBadge, TIPO_DOCUMENTO_LABEL } from '../constants.js'
 import { formatFecha } from '../utils/format.js'
 
@@ -79,7 +79,11 @@ function describir(evento, nombres) {
     case 'ARCHIVO_PROTEGIDO':
       return { titulo: 'PDF protegido con contraseña (Nivel 1)', detalle: documento, tono: 'bad' }
     case 'EXPORTACION_REPORTE':
-      return { titulo: `Reporte exportado (${String(d.formato || '').toUpperCase()})`, tono: 'neutral' }
+      return {
+        titulo: `${d.reporte === 'FICHA_CUSTODIA' ? 'Ficha de custodia' : 'Reporte'} exportado (${String(d.formato || '').toUpperCase()})`,
+        detalle: d.reporte === 'FICHA_CUSTODIA' ? documento : null,
+        tono: 'neutral',
+      }
     default:
       return { titulo: evento.evento, tono: 'neutral' }
   }
@@ -95,6 +99,7 @@ export default function HistorialExpediente({ expedienteId, documentos = [] }) {
   const [error, setError] = useState('')
   const [cargando, setCargando] = useState(false)
   const [completo, setCompleto] = useState(false)
+  const [cadena, setCadena] = useState(null)
   const nombres = new Map(documentos.map((d) => [d.id, d.nombre_archivo_original]))
 
   const cargar = async () => {
@@ -102,6 +107,8 @@ export default function HistorialExpediente({ expedienteId, documentos = [] }) {
     setError('')
     try {
       setEventos(await getBitacora({ expediente_id: expedienteId, limite: 200 }))
+      // P3: la verificación de la cadena es informativa; si falla, el historial se muestra igual.
+      setCadena(await verificarCadena().catch(() => null))
     } catch (err) {
       setError(err?.message || 'No se pudo consultar la bitácora.')
     } finally {
@@ -126,6 +133,17 @@ export default function HistorialExpediente({ expedienteId, documentos = [] }) {
         </p>
       )}
       {error && <p className="notice notice--warn">{error}</p>}
+      {cadena?.sellada && (
+        <p
+          className="field-hint"
+          title={`Último sello ${cadena.ultimo_hash} · ${cadena.eventos_previos} eventos previos al sellado · ${cadena.algoritmo}`}
+        >
+          <span className={`status-dot status-dot--${cadena.integra ? 'ok' : 'bad'}`} aria-hidden="true" />{' '}
+          {cadena.integra
+            ? `Cadena de custodia íntegra · ${cadena.eventos_sellados} eventos sellados`
+            : `Cadena de custodia comprometida · ${cadena.total_hallazgos} hallazgos: consulte la verificación de la bitácora`}
+        </p>
+      )}
       {eventos && eventos.length === 0 && <p className="field-hint">Sin eventos registrados.</p>}
       {eventos && eventos.length > 0 && (() => {
         const grupos = agrupar(eventos, nombres)

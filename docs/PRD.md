@@ -11,7 +11,7 @@
 | Desarrollo (Scrum Master / Desarrollador) | Oliver Villanueva Pelay, residente (No. de control 21520500) |
 | Stakeholder evaluador | Edgar Loheffelmman (PluriOne) |
 | Asesor interno | Dr. Wilfrido Campos Francisco |
-| Versión del documento | 1.4 — 29 de septiembre de 2026 (1.3: P1; 1.2: 28 de septiembre; 1.0: 27 de septiembre de 2026) |
+| Versión del documento | 1.5 — 29 de septiembre de 2026 (1.4: P2; 1.3: P1; 1.2: 28 de septiembre; 1.0: 27 de septiembre de 2026) |
 | Estado del producto | En desarrollo: Sprints 1 y 2 implementados, Sprint 3 implementado parcialmente, Sprint 4 implementado salvo HU-31, Módulo 7 pendiente |
 | Documento hermano | [MRD.md](MRD.md) — requerimientos de mercado |
 
@@ -226,7 +226,7 @@ Prioridad tomada de las historias de usuario asociadas (Cap. VII); «—» cuand
 |---|---|---|---|---|
 | RF-25 | Autenticación con credenciales corporativas y soporte MFA. | Alta | **Pendiente** | Diseñada en DOC-08 (tabla `usuarios`, JWT HMAC-SHA256). |
 | RF-26 | Autorización por rol (RBAC). | Alta | **Pendiente** | Roles definidos (sección 5). |
-| RF-27 | Bitácora inmutable protegida por el motor de base de datos. | Alta | Implementado | Disparador `trg_bitacora_inmutable`; el usuario autenticado se registrará con RF-25. |
+| RF-27 | Bitácora inmutable protegida por el motor de base de datos. | Alta | Implementado | Disparador `trg_bitacora_inmutable` y, desde P3, cada evento sellado en cadena y verificable (`/bitacora/verificar-cadena`); el usuario autenticado se registrará con RF-25. |
 
 **Resumen:** 21 implementados, 3 parciales y 3 pendientes de 27. La Tabla 34 del DG reporta 20, 4 y 3; la diferencia es RF-11, que pasa a implementado con la verificación de contenido del Nivel 4 (versión 1.2 de este documento).
 
@@ -441,7 +441,7 @@ Microservicios desacoplados orquestados con Docker Compose en la red `plurione-n
 
 | Servicio | Endpoints principales |
 |---|---|
-| core-service | `/health`; `/titulares`; `/expedientes` (alta y búsqueda); `/expedientes/{id}`; `/documentos/upload`; `/documentos/{id}/integridad`; `/documentos/{id}/contenido`; `/dictamenes`; `/dictamenes/{id}/ratificar`; `/bitacora`; `/alertas`; `/reportes/expedientes/{id}`; `/reportes/cumplimiento` |
+| core-service | `/health`; `/titulares`; `/expedientes` (alta y búsqueda); `/expedientes/{id}`; `/documentos/upload`; `/documentos/{id}/integridad`; `/documentos/{id}/contenido`; `/dictamenes`; `/dictamenes/{id}/ratificar`; `/bitacora`; `/bitacora/verificar-cadena` (P3); `/alertas`; `/reportes/expedientes/{id}`; `/reportes/cumplimiento`; `/reportes/documentos/{id}/custodia` (P3) |
 | rules-service | `/health`; `/reglas` (catálogo, alta y pausa); `/reglas/documentos-obligatorios?tipo_expediente=`; `/reglas/evaluar-vigencia` |
 | ai-service | `/health`; `/ai/extraer-texto`; `/ai/documentos/{id}/preparar`; `/ai/analisis-semantico`; `/ai/chat-documento`; `/ai/configuracion-ocr` |
 
@@ -458,7 +458,7 @@ Documentación interactiva OpenAPI en `/docs` de cada servicio.
 | `documentos` | Archivo custodiado, huella SHA-256 y estado de integridad. |
 | `reglas_validacion` | Catálogo de reglas, con tipo de expediente y documento principal (anexos). |
 | `dictamenes_auditoria` | Resultado de cada auditoría y su ratificación humana (protegido por `trg_dictamen_protegido`), con los firmantes o apoderados extraídos en `representacion_legal` (P2). |
-| `bitacora_auditoria` | Eventos inmutables (protegida por `trg_bitacora_inmutable`). |
+| `bitacora_auditoria` | Eventos inmutables (protegida por `trg_bitacora_inmutable`), sellados en cadena con `secuencia`, `hash_anterior` y `hash_evento` (P3). |
 
 Diseñada en DOC-08 y pendiente de implementar: la tabla `usuarios` (email, password_hash bcrypt, nombre_completo, rol, activo) para el Módulo 7.
 
@@ -644,7 +644,7 @@ Riesgos adicionales identificados en la implementación [DG §8.7 y §10.7]:
 
 ## 20. Pendientes y preguntas abiertas
 
-**Pendientes de implementación** (orden acordado el 29/09/2026: P3 —cadena de custodia sellada—, revisión completa del frontend y, en la fase final, el Módulo 7)
+**Pendientes de implementación** (orden acordado el 29/09/2026: P1 a P3 terminados; sigue la revisión completa del frontend y, en la fase final, el Módulo 7)
 
 1. Autenticación, usuarios y roles: RF-25, RF-26, HU-05, HU-06 y HU-31; registrar el usuario autenticado en la bitácora (HU-07).
 2. Notificaciones por correo electrónico: RF-20, HU-17.
@@ -652,7 +652,7 @@ Riesgos adicionales identificados en la implementación [DG §8.7 y §10.7]:
 4. Carga en lote (RF-02).
 5. Requerimientos no funcionales: cifrado AES-256 en reposo (RNF-04), TLS 1.3 interno (RNF-05) y respaldos automatizados (RNF-10); pruebas de concurrencia y disponibilidad (RNF-03, RNF-09).
 
-**Completados desde la versión 1.0 de este documento:** vista de la bitácora en la interfaz (HU-30), validación del expediente completo con un botón (HU-32) e integración continua con GitHub Actions (RNF-12) en la versión 1.1; verificación automática de cláusulas (RSC-01: RF-11 y HU-19) y la categoría de alerta CONTENIDO_NO_LOCALIZADO (RF-18) en la versión 1.2; la ingesta blindada (P1) en la versión 1.3, y los datos del firmante con su cotejo contra el poder o el acta (RSC-02, RN-03, HU-23) en la versión 1.4.
+**Completados desde la versión 1.0 de este documento:** vista de la bitácora en la interfaz (HU-30), validación del expediente completo con un botón (HU-32) e integración continua con GitHub Actions (RNF-12) en la versión 1.1; verificación automática de cláusulas (RSC-01: RF-11 y HU-19) y la categoría de alerta CONTENIDO_NO_LOCALIZADO (RF-18) en la versión 1.2; la ingesta blindada (P1) en la versión 1.3, los datos del firmante con su cotejo contra el poder o el acta (RSC-02, RN-03, HU-23) en la versión 1.4, y la cadena de custodia sellada con su ficha de trazabilidad (P3) en la versión 1.5.
 
 **Preguntas abiertas para el Product Owner**
 
@@ -759,6 +759,54 @@ A diferencia de P1, **RSC-02, RN-03 y HU-23 sí están en la documentación** (D
 Verificado en vivo el 29/09/2026 con los tres servicios y Groq (core sobre la base de pruebas), con un contrato y un poder en PDF: el firmante y la contraparte se extrajeron con cita verificada en una sola llamada (la contraparte no se coteja); sin poder, y con el poder sin auditar, el cotejo quedó PENDIENTE; con el poder auditado, ACREDITADO si el apoderado es el firmante y NO_ACREDITADO con alerta ALTA si es otra persona. Una segunda auditoría del mismo contrato reutilizó la inferencia en caché (0 tokens).
 
 **Diagramas:** [casos de uso](uml/p2-casos-de-uso-representacion-legal.puml) y [actividad del cotejo](uml/p2-actividad-cotejo-representacion.puml).
+
+### 21.3 P3 — Cadena de custodia sellada y ficha de trazabilidad
+
+Hoy la bitácora es inmutable **porque la base lo impide** (triggers de RF-27): quien administre PostgreSQL puede desactivar los triggers y reescribir un evento sin dejar rastro. P3 hace que cualquier alteración se pueda **comprobar**, y entrega a un auditor externo la historia de un documento en una ficha. Respaldo: DOC-03 (ISO 30301 «captura, integridad, metadatos y trazabilidad»; NOM-151-SCFI-2016 «conservación íntegra y constancia de existencia temporal… para sustento en auditorías externas») y el protocolo de auditoría del DOC-05 («estos registros son inmutables… la empresa pueda demostrar de forma transparente el fundamento de cada validación»).
+
+| ID | Requerimiento | Fundamento | Estado |
+|---|---|---|---|
+| PLUS-04 | **Sellado encadenado de la bitácora.** Cada evento nuevo recibe `secuencia`, `hash_anterior` y `hash_evento` = SHA-256 del JSON canónico (secuencia, evento, expediente, documento, dictamen, usuario, IP, detalle, fecha y hash anterior). `pg_advisory_xact_lock` serializa los sellos hasta el COMMIT y un índice único en `secuencia` impide una bifurcación aunque el candado fallara. La fecha la da el reloj de la base, para que la guardada sea la sellada. El historial previo (sin sello) queda cubierto por un evento **SELLO_GENESIS** con su número de eventos y la huella de todos ellos, en orden. | RF-27; DOC-05 (protocolo); ISO 30301; NOM-151 | Implementado |
+| PLUS-05 | **Verificación de la cadena.** `GET /api/v1/bitacora/verificar-cadena` recorre los eventos sellados, recalcula cada hash y su enlace, comprueba la huella del génesis y detecta eventos sin sellar posteriores al génesis (insertados por fuera del motor). Responde íntegra o comprometida, con los eventos sellados, los previos, el último hash y los hallazgos. | RF-27; HU-07; HU-30 | Implementado |
+| PLUS-06 | **Ficha de custodia de un documento.** `GET /api/v1/reportes/documentos/{id}/custodia?formato=pdf\|xlsx`: huella SHA-256 de la carga y su recálculo a la fecha (RIE-03), versiones del mismo tipo en el expediente (RF-04), dictámenes con la huella evaluada, ratificaciones (quién, cuándo, justificación), eventos del documento con su sello y el resultado de la verificación de la cadena. La exportación queda en la bitácora (EXPORTACION_REPORTE, FICHA_CUSTODIA). | RF-23, RF-24; ISO 30301; NOM-151 | Implementado |
+
+**Historias de usuario nuevas**
+
+| ID | Historia | Módulo | Prioridad | Estado |
+|---|---|---|---|---|
+| HU-39 | Como administrador, quiero que cada evento de la bitácora quede sellado con el anterior, para que una alteración directa en la base sea detectable. | M7 | Alta | Implementado |
+| HU-40 | Como auditor, quiero verificar en cualquier momento que la cadena de la bitácora está íntegra y ver el indicador en el historial del expediente. | M7 | Alta | Implementado |
+| HU-41 | Como auditor externo, quiero descargar la ficha de custodia de un documento en PDF o Excel, con su huella, versiones, dictámenes, ratificaciones y sellos. | M6 | Alta | Implementado |
+
+**Criterios de aceptación**
+
+- Todo evento nuevo queda sellado y enlazado con el anterior; el primero crea el génesis, que resume el historial previo.
+- Dos transacciones concurrentes nunca producen dos eventos con la misma secuencia.
+- La verificación de una cadena sin tocar es íntegra; si un evento se altera con los triggers desactivados, o se borra uno, o se inserta uno sin sello después del génesis, la verificación lo señala con su secuencia.
+- La ficha, en PDF y en Excel, lista la huella de la carga y su recálculo, las versiones, los dictámenes con su huella, las ratificaciones y los eventos con su sello, e incluye el resultado de la verificación y la leyenda sobre NOM-151.
+- El historial del expediente muestra un indicador sobrio de la integridad de la cadena y el detalle del documento, un botón para descargar la ficha.
+
+**Consecuencias previstas**
+
+- **Rendimiento:** los eventos de la bitácora se sellan uno a la vez; una transacción que registra un evento retiene el candado hasta su COMMIT (en la carga, eso incluye la consulta al rules-service para reevaluar el semáforo). Con el volumen de la residencia es imperceptible; si RNF-03 (50 peticiones simultáneas) lo exige, el siguiente paso sería registrar el evento al final de la transacción.
+- **Datos existentes:** los eventos previos no se modifican (los triggers lo impiden): los cubre la huella del génesis. Las columnas nuevas quedan vacías en ellos.
+- **Dialecto:** el candado es de PostgreSQL; en otro motor el índice único de la secuencia sigue impidiendo bifurcaciones, pero una carga concurrente puede fallar y reintentarse.
+- **Alcance normativo:** la ficha está **alineada** con NOM-151-SCFI-2016 e ISO 30301; **no sustituye** la constancia de conservación que emite un Prestador de Servicios de Certificación acreditado, y así lo declara.
+
+**Modelo de datos:** columnas `secuencia` (única), `hash_anterior` y `hash_evento` en `bitacora_auditoria`; evento nuevo `SELLO_GENESIS`.
+
+**Implementación y pruebas** (versión 1.5):
+
+| Pieza | Dónde | Pruebas |
+|---|---|---|
+| Sellado encadenado, génesis y candado | `core-service/motor/bitacora.py`, `models/bitacora.py`, `config/database.py` | `tests/test_cadena_custodia.py` (la prueba de concurrencia falla sin el candado: UniqueViolation) |
+| `GET /bitacora/verificar-cadena` | `core-service/controllers/bitacora_controller.py` | Alteración con triggers desactivados, borrado, evento sin sello e historial previo alterado: detectados y restaurados |
+| Ficha de custodia PDF y Excel | `core-service/motor/reportes.py`, `controllers/reporte_controller.py` | Cinco hojas, versión 1 de 2, ratificación, sellos, documento alterado y 404 |
+| Botones de la ficha e indicador en el historial | `frontend/src/components/DetalleDocumentoModal.jsx`, `HistorialExpediente.jsx` | Verificación en vivo con Playwright |
+
+Verificado en vivo el 29/09/2026 con los tres servicios (core sobre la base de pruebas): la ficha PDF se descarga desde el detalle del documento; para un documento cuyo binario ya no está en la bóveda la ficha lo reporta ALTERADO con la cadena íntegra (239 eventos sellados y 11 previos cubiertos por el génesis), y el historial muestra «Cadena de custodia íntegra · 240 eventos sellados».
+
+**Diagramas:** [casos de uso](uml/p3-casos-de-uso-custodia.puml), [actividad del sellado y la verificación](uml/p3-actividad-sellado-verificacion.puml) y [actividad de la ficha de custodia](uml/p3-actividad-ficha-custodia.puml).
 
 ---
 

@@ -104,6 +104,13 @@ _MIGRACIONES_POSTGRES = [
     """,
     # P2 (RSC-02, RN-03): datos de representación legal del dictamen.
     "ALTER TABLE dictamenes_auditoria ADD COLUMN IF NOT EXISTS representacion_legal JSON",
+    # P3 (PLUS-04): sello encadenado de la bitácora. Agregar columnas es DDL:
+    # el trigger de inmutabilidad (por fila) no lo impide y los eventos previos
+    # no se reescriben. El índice único impide dos eventos con la misma secuencia.
+    "ALTER TABLE bitacora_auditoria ADD COLUMN IF NOT EXISTS secuencia BIGINT",
+    "ALTER TABLE bitacora_auditoria ADD COLUMN IF NOT EXISTS hash_anterior VARCHAR(64)",
+    "ALTER TABLE bitacora_auditoria ADD COLUMN IF NOT EXISTS hash_evento VARCHAR(64)",
+    "CREATE UNIQUE INDEX IF NOT EXISTS ux_bitacora_secuencia ON bitacora_auditoria (secuencia)",
     # RF-27: la bitácora solo admite inserciones.
     """
     CREATE OR REPLACE FUNCTION bitacora_inmutable() RETURNS trigger AS $$
