@@ -3,7 +3,7 @@ Esquemas de validación de datos para Expedientes (DTOs).
 """
 from datetime import date, datetime
 from enum import Enum
-from typing import Optional
+from typing import Any, Optional
 from pydantic import BaseModel, ConfigDict, Field
 
 from schemas.titular_schema import TitularResponse
@@ -73,6 +73,20 @@ class AnexoFaltanteResponse(BaseModel):
     severidad: str
 
 
+class CotejoRepresentacionResponse(BaseModel):
+    """Cotejo del firmante de un contrato con los apoderados del expediente (P2: RSC-02, RN-03)."""
+    documento_id: str
+    tipo_documento: str
+    nombre_archivo_original: str
+    estado: str                      # ACREDITADO, NO_ACREDITADO, PODER_VENCIDO o PENDIENTE
+    motivo: str
+    recomendacion: Optional[str] = None
+    firmantes: list[dict[str, Any]] = Field(default_factory=list)
+    apoderados: list[dict[str, Any]] = Field(default_factory=list)
+    coincidencias: list[dict[str, Any]] = Field(default_factory=list)
+    ratificado: bool = False
+
+
 class EvaluacionExpedienteResponse(BaseModel):
     """Desglose del estado consolidado del expediente (RN-01, RN-02, RN-05)."""
     estado: str
@@ -87,6 +101,7 @@ class EvaluacionExpedienteResponse(BaseModel):
     tipo_expediente: str = "CORPORATIVO"
     anexos_faltantes: list[AnexoFaltanteResponse] = Field(default_factory=list)
     alertas: list[AlertaResponse] = Field(default_factory=list)
+    representacion: list[CotejoRepresentacionResponse] = Field(default_factory=list)
 
 
 class ExpedienteResponse(BaseModel):

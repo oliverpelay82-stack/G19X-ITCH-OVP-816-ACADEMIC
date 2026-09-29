@@ -26,7 +26,7 @@ import unicodedata
 from clients import groq_client, rules_client
 from clients.rules_client import ReglasNoDisponiblesError
 from config import settings
-from pipelines import fragmentos, verificacion_contenido
+from pipelines import fragmentos, representacion, verificacion_contenido
 
 # La extracción de datos y la verificación de contenido son dos consultas
 # independientes a Groq: corren a la vez y la auditoría espera solo a la más
@@ -166,7 +166,9 @@ SYSTEM_PROMPT = (
 )
 
 
-def _plantilla_prompt(texto: str, rfc_titular: str | None, razon_social_titular: str | None) -> str:
+def _plantilla_prompt(
+    texto: str, rfc_titular: str | None, razon_social_titular: str | None, rol_representacion: str | None = None
+) -> str:
     contexto_titular = "No se proporcionó el titular esperado."
     if rfc_titular or razon_social_titular:
         contexto_titular = (
@@ -202,7 +204,7 @@ Devuelve EXACTAMENTE este objeto JSON, respetando nombres y tipos de cada campo:
   "razon_social_detectada": "el nombre o razón social del titular del documento, o null",
   "fecha_emision": "fecha en que se expidió el documento, AAAA-MM-DD o null. Búscala bajo etiquetas como 'Fecha de emisión', 'Fecha de expedición' o 'Lugar y fecha'. NO la confundas con la fecha de inicio de operaciones, la de alta en el régimen ni la de constitución de la sociedad",
   "fecha_vencimiento": "fecha hasta la que el documento es válido, AAAA-MM-DD o null. Búscala bajo etiquetas como 'Fecha de vencimiento', 'Vigencia hasta' o 'Válido hasta'. Devuelve null solo si el documento no declara vigencia alguna",
-  "nivel_confianza": 0.0,
+{representacion.instrucciones(rol_representacion)}  "nivel_confianza": 0.0,
   "observaciones": "una o dos frases en español sobre la legibilidad del texto y cualquier dato faltante o ambiguo"
 }}
 
@@ -210,7 +212,7 @@ El campo nivel_confianza es un número entre 0.0 y 1.0 que expresa qué tan segu
 estás de la extracción. Bájalo cuando falten campos clave, cuando el texto llegue
 tan degradado que dudes de lo que lees o cuando el tipo documental no sea claro.
 Un texto con erratas de reconocimiento pero legible no justifica por sí solo una
-confianza baja."""
+confianza baja.{representacion.nota(rol_representacion)}"""
 
 
 @dataclass
@@ -237,6 +239,8 @@ class ResultadoAnalisis:
     tipo_coincide: bool | None = None
     verificaciones: list[dict[str, Any]] = field(default_factory=list)
     recomendaciones: list[str] = field(default_factory=list)
+    # P2 (RSC-02, HU-37): firmantes de un contrato o apoderados de un poder o acta.
+    representacion: dict[str, Any] | None = None
 
     def a_dict(self) -> dict[str, Any]:
         return {
@@ -262,6 +266,7 @@ class ResultadoAnalisis:
             "tipo_coincide": self.tipo_coincide,
             "verificaciones": self.verificaciones,
             "recomendaciones": self.recomendaciones,
+            "representacion": self.representacion,
         }
 
 
@@ -357,18 +362,29 @@ def analizar(
             "o envíe el contenido del documento."
         )
 
+    # RSC-02 no se verifica como un elemento de contenido: sus datos (los
+    # firmantes) vienen de la extracción misma, sin otra llamada a Groq (P2).
+    criterios = criterios_contenido or []
+    criterios_rsc_02 = [c for c in criterios if representacion.es_regla_rsc_02(c)]
+    rol_representacion = representacion.rol_de(tipo_documento_registrado, criterios)
+
     # La verificación de contenido arranca ya, en paralelo con la extracción.
     verificacion_en_curso = _verificaciones.submit(
-        verificacion_contenido.verificar, texto, criterios_contenido or [], paginas
+        verificacion_contenido.verificar,
+        texto,
+        [c for c in criterios if not representacion.es_regla_rsc_02(c)],
+        paginas,
     )
 
     # Documento extenso: encabezado + fragmentos relevantes, no solo el inicio.
-    seleccion = fragmentos.seleccionar(texto, CONSULTA_AUDITORIA, paginas=paginas)
+    consulta = CONSULTA_AUDITORIA + " " + representacion.CONSULTA.get(rol_representacion, "")
+    seleccion = fragmentos.seleccionar(texto, consulta.strip(), paginas=paginas)
 
     crudo = groq_client.generar_json(
-        prompt=_plantilla_prompt(seleccion.texto, rfc_titular, razon_social_titular),
+        prompt=_plantilla_prompt(seleccion.texto, rfc_titular, razon_social_titular, rol_representacion),
         system=SYSTEM_PROMPT,
     )
+    datos_representacion = representacion.procesar(rol_representacion, crudo, texto)
 
     observaciones = _texto_a_lista(crudo.get("observaciones"))
 
@@ -454,6 +470,7 @@ def analizar(
     verificacion = verificacion_en_curso.result()
     if verificacion.nota:
         observaciones.append(verificacion.nota)
+    verificacion.verificaciones.extend(representacion.verificacion(c, datos_representacion) for c in criterios_rsc_02)
 
     estatus, requiere_hitl, motivos = _dictaminar(
         confianza=confianza,
@@ -467,6 +484,7 @@ def analizar(
         elementos_incumplidos=verificacion.incumplidos,
         verificacion_incompleta=not verificacion.disponible,
         reglas_dinamicas=verificacion.incluye_reglas_dinamicas,
+        requiere_cotejo_firmante=bool(criterios_rsc_02),
     )
     observaciones.extend(motivos)
     recomendaciones = [
@@ -498,6 +516,7 @@ def analizar(
         tipo_coincide=tipo_coincide,
         verificaciones=verificacion.verificaciones,
         recomendaciones=recomendaciones,
+        representacion=datos_representacion,
     )
 
 
@@ -561,6 +580,7 @@ def _dictaminar(
     elementos_incumplidos: list[dict[str, Any]] | None = None,
     verificacion_incompleta: bool = False,
     reglas_dinamicas: bool = False,
+    requiere_cotejo_firmante: bool = False,
 ) -> tuple[str, bool, list[str]]:
     """
     Reglas deterministas que convierten la extracción en un estatus preliminar.
@@ -660,6 +680,17 @@ def _dictaminar(
             ESTATUS_EN_REVISION,
             True,
             motivos + ["Dictamen EN_REVISION: la verificación de contenido del documento no pudo completarse."],
+        )
+
+    if requiere_cotejo_firmante:
+        return (
+            ESTATUS_EN_REVISION,
+            True,
+            motivos
+            + [
+                "Dictamen EN_REVISION: el analista debe confirmar que el firmante corresponde con un apoderado con "
+                "facultades vigentes en el poder notarial o el acta constitutiva del expediente (RSC-02, RN-03)."
+            ],
         )
 
     if reglas_dinamicas:

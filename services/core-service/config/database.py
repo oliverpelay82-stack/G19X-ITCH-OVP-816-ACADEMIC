@@ -102,6 +102,8 @@ _MIGRACIONES_POSTGRES = [
                e.actualizado_en)
      WHERE e.creado_en IS NULL
     """,
+    # P2 (RSC-02, RN-03): datos de representación legal del dictamen.
+    "ALTER TABLE dictamenes_auditoria ADD COLUMN IF NOT EXISTS representacion_legal JSON",
     # RF-27: la bitácora solo admite inserciones.
     """
     CREATE OR REPLACE FUNCTION bitacora_inmutable() RETURNS trigger AS $$
@@ -134,6 +136,7 @@ _MIGRACIONES_POSTGRES = [
            OR NEW.nivel_confianza IS DISTINCT FROM OLD.nivel_confianza
            OR NEW.reglas_aplicadas::text IS DISTINCT FROM OLD.reglas_aplicadas::text
            OR NEW.observaciones::text IS DISTINCT FROM OLD.observaciones::text
+           OR NEW.representacion_legal::text IS DISTINCT FROM OLD.representacion_legal::text
            OR NEW.hash_sha256 IS DISTINCT FROM OLD.hash_sha256
            OR NEW.creado_en IS DISTINCT FROM OLD.creado_en THEN
             RAISE EXCEPTION 'dictamenes_auditoria: solo la ratificación humana puede modificar un dictamen (RN-05)';

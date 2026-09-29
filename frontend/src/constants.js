@@ -82,6 +82,7 @@ export const ALERTA_META = {
   PENDIENTE_RATIFICACION: { label: 'Ratificación' },
   CONTENIDO_NO_LOCALIZADO: { label: 'Contenido' },
   PENDIENTE_AUDITORIA: { label: 'Sin auditar' },
+  REPRESENTACION_NO_ACREDITADA: { label: 'Representación' },
 }
 
 export const FAMILIAS_REGLA = ['RIE', 'RCV', 'RSC', 'RDS']

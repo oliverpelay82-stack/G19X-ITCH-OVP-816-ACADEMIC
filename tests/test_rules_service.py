@@ -170,6 +170,11 @@ def prueba_endpoint_vigencia() -> None:
                     if r["codigo_regla"] == "RSC-OPIN-SENT"), None)
     verificar(sentido is not None and sentido["activo"] and sentido["tipo_documento"] == "OPINION_CUMPLIMIENTO",
               "RSC-OPIN-SENT está activa en el catálogo para OPINION_CUMPLIMIENTO")
+    # P2: RSC-02 (datos del firmante) para contratos de servicios y NDA.
+    rsc = {r["codigo_regla"]: r for r in client.get("/api/v1/reglas", params={"familia_regla": "RSC"}).json()}
+    verificar(all(rsc.get(c, {}).get("activo") and rsc[c]["tipo_documento"] == t and rsc[c]["severidad"] == "ALTA"
+                  for c, t in (("RSC-02-CONT", "CONTRATO_SERVICIOS"), ("RSC-02-NDA", "ACUERDO_CONFIDENCIALIDAD"))),
+              "RSC-02-CONT y RSC-02-NDA están activas (severidad ALTA, DOC-05)")
 
 
 def prueba_documentos_obligatorios() -> None:

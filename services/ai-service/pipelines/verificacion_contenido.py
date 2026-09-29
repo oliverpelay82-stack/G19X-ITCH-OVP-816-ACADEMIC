@@ -108,6 +108,11 @@ def compactar(texto: str) -> str:
     return _normalizar(texto).replace(" ", "")
 
 
+def compactar_palabras(texto: str) -> list[str]:
+    """Palabras normalizadas del texto (minúsculas, sin acentos ni signos)."""
+    return _normalizar(texto).split()
+
+
 def fragmentos_de_cita(cita: str) -> list[tuple[str, list[str]]]:
     """Cada fragmento de una cita unida con puntos suspensivos: (forma compacta, palabras normalizadas)."""
     fragmentos = []

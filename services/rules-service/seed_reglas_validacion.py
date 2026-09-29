@@ -20,6 +20,9 @@ opinión de cumplimiento del artículo 32-D (30 días, el ejemplo literal del
 DOC-05) y RSC-OPIN-SENT declara el sentido de la opinión, que el ai-service
 lee con reglas deterministas y no con el modelo.
 
+P2 (PRD §21.2): RSC-02-CONT y RSC-02-NDA activan la extracción de los datos del
+firmante (DOC-05, RSC-02) en contratos de prestación de servicios y NDA.
+
 La precarga es idempotente: solo inserta las reglas que no existen y nunca
 modifica las que el administrador ya editó. El rules-service la ejecuta al
 arrancar (AUTO_SEED=true, por defecto), de modo que un despliegue nuevo con
@@ -335,6 +338,34 @@ REGLAS_BASE += [
         "documento_obligatorio": False,
         "dias_maximos_vigencia": None,
     },
+]
+# RSC-02 — Extracción asistida de datos del firmante (DOC-05, severidad Alta;
+# HU-23). La regla del catálogo activa, en la auditoría del contrato o del NDA,
+# la extracción de los firmantes en la misma llamada del Nivel 4; el cotejo con
+# los apoderados del poder o del acta lo hace el core (RN-03, P2) y la decisión
+# final es siempre del analista: el dictamen queda EN_REVISION.
+_RSC_02 = (
+    "La inteligencia artificial extrae del documento los datos visibles del firmante (nombre, cargo y empresa "
+    "que representa) y los presenta al analista, que confirma si corresponden con las facultades acreditadas en "
+    "el poder notarial o el acta constitutiva del mismo expediente (DOC-05, RSC-02; RN-03)."
+)
+_RSC_02_ACCION = (
+    "Confirmar que el firmante del titular corresponde con un apoderado con facultades vigentes en el poder "
+    "notarial o el acta constitutiva del expediente y ratificar el dictamen con esa justificación (RN-03, RN-05)."
+)
+REGLAS_BASE += [
+    {
+        "codigo_regla": codigo,
+        "nombre_regla": "Datos del firmante y representación legal",
+        "familia_regla": "RSC",
+        "descripcion": _RSC_02,
+        "severidad": "ALTA",
+        "accion": _RSC_02_ACCION,
+        "tipo_documento": tipo,
+        "documento_obligatorio": False,
+        "dias_maximos_vigencia": None,
+    }
+    for codigo, tipo in (("RSC-02-CONT", "CONTRATO_SERVICIOS"), ("RSC-02-NDA", "ACUERDO_CONFIDENCIALIDAD"))
 ]
 REGLAS_BASE += [
     {

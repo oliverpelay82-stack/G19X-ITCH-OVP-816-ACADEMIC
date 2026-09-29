@@ -35,6 +35,11 @@ class DictamenCreate(BaseModel):
     )
     modelo_utilizado: Optional[str] = Field(None, max_length=100)
     usuario: str = Field("SISTEMA", min_length=1, max_length=100)
+    representacion: Optional[dict[str, Any]] = Field(
+        None,
+        description="P2 (RSC-02, HU-37): {rol: FIRMANTES|APODERADOS, personas: [{nombre, cargo, empresa|facultades, "
+                    "cita, cita_verificada}]}",
+    )
 
 
 class RatificacionRequest(BaseModel):
@@ -77,6 +82,7 @@ class DictamenResponse(BaseModel):
     fecha_emision_extraida: Optional[date] = None
     fecha_vencimiento_extraida: Optional[date] = None
     modelo_utilizado: Optional[str] = None
+    representacion_legal: Optional[dict[str, Any]] = None
     hash_sha256: str
     revisado_por_humano: bool
     justificacion_humana: Optional[str] = None

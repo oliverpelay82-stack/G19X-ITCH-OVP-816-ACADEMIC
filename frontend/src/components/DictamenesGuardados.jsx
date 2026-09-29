@@ -230,7 +230,7 @@ function DictamenVigente({ dictamen, puedeRatificar, onRatificar }) {
         <div className="registro-accion">
           <p>
             <span className="status-dot status-dot--warn" aria-hidden="true" />
-            Pendiente de ratificación humana: confianza por debajo del umbral o vigencia no verificable.
+            Pendiente de ratificación humana: el motor no puede cerrar este dictamen solo (Nivel 5).
           </p>
           <Button compacto icono={UserCheck} onClick={onRatificar}>
             Resolver revisión humana

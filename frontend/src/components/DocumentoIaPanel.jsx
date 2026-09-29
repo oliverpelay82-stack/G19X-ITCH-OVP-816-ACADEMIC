@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState } from 'react'
 import { ArrowUp, Check, FileText, Loader2, MessageSquareText, Minus, Sparkles, X, Zap } from 'lucide-react'
 import { Skeleton } from './Skeleton.jsx'
 import DictamenesGuardados, { AvisoIntegridad } from './DictamenesGuardados.jsx'
+import CotejoRepresentacion from './CotejoRepresentacion.jsx'
 import { useEvidencia } from './evidencia-context.js'
 import { Badge, Button, Card, EmptyState, KeyValue, KeyValueList, Segmented } from './ui/index.js'
 import useToast from '../hooks/useToast.js'
@@ -801,6 +802,8 @@ function AuditoriaIa({ doc, expediente, iaOnline, onCambio, onOcupado }) {
   const toast = useToast()
   const [etapas, setEtapas] = useState(null)
   const [recarga, setRecarga] = useState(0)
+  // La ratificación cambia el cotejo de representación (RN-05): se vuelve a consultar.
+  const [ratificaciones, setRatificaciones] = useState(0)
   const [alterado, setAlterado] = useState(doc.estado_integridad === 'ALTERADO')
   const [dictamen, setDictamen] = useState(null)
   const [duracion, setDuracion] = useState(null)
@@ -928,8 +931,17 @@ function AuditoriaIa({ doc, expediente, iaOnline, onCambio, onOcupado }) {
 
       <div className="registro-auditoria">
         <h5 className="section-title section-title--sm">Registro de auditoría</h5>
-        <DictamenesGuardados doc={doc} recarga={recarga} onCambio={onCambio} />
+        <DictamenesGuardados
+          doc={doc}
+          recarga={recarga}
+          onCambio={() => {
+            setRatificaciones((n) => n + 1)
+            onCambio?.()
+          }}
+        />
       </div>
+
+      <CotejoRepresentacion doc={doc} recarga={recarga + ratificaciones} />
     </div>
   )
 }

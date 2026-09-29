@@ -55,6 +55,10 @@ class DictamenAuditoria(Base):
     fecha_emision_extraida = Column(Date, nullable=True)
     fecha_vencimiento_extraida = Column(Date, nullable=True)
     modelo_utilizado = Column(String(100), nullable=True)
+    # P2 (RSC-02, HU-37): firmantes de un contrato o apoderados de un poder o
+    # acta, con su cita: {"rol": "FIRMANTES"|"APODERADOS", "personas": [...]}.
+    # El cotejo RN-03 se calcula con estos datos en cada evaluación.
+    representacion_legal = Column(JSON, nullable=True)
 
     # Huella del archivo al momento de la evaluación (protocolo DOC-05 §5.6).
     hash_sha256 = Column(String(64), nullable=False)

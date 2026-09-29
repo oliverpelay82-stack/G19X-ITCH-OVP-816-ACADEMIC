@@ -54,6 +54,7 @@ from models.dictamen import ORIGEN_NIVEL_1, DictamenAuditoria
 from models.documento import Documento
 from models.expediente import Expediente
 from motor import bitacora
+from motor import representacion as cotejo_legal
 
 CONFORME = "CONFORME"
 EN_REVISION = "EN_REVISION"
@@ -98,6 +99,8 @@ ALERTA_DICTAMEN_NO_CONFORME = "DICTAMEN_NO_CONFORME"
 ALERTA_REVISION_HUMANA = "PENDIENTE_RATIFICACION"
 ALERTA_SIN_AUDITAR = "PENDIENTE_AUDITORIA"
 ALERTA_CONTENIDO = "CONTENIDO_NO_LOCALIZADO"
+# P2 (RSC-02, RN-03): el firmante del contrato no está acreditado por un poder o acta vigente.
+ALERTA_REPRESENTACION = "REPRESENTACION_NO_ACREDITADA"
 
 # Resultados de la verificación de contenido (reglas RSC/RDS) que exigen atención.
 CONTENIDO_PENDIENTE = ("NO_LOCALIZADO", "NO_VERIFICABLE")
@@ -149,6 +152,8 @@ class EvaluacionExpediente:
     tipo_expediente: str = "CORPORATIVO"
     anexos_faltantes: list[dict[str, str]] = field(default_factory=list)
     alertas: list[Alerta] = field(default_factory=list)
+    # P2: cotejo del firmante de cada contrato con los apoderados del expediente (RN-03).
+    representacion: list[cotejo_legal.CotejoRepresentacion] = field(default_factory=list)
 
 
 @dataclass
@@ -366,7 +371,15 @@ def evaluar(
         estado_expediente = CONFORME
         motivos.append("Todos los documentos obligatorios están presentes y sus dictámenes son conformes.")
 
-    alertas = _alertas(obligatorios, anexos_faltantes, estados, dictamenes, vigencias, vigentes)
+    # RN-03: firmante de cada contrato frente a los apoderados de los poderes y actas vigentes.
+    titular = expediente.titular
+    cotejos = cotejo_legal.cotejar(titular.razon_social if titular else None, vigentes, dictamenes, vigencias)
+    for c in cotejos:
+        if c.estado in (cotejo_legal.NO_ACREDITADO, cotejo_legal.PODER_VENCIDO) and not c.ratificado:
+            motivos.append(f"{c.tipo_documento} ({c.nombre_archivo_original}): representación no acreditada. "
+                           f"{c.motivo} (RN-03).")
+
+    alertas = _alertas(obligatorios, anexos_faltantes, estados, dictamenes, vigencias, vigentes, cotejos)
 
     return EvaluacionExpediente(
         estado=estado_expediente,
@@ -381,6 +394,7 @@ def evaluar(
         tipo_expediente=tipo_expediente,
         anexos_faltantes=anexos_faltantes,
         alertas=alertas,
+        representacion=cotejos,
     )
 
 
@@ -391,6 +405,7 @@ def _alertas(
     dictamenes: dict[str, DictamenAuditoria],
     vigencias: dict[str, _Vigencia],
     vigentes: dict[str, Documento],
+    cotejos: list[cotejo_legal.CotejoRepresentacion] | None = None,
 ) -> list[Alerta]:
     """
     Traduce los hallazgos de la evaluación en alertas accionables: qué pasa,
@@ -595,9 +610,24 @@ def _alertas(
                 tipo_documento=e.tipo_documento, documento_id=e.documento_id,
             ))
 
+    # RSC-02 / RN-03: mientras el analista no ratifique el contrato. Su decisión
+    # prevalece (RN-05): ratificado, el cotejo queda como antecedente.
+    for c in cotejos or []:
+        if c.estado not in (cotejo_legal.NO_ACREDITADO, cotejo_legal.PODER_VENCIDO) or c.ratificado:
+            continue
+        nombre = etiqueta_documento(c.tipo_documento)
+        alertas.append(Alerta(
+            codigo=ALERTA_REPRESENTACION,
+            severidad="ALTA",
+            titulo=f"Representación no acreditada: {nombre}",
+            detalle=c.motivo,
+            recomendacion=c.recomendacion or "",
+            tipo_documento=c.tipo_documento, regla="RSC-02", documento_id=c.documento_id,
+        ))
+
     orden = {c: i for i, c in enumerate([
         ALERTA_INTEGRIDAD, ALERTA_DOCUMENTO_FALTANTE, ALERTA_ANEXO_FALTANTE, ALERTA_DOCUMENTO_VENCIDO,
-        ALERTA_DICTAMEN_NO_CONFORME, ALERTA_CONTENIDO, ALERTA_PROXIMO_A_VENCER, ALERTA_REVISION_HUMANA,
+        ALERTA_DICTAMEN_NO_CONFORME, ALERTA_REPRESENTACION, ALERTA_CONTENIDO, ALERTA_PROXIMO_A_VENCER, ALERTA_REVISION_HUMANA,
         ALERTA_SIN_AUDITAR,
     ])}
     return sorted(alertas, key=lambda a: (rango_severidad(a.severidad), orden.get(a.codigo, 99)))

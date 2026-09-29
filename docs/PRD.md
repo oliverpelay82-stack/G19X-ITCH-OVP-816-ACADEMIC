@@ -11,7 +11,7 @@
 | Desarrollo (Scrum Master / Desarrollador) | Oliver Villanueva Pelay, residente (No. de control 21520500) |
 | Stakeholder evaluador | Edgar Loheffelmman (PluriOne) |
 | Asesor interno | Dr. Wilfrido Campos Francisco |
-| Versión del documento | 1.3 — 29 de septiembre de 2026 (1.2: 28 de septiembre; 1.0: 27 de septiembre de 2026) |
+| Versión del documento | 1.4 — 29 de septiembre de 2026 (1.3: P1; 1.2: 28 de septiembre; 1.0: 27 de septiembre de 2026) |
 | Estado del producto | En desarrollo: Sprints 1 y 2 implementados, Sprint 3 implementado parcialmente, Sprint 4 implementado salvo HU-31, Módulo 7 pendiente |
 | Documento hermano | [MRD.md](MRD.md) — requerimientos de mercado |
 
@@ -190,7 +190,7 @@ Prioridad tomada de las historias de usuario asociadas (Cap. VII); «—» cuand
 | ID | Requerimiento | Prioridad | Estado | Evidencia / nota |
 |---|---|---|---|---|
 | RF-10 | Extraer texto, tablas y pares clave-valor de documentos escaneados o nativos. | Alta | Implementado | PyMuPDF para la capa vectorial y Tesseract con preprocesamiento OpenCV para lo escaneado. |
-| RF-11 | Análisis semántico con Qwen 3.8 (27B) en Groq Cloud para verificar cláusulas obligatorias. | Alta | Implementado | Verificación de contenido del Nivel 4 (RSC-01): cada auditoría verifica los elementos que el catálogo exige al tipo de documento (16 reglas RSC: contrato, NDA, acta constitutiva, poder notarial, póliza y licencia). Un elemento es CUMPLE solo si su cita literal aparece en el texto; si no, NO_LOCALIZADO o NO_VERIFICABLE, el dictamen pasa a revisión humana y se emite la alerta CONTENIDO_NO_LOCALIZADO. Los datos del firmante (RSC-02) siguen pendientes (HU-23). |
+| RF-11 | Análisis semántico con Qwen 3.8 (27B) en Groq Cloud para verificar cláusulas obligatorias. | Alta | Implementado | Verificación de contenido del Nivel 4 (RSC-01): cada auditoría verifica los elementos que el catálogo exige al tipo de documento (16 reglas RSC: contrato, NDA, acta constitutiva, poder notarial, póliza y licencia). Un elemento es CUMPLE solo si su cita literal aparece en el texto; si no, NO_LOCALIZADO o NO_VERIFICABLE, el dictamen pasa a revisión humana y se emite la alerta CONTENIDO_NO_LOCALIZADO. Los datos del firmante (RSC-02) se extraen en la misma llamada y se cotejan con los apoderados del expediente (P2, §21.2). |
 | RF-12 | Indexación y búsqueda semántica sobre el corpus documental. | — | Parcial | Recuperación BM25 dentro de cada documento; sin búsqueda sobre todo el acervo. |
 | RF-13 | Cada resultado de la IA incluye justificación, nivel de confianza y cita textual. | Alta | Implementado | Dictamen con confianza y observaciones; chat con citas. |
 | RF-14 | Hallazgos con discrepancia, vigencia no verificable o confianza < 85 % pasan a revisión humana (EN_REVISION) con justificación obligatoria. | Alta | Implementado | `POST /api/v1/dictamenes/{id}/ratificar`. |
@@ -260,7 +260,7 @@ Prioridad tomada de las historias de usuario asociadas (Cap. VII); «—» cuand
 | HU-20 | Cita textual y porcentaje de confianza en cada resultado de la IA. | M3 | 3 | Alta | 6 | Implementado |
 | HU-21 | Marcar para revisión manual los hallazgos con confianza < 85 %. | M3 | 3 | Alta | 5 | Implementado |
 | HU-22 | Aprobar o rechazar hallazgos de la IA con registro en la bitácora. | M3 | 3 | Alta | 6 | Implementado |
-| HU-23 | Extraer los datos del firmante para cotejarlos con el poder notarial. | M3 | 3 | Media | 8 | Pendiente (el dato puede consultarse con el chat) |
+| HU-23 | Extraer los datos del firmante para cotejarlos con el poder notarial. | M3 | 3 | Media | 8 | Implementado (P2, §21.2: firmantes con cita, cotejo con los apoderados del poder o del acta y decisión del analista) |
 | HU-24 | Dar de alta tipos de documento con criterios en lenguaje natural. | M2 | 3 | Alta | 10 | Parcial |
 | HU-25 | Reutilizar el análisis si el documento no cambió (misma huella). | M3 | 3 | Media | 5 | Implementado (texto e inferencia en caché por huella) |
 | HU-26 | Dashboard con porcentaje global, conformes y no conformes. | M6 | 4 | Alta | 10 | Implementado |
@@ -272,7 +272,7 @@ Prioridad tomada de las historias de usuario asociadas (Cap. VII); «—» cuand
 | HU-32 | Validación completa de un expediente (reglas + IA) con un solo botón. | Integración | 4 | Alta | 14 | Implementado («Auditar pendientes» en el detalle del expediente: audita en secuencia, con reglas e IA, los documentos vigentes sin dictamen y muestra el avance por documento y el semáforo y las alertas antes y después) |
 | HU-33 | Manejo controlado de errores (documento ilegible, IA no disponible). | Integración | 4 | Alta | 9 | Implementado (degradación controlada, DG §8.7) |
 
-**Resumen:** 25 implementadas, 3 parciales y 5 pendientes de 33. Respecto de la versión 1.0 pasan a implementadas HU-30 y HU-32 (versión 1.1) y HU-19 (versión 1.2).
+**Resumen:** 26 implementadas, 3 parciales y 4 pendientes de 33. Respecto de la versión 1.0 pasan a implementadas HU-30 y HU-32 (versión 1.1), HU-19 (versión 1.2) y HU-23 (versión 1.4). Las historias PLUS (HU-34 en adelante) se cuentan en la sección 21.
 
 ---
 
@@ -298,7 +298,7 @@ Prioridad tomada de las historias de usuario asociadas (Cap. VII); «—» cuand
 |---|---|---|
 | RIE — Integridad y Estructura | Niveles 1 y 2 | RIE-01 Completitud del expediente; RIE-02 Vinculación obligatoria de anexos; RIE-03 Integridad criptográfica del archivo. |
 | RCV — Cronológicas y de Vigencia | Nivel 2 | RCV-01 Vigencia mandatoria (vencido < 0 días, próximo 0–30, vigente > 30); RCV-02 Caducidad del comprobante de domicilio (90 días desde la emisión); RCV-03 Caducidad de la constancia de situación fiscal (90 días); RCV-04 Caducidad de la opinión de cumplimiento 32-D (30 días; extensión PLUS-03). |
-| RSC — Semánticas y Contractuales | Nivel 4 (IA) | RSC-01 Cláusulas esenciales (confidencialidad, penalización, vigencia y terminación) y elementos de contenido por tipo, entre ellos el sentido de la opinión 32-D (RSC-OPIN-SENT, lectura determinista; extensión PLUS-03); RSC-02 Datos del firmante. |
+| RSC — Semánticas y Contractuales | Nivel 4 (IA) | RSC-01 Cláusulas esenciales (confidencialidad, penalización, vigencia y terminación) y elementos de contenido por tipo, entre ellos el sentido de la opinión 32-D (RSC-OPIN-SENT, lectura determinista; extensión PLUS-03); RSC-02 Datos del firmante (RSC-02-CONT y RSC-02-NDA, cotejados con los apoderados: P2). |
 | RDS — Dinámicas y Sectoriales | Configurables | RDS-01 Alta dinámica de requisitos; RDS-02 Criterio en lenguaje natural para la IA; RDS-03 Ejecución supervisada obligatoria. |
 
 Severidades: Crítica, Alta, Media-Alta y Media [RF-08]. Toda regla puede pausarse sin borrarse [DG Tabla 24].
@@ -363,6 +363,7 @@ La **completitud** es el porcentaje de documentos obligatorios presentes, inclui
 | DICTAMEN_NO_CONFORME | El dictamen vigente es No conforme. | Alta |
 | PENDIENTE_RATIFICACION | El dictamen quedó en revisión humana. | Media |
 | PENDIENTE_AUDITORIA | Un obligatorio está custodiado pero sin dictamen. | Media |
+| REPRESENTACION_NO_ACREDITADA | El firmante del titular en un contrato o NDA no coincide con ningún apoderado de un poder o acta vigente del expediente, o solo con uno vencido; desaparece al ratificarse el dictamen del contrato (RSC-02, RN-03; P2). | Alta |
 | CONTENIDO_NO_LOCALIZADO | Un elemento que el catálogo exige al documento (regla RSC o RDS) quedó NO_LOCALIZADO o NO_VERIFICABLE en el dictamen vigente; desaparece al ratificarse el dictamen. | La de su regla (Media-Alta por defecto) |
 
 Cada alerta incluye su recomendación correctiva (RF-21). Las alertas se derivan de la evaluación y no se almacenan: desaparecen al corregirse el hallazgo.
@@ -456,7 +457,7 @@ Documentación interactiva OpenAPI en `/docs` de cada servicio.
 | `expedientes` | Folio, tipo de expediente, nombre, semáforo, completitud y fechas. |
 | `documentos` | Archivo custodiado, huella SHA-256 y estado de integridad. |
 | `reglas_validacion` | Catálogo de reglas, con tipo de expediente y documento principal (anexos). |
-| `dictamenes_auditoria` | Resultado de cada auditoría y su ratificación humana (protegido por `trg_dictamen_protegido`). |
+| `dictamenes_auditoria` | Resultado de cada auditoría y su ratificación humana (protegido por `trg_dictamen_protegido`), con los firmantes o apoderados extraídos en `representacion_legal` (P2). |
 | `bitacora_auditoria` | Eventos inmutables (protegida por `trg_bitacora_inmutable`). |
 
 Diseñada en DOC-08 y pendiente de implementar: la tabla `usuarios` (email, password_hash bcrypt, nombre_completo, rol, activo) para el Módulo 7.
@@ -585,7 +586,7 @@ Integridad garantizada por la base, además de la API:
 |---|---|---|---|---|
 | 1 — Cimientos del sistema | 5–6 | Base de datos, API REST, autenticación con roles y gestión de expedientes con carga. | HU-01 a HU-08 | Implementado, salvo autenticación y roles (HU-05, HU-06) |
 | 2 — Motor de reglas y vigencias | 7–8 | Reglas configurables, vigencia y alertas; dictamen determinista sin IA. | HU-09 a HU-17 | Implementado, salvo correo (HU-17) y umbrales desde la interfaz (HU-14) |
-| 3 — Análisis inteligente con IA | 9–10 | OCR, análisis semántico, cita y confianza, Human-in-the-Loop. | HU-18 a HU-25 | Implementado parcialmente (HU-23 y HU-24) |
+| 3 — Análisis inteligente con IA | 9–10 | OCR, análisis semántico, cita y confianza, Human-in-the-Loop. | HU-18 a HU-25 | Implementado parcialmente (HU-24) |
 | 4 — Reportes, dashboard e integración | 11–12 | Panel, reportes exportables e integración completa. | HU-26 a HU-33 | Implementado, salvo el usuario de consulta (HU-31, depende del Módulo 7) |
 
 ---
@@ -643,16 +644,15 @@ Riesgos adicionales identificados en la implementación [DG §8.7 y §10.7]:
 
 ## 20. Pendientes y preguntas abiertas
 
-**Pendientes de implementación** (priorizados por el plan: Módulo 7 en la siguiente iteración)
+**Pendientes de implementación** (orden acordado el 29/09/2026: P3 —cadena de custodia sellada—, revisión completa del frontend y, en la fase final, el Módulo 7)
 
 1. Autenticación, usuarios y roles: RF-25, RF-26, HU-05, HU-06 y HU-31; registrar el usuario autenticado en la bitácora (HU-07).
 2. Notificaciones por correo electrónico: RF-20, HU-17.
-3. Datos del firmante para cotejarlos con el poder notarial (RSC-02): HU-23.
-4. Criterios en lenguaje natural para tipos de documento dinámicos (RDS-02): RF-09, HU-24.
-5. Carga en lote (RF-02).
-6. Requerimientos no funcionales: cifrado AES-256 en reposo (RNF-04), TLS 1.3 interno (RNF-05) y respaldos automatizados (RNF-10); pruebas de concurrencia y disponibilidad (RNF-03, RNF-09).
+3. Criterios en lenguaje natural para tipos de documento dinámicos (RDS-02): RF-09, HU-24.
+4. Carga en lote (RF-02).
+5. Requerimientos no funcionales: cifrado AES-256 en reposo (RNF-04), TLS 1.3 interno (RNF-05) y respaldos automatizados (RNF-10); pruebas de concurrencia y disponibilidad (RNF-03, RNF-09).
 
-**Completados desde la versión 1.0 de este documento:** vista de la bitácora en la interfaz (HU-30), validación del expediente completo con un botón (HU-32) e integración continua con GitHub Actions (RNF-12) en la versión 1.1; verificación automática de cláusulas (RSC-01: RF-11 y HU-19) y la categoría de alerta CONTENIDO_NO_LOCALIZADO (RF-18) en la versión 1.2.
+**Completados desde la versión 1.0 de este documento:** vista de la bitácora en la interfaz (HU-30), validación del expediente completo con un botón (HU-32) e integración continua con GitHub Actions (RNF-12) en la versión 1.1; verificación automática de cláusulas (RSC-01: RF-11 y HU-19) y la categoría de alerta CONTENIDO_NO_LOCALIZADO (RF-18) en la versión 1.2; la ingesta blindada (P1) en la versión 1.3, y los datos del firmante con su cotejo contra el poder o el acta (RSC-02, RN-03, HU-23) en la versión 1.4.
 
 **Preguntas abiertas para el Product Owner**
 
@@ -707,6 +707,58 @@ Verificado en vivo el 29/09/2026 con los tres servicios y Groq (core sobre la ba
 **Nombre de la regla.** El diseño la llamó RSC-01-OPIN-SENT; se implementó como **RSC-OPIN-SENT**, la convención del catálogo para los elementos que no son cláusulas contractuales (RSC-ACTA-*, RSC-PODER-*): RSC-01 es la regla de cláusulas contractuales del DOC-05.
 
 **Diagramas:** [casos de uso](uml/p1-casos-de-uso-ingesta-blindada.puml), [actividad de carga](uml/p1-actividad-carga-documento.puml) y [actividad de auditoría de la opinión 32-D](uml/p1-actividad-auditoria-opinion-32d.puml).
+
+### 21.2 P2 — Cotejo del firmante con el apoderado (RSC-02, RN-03, HU-23)
+
+A diferencia de P1, **RSC-02, RN-03 y HU-23 sí están en la documentación** (DOC-05 y DOC-07): P2 los implementa. Lo que se agrega como extensión es la extracción de los apoderados del poder o del acta (HU-37) y el cotejo determinista en cada evaluación (HU-38), que RSC-02 deja al analista y aquí se le presenta ya preparado.
+
+| ID | Requerimiento | Fundamento | Estado |
+|---|---|---|---|
+| RSC-02 | **Datos del firmante.** En la auditoría de un contrato de prestación de servicios o de un NDA, la misma llamada de extracción del Nivel 4 devuelve los firmantes (nombre, cargo, empresa) con su cita. La cita se ancla en el texto y debe contener el nombre; si no, la persona queda «no verificada» y no acredita nada. Se activa con las reglas del catálogo RSC-02-CONT y RSC-02-NDA. El dictamen del contrato queda siempre EN_REVISION: «la decisión final siempre recae en el analista». | DOC-05 RSC-02 (severidad Alta); HU-23 | Implementado |
+| HU-37 | **Apoderados del poder o del acta.** En la auditoría de un poder notarial o de un acta constitutiva se extraen, en la misma llamada, las personas con facultades de representación (apoderado, administrador único, presidente del consejo), su cargo, sus facultades y la cita. | DOC-02 Tabla 3 («identificación del otorgante y apoderado»); RSC-PODER-PART, RSC-ACTA-ADMON | Implementado |
+| HU-38 | **Cotejo determinista (RN-03).** En cada evaluación del expediente, el core compara el firmante del titular (el de la empresa del titular o sin empresa declarada) con los apoderados de los poderes y actas vigentes, íntegros y del titular: nombres sin acentos, títulos ni partículas; todas las palabras del nombre más corto, al menos dos, deben estar en el más largo. La vigencia del poder se recalcula con RCV-01 (RN-02). Estados: **ACREDITADO**, **NO_ACREDITADO**, **PODER_VENCIDO** y **PENDIENTE** (contrato, poder o acta sin auditar, o firmante no identificado; nunca rechaza). NO_ACREDITADO y PODER_VENCIDO emiten la alerta REPRESENTACION_NO_ACREDITADA (Alta) mientras el contrato no se ratifique. | RN-03; RF-18, RF-21; RN-05 | Implementado |
+
+**Historias de usuario nuevas**
+
+| ID | Historia | Módulo | Prioridad | Estado |
+|---|---|---|---|---|
+| HU-37 | Como responsable de cumplimiento, quiero que la auditoría del poder o del acta identifique a los apoderados y sus facultades con su cita, para cotejarlos con quien firma los contratos. | M3 | Media | Implementado |
+| HU-38 | Como responsable de cumplimiento, quiero ver en el detalle del contrato si su firmante coincide con un apoderado vigente, con ambas citas, para ratificar la representación con evidencia. | M3 | Alta | Implementado |
+
+**Criterios de aceptación**
+
+- La auditoría de un contrato o NDA devuelve sus firmantes con cita anclada, sin una llamada adicional a Groq, y su dictamen queda EN_REVISION con el motivo RSC-02.
+- La de un poder o un acta devuelve sus apoderados con cargo, facultades y cita.
+- Firmante del titular que coincide con un apoderado de un poder vigente: ACREDITADO, sin alerta.
+- Sin coincidencia con poderes y actas auditados: NO_ACREDITADO y alerta REPRESENTACION_NO_ACREDITADA; coincidencia solo con un poder vencido: PODER_VENCIDO y la misma alerta.
+- Poder o acta sin auditar (o auditado antes de P2), contrato sin datos de firmantes o firmante no identificado: PENDIENTE, con la acción que falta; el contrato no se rechaza.
+- Un poder ALTERADO o de otro titular (RFC ajeno) no acredita.
+- Ratificado el dictamen del contrato, la alerta desaparece (RN-05).
+- El detalle del contrato muestra el firmante frente a los apoderados, con sus citas y el documento de origen.
+
+**Consecuencias previstas**
+
+- Los contratos y NDA dejan de poder quedar CONFORME en automático: RSC-02 exige ratificación humana. Los dictámenes previos no cambian (son inmutables).
+- Los contratos, poderes y actas auditados antes de P2 no tienen estos datos: su cotejo queda PENDIENTE hasta reauditarlos.
+- Los nombres de firmantes y apoderados son datos personales (LFPDPPP, DOC-03): se guardan solo nombre, cargo, empresa, facultades y la cita, en el dictamen, y solo viaja a Groq el texto extraído.
+- La extracción de un contrato, poder o acta pide unos cientos de tokens de salida más; el resto de los tipos no cambia.
+- Un acta muestra a los representantes que designó al constituirse; si una asamblea posterior los sustituyó, lo decide el analista.
+
+**Modelo de datos:** columna `representacion_legal` (JSON) en `dictamenes_auditoria`, protegida por `trg_dictamen_protegido`.
+
+**Implementación y pruebas** (versión 1.4):
+
+| Pieza | Dónde | Pruebas |
+|---|---|---|
+| Reglas RSC-02-CONT y RSC-02-NDA (Alta) | `rules-service/seed_reglas_validacion.py` | `tests/test_rules_service.py` |
+| Firmantes y apoderados en la misma extracción, con cita anclada; RSC-02 → EN_REVISION | `ai-service/pipelines/representacion.py`, `analisis_semantico.py` | `services/ai-service/tests/test_representacion.py` (7 casos) |
+| Columna `representacion_legal` depurada e inmutable | `core-service/controllers/dictamen_controller.py`, `config/database.py` | `tests/test_representacion_legal.py` (la prueba del trigger falla sin la columna protegida) |
+| Cotejo determinista, alerta REPRESENTACION_NO_ACREDITADA y `evaluacion.representacion` | `core-service/motor/representacion.py`, `motor/cumplimiento.py` | `tests/test_representacion_legal.py` (16 casos de cotejo) |
+| Cotejo en el detalle del contrato | `frontend/src/components/CotejoRepresentacion.jsx` | Verificación en vivo con Playwright |
+
+Verificado en vivo el 29/09/2026 con los tres servicios y Groq (core sobre la base de pruebas), con un contrato y un poder en PDF: el firmante y la contraparte se extrajeron con cita verificada en una sola llamada (la contraparte no se coteja); sin poder, y con el poder sin auditar, el cotejo quedó PENDIENTE; con el poder auditado, ACREDITADO si el apoderado es el firmante y NO_ACREDITADO con alerta ALTA si es otra persona. Una segunda auditoría del mismo contrato reutilizó la inferencia en caché (0 tokens).
+
+**Diagramas:** [casos de uso](uml/p2-casos-de-uso-representacion-legal.puml) y [actividad del cotejo](uml/p2-actividad-cotejo-representacion.puml).
 
 ---
 

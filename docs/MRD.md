@@ -9,7 +9,7 @@
 | Línea de negocio | Portafolio de soluciones LegalTech de PluriOne |
 | Patrocinador de negocio | Lic. Juan Méndez Herrera, Director Comercial (asesor empresarial y Product Owner) |
 | Elaborado por | Oliver Villanueva Pelay, residente — Instituto Tecnológico de Chilpancingo |
-| Versión del documento | 1.2 — 29 de septiembre de 2026 (1.1: 28 de septiembre; 1.0: 27 de septiembre de 2026) |
+| Versión del documento | 1.3 — 29 de septiembre de 2026 (1.2: P1; 1.1: 28 de septiembre; 1.0: 27 de septiembre de 2026) |
 | Documento hermano | [PRD.md](PRD.md) — requerimientos del producto |
 
 > **Fuentes.** Este MRD se construye exclusivamente con el anteproyecto de residencia, los entregables DOC-01 a DOC-08 ([ESPECIFICACIONES_DOC01_A_DOC08.txt](ESPECIFICACIONES_DOC01_A_DOC08.txt)) y el DOCUMENTO GENERAL («DG»). La información de mercado que esas fuentes no contienen —tamaño de mercado, precio o modelo comercial— no se estima: se declara en la [sección 13](#13-información-de-mercado-no-documentada) como pendiente de definir con PluriOne.
@@ -358,7 +358,7 @@ Derivados de los objetivos y umbrales documentados [Anteproyecto; DG Caps. IV, V
 | MR-05 Reglas configurables por sector | RF-06, RF-08, HU-09, HU-11 | Implementado |
 | MR-06 Nuevos tipos de documento con criterios para la IA | RF-09, RDS-01, RDS-02, HU-24 | Parcial |
 | MR-07 Lectura de PDF nativos y escaneados | RF-10, HU-18 | Implementado |
-| MR-08 Análisis de contenido explicable | RF-11, RF-13, RSC-01, RSC-02, HU-19, HU-20, HU-23 | Parcial (cláusulas verificadas automáticamente con cita literal, RSC-01; queda pendiente el cotejo del firmante con el poder notarial, RSC-02) |
+| MR-08 Análisis de contenido explicable | RF-11, RF-13, RSC-01, RSC-02, HU-19, HU-20, HU-23 | Cumplido (cláusulas verificadas con cita literal, RSC-01; datos del firmante cotejados con los apoderados del poder o del acta, RSC-02 y RN-03, con decisión del analista: PRD §21.2) |
 | MR-09 Decisión humana en casos dudosos | RF-14, RN-05, HU-21, HU-22 | Implementado |
 | MR-10 Evidencia para auditorías | RF-23, RF-27, HU-28, HU-30 | Implementado (dictamen exportable, bitácora inmutable y su historial en el detalle del expediente) |
 | MR-11 Detección de alteraciones | RF-03, RIE-03, HU-08 | Implementado |

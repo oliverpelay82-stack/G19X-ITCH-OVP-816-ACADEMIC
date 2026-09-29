@@ -214,6 +214,7 @@ def _persistir_dictamen(documento_id: str, resultado: pipeline_analisis.Resultad
         "vigencia": resultado.vigencia_nivel_2 or None,
         "observaciones": resultado.observaciones,
         "verificaciones": resultado.verificaciones,
+        "representacion": resultado.representacion,
         "modelo_utilizado": resultado.modelo_utilizado,
         "usuario": usuario,
     }

@@ -1,0 +1,88 @@
+@startuml p2-casos-de-uso-representacion-legal
+' P2 — Cotejo del firmante con el apoderado (extensión PLUS del PRD, sección 21.2).
+' Trazabilidad: RSC-02 (DOC-05), RN-03, HU-23, RF-11, RF-13, RF-14, RF-18;
+' HU-37 y HU-38 (PLUS); MRD MR-08.
+' Actualiza los casos de uso de F3 (auditoría) y F4 (ratificación) del PRD §6.
+
+title P2 — Cotejo de representación legal: casos de uso
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+skinparam usecase {
+  BackgroundColor<<PLUS>> #FFFBEB
+  BorderColor<<PLUS>> #B45309
+}
+
+actor "Responsable de\nCumplimiento" as RC
+actor "Auditor" as AUD
+actor "Administrador\ndel Sistema" as ADM
+actor "Groq Cloud\n(Nivel 4)" as LLM <<sistema>>
+
+rectangle "Motor de Validación de Cumplimiento Documental" {
+
+  package "M3 — Auditoría del documento" {
+    usecase "Auditar documento\n(F3, HU-19)" as UC_AUD
+    usecase "Extraer datos del firmante\n(nombre, cargo, empresa)\ncon cita anclada\n(RSC-02, HU-23)" as UC_FIRM <<PLUS>>
+    usecase "Extraer apoderados y\nfacultades del poder\no del acta, con cita\n(HU-37)" as UC_APOD <<PLUS>>
+  }
+
+  package "M2 / M4 — Evaluación del expediente" {
+    usecase "Evaluar el expediente\n(semáforo y alertas)" as UC_EVAL
+    usecase "Cotejar firmante contra\napoderados del expediente\n(RN-03, HU-38)" as UC_COTEJO <<PLUS>>
+    usecase "Verificar la vigencia\ndel poder (RCV-01)" as UC_VIG
+    usecase "Emitir alerta\nREPRESENTACION_NO_ACREDITADA" as UC_ALERTA <<PLUS>>
+  }
+
+  package "Nivel 5 — Gobernanza humana" {
+    usecase "Consultar el cotejo:\nfirmante frente a apoderados\ncon sus citas" as UC_VER <<PLUS>>
+    usecase "Ratificar el dictamen\ndel contrato (RN-05)" as UC_RAT
+  }
+
+  package "M2 — Catálogo" {
+    usecase "Pausar o reactivar\nRSC-02-CONT / RSC-02-NDA" as UC_REGLAS
+  }
+}
+
+RC --> UC_AUD
+RC --> UC_VER
+RC --> UC_RAT
+AUD --> UC_VER
+ADM --> UC_REGLAS
+
+UC_FIRM .up.> UC_AUD : <<extend>>\n[contrato o NDA y\nRSC-02 activa]
+UC_APOD .up.> UC_AUD : <<extend>>\n[poder notarial o\nacta constitutiva]
+UC_FIRM -- LLM
+UC_APOD -- LLM
+
+UC_EVAL ..> UC_COTEJO : <<include>>
+UC_COTEJO ..> UC_VIG : <<include>>
+UC_ALERTA .up.> UC_COTEJO : <<extend>>\n[NO_ACREDITADO o PODER_VENCIDO\ny contrato sin ratificar]
+UC_VER ..> UC_COTEJO : <<include>>
+UC_RAT .up.> UC_VER : <<extend>>\n[el analista decide\nla representación]
+
+note right of UC_COTEJO
+  Determinista, sin IA, en cada consulta:
+  nombres normalizados (sin acentos ni títulos)
+  y vigencia del poder recalculada (RN-02).
+  ACREDITADO · NO_ACREDITADO · PODER_VENCIDO · PENDIENTE.
+  Un poder o acta sin auditar deja el cotejo
+  PENDIENTE: nunca rechaza el contrato.
+end note
+
+note right of UC_RAT
+  RSC-02: «la decisión final siempre recae
+  en el analista». El dictamen del contrato
+  queda EN_REVISION hasta su ratificación;
+  ratificado, su decisión prevalece y la
+  alerta de representación desaparece.
+end note
+
+note bottom of UC_FIRM
+  Solo viaja a Groq el texto extraído, en la
+  MISMA llamada de extracción del Nivel 4.
+  Una cita que no aparece en el texto deja
+  el dato como no verificado.
+end note
+
+@enduml

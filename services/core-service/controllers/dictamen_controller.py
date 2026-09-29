@@ -69,6 +69,38 @@ def _reglas_de_contenido(verificaciones: list[dict[str, Any]]) -> list[dict[str,
     ]
 
 
+# P2: roles de representación y campos que se aceptan de cada persona.
+_ROLES_REPRESENTACION = {"FIRMANTES": "empresa", "APODERADOS": "facultades"}
+_MAX_PERSONAS = 8
+_MAX_CARACTERES = 300
+
+
+def _representacion(datos: Optional[dict[str, Any]]) -> Optional[dict[str, Any]]:
+    """
+    Datos de representación legal del Nivel 4 (RSC-02, HU-37) tal como se
+    guardan en el dictamen: solo los roles y campos conocidos, con textos
+    acotados. El core no confía en el cliente para la forma del dato.
+    """
+    if not isinstance(datos, dict) or datos.get("rol") not in _ROLES_REPRESENTACION:
+        return None
+    campo = _ROLES_REPRESENTACION[datos["rol"]]
+
+    def texto(valor: Any) -> Optional[str]:
+        return " ".join(valor.split())[:_MAX_CARACTERES] if isinstance(valor, str) and valor.strip() else None
+
+    personas = []
+    for p in datos.get("personas") or []:
+        if isinstance(p, dict) and texto(p.get("nombre")):
+            personas.append({
+                "nombre": texto(p.get("nombre")),
+                "cargo": texto(p.get("cargo")),
+                campo: texto(p.get(campo)),
+                "cita": texto(p.get("cita")),
+                "cita_verificada": p.get("cita_verificada") is True,
+            })
+    return {"rol": datos["rol"], "personas": personas[:_MAX_PERSONAS]}
+
+
 def _reglas_aplicadas(vigencia: Optional[dict[str, Any]], hash_sha256: str) -> tuple[list[dict[str, Any]], str]:
     """Reglas evaluadas en la auditoría y el resultado consolidado de vigencia."""
     reglas: list[dict[str, Any]] = [
@@ -133,6 +165,7 @@ def registrar_dictamen(dto: DictamenCreate, request: Request, db: Session = Depe
         fecha_emision_extraida=dto.fecha_emision,
         fecha_vencimiento_extraida=dto.fecha_vencimiento,
         modelo_utilizado=dto.modelo_utilizado,
+        representacion_legal=_representacion(dto.representacion),
         hash_sha256=documento.hash_sha256,
     )
     db.add(dictamen)

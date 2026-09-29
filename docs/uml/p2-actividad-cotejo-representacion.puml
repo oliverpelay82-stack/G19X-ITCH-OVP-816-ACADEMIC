@@ -1,0 +1,91 @@
+@startuml p2-actividad-cotejo-representacion
+' P2 — Actividad del cotejo de representación legal (RN-03, RSC-02, HU-23).
+' Actualiza F3 (auditoría) y F4 (ratificación) del PRD §6.
+' Trazabilidad: RSC-02-CONT, RSC-02-NDA; HU-23, HU-37, HU-38; RF-11, RF-13,
+' RF-14, RF-18, RF-21; RCV-01; RN-02, RN-03, RN-05; MRD MR-08.
+' Implementación: services/ai-service/pipelines/representacion.py,
+' services/core-service/motor/representacion.py y motor/cumplimiento.py
+
+title P2 — Cotejo del firmante del contrato con el apoderado
+
+|Responsable de Cumplimiento|
+start
+:Audita el poder notarial o el acta\ny el contrato (en cualquier orden);
+
+|ai-service (Nivel 4)|
+:Una sola llamada de extracción a Groq
+con los campos del tipo documental;
+if (¿Contrato o NDA con\nRSC-02 activa?) then (sí)
+  :Extrae los firmantes:
+  nombre, cargo, empresa y cita;
+elseif (¿Poder notarial o\nacta constitutiva?) then (sí)
+  :Extrae los apoderados o representantes:
+  nombre, cargo, facultades y cita;
+else (otro)
+  :Sin datos de representación;
+endif
+:Ancla cada cita en el texto (cita_literal)
+y exige que el nombre aparezca en ella;
+note right
+  Una cita no localizada deja la persona
+  como «no verificada»: no acredita nada.
+end note
+if (¿Es contrato o NDA?) then (sí)
+  :Dictamen EN_REVISION (RSC-02:
+  la decisión es del analista);
+else (no)
+  :Dictamen según las reglas vigentes;
+endif
+:Persiste el dictamen con
+representacion_legal (inmutable);
+
+|core-service (evaluación del expediente)|
+:Por cada contrato o NDA vigente del expediente;
+if (¿Contrato auditado con datos\nde firmantes?) then (no)
+  :PENDIENTE: auditar (o reauditar)\nel contrato;
+  stop
+endif
+:Identifica al firmante del titular:
+empresa igual a la razón social del
+titular o sin empresa declarada;
+if (¿Hay firmante del titular?) then (no)
+  :PENDIENTE: firmante no identificado;
+  stop
+endif
+if (¿Hay poder o acta vigente en el\nexpediente, íntegro y del titular?) then (no)
+  :PENDIENTE: custodiar el poder\no el acta que lo acredite;
+  stop
+endif
+:Compara nombres normalizados:
+sin acentos, títulos ni partículas:
+todas las palabras del nombre más corto,
+al menos dos, en el más largo;
+if (¿Coincide con un apoderado de un\npoder o acta vigente?) then (sí)
+  :ACREDITADO, con ambas citas;
+elseif (¿Coincide solo con un poder vencido\n(RCV-01 recalculada, RN-02)?) then (sí)
+  :PODER_VENCIDO;
+elseif (¿Queda algún poder o acta\nsin auditar?) then (sí)
+  :PENDIENTE: auditarlo para\ncompletar el cotejo;
+else (no)
+  :NO_ACREDITADO;
+endif
+if (¿NO_ACREDITADO o PODER_VENCIDO\ny contrato sin ratificar?) then (sí)
+  :Alerta REPRESENTACION_NO_ACREDITADA
+  (ALTA) con su recomendación;
+else (no)
+endif
+
+|Responsable de Cumplimiento|
+:Consulta en el detalle del contrato
+el firmante frente a los apoderados,
+con sus citas;
+:Ratifica el dictamen del contrato
+con justificación (RN-05);
+note right
+  La decisión humana prevalece:
+  la alerta desaparece y el
+  cotejo queda como antecedente.
+end note
+stop
+
+@enduml
