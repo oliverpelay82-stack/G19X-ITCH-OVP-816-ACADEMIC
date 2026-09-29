@@ -1,10 +1,26 @@
 import { Fragment, useMemo, useState } from 'react'
-import { Loader2, Plus, Scale, SearchX, ServerOff } from 'lucide-react'
-import { Badge, Button, Card, EmptyRow, EmptyState, Field, Input, Modal, SearchBox, Segmented, Select, Tag } from './ui/index.js'
+import { ChevronRight, Loader2, Plus, Scale, SearchX, ServerOff } from 'lucide-react'
+import {
+  Badge,
+  Button,
+  Card,
+  EmptyRow,
+  EmptyState,
+  Field,
+  Input,
+  KeyValue,
+  KeyValueList,
+  Modal,
+  SearchBox,
+  Segmented,
+  Select,
+  Tag,
+} from './ui/index.js'
 import { SkeletonRows } from './Skeleton.jsx'
 import useToast from '../hooks/useToast.js'
 import useDebounce from '../hooks/useDebounce.js'
 import { createRegla, toggleRegla } from '../services/api.js'
+import { formatFecha } from '../utils/format.js'
 import {
   FAMILIA_META,
   FAMILIAS_REGLA,
@@ -52,6 +68,37 @@ function Switch({ checked, onClick, loading, label }) {
   )
 }
 
+/**
+ * Detalle de una regla al expandirla: la descripción y la acción completas
+ * (en la fila se recortan a dos renglones) y el alcance en palabras.
+ */
+function DetalleRegla({ regla }) {
+  const alcance = [
+    regla.tipo_documento ? TIPO_DOCUMENTO_LABEL[regla.tipo_documento] || regla.tipo_documento : 'Todo el expediente',
+    regla.tipo_expediente &&
+      `expedientes de tipo ${(TIPO_EXPEDIENTE_LABEL[regla.tipo_expediente] || regla.tipo_expediente).toLowerCase()}`,
+    regla.documento_principal &&
+      `anexo obligatorio de ${TIPO_DOCUMENTO_LABEL[regla.documento_principal] || regla.documento_principal}`,
+  ]
+    .filter(Boolean)
+    .join(' · ')
+  const obligatoriedad = [
+    regla.documento_obligatorio ? 'Documento obligatorio' : 'No exige el documento',
+    regla.dias_maximos_vigencia != null && `vigencia máxima de ${regla.dias_maximos_vigencia} días`,
+  ]
+    .filter(Boolean)
+    .join(' · ')
+  return (
+    <KeyValueList className="regla-detalle-grid">
+      <KeyValue etiqueta="Descripción">{regla.descripcion || '—'}</KeyValue>
+      <KeyValue etiqueta="Acción ante incumplimiento">{regla.accion || '—'}</KeyValue>
+      <KeyValue etiqueta="Alcance">{alcance}</KeyValue>
+      <KeyValue etiqueta="Obligatoriedad y vigencia">{obligatoriedad}</KeyValue>
+      <KeyValue etiqueta="Alta en el catálogo">{regla.creado_en ? formatFecha(regla.creado_en) : '—'}</KeyValue>
+    </KeyValueList>
+  )
+}
+
 export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true }) {
   const toast = useToast()
   const [filtroFamilia, setFiltroFamilia] = useState('TODAS')
@@ -64,6 +111,10 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
   const [enviando, setEnviando] = useState(false)
   const [error, setError] = useState('')
   const [togglingId, setTogglingId] = useState(null)
+  // Familias plegadas o desplegadas a mano. Sin elección, se pliegan salvo que
+  // haya una búsqueda o un filtro, para que los resultados queden a la vista.
+  const [familiasAbiertas, setFamiliasAbiertas] = useState({})
+  const [reglaAbierta, setReglaAbierta] = useState(null)
 
   const consulta = useDebounce(busqueda, 220)
 
@@ -84,6 +135,17 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
       return familiaOk && severidadOk && estadoOk && tipoExpOk && busquedaOk
     })
   }, [reglas, filtroFamilia, filtroSeveridad, filtroEstado, filtroTipoExp, consulta])
+
+  const filtrando =
+    Boolean(consulta.trim()) ||
+    filtroFamilia !== 'TODAS' ||
+    filtroSeveridad !== 'TODAS' ||
+    filtroEstado !== 'TODAS' ||
+    filtroTipoExp !== 'TODOS'
+  const familiaAbierta = (familia) => familiasAbiertas[familia] ?? filtrando
+  const alternarFamilia = (familia) =>
+    setFamiliasAbiertas((previo) => ({ ...previo, [familia]: !(previo[familia] ?? filtrando) }))
+  const alternarRegla = (id) => setReglaAbierta((previa) => (previa === id ? null : id))
 
   /** Agrupadas por familia normativa, en el orden oficial del DOC-05. */
   const porFamilia = useMemo(() => {
@@ -287,25 +349,50 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
                   <Fragment key={grupo.familia}>
                     <tr className="group-row">
                       <td colSpan={COLUMNAS}>
-                        <span className="mono group-code">{grupo.familia}</span>
-                        <span className="group-name">{grupo.meta.nombre}</span>
-                        <span className="group-meta">{grupo.meta.nivel}</span>
-                        <span className="group-count tabular">
-                          {grupo.items.filter((r) => r.activo).length}/{grupo.items.length} activas
-                        </span>
+                        <button
+                          type="button"
+                          className={`group-toggle ${familiaAbierta(grupo.familia) ? 'is-open' : ''}`}
+                          aria-expanded={familiaAbierta(grupo.familia)}
+                          onClick={() => alternarFamilia(grupo.familia)}
+                        >
+                          <ChevronRight size={13} className="chevron" aria-hidden="true" />
+                          <span className="mono group-code">{grupo.familia}</span>
+                          <span className="group-name">{grupo.meta.nombre}</span>
+                          <span className="group-meta">{grupo.meta.nivel}</span>
+                          <span className="group-count tabular">
+                            {grupo.items.length} {grupo.items.length === 1 ? 'regla' : 'reglas'} ·{' '}
+                            {grupo.items.filter((r) => r.activo).length} activas
+                          </span>
+                        </button>
                       </td>
                     </tr>
 
-                    {grupo.items.map((r) => {
+                    {familiaAbierta(grupo.familia) &&
+                      grupo.items.map((r) => {
                       const sev = getSeveridadMeta(r.severidad)
+                      const abierta = reglaAbierta === r.id
                       return (
-                        <tr className={!r.activo ? 'is-paused' : ''} key={r.id}>
+                        <Fragment key={r.id}>
+                        <tr
+                          className={`row-clickable ${!r.activo ? 'is-paused' : ''} ${abierta ? 'is-open' : ''}`}
+                          onClick={() => alternarRegla(r.id)}
+                        >
                           <td className="mono cell-mono cell-code" title={r.codigo_regla}>
                             {r.codigo_regla}
                           </td>
                           <td className="cell-wide">
                             <div className="cell-stack">
-                              <span className="identity-name">{r.nombre_regla}</span>
+                              <button
+                                type="button"
+                                className="regla-toggle identity-name"
+                                aria-expanded={abierta}
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  alternarRegla(r.id)
+                                }}
+                              >
+                                {r.nombre_regla}
+                              </button>
                               <span className="cell-sub cell-clamp" title={r.descripcion}>
                                 {r.descripcion}
                               </span>
@@ -342,7 +429,7 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
                               {r.accion}
                             </span>
                           </td>
-                          <td className="col-right">
+                          <td className="col-right" onClick={(e) => e.stopPropagation()}>
                             <Switch
                               checked={r.activo}
                               onClick={() => handleToggle(r)}
@@ -351,6 +438,14 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
                             />
                           </td>
                         </tr>
+                        {abierta && (
+                          <tr className="regla-detalle">
+                            <td colSpan={COLUMNAS}>
+                              <DetalleRegla regla={r} />
+                            </td>
+                          </tr>
+                        )}
+                        </Fragment>
                       )
                     })}
                   </Fragment>

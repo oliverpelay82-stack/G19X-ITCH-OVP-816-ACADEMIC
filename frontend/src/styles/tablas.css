@@ -232,6 +232,60 @@
   color: var(--text-muted);
 }
 
+/* Familia plegable del catálogo de reglas: toda la fila es el botón. */
+.group-row td:has(.group-toggle) {
+  padding: 0;
+}
+
+.group-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  width: 100%;
+  min-height: 40px;
+  padding: 0 var(--cell-x);
+  text-align: left;
+  cursor: pointer;
+}
+
+.group-toggle:hover .group-name {
+  color: var(--text-primary);
+}
+
+.group-toggle .group-count {
+  float: none;
+  margin-left: auto;
+}
+
+.group-toggle.is-open .chevron {
+  transform: rotate(90deg);
+}
+
+/* Regla desplegada: el nombre abre el detalle, que ocupa la fila completa. */
+.regla-toggle {
+  text-align: left;
+  cursor: pointer;
+}
+
+.regla-toggle:hover {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.data-table tr.regla-detalle td {
+  height: auto;
+  padding: var(--s-3) var(--cell-x) var(--s-4);
+  background: var(--bg-subtle);
+  white-space: normal;
+}
+
+.regla-detalle-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s-3) var(--s-6);
+  font-size: var(--fs-small);
+}
+
 /* Chip de copiado (hash SHA-256, RFC) */
 .copy-chip {
   display: inline-flex;

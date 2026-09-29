@@ -7,7 +7,8 @@ historial desplegado (HU-30), el alcance por tipo en una regla nueva, la
 ratificación humana del Nivel 5, el visor de evidencia, el panel de
 inteligencia documental tras auditar y preguntar, la cadena de custodia
 íntegra y comprometida en el historial (P3) y el cotejo del firmante con el
-apoderado en el detalle de un contrato, acreditado y no acreditado (P2).
+apoderado en el detalle de un contrato, acreditado y no acreditado (P2),
+y el catálogo de reglas con una familia y una regla desplegadas.
 
 Nada de lo que se hace aquí escribe en la base ni consume Groq:
 - La ratificación se captura sin enviarla.
@@ -325,6 +326,15 @@ def capturar_escenarios(navegador: Browser, carpeta: Path, ancho: int, alto: int
     pagina.locator(".modal").click(position={"x": 5, "y": 5})
     h._capturar_modal(pagina, carpeta / f"{prefijo}_regla_por_tipo.png")
     h._cerrar_modal(pagina)
+
+    # Catálogo con una familia desplegada y el detalle de su primera regla
+    # (la vista entra con las familias plegadas).
+    pagina.locator(".group-toggle", has_text="RSC").click()
+    pagina.wait_for_timeout(300)
+    pagina.locator(".regla-toggle").first.click()
+    pagina.wait_for_timeout(300)
+    pagina.locator("body").click(position={"x": 5, "y": 5})
+    h._capturar(pagina, carpeta / f"{prefijo}_reglas_detalle.png")
     pagina.close()
 
     _escenarios_representacion(navegador, carpeta, ancho, alto, tema, h)
@@ -335,9 +345,25 @@ def _capturar_elemento(pagina: Page, elemento, ruta: Path) -> None:
     Captura solo un bloque de la interfaz. Como en `_capturar_modal`, se toma
     el viewport completo y se recorta después (con `clip`, el antialiasing de
     algunos glifos variaba entre corridas).
+
+    El bloque se lleva siempre a la misma posición entera: 24 px bajo el borde
+    del velo si está en un modal, o 120 px bajo el borde de la ventana si no
+    (por debajo de la cabecera fija, que lo taparía). Con
+    scroll_into_view_if_needed quedaba en una coordenada fraccionaria que
+    dependía de la corrida, y el suavizado del texto alternaba entre dos
+    estados (el cotejo de P2 daba 24 a 305 px distintos sin cambiar nada).
     """
     elemento.scroll_into_view_if_needed()
-    pagina.wait_for_timeout(150)
+    elemento.evaluate(
+        """(el) => {
+          const velo = el.closest('.modal-overlay')
+          const margen = velo ? 24 : 120
+          const delta = Math.round(el.getBoundingClientRect().top - (velo ? velo.getBoundingClientRect().top : 0) - margen)
+          if (velo) velo.scrollTop = Math.round(velo.scrollTop + delta)
+          else window.scrollTo(0, Math.round(window.scrollY + delta))
+        }"""
+    )
+    pagina.wait_for_timeout(250)
     caja = elemento.bounding_box()
     pagina.screenshot(path=str(ruta), animations="disabled")
     x, y = max(int(caja["x"]), 0), max(int(caja["y"]), 0)

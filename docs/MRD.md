@@ -9,7 +9,7 @@
 | Línea de negocio | Portafolio de soluciones LegalTech de PluriOne |
 | Patrocinador de negocio | Lic. Juan Méndez Herrera, Director Comercial (asesor empresarial y Product Owner) |
 | Elaborado por | Oliver Villanueva Pelay, residente — Instituto Tecnológico de Chilpancingo |
-| Versión del documento | 1.5 — 29 de septiembre de 2026 (1.4: P3; 1.3: P2; 1.2: P1; 1.1: 28 de septiembre; 1.0: 27 de septiembre de 2026) |
+| Versión del documento | 1.6 — 29 de septiembre de 2026 (1.5: índice de cumplimiento; 1.4: P3; 1.3: P2; 1.2: P1; 1.1: 28 de septiembre; 1.0: 27 de septiembre de 2026) |
 | Documento hermano | [PRD.md](PRD.md) — requerimientos del producto |
 
 > **Fuentes.** Este MRD se construye exclusivamente con el anteproyecto de residencia, los entregables DOC-01 a DOC-08 ([ESPECIFICACIONES_DOC01_A_DOC08.txt](ESPECIFICACIONES_DOC01_A_DOC08.txt)) y el DOCUMENTO GENERAL («DG»). La información de mercado que esas fuentes no contienen —tamaño de mercado, precio o modelo comercial— no se estima: se declara en la [sección 13](#13-información-de-mercado-no-documentada) como pendiente de definir con PluriOne.
@@ -322,13 +322,14 @@ Las fuentes oficiales del proyecto no contienen los siguientes datos, que un MRD
 
 Derivados de los objetivos y umbrales documentados [Anteproyecto; DG Caps. IV, VI y VII]:
 
-| Criterio | Medida | Estado al 28/09/2026 |
+| Criterio | Medida | Estado al 29/09/2026 |
 |---|---|---|
 | El motor detecta documentos faltantes, vencidos y anexos ausentes de forma automática. | Criterios de aceptación funcionales (DG §7.8). | Cumplido (PRD §14). |
 | Los vencimientos se detectan antes de ocurrir. | Alertas con 30, 15 y 5 días de anticipación (RF-17). | Cumplido; notificación por correo pendiente. |
 | Todo expediente del mismo tipo se evalúa con los mismos criterios. | Reglas por tipo de expediente en el catálogo (RF-06). | Cumplido. |
 | Cada validación es demostrable ante una auditoría. | Bitácora inmutable y dictamen exportable (RF-23, RF-27). | Cumplido; el usuario autenticado se registrará con el Módulo 7. |
-| El análisis de un documento es operativo en tiempo de revisión. | ≤ 25 s por documento de hasta 20 páginas (RNF-02). | Cumplido (≈ 13 s para 26 páginas). |
+| El análisis de un documento es operativo en tiempo de revisión. | ≤ 25 s por documento de hasta 20 páginas (RNF-02). | Cumplido (≈ 13 s para 26 páginas), medido antes de la detección de sellos; por volver a medir ([análisis de brechas](ANALISIS_BRECHAS_MOTOR.md), §2.4). |
+| El personal jurídico entiende el estado y los hallazgos sin conocimientos técnicos, en una pantalla de portátil. | Lenguaje llano en interfaz, alertas y reportes (RNF-08); vistas legibles a 1366 × 768 (RNF-07). | Cumplido (PRD §13.1, revisión del frontend). |
 | El acceso está controlado por rol. | RF-25 y RF-26. | Pendiente. |
 | La reducción del tiempo de revisión se confirma con el cliente. | Estimación del 90 % (DG §6.7). | Por medir con PluriOne en la evaluación post-implementación (semana 16). |
 

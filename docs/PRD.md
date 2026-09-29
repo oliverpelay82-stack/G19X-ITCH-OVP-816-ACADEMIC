@@ -11,7 +11,7 @@
 | Desarrollo (Scrum Master / Desarrollador) | Oliver Villanueva Pelay, residente (No. de control 21520500) |
 | Stakeholder evaluador | Edgar Loheffelmman (PluriOne) |
 | Asesor interno | Dr. Wilfrido Campos Francisco |
-| Versión del documento | 1.6 — 29 de septiembre de 2026 (1.5: P3; 1.4: P2; 1.3: P1; 1.2: 28 de septiembre; 1.0: 27 de septiembre de 2026) |
+| Versión del documento | 1.7 — 29 de septiembre de 2026 (1.6: índice de cumplimiento; 1.5: P3; 1.4: P2; 1.3: P1; 1.2: 28 de septiembre; 1.0: 27 de septiembre de 2026) |
 | Estado del producto | En desarrollo: Sprints 1 y 2 implementados, Sprint 3 implementado parcialmente, Sprint 4 implementado salvo HU-31, Módulo 7 pendiente |
 | Documento hermano | [MRD.md](MRD.md) — requerimientos de mercado |
 
@@ -438,8 +438,8 @@ Verificado en vivo el 29/09/2026: el expediente de desarrollo (Grupo Bimbo, No c
 | RNF-04 | Cifrado AES-256 de la bóveda en reposo. | Pendiente. |
 | RNF-05 | TLS 1.3 entre cliente, microservicios, base de datos y proveedor de inferencia. | Parcial: cifrado solo hacia el proveedor de inferencia. |
 | RNF-06 | Al proveedor de IA solo viaja el texto extraído, con Retención Cero de Datos. | Implementado (minimización de datos); ZDR debe activarse en la consola del proveedor. |
-| RNF-07 | Interfaz responsiva, resolución mínima de 1366 × 768. | Revisado a 1366 × 768 y 1920 × 1080 sin desbordes horizontales; la regresión visual (`scripts/regresion_visual.py`, 150 capturas en ambas resoluciones y temas, incluidos el cotejo de P2 y la cadena de custodia de P3) fija la apariencia de cada vista y modal. |
-| RNF-08 | Semáforo y hallazgos comprensibles para personal jurídico sin conocimientos técnicos. | Implementado: motivos, alertas y recomendaciones en lenguaje natural. |
+| RNF-07 | Interfaz responsiva, resolución mínima de 1366 × 768. | Implementado. Revisión del frontend (§13.1): a 1366 × 768 ninguna vista se desborda ni recorta textos que deban leerse (tipos de documento, folios, huellas, categorías, placeholders); las métricas solo acompañan a Expedientes y Reportes, el catálogo de reglas se pliega por familia (de 3,268 a 768 px de alto) y el modal del documento abre con el dictamen. La regresión visual (`scripts/regresion_visual.py`, 142 capturas en 1366 × 768 y 1920 × 1080, en ambos temas, con modales completos y escenarios interactivos) fija la apariencia de cada vista y modal. |
+| RNF-08 | Semáforo y hallazgos comprensibles para personal jurídico sin conocimientos técnicos. | Implementado. Revisión del frontend (§13.1): la interfaz, los motivos del semáforo, las alertas y los reportes PDF y Excel no citan requisitos (RF-, RN-, RNF-, DOC-), niveles del pipeline, el proveedor de IA ni códigos internos, y las fechas se escriben en palabras (`motor/redaccion.py`); los códigos de regla se conservan donde identifican una regla. El índice de cumplimiento (§10.5) separa el cumplimiento de la completitud documental. Las pruebas del core fallan si un motivo, una alerta o el PDF del dictamen traen códigos o referencias. Observación: las observaciones que redacta el modelo se muestran tal como quedaron en el dictamen (inmutable); si el modelo escribe un código de su catálogo (p. ej. «se clasifica como OTRO»), el ajuste corresponde a las instrucciones del ai-service. |
 | RNF-09 | Disponibilidad ≥ 99.5 % en horario operativo. | Sin medición documentada. |
 | RNF-10 | Respaldos automatizados diarios de PostgreSQL (RPO < 24 h). | Pendiente (hoy solo respaldos manuales con `pg_dump`). |
 | RNF-11 | Solución contenerizada con Docker Compose. | Implementado (`docker-compose.yml`). |
@@ -540,10 +540,24 @@ Integridad garantizada por la base, además de la API:
 [DG Cap. IX]
 
 - **Diseño «White & Warm»:** blanco como base, neutros cálidos y color reservado a los estados de auditoría (Conforme, En revisión, No conforme), siempre acompañado de su etiqueta.
-- **Navegación:** Cumplimiento (Empresas, Expedientes, Bóveda), Auditoría (Alertas, Reportes) y Configuración (Reglas).
-- **Expedientes:** tarjeta con tipo, semáforo, completitud y número de alertas; el detalle muestra documentos exigidos y anexos, estado y vigencia de cada archivo, alertas con recomendación, carga y exportación del dictamen.
-- **Panel de Inteligencia Documental:** auditoría en tres etapas visibles (lectura, análisis, reglas de vigencia) con cancelación en cascada, dictamen con medidor de confianza, tabla de cotejo, registro de auditoría con ratificación y chat documental con citas.
+- **Navegación:** Cumplimiento (Empresas, Expedientes, Bóveda), Auditoría (Alertas, Reportes) y Configuración (Reglas). La sección y el expediente desplegado viven en la URL (`#/expedientes/<folio>`): recargar conserva la vista y un enlace lleva directo a un expediente. La pantalla de inicio es Expedientes.
+- **Expedientes:** tarjeta con tipo, semáforo, índice de cumplimiento y documentos obligatorios presentes; el detalle va de por qué a qué hacer: índice con las reglas evaluadas, motivos del semáforo, recomendaciones, documentos exigidos con su estado y vigencia, historial, carga y exportación del dictamen.
+- **Bóveda y catálogo de reglas:** la Bóveda indica si cada documento es el vigente de su tipo (con el estado de su dictamen) o fue sustituido; el catálogo se pliega por familia y muestra el detalle completo de cada regla.
+- **Panel de Inteligencia Documental:** abre con el dictamen (los datos técnicos del archivo quedan plegados); auditoría en tres etapas visibles (lectura, análisis, reglas de vigencia) con cancelación en cascada, dictamen con medidor de confianza, tabla de cotejo, registro de auditoría con ratificación y chat documental con citas.
 - **System Health Strip:** estado, puerto y latencia de los tres microservicios en la cabecera.
+
+### 13.1 Revisión del frontend (29/09/2026)
+
+Revisión completa de la interfaz después de P1 a P3, en lotes aprobados por el responsable del proyecto y verificados con la regresión visual en cada paso:
+
+| Lote | Alcance | Requerimientos |
+|---|---|---|
+| 0 | La regresión visual cubre el cotejo de P2 y la cadena de P3. | RNF-07 |
+| 1 | Correcciones puntuales: botón deshabilitado legible, textos recortados a 1366 × 768, concordancia de número, categorías y tipo heredado en palabras, barra de completitud neutra. | RNF-07, RNF-08 |
+| 2 | Lenguaje llano en la interfaz, los motivos, las alertas y los reportes. | RNF-08 |
+| 3 | Índice de cumplimiento del DOC-05 (§10.5); navegación en la URL con inicio en Expedientes; métricas solo en Expedientes y Reportes; detalle del expediente, modal del documento y Bóveda reorganizados. | RF-19, RF-22, RNF-07, RNF-08 |
+| 4 | Refactor sin cambio visual (hojas de estilo por contexto y componentes divididos; 0 capturas distintas y el CSS del build idéntico) y catálogo de reglas plegable por familia. | RNF-07; mantenibilidad (ISO/IEC 25010) |
+| 5 | Documentación: CLAUDE.md, este PRD y el MRD. | — |
 
 ---
 
@@ -688,7 +702,7 @@ Riesgos adicionales identificados en la implementación [DG §8.7 y §10.7]:
 
 ## 20. Pendientes y preguntas abiertas
 
-**Pendientes de implementación** (orden acordado el 29/09/2026: P1 a P3 terminados; sigue la revisión completa del frontend y, en la fase final, el Módulo 7)
+**Pendientes de implementación** (orden acordado el 29/09/2026: P1 a P3 y la revisión completa del frontend terminados; en la fase final, el Módulo 7)
 
 1. Autenticación, usuarios y roles: RF-25, RF-26, HU-05, HU-06 y HU-31; registrar el usuario autenticado en la bitácora (HU-07).
 2. Notificaciones por correo electrónico: RF-20, HU-17.
