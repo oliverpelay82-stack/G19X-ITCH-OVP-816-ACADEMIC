@@ -22,7 +22,7 @@ import { SkeletonCards, SkeletonRows } from './Skeleton.jsx'
 import useToast from '../hooks/useToast.js'
 import useDebounce from '../hooks/useDebounce.js'
 import { createTitular } from '../services/api.js'
-import { getEstadoBadge } from '../constants.js'
+import { categoriaTitular, getEstadoBadge } from '../constants.js'
 import { formatFechaCorta, iniciales, validarRfc } from '../utils/format.js'
 
 const FORM_INICIAL = { rfc: '', razon_social: '', tipo_persona: 'MORAL', categoria: 'PROVEEDOR' }
@@ -112,7 +112,7 @@ function TarjetaTitular({ titular, expedientes, ...acciones }) {
           <CopyChip valor={titular.rfc} etiqueta="RFC" />
         </KeyValue>
         <KeyValue etiqueta="Categoría regulatoria">
-          <Tag mono>{titular.categoria}</Tag>
+          <Tag>{categoriaTitular(titular.categoria)}</Tag>
         </KeyValue>
       </KeyValueList>
 
@@ -186,7 +186,8 @@ export default function TitularesTab({
         !q ||
         t.rfc?.toLowerCase().includes(q) ||
         t.razon_social?.toLowerCase().includes(q) ||
-        t.categoria?.toLowerCase().includes(q)
+        t.categoria?.toLowerCase().includes(q) ||
+        categoriaTitular(t.categoria).toLowerCase().includes(q)
       return coincideTipo && coincideBusqueda
     })
   }, [titulares, consulta, filtroTipo])
@@ -341,7 +342,7 @@ export default function TitularesTab({
                           <Badge>{t.tipo_persona === 'FISICA' ? 'Física' : 'Moral'}</Badge>
                         </td>
                         <td>
-                          <Tag mono>{t.categoria}</Tag>
+                          <Tag>{categoriaTitular(t.categoria)}</Tag>
                         </td>
                         <td>
                           <EstadoExpediente expediente={ultimo} />

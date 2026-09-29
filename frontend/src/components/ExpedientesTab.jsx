@@ -19,7 +19,6 @@ import {
   TIPO_EXPEDIENTE_LABEL,
   TIPOS_EXPEDIENTE,
   tiposParaCarga,
-  tonoPorPorcentaje,
   VIGENCIA_META,
 } from '../constants.js'
 import { formatDia, formatRelativo, iniciales } from '../utils/format.js'
@@ -262,9 +261,9 @@ function DetalleExpediente({ exp, subiendo, onSubir, iaOnline, onRefresh, docume
         <Card className="table-card table-card--flat">
           <table className="data-table data-table--inner">
             <colgroup>
-              <col style={{ width: '32%' }} />
-              <col style={{ width: '15%' }} />
-              <col style={{ width: '10%' }} />
+              <col style={{ width: '30%' }} />
+              <col style={{ width: '16%' }} />
+              <col style={{ width: '12%' }} />
               <col />
               <col style={{ width: '132px' }} />
             </colgroup>
@@ -294,9 +293,7 @@ function DetalleExpediente({ exp, subiendo, onSubir, iaOnline, onRefresh, docume
                   <tr key={f.tipo}>
                     <td>
                       <span className="cell-stack">
-                        <span className="identity-name cell-ellipsis" title={nombreTipo}>
-                          {nombreTipo}
-                        </span>
+                        <span className="identity-name identity-name--completo">{nombreTipo}</span>
                         {f.anexoDe && (
                           <span className="cell-sub">Anexo de {TIPO_DOCUMENTO_LABEL[f.anexoDe] || f.anexoDe}</span>
                         )}
@@ -653,7 +650,7 @@ export default function ExpedientesTab({
                   </Badge>
                   <span className="progress" title={`${presentes} de ${obligatorios.length} documentos obligatorios`}>
                     <span className="progress-track">
-                      <span className={`progress-fill progress-fill--${tonoPorPorcentaje(progreso)}`} style={{ width: `${progreso}%` }} />
+                      <span className="progress-fill" style={{ width: `${progreso}%` }} />
                     </span>
                     <span className="progress-value tabular">
                       {presentes}/{obligatorios.length}

@@ -11,6 +11,19 @@ export const TIPOS_EXPEDIENTE = [
 export const TIPO_EXPEDIENTE_LABEL = Object.fromEntries(TIPOS_EXPEDIENTE.map((t) => [t.value, t.label]))
 
 /**
+ * Categoría del titular (DOC-08, Tabla 5: CLIENTE o PROVEEDOR). PROVEEDOR_CRITICO
+ * viene de los datos de demostración (core-service/seed_demo.py); cualquier otro
+ * valor se muestra en minúsculas y sin guiones bajos.
+ */
+const CATEGORIA_TITULAR_LABEL = { PROVEEDOR: 'Proveedor', CLIENTE: 'Cliente', PROVEEDOR_CRITICO: 'Proveedor crítico' }
+
+export function categoriaTitular(categoria) {
+  if (!categoria) return '—'
+  const texto = CATEGORIA_TITULAR_LABEL[categoria] || categoria.replaceAll('_', ' ').toLowerCase()
+  return texto.charAt(0).toUpperCase() + texto.slice(1)
+}
+
+/**
  * Catálogo oficial de tipos documentales (espejo de schemas/documento_schema.py
  * → TipoDocumentoEnum; DOC-02, Tablas 2 a 4). `grupo` es el tipo de
  * expediente en cuyo inventario aparece, para ordenar y agrupar los selectores.
@@ -44,7 +57,13 @@ export const TIPOS_DOCUMENTO = [
   { value: 'REGISTRO_SECTORIAL', label: 'Registro ante Autoridad Sectorial', corto: 'Registro', grupo: 'REGULATORIO' },
 ]
 
-export const TIPO_DOCUMENTO_LABEL = Object.fromEntries(TIPOS_DOCUMENTO.map((t) => [t.value, t.label]))
+// OTRO no se ofrece al cargar: es el tipo heredado de documentos custodiados
+// antes del catálogo actual (CHECK de la base). Se nombra para no mostrar el
+// código tal cual en tablas, historial y detalle.
+export const TIPO_DOCUMENTO_LABEL = {
+  ...Object.fromEntries(TIPOS_DOCUMENTO.map((t) => [t.value, t.label])),
+  OTRO: 'Otro documento',
+}
 export const TIPO_DOCUMENTO_CORTO = Object.fromEntries(TIPOS_DOCUMENTO.map((t) => [t.value, t.corto]))
 
 /**
@@ -148,13 +167,6 @@ export const ESTADO_DOCUMENTO = {
 
 export const getEstadoBadge = (estado) =>
   ESTADO_BADGE[estado] || { tono: 'neutral', label: estado || 'Sin estado' }
-
-/** Umbrales del semáforo de completitud documental (DOC-05). */
-export function tonoPorPorcentaje(pct) {
-  if (pct >= 100) return 'ok'
-  if (pct >= 60) return 'warn'
-  return 'bad'
-}
 
 /** Firmas binarias (Magic Bytes) para el lector client-side del Nivel 1. */
 export const MAGIC_BYTES = [

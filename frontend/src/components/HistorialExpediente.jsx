@@ -140,8 +140,8 @@ export default function HistorialExpediente({ expedienteId, documentos = [] }) {
         >
           <span className={`status-dot status-dot--${cadena.integra ? 'ok' : 'bad'}`} aria-hidden="true" />{' '}
           {cadena.integra
-            ? `Cadena de custodia íntegra · ${cadena.eventos_sellados} eventos sellados`
-            : `Cadena de custodia comprometida · ${cadena.total_hallazgos} hallazgos: consulte la verificación de la bitácora`}
+            ? `Cadena de custodia íntegra · ${cadena.eventos_sellados} ${cadena.eventos_sellados === 1 ? 'evento sellado' : 'eventos sellados'}`
+            : `Cadena de custodia comprometida · ${cadena.total_hallazgos} ${cadena.total_hallazgos === 1 ? 'hallazgo' : 'hallazgos'}: consulte la verificación de la bitácora`}
         </p>
       )}
       {eventos && eventos.length === 0 && <p className="field-hint">Sin eventos registrados.</p>}

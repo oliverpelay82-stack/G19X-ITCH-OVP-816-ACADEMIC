@@ -394,7 +394,7 @@ Una falla en un documento nunca detiene la validación del resto del expediente.
 | RNF-04 | Cifrado AES-256 de la bóveda en reposo. | Pendiente. |
 | RNF-05 | TLS 1.3 entre cliente, microservicios, base de datos y proveedor de inferencia. | Parcial: cifrado solo hacia el proveedor de inferencia. |
 | RNF-06 | Al proveedor de IA solo viaja el texto extraído, con Retención Cero de Datos. | Implementado (minimización de datos); ZDR debe activarse en la consola del proveedor. |
-| RNF-07 | Interfaz responsiva, resolución mínima de 1366 × 768. | Revisado a 1366 × 768 y 1920 × 1080 sin desbordes horizontales; la regresión visual (`scripts/regresion_visual.py`, 138 capturas en ambas resoluciones y temas) fija la apariencia de cada vista y modal. |
+| RNF-07 | Interfaz responsiva, resolución mínima de 1366 × 768. | Revisado a 1366 × 768 y 1920 × 1080 sin desbordes horizontales; la regresión visual (`scripts/regresion_visual.py`, 150 capturas en ambas resoluciones y temas, incluidos el cotejo de P2 y la cadena de custodia de P3) fija la apariencia de cada vista y modal. |
 | RNF-08 | Semáforo y hallazgos comprensibles para personal jurídico sin conocimientos técnicos. | Implementado: motivos, alertas y recomendaciones en lenguaje natural. |
 | RNF-09 | Disponibilidad ≥ 99.5 % en horario operativo. | Sin medición documentada. |
 | RNF-10 | Respaldos automatizados diarios de PostgreSQL (RPO < 24 h). | Pendiente (hoy solo respaldos manuales con `pg_dump`). |

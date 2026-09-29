@@ -4,8 +4,10 @@ Escenarios interactivos de la regresión visual (scripts/regresion_visual.py).
 Cubren estados que solo aparecen al interactuar con la interfaz: el
 veredicto del Nivel 1 en la ingesta, los filtros de Expedientes, el
 historial desplegado (HU-30), el alcance por tipo en una regla nueva, la
-ratificación humana del Nivel 5, el visor de evidencia y el panel de
-inteligencia documental tras auditar y preguntar.
+ratificación humana del Nivel 5, el visor de evidencia, el panel de
+inteligencia documental tras auditar y preguntar, la cadena de custodia
+íntegra y comprometida en el historial (P3) y el cotejo del firmante con el
+apoderado en el detalle de un contrato, acreditado y no acreditado (P2).
 
 Nada de lo que se hace aquí escribe en la base ni consume Groq:
 - La ratificación se captura sin enviarla.
@@ -13,12 +15,16 @@ Nada de lo que se hace aquí escribe en la base ni consume Groq:
   análisis semántico y chat y responde con DICTAMEN y CHAT, que ejercitan
   todas las ramas del panel. Una auditoría real escribiría un dictamen
   inmutable (y cambiaría el registro que muestran las demás capturas).
+- La verificación de la cadena y el cotejo de representación se responden
+  con datos fijos (CADENA_*, _cotejo): la base local puede no tener eventos
+  sellados ni contratos auditados, y el conteo de sellos crece entre corridas.
 - performance.now se fija para que las duraciones del stepper y del chat
   sean deterministas.
 """
 import json
 from pathlib import Path
 
+from PIL import Image
 from playwright.sync_api import Browser, Page
 
 PREPARAR = {
@@ -122,6 +128,81 @@ CHAT = {
 }
 
 
+# Cadena de custodia (P3). La base local puede no estar sellada todavía y el
+# número de eventos sellados crece con cada evento: la verificación se fija
+# para que el indicador del historial sea el mismo en todas las corridas.
+CADENA_INTEGRA = {
+    "integra": True,
+    "sellada": True,
+    "eventos_sellados": 240,
+    "eventos_previos": 43,
+    "ultimo_hash": "7d1f0c2a9b8e4f6d3c5a1b2e9f8d7c6b5a4e3d2c1b0a9f8e7d6c5b4a3f2e1d0c",
+    "ultima_secuencia": 240,
+    "verificado_en": "2026-09-29T12:00:00",
+    "algoritmo": "SHA-256 del JSON canónico (claves ordenadas, UTF-8, sin espacios)",
+    "total_hallazgos": 0,
+    "hallazgos": [],
+}
+CADENA_COMPROMETIDA = {
+    **CADENA_INTEGRA,
+    "integra": False,
+    "total_hallazgos": 2,
+    "hallazgos": [
+        {"secuencia": 118, "evento_id": 118, "problema": "hash_evento no coincide con el contenido"},
+        {"secuencia": 119, "evento_id": 119, "problema": "hash_anterior no enlaza con el evento previo"},
+    ],
+}
+
+# Representación legal (P2): el cotejo que el core expone en
+# evaluacion.representacion (motor/representacion.py), con y sin coincidencia.
+FIRMANTE = {
+    "nombre": "JUAN PÉREZ LÓPEZ",
+    "cargo": "Apoderado legal",
+    "empresa": "GRUPO BIMBO, S.A.B. DE C.V.",
+    "cita": "por GRUPO BIMBO, S.A.B. DE C.V., representada por el Lic. Juan Pérez López",
+    "cita_verificada": True,
+}
+APODERADO = {
+    "nombre": "JUAN PEREZ LOPEZ",
+    "cargo": "Apoderado general",
+    "facultades": "Actos de administración",
+    "cita": "se otorga poder general para actos de administración a favor de JUAN PEREZ LOPEZ",
+    "cita_verificada": True,
+    "documento_id": "poder-escenario",
+    "tipo_documento": "PODER_NOTARIAL",
+    "nombre_archivo_original": "poder_notarial_2025.pdf",
+    "vencido": False,
+}
+
+
+def _cotejo(documento_id: str, estado: str) -> dict:
+    base = {
+        "documento_id": documento_id,
+        "tipo_documento": "CONTRATO_SERVICIOS",
+        "nombre_archivo_original": "contrato_servicios.pdf",
+        "ratificado": False,
+        "firmantes": [FIRMANTE],
+        "apoderados": [APODERADO],
+        "coincidencias": [],
+    }
+    if estado == "ACREDITADO":
+        return {
+            **base,
+            "estado": "ACREDITADO",
+            "coincidencias": [{**APODERADO, "firmante": FIRMANTE["nombre"], "apoderado": APODERADO["nombre"]}],
+            "motivo": "JUAN PÉREZ LÓPEZ figura como Apoderado general en el poder notarial «poder_notarial_2025.pdf».",
+            "recomendacion": "Confirmar que sus facultades bastan para el acto y ratificar el dictamen del contrato.",
+        }
+    return {
+        **base,
+        "estado": "NO_ACREDITADO",
+        "apoderados": [{**APODERADO, "nombre": "MARÍA GÓMEZ RUIZ"}],
+        "motivo": "JUAN PÉREZ LÓPEZ no figura como apoderado ni representante en el poder notarial o el acta "
+        "constitutiva vigentes del expediente.",
+        "recomendacion": "Solicitar el poder notarial que acredite las facultades del firmante y custodiarlo.",
+    }
+
+
 def _responder(datos: dict):
     return lambda ruta: ruta.fulfill(status=200, content_type="application/json", body=json.dumps(datos))
 
@@ -147,6 +228,8 @@ def capturar_escenarios(navegador: Browser, carpeta: Path, ancho: int, alto: int
     pagina.route("**/api/v1/ai/documentos/*/preparar", _responder(PREPARAR))
     pagina.route("**/api/v1/ai/analisis-semantico", _responder(DICTAMEN))
     pagina.route("**/api/v1/ai/chat-documento", _responder(CHAT))
+    cadena = {"respuesta": CADENA_INTEGRA}
+    pagina.route("**/api/v1/bitacora/verificar-cadena", lambda ruta: _responder(cadena["respuesta"])(ruta))
     h._preparar(pagina, tema)
     pdf, invalido = _archivos_ingesta(h.SALIDA / "_archivos")
 
@@ -220,6 +303,18 @@ def capturar_escenarios(navegador: Browser, carpeta: Path, ancho: int, alto: int
         pagina.wait_for_timeout(500)
     h._capturar(pagina, carpeta / f"{prefijo}_historial.png")
 
+    # Cadena de custodia comprometida (P3): se pliega y se vuelve a desplegar el
+    # historial, que en cada apertura consulta la verificación.
+    cadena["respuesta"] = CADENA_COMPROMETIDA
+    resumen = pagina.locator("summary", has_text="Historial del expediente")
+    resumen.click()
+    pagina.wait_for_timeout(200)
+    resumen.click()
+    h._esperar(pagina, 1200)
+    # Solo el indicador: el historial completo es más alto que el viewport.
+    indicador = pagina.locator(".exp-historial p[title^='Último sello']")
+    _capturar_elemento(pagina, indicador, carpeta / f"{prefijo}_historial_cadena_comprometida.png")
+
     # Regla nueva con alcance por tipo documental (selector de tipos y ayuda del anexo).
     h._ir_a(pagina, "Reglas")
     pagina.locator("button", has_text="Nueva regla").first.click()
@@ -230,4 +325,64 @@ def capturar_escenarios(navegador: Browser, carpeta: Path, ancho: int, alto: int
     pagina.locator(".modal").click(position={"x": 5, "y": 5})
     h._capturar_modal(pagina, carpeta / f"{prefijo}_regla_por_tipo.png")
     h._cerrar_modal(pagina)
+    pagina.close()
+
+    _escenarios_representacion(navegador, carpeta, ancho, alto, tema, h)
+
+
+def _capturar_elemento(pagina: Page, elemento, ruta: Path) -> None:
+    """
+    Captura solo un bloque de la interfaz. Como en `_capturar_modal`, se toma
+    el viewport completo y se recorta después (con `clip`, el antialiasing de
+    algunos glifos variaba entre corridas).
+    """
+    elemento.scroll_into_view_if_needed()
+    pagina.wait_for_timeout(150)
+    caja = elemento.bounding_box()
+    pagina.screenshot(path=str(ruta), animations="disabled")
+    x, y = max(int(caja["x"]), 0), max(int(caja["y"]), 0)
+    Image.open(ruta).crop((x, y, x + int(caja["width"]), y + int(caja["height"]))).save(ruta)
+
+
+def _escenarios_representacion(navegador: Browser, carpeta: Path, ancho: int, alto: int, tema: str, h) -> None:
+    """
+    Cotejo del firmante con el apoderado (P2) en el detalle de un contrato.
+
+    La base local no tiene contratos auditados: en una página aparte se
+    presenta el primer documento de la Bóveda como contrato de servicios y se
+    responde su evaluación con el cotejo acreditado y el no acreditado. Solo
+    se interceptan lecturas; va en su propia página para no alterar las demás
+    capturas.
+    """
+    prefijo = f"{ancho}x{alto}_{tema}_int"
+    pagina: Page = navegador.new_page(viewport={"width": ancho, "height": alto})
+    pagina.add_init_script("performance.now = () => 1000")
+    estado = {"cotejo": "ACREDITADO", "documento_id": None}
+
+    def documentos(ruta):
+        lista = ruta.fetch().json()
+        if lista:
+            lista[0] = {**lista[0], "tipo_documento": "CONTRATO_SERVICIOS"}
+            estado["documento_id"] = lista[0]["id"]
+        ruta.fulfill(status=200, content_type="application/json", body=json.dumps(lista))
+
+    def expediente(ruta):
+        datos = ruta.fetch().json()
+        if estado["documento_id"]:
+            evaluacion = datos.setdefault("evaluacion", {}) or {}
+            evaluacion["representacion"] = [_cotejo(estado["documento_id"], estado["cotejo"])]
+            datos["evaluacion"] = evaluacion
+        ruta.fulfill(status=200, content_type="application/json", body=json.dumps(datos))
+
+    pagina.route("**/api/v1/documentos", documentos)
+    pagina.route("**/api/v1/expedientes/*", expediente)
+    h._preparar(pagina, tema)
+    h._ir_a(pagina, "Bóveda")
+    for cotejo in ("ACREDITADO", "NO_ACREDITADO"):
+        estado["cotejo"] = cotejo
+        pagina.locator("table tbody tr").first.locator("button").last.click()
+        h._esperar(pagina, 2000)
+        bloque = pagina.locator(".modal .registro-auditoria", has_text="Representación legal")
+        _capturar_elemento(pagina, bloque, carpeta / f"{prefijo}_cotejo_{cotejo.lower()}.png")
+        h._cerrar_modal(pagina)
     pagina.close()

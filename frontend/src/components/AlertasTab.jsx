@@ -75,6 +75,7 @@ export default function AlertasTab({ expedientes, loading, onAbrirExpediente }) 
       return sevOk && codOk && tipoOk && textoOk
     })
   }, [alertas, consulta, filtroSeveridad, filtroCodigo, filtroTipo])
+  const nExpedientes = new Set(filtradas.map((a) => a.expediente.id)).size
 
   return (
     <div className="tab-panel">
@@ -82,7 +83,7 @@ export default function AlertasTab({ expedientes, loading, onAbrirExpediente }) 
         <SearchBox
           value={busqueda}
           onChange={setBusqueda}
-          placeholder="Hallazgo, recomendación, folio o empresa…"
+          placeholder="Buscar hallazgo, folio o empresa…"
           label="Buscar alertas"
         />
         <Segmented label="Filtrar por severidad" valor={filtroSeveridad} onChange={setFiltroSeveridad} opciones={opcionesSeveridad} />
@@ -123,8 +124,8 @@ export default function AlertasTab({ expedientes, loading, onAbrirExpediente }) 
       {!loading && filtradas.length > 0 && (
         <>
           <p className="field-hint">
-            {filtradas.length} {filtradas.length === 1 ? 'alerta' : 'alertas'} en{' '}
-            {new Set(filtradas.map((a) => a.expediente.id)).size} expedientes, de la más grave a la menos grave.
+            {filtradas.length} {filtradas.length === 1 ? 'alerta' : 'alertas'} en {nExpedientes}{' '}
+            {nExpedientes === 1 ? 'expediente' : 'expedientes'}, de la más grave a la menos grave.
             {filtroTipo !== 'TODOS' && ` Tipo: ${TIPO_EXPEDIENTE_LABEL[filtroTipo]}.`}
           </p>
           <ul className="alerta-lista alerta-lista--bandeja">

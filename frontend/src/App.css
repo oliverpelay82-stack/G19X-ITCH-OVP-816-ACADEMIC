@@ -434,6 +434,17 @@
   box-shadow: var(--shadow-hairline);
 }
 
+/* Deshabilitado, el primario se lee como «falta un paso», no como un bloque
+   gris apagado: superficie atenuada con borde y texto legible. Un botón
+   deshabilitado está exento del contraste WCAG, pero su etiqueta debe leerse. */
+.btn-primary:disabled {
+  background: var(--bg-muted);
+  border-color: var(--line);
+  color: var(--text-muted);
+  box-shadow: none;
+  opacity: 1;
+}
+
 .btn-primary:hover:not(:disabled) {
   opacity: 0.88;
 }
@@ -1163,6 +1174,12 @@ select option {
   white-space: nowrap;
 }
 
+/* Nombres del catálogo que deben leerse completos (el tipo de documento en
+   el detalle del expediente): pasan a un segundo renglón en vez de recortarse. */
+.identity-name--completo {
+  white-space: normal;
+}
+
 .avatar {
   display: inline-flex;
   flex: none;
@@ -1282,23 +1299,15 @@ select option {
   overflow: hidden;
 }
 
+/* La completitud mide documentos presentes, no cumplimiento: la barra es
+   neutra para no pintar de verde un expediente No conforme con todos sus
+   obligatorios cargados. El estado lo comunica el semáforo. */
 .progress-fill {
   display: block;
   height: 100%;
   border-radius: var(--r-full);
+  background: var(--text-tertiary);
   transition: width 0.4s var(--ease);
-}
-
-.progress-fill--ok {
-  background: var(--ok-solid);
-}
-
-.progress-fill--warn {
-  background: var(--warn-solid);
-}
-
-.progress-fill--bad {
-  background: var(--bad-solid);
 }
 
 .progress-value {
@@ -1463,23 +1472,13 @@ select option {
   overflow: hidden;
 }
 
+/* Neutra por lo mismo que .progress-fill. */
 .metric-bar-fill {
   display: block;
   height: 100%;
   border-radius: var(--r-full);
+  background: var(--text-tertiary);
   transition: width 0.5s var(--ease);
-}
-
-.metric-bar-fill--ok {
-  background: var(--ok-solid);
-}
-
-.metric-bar-fill--warn {
-  background: var(--warn-solid);
-}
-
-.metric-bar-fill--bad {
-  background: var(--bad-solid);
 }
 
 /* ══════════════════════ 6. VISTAS ═══════════════════════════════ */
@@ -1582,10 +1581,13 @@ select option {
   border-radius: 0 0 var(--r-md) var(--r-md);
 }
 
+/* Estado arriba y folio debajo: en una sola línea, junto al botón, el folio
+   se recortaba a «EXP-BIM9…» a 1366 px. */
 .profile-exp {
   display: flex;
-  align-items: center;
-  gap: var(--s-2);
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
   min-width: 0;
 }
 

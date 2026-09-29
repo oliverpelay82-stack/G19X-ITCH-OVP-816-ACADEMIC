@@ -2,7 +2,6 @@ import { useMemo } from 'react'
 import { Building2, FolderKanban, Gauge, Vault } from 'lucide-react'
 import { Skeleton } from './Skeleton.jsx'
 import { Card } from './ui/index.js'
-import { tonoPorPorcentaje } from '../constants.js'
 
 const contar = (lista, prueba) => lista.reduce((n, x) => n + (prueba(x) ? 1 : 0), 0)
 
@@ -100,7 +99,7 @@ export default function MetricsCards({ titulares, expedientes, documentos, loadi
             {progreso !== undefined && (
               <span className="metric-bar" aria-hidden="true">
                 <span
-                  className={`metric-bar-fill metric-bar-fill--${tonoPorPorcentaje(progreso)}`}
+                  className="metric-bar-fill"
                   style={{ width: `${loading ? 0 : progreso}%` }}
                 />
               </span>
