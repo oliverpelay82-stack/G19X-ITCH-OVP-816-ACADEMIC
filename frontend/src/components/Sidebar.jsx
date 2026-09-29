@@ -23,7 +23,7 @@ const GRUPOS = [
 ]
 
 /** Versión del motor que se muestra en el pie (catálogo DOC-05). */
-const VERSION = 'DOC-05 Compliance v1.0.0'
+const VERSION = 'Versión 1.0.0'
 
 /**
  * Barra lateral esbelta: isotipo en micro-squircle, navegación agrupada en

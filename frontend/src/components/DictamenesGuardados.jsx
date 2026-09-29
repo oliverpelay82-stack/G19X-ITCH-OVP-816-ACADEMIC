@@ -24,10 +24,10 @@ const RESULTADO_REGLA = {
   NO_VERIFICABLE: 'warn',
 }
 
-/** Qué emitió el dictamen, cuando no fue el Nivel 4 (dictámenes de integridad y del Nivel 1). */
+/** Qué emitió el dictamen, cuando no fue el análisis con IA (integridad y validación de la carga). */
 const ORIGEN = {
-  'RIE-03': 'Integridad RIE-03',
-  NIVEL_1: 'Nivel 1 · PDF protegido',
+  'RIE-03': 'Verificación de integridad',
+  NIVEL_1: 'Validación de la carga · PDF protegido',
 }
 
 const VIGENCIA = {
@@ -118,7 +118,7 @@ function FormularioRatificacion({ dictamen, onRatificado, onCancelar }) {
         <div>
           <p className="ratificacion-title">Resolver revisión humana</p>
           <p className="ratificacion-sub">
-            Nivel 5 · la decisión prevalece sobre la del motor (RN-05) y queda en la bitácora inmutable.
+            La decisión del analista prevalece sobre la del motor y queda en la bitácora inmutable.
           </p>
         </div>
       </header>
@@ -188,7 +188,7 @@ function DictamenVigente({ dictamen, puedeRatificar, onRatificar }) {
             Ratificado
           </Badge>
         )}
-        <span className="registro-origen">{ORIGEN[dictamen.origen] || 'Nivel 4 + reglas del Nivel 2'}</span>
+        <span className="registro-origen">{ORIGEN[dictamen.origen] || 'Análisis con IA y reglas de vigencia'}</span>
         <span className="registro-fecha">
           <Momento valor={dictamen.creado_en} />
         </span>
@@ -230,7 +230,7 @@ function DictamenVigente({ dictamen, puedeRatificar, onRatificar }) {
         <div className="registro-accion">
           <p>
             <span className="status-dot status-dot--warn" aria-hidden="true" />
-            Pendiente de ratificación humana: el motor no puede cerrar este dictamen solo (Nivel 5).
+            Pendiente de ratificación: el motor no puede cerrar este dictamen sin un analista.
           </p>
           <Button compacto icono={UserCheck} onClick={onRatificar}>
             Resolver revisión humana
@@ -337,11 +337,11 @@ export function AvisoIntegridad() {
     <div className="verdict verdict--bad verdict--compact" role="alert">
       <div className="verdict-main">
         <p className="eyebrow eyebrow--icon">
-          <ShieldAlert size={12} strokeWidth={1.75} aria-hidden="true" /> Integridad RIE-03
+          <ShieldAlert size={12} strokeWidth={1.75} aria-hidden="true" /> Integridad comprometida
         </p>
         <p className="verdict-word verdict-word--sm">Documento bloqueado</p>
         <p className="verdict-reason">
-          La huella SHA-256 del archivo en la bóveda ya no coincide con la registrada en la carga. El documento no se analiza
+          La huella digital del archivo en la bóveda ya no coincide con la registrada en la carga. El documento no se analiza
           ni se entrega; recarga el archivo original para sustituirlo.
         </p>
       </div>

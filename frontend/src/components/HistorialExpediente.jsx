@@ -75,9 +75,11 @@ function describir(evento, nombres) {
         tono: estado(d.estado_nuevo).tono,
       }
     case 'ALERTA_INTEGRIDAD':
-      return { titulo: 'Integridad comprometida (RIE-03)', detalle: documento, tono: 'bad' }
+      return { titulo: 'Integridad comprometida', detalle: documento, tono: 'bad' }
     case 'ARCHIVO_PROTEGIDO':
-      return { titulo: 'PDF protegido con contraseña (Nivel 1)', detalle: documento, tono: 'bad' }
+      return { titulo: 'PDF protegido con contraseña', detalle: documento, tono: 'bad' }
+    case 'SELLO_GENESIS':
+      return { titulo: 'Inicio del sellado de la bitácora', detalle: `${d.eventos_previos ?? 0} eventos previos cubiertos por su huella`, tono: 'neutral' }
     case 'EXPORTACION_REPORTE':
       return {
         titulo: `${d.reporte === 'FICHA_CUSTODIA' ? 'Ficha de custodia' : 'Reporte'} exportado (${String(d.formato || '').toUpperCase()})`,

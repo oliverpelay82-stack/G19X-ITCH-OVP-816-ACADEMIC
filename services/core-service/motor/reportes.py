@@ -35,6 +35,7 @@ from models.bitacora import BitacoraAuditoria
 from models.dictamen import DictamenAuditoria
 from models.expediente import Expediente
 from motor.cumplimiento import EvaluacionExpediente
+from motor.redaccion import texto_llano
 
 FORMATOS = {"pdf": "application/pdf", "xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}
 
@@ -47,6 +48,36 @@ ESTADO_LEGIBLE = {
 }
 VIGENCIA_LEGIBLE = {"VIGENTE": "Vigente", "PROXIMO_A_VENCER": "Próximo a vencer", "VENCIDO": "Vencido"}
 SEVERIDAD_LEGIBLE = {"CRITICA": "Crítica", "ALTA": "Alta", "MEDIA_ALTA": "Media-Alta", "MEDIA": "Media", "BAJA": "Baja"}
+
+# Lenguaje llano en los reportes (RNF-08): los códigos internos se nombran. El
+# código original se conserva donde es evidencia (la hoja de eventos de la
+# ficha de custodia lleva el código sellado junto a su nombre).
+EVENTO_LEGIBLE = {
+    "APERTURA_EXPEDIENTE": "Apertura del expediente",
+    "INGESTA_DOCUMENTO": "Documento custodiado",
+    "EVALUACION_REGLAS": "Cambio del semáforo",
+    "DICTAMEN_IA": "Dictamen de la IA",
+    "RATIFICACION_HUMANA": "Ratificación de un analista",
+    "ALERTA_INTEGRIDAD": "Integridad comprometida",
+    "ARCHIVO_PROTEGIDO": "PDF protegido con contraseña",
+    "EXPORTACION_REPORTE": "Reporte exportado",
+    "SELLO_GENESIS": "Inicio del sellado de la bitácora",
+}
+ORIGEN_LEGIBLE = {
+    "NIVEL_4_IA": "Análisis con IA",
+    "RIE-03": "Verificación de integridad",
+    "NIVEL_1": "Validación de la carga",
+}
+RESULTADO_LEGIBLE = {
+    "CUMPLE": "cumple", "NO_CUMPLE": "no cumple", "NO_LOCALIZADO": "no localizado",
+    "NO_VERIFICABLE": "no verificado", "NO_APLICA": "no aplica", "VIGENTE": "vigente",
+    "PROXIMO_A_VENCER": "próximo a vencer", "VENCIDO": "vencido", "INDETERMINADO": "no verificable",
+}
+INTEGRIDAD_LEGIBLE = {"INTEGRO": "Íntegro", "ALTERADO": "Alterado"}
+FUENTE_LEGIBLE = {
+    "rules-service": "Catálogo de reglas vigente",
+    "respaldo-doc02": "Inventario base de documentos (el catálogo de reglas no respondió)",
+}
 
 # Paleta del sistema de diseño (neutros stone y colores de estado).
 TINTA = colors.HexColor("#1C1917")
@@ -130,7 +161,8 @@ def _evidencia(datos: DatosExpediente) -> list[dict[str, Any]]:
         if dictamen is None:
             continue
         reglas = ", ".join(
-            f"{r.get('codigo_regla')}: {r.get('resultado')}" for r in (dictamen.reglas_aplicadas or [])
+            f"{r.get('codigo_regla')}: {RESULTADO_LEGIBLE.get(r.get('resultado'), r.get('resultado'))}"
+            for r in (dictamen.reglas_aplicadas or [])
         )
         ratificacion = (
             f"{dictamen.revisado_por} ({_fecha(dictamen.revisado_en)}): {dictamen.justificacion_humana}"
@@ -141,14 +173,14 @@ def _evidencia(datos: DatosExpediente) -> list[dict[str, Any]]:
             "archivo": d.nombre_archivo_original,
             "estatus": ESTADO_LEGIBLE.get(dictamen.estatus, dictamen.estatus),
             "preliminar": ESTADO_LEGIBLE.get(dictamen.estatus_preliminar, dictamen.estatus_preliminar),
-            "origen": dictamen.origen,
+            "origen": ORIGEN_LEGIBLE.get(dictamen.origen, dictamen.origen),
             "confianza": f"{dictamen.nivel_confianza * 100:.0f} %" if dictamen.nivel_confianza is not None else "—",
             "reglas": reglas or "—",
             "hash": dictamen.hash_sha256,
             "modelo": dictamen.modelo_utilizado or "—",
             "fecha": _fecha(dictamen.creado_en),
             "ratificacion": ratificacion,
-            "observaciones": " ".join(dictamen.observaciones or []),
+            "observaciones": " ".join(texto_llano(o) for o in dictamen.observaciones or [] if o),
         })
     return filas
 
@@ -200,7 +232,8 @@ def _ficha_expediente(datos: DatosExpediente) -> list[tuple[str, Any]]:
         ("Completitud documental", _pct(ev.porcentaje_completitud)),
         ("Documentos faltantes", ", ".join(etiqueta_documento(t) for t in ev.faltantes) or "Ninguno"),
         ("Alertas vigentes", len(ev.alertas)),
-        ("Criterio de obligatoriedad", ev.fuente_obligatorios + (f" — {ev.advertencia}" if ev.advertencia else "")),
+        ("Criterio de obligatoriedad", FUENTE_LEGIBLE.get(ev.fuente_obligatorios, ev.fuente_obligatorios)
+         + (f" — {ev.advertencia}" if ev.advertencia else "")),
         ("Reporte emitido", _ahora()),
     ]
 
@@ -234,10 +267,10 @@ def expediente_xlsx(datos: DatosExpediente) -> bytes:
     ], [{**a.__dict__, "severidad": SEVERIDAD_LEGIBLE.get(a.severidad, a.severidad)} for a in datos.evaluacion.alertas])
 
     _hoja_tabla(libro.create_sheet("Bitácora"), [
-        ("fecha", "Fecha", 18), ("evento", "Evento", 24), ("usuario", "Usuario", 24),
-        ("ip", "IP de origen", 16), ("detalle", "Detalle", 90),
-    ], [{"fecha": _fecha(e.creado_en), "evento": e.evento, "usuario": e.usuario, "ip": e.ip_origen or "—",
-         "detalle": _resumen_detalle(e.detalle)} for e in datos.eventos])
+        ("fecha", "Fecha", 18), ("evento", "Evento", 30), ("usuario", "Usuario", 24),
+        ("ip", "IP de origen", 16), ("detalle", "Detalle registrado", 90),
+    ], [{"fecha": _fecha(e.creado_en), "evento": EVENTO_LEGIBLE.get(e.evento, e.evento), "usuario": e.usuario,
+         "ip": e.ip_origen or "—", "detalle": _resumen_detalle(e.detalle)} for e in datos.eventos])
     return _guardar(libro)
 
 
@@ -436,7 +469,7 @@ def expediente_pdf(datos: DatosExpediente) -> bytes:
         Spacer(1, 8),
         _ficha(_ficha_expediente(datos)[:6], e, ancho),
         Paragraph("Motivos del semáforo", e["seccion"]),
-        *[Paragraph(f"• {_esc(m)}", e["texto"]) for m in ev.motivos],
+        *[Paragraph(f"• {_esc(texto_llano(m))}", e["texto"]) for m in ev.motivos],
         Paragraph("Documentos exigidos por el catálogo de reglas", e["seccion"]),
         _tabla(
             [[f["documento"], f["requisito"], f["regla"], f["archivo"], f["estado"], f["vigencia"]]
@@ -463,7 +496,7 @@ def expediente_pdf(datos: DatosExpediente) -> bytes:
             historia.append(KeepTogether([
                 _ficha([
                     ("Documento", f"{f['documento']} — {f['archivo']}"),
-                    ("Dictamen", f"{f['estatus']} (preliminar: {f['preliminar']}, origen {f['origen']}, "
+                    ("Dictamen", f"{f['estatus']} (preliminar: {f['preliminar']}, origen: {f['origen']}, "
                                  f"confianza {f['confianza']}, {f['fecha']})"),
                     ("Reglas aplicadas", f["reglas"]),
                     ("Ratificación humana", f["ratificacion"]),
@@ -477,7 +510,8 @@ def expediente_pdf(datos: DatosExpediente) -> bytes:
         historia += [
             Paragraph("Trazabilidad (bitácora inmutable)", e["seccion"]),
             _tabla(
-                [[_fecha(ev_.creado_en), ev_.evento, ev_.usuario, ev_.ip_origen or "—"] for ev_ in datos.eventos[:40]],
+                [[_fecha(ev_.creado_en), EVENTO_LEGIBLE.get(ev_.evento, ev_.evento), ev_.usuario, ev_.ip_origen or "—"]
+                 for ev_ in datos.eventos[:40]],
                 [ancho * p for p in (0.2, 0.3, 0.3, 0.2)], e, ["Fecha", "Evento", "Usuario", "IP de origen"],
             ),
         ]
@@ -555,9 +589,9 @@ def _ficha_custodia(datos: DatosCustodia) -> list[tuple[str, Any]]:
         ("Tamaño y formato", f"{doc.tamanio_bytes} bytes · {doc.mime_type}"),
         ("Huella SHA-256 de la carga", doc.hash_sha256),
         ("Huella recalculada al emitir", datos.hash_actual or "El binario no está en la bóveda"),
-        ("Integridad (RIE-03)", "Íntegro: las huellas coinciden" if datos.integro
+        ("Integridad", "Íntegro: las huellas coinciden" if datos.integro
          else "ALTERADO: la huella ya no coincide; el documento está bloqueado"),
-        ("Versión (RF-04)", f"{posicion or '—'} de {len(datos.versiones)} · {estado_version}"),
+        ("Versión", f"{posicion or '—'} de {len(datos.versiones)} · {estado_version}"),
         ("Ficha emitida", _ahora()),
     ]
 
@@ -575,7 +609,7 @@ def _filas_versiones(datos: DatosCustodia) -> list[dict[str, Any]]:
     return [{
         "n": i, "archivo": v.nombre_archivo_original, "fecha": _fecha(v.creado_en), "hash": v.hash_sha256,
         "estado": "Vigente" if v.id == ultimo else "Sustituida",
-        "integridad": v.estado_integridad or "INTEGRO", "esta": "← esta ficha" if v.id == datos.documento.id else "",
+        "integridad": INTEGRIDAD_LEGIBLE.get(v.estado_integridad or "INTEGRO", v.estado_integridad), "esta": "← esta ficha" if v.id == datos.documento.id else "",
     } for i, v in enumerate(datos.versiones, start=1)]
 
 
@@ -584,7 +618,7 @@ def _filas_dictamenes_custodia(datos: DatosCustodia) -> list[dict[str, Any]]:
     for d in datos.dictamenes:
         filas.append({
             "fecha": _fecha(d.creado_en),
-            "origen": d.origen,
+            "origen": ORIGEN_LEGIBLE.get(d.origen, d.origen),
             "resultado": f"{ESTADO_LEGIBLE.get(d.estatus_preliminar, d.estatus_preliminar)} → "
                          f"{ESTADO_LEGIBLE.get(d.estatus, d.estatus)}",
             "confianza": f"{d.nivel_confianza * 100:.0f} %" if d.nivel_confianza is not None else "—",
@@ -600,7 +634,8 @@ def _filas_dictamenes_custodia(datos: DatosCustodia) -> list[dict[str, Any]]:
 def _filas_eventos_custodia(datos: DatosCustodia) -> list[dict[str, Any]]:
     return [{
         "secuencia": e.secuencia if e.secuencia is not None else "previo",
-        "fecha": _fecha(e.creado_en), "evento": e.evento, "usuario": e.usuario, "ip": e.ip_origen or "—",
+        "fecha": _fecha(e.creado_en), "evento": EVENTO_LEGIBLE.get(e.evento, e.evento), "codigo": e.evento,
+        "usuario": e.usuario, "ip": e.ip_origen or "—",
         "hash": e.hash_evento or "cubierto por el génesis", "detalle": _resumen_detalle(e.detalle),
     } for e in datos.eventos]
 
@@ -624,8 +659,9 @@ def ficha_custodia_xlsx(datos: DatosCustodia) -> bytes:
         ("modelo", "Modelo", 20),
     ], _filas_dictamenes_custodia(datos))
     _hoja_tabla(libro.create_sheet("Eventos"), [
-        ("secuencia", "Secuencia", 10), ("fecha", "Fecha", 17), ("evento", "Evento", 24), ("usuario", "Usuario", 22),
-        ("ip", "IP de origen", 16), ("hash", "Sello (hash_evento)", 68), ("detalle", "Detalle", 80),
+        ("secuencia", "Secuencia", 10), ("fecha", "Fecha", 17), ("evento", "Evento", 30),
+        ("codigo", "Código sellado", 22), ("usuario", "Usuario", 22), ("ip", "IP de origen", 16),
+        ("hash", "Sello del evento", 68), ("detalle", "Detalle registrado", 80),
     ], _filas_eventos_custodia(datos))
     _hoja_tabla(libro.create_sheet("Cadena"), [
         ("secuencia", "Secuencia", 10), ("evento_id", "Evento", 38), ("problema", "Hallazgo", 90),
@@ -646,14 +682,14 @@ def ficha_custodia_pdf(datos: DatosCustodia) -> bytes:
         _sello_estado(estado, sello, e, ancho),
         Spacer(1, 8),
         _ficha(_ficha_custodia(datos), e, ancho),
-        Paragraph("Versiones del documento en el expediente (RF-04)", e["seccion"]),
+        Paragraph("Versiones del documento en el expediente", e["seccion"]),
         _tabla([[f["n"], f["archivo"], f["fecha"], Paragraph(_esc(f["hash"]), e["celda_mono"]), f["estado"]]
                 for f in _filas_versiones(datos)],
                [ancho * p for p in (0.05, 0.25, 0.15, 0.42, 0.13)], e,
                ["#", "Archivo", "Ingesta", "SHA-256", "Estado"]),
     ]
     dictamenes = _filas_dictamenes_custodia(datos)
-    historia.append(Paragraph("Dictámenes y ratificaciones (RN-05)", e["seccion"]))
+    historia.append(Paragraph("Dictámenes y ratificaciones", e["seccion"]))
     if dictamenes:
         historia.append(_tabla(
             [[f["fecha"], f["origen"], f["resultado"], f["confianza"], f["huella"], f["ratificacion"]]
@@ -667,7 +703,7 @@ def ficha_custodia_pdf(datos: DatosCustodia) -> bytes:
         _tabla([[f["secuencia"], f["fecha"], f["evento"], f["usuario"], Paragraph(_esc(f["hash"]), e["celda_mono"])]
                 for f in _filas_eventos_custodia(datos)],
                [ancho * p for p in (0.09, 0.15, 0.2, 0.16, 0.4)], e,
-               ["Secuencia", "Fecha", "Evento", "Usuario", "Sello (hash_evento)"]),
+               ["Secuencia", "Fecha", "Evento", "Usuario", "Sello del evento"]),
         Paragraph("Verificación de la cadena de custodia", e["seccion"]),
         _ficha([
             ("Resultado", _texto_cadena(datos.cadena)),

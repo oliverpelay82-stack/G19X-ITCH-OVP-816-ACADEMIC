@@ -52,10 +52,17 @@ TIPOS_DOCUMENTO: dict[str, str] = {
 }
 
 
+# OTRO es el tipo heredado de documentos custodiados antes del catálogo: se
+# nombra, pero no se agrega a TIPOS_DOCUMENTO para que no se admita al cargar.
+ETIQUETA_TIPO_HEREDADO = "Otro documento"
+
+
 def etiqueta_documento(tipo: str | None) -> str:
     """Nombre legible de un tipo de documento; el código si no está en el catálogo."""
     if not tipo:
         return "Documento"
+    if tipo.upper() == "OTRO":
+        return ETIQUETA_TIPO_HEREDADO
     return TIPOS_DOCUMENTO.get(tipo.upper(), tipo)
 
 

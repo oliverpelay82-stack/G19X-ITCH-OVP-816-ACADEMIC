@@ -183,7 +183,7 @@ export default function DetalleDocumentoModal({ documento, lista, expediente, ia
         visorInicial={visorAbierto}
       >
         <KeyValueList className="inspect-grid">
-          <Dato label="Huella SHA-256 · inmutable (RIE-03)" ancho>
+          <Dato label="Huella SHA-256 · inmutable" ancho>
             <CopyChip valor={documento.hash_sha256} etiqueta="hash SHA-256" completo />
           </Dato>
           <Dato label="Titular asociado">
@@ -193,10 +193,8 @@ export default function DetalleDocumentoModal({ documento, lista, expediente, ia
             </span>
           </Dato>
           <Dato label="Tipo documental">{TIPO_DOCUMENTO_LABEL[documento.tipo_documento] || tipoCorto(documento.tipo_documento)}</Dato>
-          <Dato label="Firma binaria">
-            <span className="mono">
-              {firma.label} · {firma.firma}
-            </span>
+          <Dato label="Formato verificado">
+            <span title={`Firma binaria del archivo: ${firma.firma}`}>{firma.label}</span>
           </Dato>
           <Dato label="Tamaño · Ingesta">
             <span className="mono">

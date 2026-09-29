@@ -151,7 +151,7 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
                           <span className="identity-name">
                             {doc.nombre_archivo_original}
                             {doc.estado_integridad === 'ALTERADO' && (
-                              <Badge tono="bad" className="badge--inline" title="La huella SHA-256 no coincide con la registrada (RIE-03)">
+                              <Badge tono="bad" className="badge--inline" title="La huella digital ya no coincide con la registrada al custodiarlo">
                                 Alterado
                               </Badge>
                             )}
@@ -198,7 +198,7 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
       {ingestaAbierta && (
         <Modal
           title="Custodiar documento"
-          subtitle="Nivel 1: firma binaria, límite de tamaño y huella SHA-256"
+          subtitle="Se verifica el formato y el tamaño, y se calcula la huella digital del archivo"
           onClose={() => setIngestaAbierta(false)}
         >
           <DropZone

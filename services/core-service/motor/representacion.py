@@ -155,14 +155,14 @@ def cotejar(
         if dictamen is None:
             cotejos.append(CotejoRepresentacion(
                 **base, estado=PENDIENTE, motivo="El contrato no se ha auditado.",
-                recomendacion="Auditar el contrato para identificar a su firmante (RSC-02)."))
+                recomendacion="Auditar el contrato para identificar a su firmante."))
             continue
         if firmantes is None:
             cotejos.append(CotejoRepresentacion(
                 **base, estado=PENDIENTE,
                 motivo="El dictamen vigente del contrato no trae los datos del firmante (auditado antes del cotejo "
-                       "o con la regla RSC-02 en pausa).",
-                recomendacion="Volver a auditar el contrato con la regla RSC-02 activa."))
+                       "o con la regla de datos del firmante en pausa).",
+                recomendacion="Volver a auditar el contrato con la regla de datos del firmante activa."))
             continue
         propios = [f for f in firmantes if not f.get("empresa") or misma_empresa(f["empresa"], razon_social_titular)]
         verificados = [f for f in propios if f.get("cita_verificada")]
@@ -179,14 +179,14 @@ def cotejar(
                 motivo="Ningún documento del expediente acredita al firmante: "
                        + ", ".join(f"«{d.nombre_archivo_original}»" for d in descartados)
                        + " no pertenece al titular o su dictamen es no conforme.",
-                recomendacion="Custodiar el poder notarial vigente del firmante otorgado por el titular (RN-03)."))
+                recomendacion="Custodiar el poder notarial vigente del firmante otorgado por el titular."))
             continue
         if not fuentes and not sin_auditar:
             cotejos.append(CotejoRepresentacion(
                 **base, estado=PENDIENTE, firmantes=verificados,
                 motivo="El expediente no tiene un poder notarial ni un acta constitutiva vigentes que acrediten al "
                        "firmante.",
-                recomendacion="Custodiar el poder notarial del firmante o el acta constitutiva y auditarlos (RN-03)."))
+                recomendacion="Custodiar el poder notarial del firmante o el acta constitutiva y auditarlos."))
             continue
 
         coincidencias = [
@@ -210,7 +210,7 @@ def cotejar(
             cotejos.append(CotejoRepresentacion(
                 **base, estado=PODER_VENCIDO, firmantes=verificados, coincidencias=coincidencias,
                 motivo=f"{c['firmante']} solo figura en el {_nombre_tipo(c['tipo_documento'])} "
-                       f"«{c['nombre_archivo_original']}», que ya venció (RCV-01).",
+                       f"«{c['nombre_archivo_original']}», que ya venció.",
                 recomendacion="Custodiar el poder vigente del firmante; si el analista confirma que el poder seguía "
                               "vigente al firmar, ratificar el dictamen del contrato con esa justificación."))
         elif sin_auditar:
@@ -218,7 +218,7 @@ def cotejar(
                 **base, estado=PENDIENTE, firmantes=verificados,
                 motivo=f"{nombres} no figura en los documentos auditados; falta auditar: "
                        + ", ".join(f"«{d.nombre_archivo_original}»" for d in sin_auditar) + ".",
-                recomendacion="Auditar el poder notarial o el acta pendientes para completar el cotejo (RN-03)."))
+                recomendacion="Auditar el poder notarial o el acta pendientes para completar el cotejo."))
         else:
             cotejos.append(CotejoRepresentacion(
                 **base, estado=NO_ACREDITADO, firmantes=verificados,
@@ -226,5 +226,5 @@ def cotejar(
                        "constitutiva vigentes del expediente.",
                 recomendacion="Solicitar el poder notarial que acredite las facultades del firmante y custodiarlo; si "
                               "el analista confirma la representación por otro medio, ratificar el dictamen del "
-                              "contrato con esa justificación (RN-05)."))
+                              "contrato con esa justificación."))
     return cotejos

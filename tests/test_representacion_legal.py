@@ -20,6 +20,7 @@ Aislamiento: base de datos de pruebas plurione_compliance_test y bóveda
 temporal (tests/bd_pruebas.py).
 """
 import os
+import re
 import sys
 from datetime import date, timedelta
 
@@ -143,6 +144,11 @@ def _poder(exp_id: str, apoderado: str, vence_en: int = 200, tipo: str = "PODER_
     return doc_id
 
 
+# Códigos del catálogo (CONTRATO_SERVICIOS, NO_CONFORME), referencias a
+# requisitos («(RN-03)», «RSC-02») y niveles del pipeline en el texto.
+_JERGA = re.compile(r"\b[A-Z]{2,}_[A-Z_]+\b|\((?:RIE|RCV|RSC|RDS|RN|RF|HU)-|\bRSC-0|\bNivel(?:es)? [1-5]")
+
+
 def _evaluacion(exp_id: str) -> dict:
     return client.get(f"/api/v1/expedientes/{exp_id}").json()["evaluacion"]
 
@@ -199,7 +205,14 @@ def test_firmante_sin_facultades_alerta_hasta_que_el_analista_ratifica():
     [alerta] = _alertas(exp_id)
     assert cotejo["estado"] == "NO_ACREDITADO" and "Lic. Juan Pérez López" in cotejo["motivo"], cotejo
     assert alerta["severidad"] == "ALTA" and alerta["regla"] == "RSC-02" and alerta["documento_id"] == contrato
-    assert any("RN-03" in m for m in _evaluacion(exp_id)["motivos"])
+    evaluacion = _evaluacion(exp_id)
+    assert any("Contrato de Prestación de Servicios" in m and "representación no acreditada" in m
+               for m in evaluacion["motivos"]), evaluacion["motivos"]
+    # RNF-08: motivos y alertas en lenguaje llano, sin códigos del catálogo ni
+    # referencias a requisitos (la regla viaja en su propio campo).
+    textos = evaluacion["motivos"] + [a[c] for a in evaluacion["alertas"] for c in ("titulo", "detalle", "recomendacion")]
+    jerga = [t for t in textos if _JERGA.search(t or "")]
+    assert not jerga, jerga
 
     dictamen = client.get("/api/v1/dictamenes", params={"documento_id": contrato}).json()[0]
     r = client.post(f"/api/v1/dictamenes/{dictamen['id']}/ratificar", json={
@@ -253,3 +266,21 @@ def test_lo_que_falta_deja_el_cotejo_pendiente_sin_rechazar(escenario, rfc):
 
     assert cotejo["estado"] == "PENDIENTE" and cotejo["recomendacion"], cotejo
     assert not _alertas(exp_id)
+
+
+def test_redaccion_llana():
+    """RNF-08: las referencias a requisitos salen del texto; lo demás no cambia."""
+    from motor.redaccion import dias, fecha_legible, sin_referencias, texto_llano
+
+    assert sin_referencias("Verificar las facultades del apoderado (RN-03).") == "Verificar las facultades del apoderado."
+    assert sin_referencias("Ratificar desde el panel (Nivel 5, RF-14).") == "Ratificar desde el panel."
+    assert sin_referencias("Auditar (Niveles 3 y 4) y custodiar.") == "Auditar y custodiar."
+    assert sin_referencias("Cláusula (RSC-02-CONT) presente") == "Cláusula presente"
+    # Paréntesis que no son referencias se conservan.
+    assert sin_referencias("Constancia de Situación Fiscal (SAT) (RIE-01).") == "Constancia de Situación Fiscal (SAT)."
+    assert sin_referencias(None) is None
+    assert texto_llano("Dictamen EN_REVISION: confianza baja (RSC-01).") == "Dictamen en revisión: confianza baja."
+    assert texto_llano("El dictamen es NO_CONFORME y no CONFORME.") == "El dictamen es no conforme y no conforme."
+    assert fecha_legible(date(2026, 9, 29)) == "29 de septiembre de 2026"
+    assert fecha_legible(None) == "—"
+    assert (dias(1), dias(0), dias(12)) == ("1 día", "0 días", "12 días")

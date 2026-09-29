@@ -108,10 +108,10 @@ export const FAMILIAS_REGLA = ['RIE', 'RCV', 'RSC', 'RDS']
 
 /** Metadatos de cada familia normativa del DOC-05. */
 export const FAMILIA_META = {
-  RIE: { nombre: 'Integridad y Estructura', nivel: 'Niveles 1 y 2', clase: 'rie' },
-  RCV: { nombre: 'Cronológicas y de Vigencia', nivel: 'Nivel 2', clase: 'rcv' },
-  RSC: { nombre: 'Semánticas y Contractuales', nivel: 'Nivel 4 — IA', clase: 'rsc' },
-  RDS: { nombre: 'Dinámicas y Sectoriales', nivel: 'Configurables', clase: 'rds' },
+  RIE: { nombre: 'Integridad y Estructura', nivel: 'Carga y completitud', clase: 'rie' },
+  RCV: { nombre: 'Cronológicas y de Vigencia', nivel: 'Fechas, sin IA', clase: 'rcv' },
+  RSC: { nombre: 'Semánticas y Contractuales', nivel: 'Contenido, con IA', clase: 'rsc' },
+  RDS: { nombre: 'Dinámicas y Sectoriales', nivel: 'Definidas por el usuario', clase: 'rds' },
 }
 
 export const SEVERIDADES = ['CRITICA', 'ALTA', 'MEDIA_ALTA', 'MEDIA']
@@ -136,7 +136,7 @@ export const getSeveridadMeta = (severidad) =>
 /** Los tres microservicios del DOC-08, tal como los expone docker-compose. */
 export const SERVICIOS = [
   { key: 'core', nombre: 'Core Service', etiqueta: 'Core', puerto: 8001, alcance: 'Titulares · Expedientes · Bóveda' },
-  { key: 'rules', nombre: 'Rules Service', etiqueta: 'Rules', puerto: 8002, alcance: 'Catálogo de reglas (Nivel 2)' },
+  { key: 'rules', nombre: 'Rules Service', etiqueta: 'Rules', puerto: 8002, alcance: 'Catálogo de reglas y vigencias' },
   { key: 'ai', nombre: 'AI Service', etiqueta: 'AI Groq', puerto: 8003, alcance: 'Extracción y análisis semántico' },
 ]
 

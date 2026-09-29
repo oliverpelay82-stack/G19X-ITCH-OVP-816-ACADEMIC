@@ -276,7 +276,7 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
                   titulo={reglas.length === 0 ? 'El catálogo está vacío' : 'Sin coincidencias'}
                   descripcion={
                     reglas.length === 0
-                      ? 'Precarga el catálogo del DOC-05 o da de alta una regla dinámica (RDS-01).'
+                      ? 'Precarga el catálogo base de reglas o da de alta una regla nueva.'
                       : 'Ajusta la búsqueda o relaja los filtros de familia, estado y severidad.'
                   }
                 />
@@ -325,7 +325,7 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
                               </Tag>
                               {r.documento_principal && (
                                 <Tag
-                                  title={`Anexo obligatorio de ${TIPO_DOCUMENTO_LABEL[r.documento_principal] || r.documento_principal} (RIE-02)`}
+                                  title={`Anexo obligatorio de ${TIPO_DOCUMENTO_LABEL[r.documento_principal] || r.documento_principal}`}
                                 >
                                   Anexo de {TIPO_DOCUMENTO_CORTO[r.documento_principal] || r.documento_principal}
                                 </Tag>
@@ -363,7 +363,7 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
       {modalAbierto && (
         <Modal
           title="Nueva regla de validación"
-          subtitle="Alta dinámica de requisitos (RDS-01 / RDS-02)"
+          subtitle="Requisito nuevo del catálogo, sin modificar el sistema"
           onClose={cerrarModal}
         >
           <form className="form-grid" onSubmit={handleSubmit}>
@@ -406,7 +406,7 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
                 required
                 minLength={10}
                 rows={3}
-                placeholder="Criterio en lenguaje natural que evaluará el motor (RDS-02)"
+                placeholder="Criterio en lenguaje natural que evaluará el motor"
                 value={form.descripcion}
                 onChange={(e) => setForm({ ...form, descripcion: e.target.value })}
               />
@@ -449,7 +449,7 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
                 checked={form.documento_obligatorio}
                 onChange={(e) => setForm({ ...form, documento_obligatorio: e.target.checked })}
               />
-              <span>Completitud obligatoria (RIE-01)</span>
+              <span>Completitud obligatoria</span>
             </label>
 
             <Field as="div" etiqueta="Alcance de la regla">
@@ -494,7 +494,7 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
             </Field>
 
             <div className="field-row">
-              <Field etiqueta="Tipo de expediente" ayuda="Solo se exige en expedientes de este tipo (RF-06).">
+              <Field etiqueta="Tipo de expediente" ayuda="Solo se exige en expedientes de este tipo.">
                 <Select value={form.tipo_expediente} onChange={(e) => setForm({ ...form, tipo_expediente: e.target.value })}>
                   <option value="">Todos los tipos</option>
                   {TIPOS_EXPEDIENTE.map((t) => (
@@ -509,7 +509,7 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
                 ayuda={
                   form.aplicaTodos
                     ? 'Selecciona primero el documento del anexo.'
-                    : 'Se exige solo si el expediente contiene ese documento (RIE-02).'
+                    : 'Se exige solo si el expediente contiene ese documento.'
                 }
               >
                 <Select

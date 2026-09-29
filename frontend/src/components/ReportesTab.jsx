@@ -87,7 +87,7 @@ export default function ReportesTab({ expedientes, loading, isOnline = true, onA
       <div className="toolbar">
         <p className="toolbar-nota">
           <span className="eyebrow">Reporte global</span>
-          Indicadores, expedientes y alertas con recomendación (RF-23, RF-24).
+          Indicadores, expedientes y alertas con recomendación.
         </p>
         <div className="toolbar-action toolbar-grupo">
           <Select etiqueta="Tipo de expediente del reporte" value={tipoGlobal} onChange={(e) => setTipoGlobal(e.target.value)}>
@@ -107,7 +107,7 @@ export default function ReportesTab({ expedientes, loading, isOnline = true, onA
           <p className="eyebrow">Cumplimiento global</p>
           <p className="report-kpi tabular">{loading ? '—' : `${ind.global.toFixed(1)}%`}</p>
           <p className="field-hint">
-            {ind.conformes} de {ind.total} expedientes conformes al 100 % (RF-22).
+            {ind.conformes} de {ind.total} expedientes conformes al 100 %.
           </p>
           <ul className="dist-list">
             <Barra label="Conformes" n={ind.conformes} total={ind.total} tono="ok" />

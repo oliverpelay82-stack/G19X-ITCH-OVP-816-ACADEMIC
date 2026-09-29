@@ -25,6 +25,7 @@ Uso:  python tests/test_tipos_anexos_alertas.py   (requiere PostgreSQL)
 """
 import io
 import os
+import re
 import sys
 from datetime import date, timedelta
 from types import SimpleNamespace
@@ -36,6 +37,7 @@ BOVEDA = bd_pruebas.preparar_entorno()
 
 from fastapi.testclient import TestClient  # noqa: E402
 from openpyxl import load_workbook  # noqa: E402
+from pypdf import PdfReader  # noqa: E402
 
 from main import app  # noqa: E402
 from clients import rules_client  # noqa: E402
@@ -304,6 +306,11 @@ def prueba_reportes(ctx: dict) -> None:
               and pdf.headers["content-type"] == "application/pdf"
               and "attachment" in pdf.headers.get("content-disposition", ""),
               "Dictamen del expediente en PDF", f"{len(pdf.content)} bytes")
+    # RNF-08: el dictamen lo leen personas sin conocimientos técnicos. Los códigos
+    # de regla van en su columna; en el texto no hay códigos internos ni referencias.
+    texto_pdf = " ".join(p.extract_text() for p in PdfReader(io.BytesIO(pdf.content)).pages)
+    jerga = re.findall(r"\b[A-Z]{2,}_[A-Z_]+\b|\((?:RIE|RCV|RSC|RN|RF)-[^)]*\)|Nivel(?:es)? [1-5]", texto_pdf)
+    verificar(not jerga, "El dictamen en PDF está en lenguaje llano", ", ".join(sorted(set(jerga))) or "sin códigos")
     xlsx = client.get(f"/api/v1/reportes/expedientes/{exp_id}", params={"formato": "xlsx"})
     libro = load_workbook(io.BytesIO(xlsx.content))
     verificar(xlsx.status_code == 200 and libro.sheetnames == ["Dictamen", "Documentos", "Evidencia", "Alertas", "Bitácora"],

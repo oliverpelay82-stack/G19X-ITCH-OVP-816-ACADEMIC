@@ -254,17 +254,20 @@ def test_la_ficha_de_custodia_reune_el_ciclo_de_vida_del_documento():
     assert libro.sheetnames == ["Ficha", "Versiones", "Dictámenes", "Eventos", "Cadena"]
     ficha = {f[0]: f[1] for f in libro["Ficha"].iter_rows(min_row=3, values_only=True) if f[0]}
     assert ficha["Huella SHA-256 de la carga"] == v1["hash_sha256"] == ficha["Huella recalculada al emitir"]
-    assert ficha["Integridad (RIE-03)"].startswith("Íntegro") and "1 de 2" in ficha["Versión (RF-04)"]
+    assert ficha["Integridad"].startswith("Íntegro") and "1 de 2" in ficha["Versión"]
     assert "ÍNTEGRA" in ficha["Cadena de la bitácora"] and "no sustituye" in ficha["Alcance normativo"].lower()
     versiones = list(libro["Versiones"].iter_rows(min_row=2, values_only=True))
     assert [v[4] for v in versiones] == ["Sustituida", "Vigente"]
     [fila_dictamen] = list(libro["Dictámenes"].iter_rows(min_row=2, values_only=True))
     assert "auditora.p3" in fila_dictamen[5] and fila_dictamen[4] == "Coincide con la carga"
     eventos = list(libro["Eventos"].iter_rows(min_row=2, values_only=True))
-    assert {"INGESTA_DOCUMENTO", "DICTAMEN_IA", "RATIFICACION_HUMANA"} <= {e[2] for e in eventos}
-    assert all(isinstance(e[0], int) and len(e[5]) == 64 for e in eventos), "Cada evento con su sello"
+    # Nombre legible y, al lado, el código tal como quedó sellado (RNF-08 sin perder la evidencia).
+    assert {"INGESTA_DOCUMENTO", "DICTAMEN_IA", "RATIFICACION_HUMANA"} <= {e[3] for e in eventos}
+    assert {"Documento custodiado", "Dictamen de la IA", "Ratificación de un analista"} <= {e[2] for e in eventos}
+    assert all(isinstance(e[0], int) and len(e[6]) == 64 for e in eventos), "Cada evento con su sello"
     texto = "".join(p.extract_text() for p in PdfReader(BytesIO(pdf.content)).pages)
     assert "Ficha de Custodia Documental" in texto and "NOM-151" in texto and v1["hash_sha256"][:20] in texto
+    assert "(RF-" not in texto and "(RN-" not in texto and "INGESTA_DOCUMENTO" not in texto, "Lenguaje llano"
 
     exportaciones = client.get("/api/v1/bitacora", params={"documento_id": v1["id"],
                                                           "evento": "EXPORTACION_REPORTE"}).json()
@@ -282,7 +285,7 @@ def test_la_ficha_reporta_un_documento_alterado():
 
     assert r.status_code == 200, r.text
     ficha = {f[0]: f[1] for f in load_workbook(BytesIO(r.content))["Ficha"].iter_rows(min_row=3, values_only=True) if f[0]}
-    assert ficha["Integridad (RIE-03)"].startswith("ALTERADO")
+    assert ficha["Integridad"].startswith("ALTERADO")
     assert ficha["Huella recalculada al emitir"] != doc["hash_sha256"]
     assert client.get(f"/api/v1/documentos/{doc['id']}").json()["estado_integridad"] == "ALTERADO"
 

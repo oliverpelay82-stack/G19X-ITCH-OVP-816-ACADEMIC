@@ -202,20 +202,6 @@ function AuditarPendientes({ exp, iaOnline, onTerminado }) {
   )
 }
 
-/**
- * Los motivos del semáforo en palabras del analista (RNF-08): el motor los
- * redacta con los códigos del catálogo (ACTA_CONSTITUTIVA); aquí se leen con
- * el nombre del documento. No se calcula nada: es el mismo motivo del motor.
- */
-const ESTATUS_LEGIBLE = { CONFORME: 'conforme', EN_REVISION: 'en revisión', NO_CONFORME: 'no conforme' }
-
-function legible(motivo) {
-  return motivo.replace(
-    /\b[A-Z][A-Z0-9_]{3,}\b/g,
-    (codigo) => TIPO_DOCUMENTO_LABEL[codigo] || ESTATUS_LEGIBLE[codigo] || codigo
-  )
-}
-
 const TITULO_MOTIVOS = {
   CONFORME: 'Por qué está conforme',
   EN_REVISION: 'Por qué está en revisión',
@@ -233,7 +219,7 @@ function MotivosSemaforo({ estado, motivos = [] }) {
       </p>
       <ul>
         {motivos.map((m) => (
-          <li key={m}>{legible(m)}</li>
+          <li key={m}>{m}</li>
         ))}
       </ul>
     </div>
@@ -323,7 +309,7 @@ function DetalleExpediente({ exp, subiendo, onSubir, iaOnline, onRefresh, docume
                           )}
                           <Vigencia doc={f.doc} />
                           {f.doc.revisado_por_humano && <span className="cell-sub">Ratificado por un analista</span>}
-                          {f.doc.estado_integridad === 'ALTERADO' && <span className="cell-sub cell-bad">Alterado (RIE-03)</span>}
+                          {f.doc.estado_integridad === 'ALTERADO' && <span className="cell-sub cell-bad">Alterado</span>}
                         </span>
                       ) : (
                         <span className="cell-muted">No cargado</span>
@@ -699,7 +685,7 @@ export default function ExpedientesTab({
               </Select>
             </Field>
 
-            <Field as="div" etiqueta="Tipo de expediente" ayuda="El tipo decide qué documentos exige el catálogo de reglas (RF-06).">
+            <Field as="div" etiqueta="Tipo de expediente" ayuda="El tipo decide qué documentos exige el catálogo de reglas.">
               <div className="type-options" role="radiogroup" aria-label="Tipo de expediente">
                 {TIPOS_EXPEDIENTE.map((t) => (
                   <label key={t.value} className={`type-option ${form.tipo === t.value ? 'is-active' : ''}`}>

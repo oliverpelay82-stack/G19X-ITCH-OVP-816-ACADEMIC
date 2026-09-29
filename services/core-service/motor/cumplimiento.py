@@ -55,6 +55,7 @@ from models.documento import Documento
 from models.expediente import Expediente
 from motor import bitacora
 from motor import representacion as cotejo_legal
+from motor.redaccion import dias, fecha_legible, texto_llano
 
 CONFORME = "CONFORME"
 EN_REVISION = "EN_REVISION"
@@ -335,32 +336,39 @@ def evaluar(
     ]
     proximos = [e for e in estados if e.estado != NO_CONFORME and e.vigencia == PROXIMO_A_VENCER]
 
+    # En palabras del analista (RNF-08): nombres del catálogo, sin códigos ni
+    # referencias a requisitos; los reportes PDF y Excel los imprimen tal cual.
     if faltantes_criticos:
-        motivos.append(f"Faltan documentos obligatorios de severidad crítica: {', '.join(faltantes_criticos)} (RIE-01).")
+        motivos.append(
+            "Faltan documentos obligatorios de severidad crítica: "
+            f"{', '.join(etiqueta_documento(t) for t in faltantes_criticos)}."
+        )
     for a in anexos_faltantes:
         motivos.append(
-            f"{a['documento_principal']} requiere su anexo {a['tipo_documento']}, que no está en el expediente "
-            f"({a['codigo_regla']}, RIE-02)."
+            f"{etiqueta_documento(a['documento_principal'])} requiere su anexo "
+            f"«{etiqueta_documento(a['tipo_documento'])}», que no está en el expediente."
         )
     for e in rechazados:
         if e.estado_integridad == INTEGRIDAD_ALTERADO:
-            causa = "alteración criptográfica (RIE-03)"
+            causa = "el archivo cambió después de custodiarse (su huella digital ya no coincide)"
         elif e.vigencia == VENCIDO:
-            causa = f"vencido desde el {e.fecha_caducidad.isoformat()} (RN-02)"
+            causa = f"vencido desde el {fecha_legible(e.fecha_caducidad)}"
         elif e.dictamen_id and dictamenes[e.documento_id].origen == ORIGEN_NIVEL_1:
-            causa = "archivo protegido con contraseña, no procesable (Nivel 1)"
+            causa = "archivo protegido con contraseña, no se puede leer"
         else:
-            causa = "dictamen NO_CONFORME"
-        motivos.append(f"{e.tipo_documento} ({e.nombre_archivo_original}): {causa}.")
+            causa = "dictamen no conforme"
+        motivos.append(f"{etiqueta_documento(e.tipo_documento)} ({e.nombre_archivo_original}): {causa}.")
     if faltantes_no_criticos:
-        motivos.append(f"Faltan documentos obligatorios: {', '.join(faltantes_no_criticos)}.")
+        motivos.append(
+            f"Faltan documentos obligatorios: {', '.join(etiqueta_documento(t) for t in faltantes_no_criticos)}."
+        )
     for e in pendientes:
-        causa = "sin auditar" if e.estado == SIN_DICTAMEN else "pendiente de ratificación humana (Nivel 5)"
-        motivos.append(f"{e.tipo_documento} ({e.nombre_archivo_original}): {causa}.")
+        causa = "sin auditar" if e.estado == SIN_DICTAMEN else "pendiente de ratificación por un analista"
+        motivos.append(f"{etiqueta_documento(e.tipo_documento)} ({e.nombre_archivo_original}): {causa}.")
     for e in proximos:
         motivos.append(
-            f"{e.tipo_documento} ({e.nombre_archivo_original}): vence el {e.fecha_caducidad.isoformat()}, "
-            f"en {e.dias_para_vencer} días (RCV-01)."
+            f"{etiqueta_documento(e.tipo_documento)} ({e.nombre_archivo_original}): vence el "
+            f"{fecha_legible(e.fecha_caducidad)}, en {dias(e.dias_para_vencer)}."
         )
 
     if faltantes_criticos or rechazados or anexos_faltantes:
@@ -376,8 +384,8 @@ def evaluar(
     cotejos = cotejo_legal.cotejar(titular.razon_social if titular else None, vigentes, dictamenes, vigencias)
     for c in cotejos:
         if c.estado in (cotejo_legal.NO_ACREDITADO, cotejo_legal.PODER_VENCIDO) and not c.ratificado:
-            motivos.append(f"{c.tipo_documento} ({c.nombre_archivo_original}): representación no acreditada. "
-                           f"{c.motivo} (RN-03).")
+            motivos.append(f"{etiqueta_documento(c.tipo_documento)} ({c.nombre_archivo_original}): "
+                           f"representación no acreditada. {c.motivo}")
 
     alertas = _alertas(obligatorios, anexos_faltantes, estados, dictamenes, vigencias, vigentes, cotejos)
 
@@ -421,10 +429,10 @@ def _alertas(
             codigo=ALERTA_DOCUMENTO_FALTANTE,
             severidad=o["severidad"] or "MEDIA",
             titulo=f"Falta: {nombre}",
-            detalle=f"El catálogo de reglas exige este documento para el expediente ({o['codigo_regla']}).",
+            detalle="El catálogo de reglas exige este documento para los expedientes de este tipo.",
             recomendacion=(
                 f"Solicitar al titular {nombre} y custodiarlo en el expediente. Mientras falte, el expediente "
-                "no puede obtener estatus de conforme (RIE-01)."
+                "no puede quedar conforme."
             ),
             tipo_documento=o["tipo_documento"],
             regla=o["codigo_regla"],
@@ -438,7 +446,7 @@ def _alertas(
             codigo=ALERTA_ANEXO_FALTANTE,
             severidad=a["severidad"] or "ALTA",
             titulo=f"Anexo ausente: {anexo}",
-            detalle=f"{principal} requiere este anexo; sin él, el documento principal queda invalidado (RIE-02).",
+            detalle=f"{principal} requiere este anexo; sin él, el documento principal no es válido.",
             recomendacion=(
                 f"Custodiar en el expediente el documento «{anexo}» vinculado a {principal}"
                 + (f" ({doc_principal.nombre_archivo_original})" if doc_principal else "")
@@ -460,8 +468,8 @@ def _alertas(
                 severidad="CRITICA",
                 titulo=f"Documento alterado: {nombre}",
                 detalle=(
-                    f"La huella SHA-256 de «{e.nombre_archivo_original}» ya no coincide con la registrada en la carga "
-                    "(RIE-03). El documento está bloqueado."
+                    f"La huella digital de «{e.nombre_archivo_original}» ya no coincide con la registrada al "
+                    "custodiarlo: el archivo cambió después de su carga. El documento está bloqueado."
                 ),
                 recomendacion=(
                     "Recargar el archivo original desde su fuente (sustituye al alterado) y revisar en la bitácora "
@@ -487,8 +495,8 @@ def _alertas(
                 severidad="ALTA",
                 titulo=f"Documento vencido: {nombre}",
                 detalle=(
-                    f"«{e.nombre_archivo_original}» venció el {vigencia.fecha_caducidad.isoformat()} "
-                    f"(hace {abs(vigencia.dias)} días)."
+                    f"«{e.nombre_archivo_original}» venció el {fecha_legible(vigencia.fecha_caducidad)} "
+                    f"(hace {dias(abs(vigencia.dias))})."
                 ),
                 recomendacion=recomendacion,
                 tipo_documento=e.tipo_documento,
@@ -513,8 +521,8 @@ def _alertas(
                     codigo=ALERTA_DICTAMEN_NO_CONFORME,
                     severidad="ALTA",
                     titulo=f"Dictamen no conforme: {nombre}",
-                    detalle=f"{incumplida.get('detalle') or incumplida.get('nombre_regla')}{cita}",
-                    recomendacion=incumplida["recomendacion"],
+                    detalle=f"{texto_llano(incumplida.get('detalle') or incumplida.get('nombre_regla'))}{cita}",
+                    recomendacion=texto_llano(incumplida["recomendacion"]),
                     tipo_documento=e.tipo_documento, regla=incumplida.get("codigo_regla"),
                     documento_id=e.documento_id,
                 ))
@@ -532,13 +540,14 @@ def _alertas(
             else:
                 recomendacion = (
                     "Revisar las observaciones del dictamen y custodiar una versión corregida del documento; si el "
-                    "hallazgo es improcedente, ratificarlo con justificación desde el panel de auditoría (Nivel 5)."
+                    "hallazgo es improcedente, ratificarlo con una justificación desde el panel de auditoría del "
+                    "documento."
                 )
             alertas.append(Alerta(
                 codigo=ALERTA_DICTAMEN_NO_CONFORME,
                 severidad="ALTA",
                 titulo=f"Dictamen no conforme: {nombre}",
-                detalle=observacion or "El dictamen del documento es NO_CONFORME.",
+                detalle=texto_llano(observacion) or "El dictamen del documento es no conforme.",
                 recomendacion=recomendacion,
                 tipo_documento=e.tipo_documento, documento_id=e.documento_id,
             ))
@@ -557,8 +566,9 @@ def _alertas(
                     severidad=regla.get("severidad") or "MEDIA_ALTA",
                     titulo=f"{regla.get('nombre_regla') or regla.get('codigo_regla')}: "
                            f"{'no localizado' if verificable else 'no verificado'} en {nombre}",
-                    detalle=regla.get("detalle") or "El elemento no se localizó en el texto del documento.",
-                    recomendacion=regla.get("recomendacion")
+                    detalle=texto_llano(regla.get("detalle"))
+                    or "El elemento no se localizó en el texto del documento.",
+                    recomendacion=texto_llano(regla.get("recomendacion"))
                     or "Revisar el documento y, si el elemento falta, solicitar la versión completa al titular.",
                     tipo_documento=e.tipo_documento, regla=regla.get("codigo_regla"), documento_id=e.documento_id,
                 ))
@@ -571,12 +581,12 @@ def _alertas(
                     severidad=severidad,
                     titulo=f"Próximo a vencer: {nombre}",
                     detalle=(
-                        f"«{e.nombre_archivo_original}» vence el {vigencia.fecha_caducidad.isoformat()} "
-                        f"({vigencia.dias} días)."
+                        f"«{e.nombre_archivo_original}» vence el {fecha_legible(vigencia.fecha_caducidad)} "
+                        f"(en {dias(vigencia.dias)})."
                     ),
                     recomendacion=(
-                        f"Iniciar la renovación de {nombre} antes del {vigencia.fecha_caducidad.isoformat()} para "
-                        "que el expediente no pase a no conforme."
+                        f"Iniciar la renovación de {nombre} antes del {fecha_legible(vigencia.fecha_caducidad)} "
+                        "para que el expediente no pase a no conforme."
                     ),
                     tipo_documento=e.tipo_documento, regla="RCV-01", documento_id=e.documento_id,
                 ))
@@ -592,10 +602,11 @@ def _alertas(
                 codigo=ALERTA_REVISION_HUMANA,
                 severidad="MEDIA",
                 titulo=f"Pendiente de ratificación: {nombre}",
-                detalle=motivo or "El motor no pudo resolver el dictamen de forma automática (confianza o vigencia).",
+                detalle=texto_llano(motivo)
+                or "El motor no pudo resolver el dictamen de forma automática (confianza o vigencia).",
                 recomendacion=(
-                    "Un analista debe confirmar o corregir el dictamen con una justificación desde el panel de "
-                    "auditoría (Nivel 5, RF-14)."
+                    "Un analista debe confirmar o corregir el dictamen, con una justificación, desde el panel de "
+                    "auditoría del documento."
                 ),
                 tipo_documento=e.tipo_documento, documento_id=e.documento_id,
             ))
@@ -605,8 +616,8 @@ def _alertas(
                 severidad="MEDIA",
                 titulo=f"Sin auditar: {nombre}",
                 detalle=f"«{e.nombre_archivo_original}» está custodiado pero aún no tiene dictamen.",
-                recomendacion="Ejecutar la auditoría con IA del documento desde la Bóveda, o «Auditar pendientes» "
-                              "en el expediente (Niveles 3 y 4).",
+                recomendacion="Ejecutar la auditoría del documento desde la Bóveda, o «Auditar pendientes» "
+                              "en el expediente.",
                 tipo_documento=e.tipo_documento, documento_id=e.documento_id,
             ))
 

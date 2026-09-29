@@ -67,7 +67,7 @@ export default function CotejoRepresentacion({ doc, recarga = 0 }) {
 
   return (
     <div className="registro-auditoria">
-      <h5 className="section-title section-title--sm">Representación legal · RN-03</h5>
+      <h5 className="section-title section-title--sm">Representación legal</h5>
       {error && <p className="field-hint">No se pudo consultar el cotejo: {error}</p>}
       {!error && !cotejo && <p className="field-hint">Este documento no es el contrato vigente de su tipo en el expediente.</p>}
       {cotejo && (
@@ -75,7 +75,7 @@ export default function CotejoRepresentacion({ doc, recarga = 0 }) {
           <header className="registro-head">
             <Badge tono={estado.tono}>{estado.label}</Badge>
             {cotejo.ratificado && <Badge>Ratificado</Badge>}
-            <span className="registro-origen">Cotejo determinista · RSC-02</span>
+            <span className="registro-origen">Cotejo automático del firmante con los apoderados</span>
           </header>
           <KeyValueList className="registro-grid registro-grid--cotejo">
             <KeyValue etiqueta="Firmante del titular">

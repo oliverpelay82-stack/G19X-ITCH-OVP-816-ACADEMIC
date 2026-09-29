@@ -125,7 +125,7 @@ export default function DropZone({
       {analizando && (
         <div className="analysis analysis--loading">
           <Loader2 className="spin" size={14} />
-          <span>Calculando huella SHA-256…</span>
+          <span>Calculando la huella digital…</span>
         </div>
       )}
 

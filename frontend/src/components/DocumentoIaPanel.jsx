@@ -10,7 +10,7 @@ import { analizarDocumento, getVisorDocumento, prepararDocumento, preguntarSobre
 import { TIPO_DOCUMENTO_LABEL } from '../constants.js'
 import { formatFechaCorta } from '../utils/format.js'
 
-const MODELO_POR_DEFECTO = 'Groq Qwen 27B'
+const MODELO_POR_DEFECTO = 'Modelo de lenguaje'
 
 /** Catálogo del Nivel 4 (espejo de TIPOS_DOCUMENTALES en analisis_semantico.py). */
 const TIPO_IA_LABEL = {
@@ -76,9 +76,9 @@ const RESULTADO_VIGENCIA = {
  * extrae el modelo.
  */
 const ETAPAS = [
-  { id: 'lectura', label: 'Lectura', nivel: 'Nivel 3' },
-  { id: 'analisis', label: 'Análisis semántico', nivel: 'Nivel 4' },
-  { id: 'reglas', label: 'Reglas de vigencia', nivel: 'Nivel 2' },
+  { id: 'lectura', label: 'Lectura', nivel: 'Texto del archivo' },
+  { id: 'analisis', label: 'Análisis semántico', nivel: 'Con IA' },
+  { id: 'reglas', label: 'Reglas de vigencia', nivel: 'Sin IA' },
 ]
 
 const ETAPAS_INICIALES = Object.fromEntries(ETAPAS.map((e) => [e.id, { estado: 'pendiente', detalle: '' }]))
@@ -94,7 +94,7 @@ function fallarEnCascada(idEtapa, detalle) {
   for (const posterior of ETAPAS.slice(i + 1)) {
     cambios[posterior.id] = {
       estado: 'omitido',
-      detalle: `Cancelado: falló ${ETAPAS[i].label.toLowerCase()} (${ETAPAS[i].nivel})`,
+      detalle: `Cancelado: falló ${ETAPAS[i].label.toLowerCase()}`,
     }
   }
   return cambios
@@ -105,23 +105,23 @@ const MAX_TURNOS_HISTORIAL = 6
 
 /* ── Utilidades ─────────────────────────────────────────────────── */
 
-/** Nombre legible del modelo: "qwen/qwen3.8-27b" → "Groq Qwen 3.8 (27B)". */
+/** Nombre legible del modelo: "qwen/qwen3.8-27b" → "Qwen 3.8 (27B)". */
 function nombreModelo(modelo) {
   if (!modelo) return MODELO_POR_DEFECTO
   // Groq antepone el proveedor del modelo ("qwen/"); para mostrarlo sobra.
   const id = modelo.split('/').pop()
   const partes = /^([a-z]+)-?([\d.]+)-(\d+b)$/i.exec(id)
-  if (!partes) return `Groq ${id}`
+  if (!partes) return id
   const [, familia, version, tamanio] = partes
-  return `Groq ${familia.charAt(0).toUpperCase()}${familia.slice(1)} ${version} (${tamanio.toUpperCase()})`
+  return `${familia.charAt(0).toUpperCase()}${familia.slice(1)} ${version} (${tamanio.toUpperCase()})`
 }
 
 /** Traduce los fallos del ai-service a un toast accionable para el operador. */
 function avisarFallo(toast, err, contexto) {
   if (err?.status === 0) {
-    toast.error('ai-service sin respuesta', 'El microservicio de IA (:8003) no está disponible. Verifica que esté corriendo.')
+    toast.error('El análisis con IA no responde', 'El servicio de análisis no está disponible. Verifica que esté en marcha.')
   } else if (err?.status === 503) {
-    toast.alerta('Groq no disponible', err.message)
+    toast.alerta('El proveedor de IA no está disponible', err.message)
   } else if (err?.status === 502) {
     toast.alerta('Respuesta inválida del modelo', `${err.message} Intenta de nuevo en unos segundos.`)
   } else {
@@ -497,10 +497,10 @@ function EstadoLectura({ lectura, contexto }) {
               : 'El resto se reconocerá en la próxima consulta.'
           }`}
         >
-          Lectura parcial · {pendientes} págs. pendientes{lectura.lectura_completa_en_curso ? ' (completándose)' : ''}
+          Lectura parcial: {pendientes === 1 ? 'falta 1 página' : `faltan ${pendientes} páginas`}{lectura.lectura_completa_en_curso ? ' (en curso)' : ''}
         </Badge>
       )}
-      {recortado && <Badge title="Ningún fragmento coincidió con la consulta: el modelo vio el inicio del documento.">Contexto recortado</Badge>}
+      {recortado && <Badge title="Ningún fragmento coincidió con la consulta: el modelo vio el inicio del documento.">Se analizó el inicio del documento</Badge>}
     </div>
   )
 }
@@ -619,12 +619,12 @@ function TextoModelo({ texto, citas = [] }) {
   })
 }
 
-/** Micro-meta de una respuesta: tiempo total y proveedor, con el modelo en el tooltip. */
+/** Micro-meta de una respuesta: tiempo total, con el modelo en el tooltip. */
 function MetaInferencia({ modelo, duracion }) {
   return (
     <span className="inference-meta" title={nombreModelo(modelo)}>
       <Zap size={11} strokeWidth={1.75} aria-hidden="true" />
-      <span className="tabular">{formatDuracion(duracion)}</span> · Groq LPU
+      <span className="tabular">{formatDuracion(duracion)}</span> · análisis con IA
     </span>
   )
 }
@@ -743,7 +743,7 @@ function DictamenIa({ dictamen, expediente, tipoRegistrado, duracion }) {
           </p>
           {dictamen.requiere_revision_humana && (
             <div className="badge-row">
-              <Badge tono="warn">Revisión humana · Nivel 5</Badge>
+              <Badge tono="warn">Requiere revisión de un analista</Badge>
             </div>
           )}
         </div>
@@ -849,7 +849,7 @@ function AuditoriaIa({ doc, expediente, iaOnline, onCambio, onOcupado }) {
             .filter(Boolean)
             .join(' · '),
         },
-        analisis: { estado: 'activo', detalle: 'Extrayendo datos · Groq LPU…' },
+        analisis: { estado: 'activo', detalle: 'Extrayendo datos con IA…' },
         reglas: { estado: 'espera', detalle: 'Espera las fechas extraídas' },
       })
 
@@ -862,7 +862,7 @@ function AuditoriaIa({ doc, expediente, iaOnline, onCambio, onOcupado }) {
       marcar({
         analisis: {
           estado: 'hecho',
-          detalle: `Groq LPU · ${(resultado?.modelo_utilizado || '').split('/').pop()} · ${formatDuracion(resultado?.tiempos_ms?.inferencia)}`,
+          detalle: `${nombreModelo(resultado?.modelo_utilizado)} · ${formatDuracion(resultado?.tiempos_ms?.inferencia)}`,
         },
         reglas: detalleReglas(resultado?.vigencia_nivel_2),
       })
@@ -882,7 +882,7 @@ function AuditoriaIa({ doc, expediente, iaOnline, onCambio, onOcupado }) {
         setAlterado(true)
         setRecarga((n) => n + 1)
         onCambio?.()
-        toast.error('Integridad comprometida (RIE-03)', err.message)
+        toast.error('Integridad comprometida', err.message)
       } else {
         avisarFallo(toast, err, 'No se pudo auditar el documento')
       }
@@ -893,8 +893,9 @@ function AuditoriaIa({ doc, expediente, iaOnline, onCambio, onOcupado }) {
     <div className="ai-view">
       <div className="ai-cta">
         <p className="ai-cta-desc">
-          Clasifica el documento, coteja su titularidad, verifica la vigencia con las reglas RCV y localiza los
-          elementos que el catálogo exige a su tipo (RSC). A Groq solo viaja el texto extraído, nunca el archivo.
+          Clasifica el documento, coteja su titularidad, verifica la vigencia con las reglas del catálogo y localiza
+          los elementos que el catálogo exige a su tipo. Al proveedor de IA solo viaja el texto extraído, nunca el
+          archivo.
         </p>
         <Button
           variante={dictamen ? 'secondary' : 'primary'}
@@ -902,7 +903,7 @@ function AuditoriaIa({ doc, expediente, iaOnline, onCambio, onOcupado }) {
           cargando={analizando}
           onClick={auditar}
           disabled={!iaOnline || alterado}
-          title={alterado ? 'Documento bloqueado por RIE-03' : iaOnline ? undefined : 'El ai-service (:8003) no responde'}
+          title={alterado ? 'Documento bloqueado: el archivo cambió después de custodiarse' : iaOnline ? undefined : 'El servicio de análisis con IA no responde'}
         >
           {analizando ? 'Auditando…' : dictamen ? 'Volver a auditar' : 'Auditar documento'}
         </Button>
@@ -1110,7 +1111,7 @@ export default function DocumentoIaPanel({ doc, expediente, iaOnline = true, onC
       <header className="ai-panel-head">
         <div>
           <h4 className="section-title">Inteligencia documental</h4>
-          <p className="section-desc">Groq LPU · solo texto extraído</p>
+          <p className="section-desc">Clasificación y verificación del contenido con IA</p>
         </div>
         <Segmented role="tablist" label="Vista del panel de IA" valor={vista} onChange={setVista} opciones={VISTAS} />
       </header>
