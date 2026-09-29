@@ -150,6 +150,6 @@ Contexto de calendario: según la Tabla 8 del DOC-07, el 29 de septiembre corres
 
 ## 4. Decisiones tomadas sobre este análisis (29/09/2026)
 
-- **C6 se resuelve dentro del Lote 3 de la revisión del frontend:** el core calculará el índice de cumplimiento del DOC-05 (reglas cumplidas ÷ reglas evaluadas, con bloqueo por criticidad) como un campo nuevo de la evaluación, sin romper contratos de la API, y el tablero dejará de presentar la completitud documental como si fuera cumplimiento.
+- **C6 se resuelve dentro del Lote 3 de la revisión del frontend** (resuelto el mismo 29/09/2026; PRD §10.5): el core calculará el índice de cumplimiento del DOC-05 (reglas cumplidas ÷ reglas evaluadas, con bloqueo por criticidad) como un campo nuevo de la evaluación, sin romper contratos de la API, y el tablero dejará de presentar la completitud documental como si fuera cumplimiento.
 - **El Módulo 7 (autenticación, usuarios y roles) queda para el final del proyecto.** Hasta entonces el trabajo se concentra en el frontend (lotes 0 a 5 aprobados).
 - Los demás huecos quedan registrados aquí como insumo de las siguientes iteraciones; cada uno se propondrá para aprobación antes de implementarse.

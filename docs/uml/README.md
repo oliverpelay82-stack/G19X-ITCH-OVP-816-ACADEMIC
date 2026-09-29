@@ -1,6 +1,6 @@
-# Diagramas UML de las extensiones PLUS
+# Diagramas UML de los requerimientos implementados después de la versión 1.2 del PRD
 
-Diagramas en PlantUML (`.puml`) de los requerimientos que se agregan al producto después de la versión 1.2 del [PRD](../PRD.md). Cada diagrama se escribe **antes** de implementar su requerimiento y cita en su encabezado los requerimientos (RF, HU, reglas) que refleja y el archivo donde se implementa.
+Diagramas en PlantUML (`.puml`) de las extensiones PLUS y de los requerimientos de la documentación que se implementan después de la versión 1.2 del [PRD](../PRD.md) (C6: modelo de puntuación del DOC-05, detectado en el [análisis de brechas](../ANALISIS_BRECHAS_MOTOR.md)). Cada diagrama se escribe **antes** de implementar su requerimiento y cita en su encabezado los requerimientos (RF, HU, reglas) que refleja y el archivo donde se implementa.
 
 Estos diagramas complementan los del DOCUMENTO GENERAL (Cap. IV, Figuras 1–6, flujos F1–F6 del PRD §6); no lo sustituyen ni lo modifican. Los que dicen «Actualiza F*n*» describen la versión vigente de ese flujo.
 
@@ -16,6 +16,7 @@ Estos diagramas complementan los del DOCUMENTO GENERAL (Cap. IV, Figuras 1–6, 
 | P3 — Custodia sellada | [p3-casos-de-uso-custodia.puml](p3-casos-de-uso-custodia.puml) | Casos de uso | F6 y bitácora | §21.3 PLUS-04 a PLUS-06; HU-39 a HU-41 | MR-10, MR-11, MR-21 |
 | P3 — Custodia sellada | [p3-actividad-sellado-verificacion.puml](p3-actividad-sellado-verificacion.puml) | Actividades | Bitácora (RF-27) | PLUS-04, PLUS-05 | MR-21 |
 | P3 — Custodia sellada | [p3-actividad-ficha-custodia.puml](p3-actividad-ficha-custodia.puml) | Actividades | Actualiza F6 | PLUS-06; RF-23, RF-24 | MR-10, MR-21 |
+| C6 — Índice de cumplimiento (DOC-05, no PLUS) | [c6-actividad-indice-cumplimiento.puml](c6-actividad-indice-cumplimiento.puml) | Actividades | Actualiza F5 y F6 | §10.5; RF-19, RF-22, HU-12, HU-26; RN-01, RN-05 | MR-12 |
 
 ## Generar las imágenes
 

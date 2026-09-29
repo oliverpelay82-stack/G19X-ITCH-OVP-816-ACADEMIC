@@ -9,7 +9,7 @@
 | Línea de negocio | Portafolio de soluciones LegalTech de PluriOne |
 | Patrocinador de negocio | Lic. Juan Méndez Herrera, Director Comercial (asesor empresarial y Product Owner) |
 | Elaborado por | Oliver Villanueva Pelay, residente — Instituto Tecnológico de Chilpancingo |
-| Versión del documento | 1.4 — 29 de septiembre de 2026 (1.3: P2; 1.2: P1; 1.1: 28 de septiembre; 1.0: 27 de septiembre de 2026) |
+| Versión del documento | 1.5 — 29 de septiembre de 2026 (1.4: P3; 1.3: P2; 1.2: P1; 1.1: 28 de septiembre; 1.0: 27 de septiembre de 2026) |
 | Documento hermano | [PRD.md](PRD.md) — requerimientos del producto |
 
 > **Fuentes.** Este MRD se construye exclusivamente con el anteproyecto de residencia, los entregables DOC-01 a DOC-08 ([ESPECIFICACIONES_DOC01_A_DOC08.txt](ESPECIFICACIONES_DOC01_A_DOC08.txt)) y el DOCUMENTO GENERAL («DG»). La información de mercado que esas fuentes no contienen —tamaño de mercado, precio o modelo comercial— no se estima: se declara en la [sección 13](#13-información-de-mercado-no-documentada) como pendiente de definir con PluriOne.
@@ -363,7 +363,7 @@ Derivados de los objetivos y umbrales documentados [Anteproyecto; DG Caps. IV, V
 | MR-09 Decisión humana en casos dudosos | RF-14, RN-05, HU-21, HU-22 | Implementado |
 | MR-10 Evidencia para auditorías | RF-23, RF-27, HU-28, HU-30 | Implementado (dictamen exportable, bitácora inmutable y su historial en el detalle del expediente) |
 | MR-11 Detección de alteraciones | RF-03, RIE-03, HU-08 | Implementado |
-| MR-12 Semáforo y alertas con acción correctiva | RF-18, RF-19, RF-21, HU-15, HU-16, HU-27 | Implementado |
+| MR-12 Semáforo y alertas con acción correctiva | RF-18, RF-19, RF-21, HU-15, HU-16, HU-27; índice de cumplimiento del DOC-05 (PRD §10.5) | Implementado, con el índice de cumplimiento del DOC-05 (C6 del análisis de brechas) |
 | MR-13 Reportes PDF y Excel | RF-22, RF-24, HU-26, HU-29 | Implementado |
 | MR-14 Notificación por correo | RF-20, HU-17 | Pendiente |
 | MR-15 Acceso por rol | RF-25, RF-26, HU-05, HU-06, HU-31 | Pendiente |

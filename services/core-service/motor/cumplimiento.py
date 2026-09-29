@@ -140,6 +140,34 @@ class Alerta:
 
 
 @dataclass
+class ReglaEvaluada:
+    """Una evaluación del índice de cumplimiento (DOC-05, PRD §10.5)."""
+    regla: str                         # código del catálogo (RIE-01-ACTA, RSC-ACTA-RPC…) o de la verificación
+    nombre: str                        # en lenguaje llano (RNF-08)
+    resultado: str                     # CUMPLIDA, INCUMPLIDA o PENDIENTE
+    tipo_documento: str | None = None
+    documento_id: str | None = None
+    bloqueante: bool = False           # incumplida crítica: obligatorio crítico ausente, vencido o alterado
+
+
+@dataclass
+class IndiceCumplimiento:
+    """
+    Modelo de puntuación del DOC-05: reglas cumplidas / reglas aplicables × 100.
+    Las pendientes cuentan en el denominador (RDS-03: sin validar, el expediente
+    no alcanza el 100 %). Sin reglas aplicables, el porcentaje no tiene valor.
+    """
+    porcentaje: float | None
+    cumplidas: int
+    incumplidas: int
+    pendientes: int
+    aplicables: int
+    bloqueado: bool
+    bloqueos: list[str] = field(default_factory=list)
+    reglas: list[ReglaEvaluada] = field(default_factory=list)
+
+
+@dataclass
 class EvaluacionExpediente:
     estado: str
     porcentaje_completitud: float
@@ -155,6 +183,8 @@ class EvaluacionExpediente:
     alertas: list[Alerta] = field(default_factory=list)
     # P2: cotejo del firmante de cada contrato con los apoderados del expediente (RN-03).
     representacion: list[cotejo_legal.CotejoRepresentacion] = field(default_factory=list)
+    # C6: índice de cumplimiento del DOC-05 (PRD §10.5).
+    indice_cumplimiento: IndiceCumplimiento | None = None
 
 
 @dataclass
@@ -403,6 +433,150 @@ def evaluar(
         anexos_faltantes=anexos_faltantes,
         alertas=alertas,
         representacion=cotejos,
+        indice_cumplimiento=indice_cumplimiento(obligatorios, estados, dictamenes, vigencias, cotejos),
+    )
+
+
+CUMPLIDA = "CUMPLIDA"
+INCUMPLIDA = "INCUMPLIDA"
+PENDIENTE = "PENDIENTE"
+# Unidades del índice que no son una regla del catálogo (se presentan sin código).
+UNIDADES_SIN_CODIGO = frozenset({"AUDITORIA", "TITULARIDAD", "NIVEL_1"})
+
+# Resultado de cada elemento de contenido (RSC/RDS) del dictamen en el índice.
+_RESULTADO_CONTENIDO = {
+    "CUMPLE": CUMPLIDA,
+    "NO_CUMPLE": INCUMPLIDA,
+    "NO_LOCALIZADO": PENDIENTE,
+    "NO_VERIFICABLE": PENDIENTE,
+}
+_RESULTADO_COTEJO = {
+    cotejo_legal.ACREDITADO: CUMPLIDA,
+    cotejo_legal.NO_ACREDITADO: INCUMPLIDA,
+    cotejo_legal.PODER_VENCIDO: INCUMPLIDA,
+    cotejo_legal.PENDIENTE: PENDIENTE,
+}
+
+
+def indice_cumplimiento(
+    obligatorios: list[dict[str, Any]],
+    estados: list[EstadoDocumento],
+    dictamenes: dict[str, DictamenAuditoria],
+    vigencias: dict[str, _Vigencia],
+    cotejos: list[cotejo_legal.CotejoRepresentacion] | None = None,
+) -> IndiceCumplimiento:
+    """
+    Índice de cumplimiento del DOC-05 (PRD §10.5, docs/uml/c6-actividad-indice-cumplimiento.puml).
+
+    Cada regla aplicable vale 1, sin ponderar su severidad: cumplida, incumplida
+    o pendiente; lo que no aplica no cuenta. Las unidades salen de la misma
+    evaluación que el semáforo, sin consultas nuevas:
+
+      * RIE-01 y RIE-02: cada obligatorio y cada anexo exigible, presente o no.
+      * Por documento vigente: RIE-03 (a la fecha); sin dictamen, una unidad
+        pendiente; PDF protegido, una incumplida; auditado, la vigencia RCV
+        recalculada (próximo a vencer cumple), la titularidad y cada elemento
+        RSC/RDS del dictamen. Un documento alterado solo cuenta RIE-03: su
+        contenido ya no es evaluable.
+      * RN-03: el cotejo del firmante de cada contrato o NDA (P2).
+
+    Con el dictamen ratificado, la decisión del analista prevalece (RN-05) en
+    todo lo que viene del dictamen: titularidad, contenido y cotejo.
+
+    Bloqueo (DOC-05): obligatorio crítico ausente, documento vencido o alterado.
+    No altera el porcentaje; el semáforo es Rojo «sin importar el porcentaje».
+    """
+    reglas: list[ReglaEvaluada] = []
+    bloqueos: list[str] = []
+
+    for o in obligatorios:
+        nombre = etiqueta_documento(o["tipo_documento"])
+        critico = not o["documento_principal"] and o["severidad"] == "CRITICA"
+        if o["documento_principal"]:
+            etiqueta = f"Anexo «{nombre}» de {etiqueta_documento(o['documento_principal'])}"
+        else:
+            etiqueta = f"{nombre} en el expediente"
+        reglas.append(ReglaEvaluada(
+            regla=o["codigo_regla"], nombre=etiqueta, tipo_documento=o["tipo_documento"],
+            resultado=CUMPLIDA if o["presente"] else INCUMPLIDA,
+            bloqueante=critico and not o["presente"],
+        ))
+        if critico and not o["presente"]:
+            bloqueos.append(f"Falta {nombre} (obligatorio de severidad crítica).")
+
+    contratos = {c.documento_id: c for c in cotejos or []}
+    for e in estados:
+        nombre = etiqueta_documento(e.tipo_documento)
+
+        def agregar(regla: str, texto: str, resultado: str, bloqueante: bool = False) -> None:
+            reglas.append(ReglaEvaluada(regla=regla, nombre=texto, resultado=resultado, bloqueante=bloqueante,
+                                        tipo_documento=e.tipo_documento, documento_id=e.documento_id))
+
+        if e.estado_integridad == INTEGRIDAD_ALTERADO:
+            agregar("RIE-03", "Integridad del archivo", INCUMPLIDA, bloqueante=True)
+            bloqueos.append(f"{nombre} ({e.nombre_archivo_original}) fue alterado después de custodiarse.")
+            continue
+        agregar("RIE-03", "Integridad del archivo", CUMPLIDA)
+
+        dictamen = dictamenes.get(e.documento_id)
+        if dictamen is None:
+            agregar("AUDITORIA", "Contenido y titularidad sin evaluar (documento sin auditar)", PENDIENTE)
+            continue
+        if dictamen.origen == ORIGEN_NIVEL_1:
+            agregar("NIVEL_1", "Archivo legible (está protegido con contraseña)", INCUMPLIDA)
+            continue
+
+        vigencia = vigencias.get(e.documento_id)
+        if vigencia is not None:
+            vencido = vigencia.estado == VENCIDO
+            agregar(vigencia.regla or "RCV-01", "Vigencia del documento", INCUMPLIDA if vencido else CUMPLIDA,
+                    bloqueante=vencido)
+            if vencido:
+                bloqueos.append(f"{nombre} ({e.nombre_archivo_original}) venció el "
+                                f"{fecha_legible(vigencia.fecha_caducidad)}.")
+
+        # RN-05: la ratificación decide todo lo que viene del dictamen.
+        ratificado = dictamen.estatus if dictamen.revisado_por_humano else None
+
+        def decidir(resultado: str) -> str:
+            if ratificado == CONFORME:
+                return CUMPLIDA
+            if ratificado == NO_CONFORME:
+                return INCUMPLIDA
+            return resultado
+
+        if dictamen.match_titular is True:
+            titularidad = CUMPLIDA
+        elif dictamen.match_titular is False and dictamen.estatus_preliminar == NO_CONFORME:
+            titularidad = INCUMPLIDA        # RFC ajeno: el motor lo rechazó
+        else:
+            titularidad = PENDIENTE         # sin RFC o razón social distinta: decide el analista
+        agregar("TITULARIDAD", "Titularidad (el documento pertenece al titular)", decidir(titularidad))
+
+        for r in dictamen.reglas_aplicadas or []:
+            codigo = r.get("codigo_regla") or ""
+            resultado = _RESULTADO_CONTENIDO.get(r.get("resultado"))
+            if not codigo.startswith(("RSC", "RDS")) or resultado is None:
+                continue
+            agregar(codigo, texto_llano(r.get("nombre_regla")) or codigo, decidir(resultado))
+
+        cotejo = contratos.get(e.documento_id)
+        if cotejo is not None:
+            agregar("RN-03", "Representación del firmante acreditada", decidir(_RESULTADO_COTEJO[cotejo.estado]))
+
+    cumplidas = sum(r.resultado == CUMPLIDA for r in reglas)
+    incumplidas = sum(r.resultado == INCUMPLIDA for r in reglas)
+    pendientes = sum(r.resultado == PENDIENTE for r in reglas)
+    aplicables = cumplidas + incumplidas + pendientes
+    return IndiceCumplimiento(
+        porcentaje=round(cumplidas / aplicables * 100, 1) if aplicables else None,
+        cumplidas=cumplidas,
+        incumplidas=incumplidas,
+        pendientes=pendientes,
+        aplicables=aplicables,
+        bloqueado=bool(bloqueos),
+        bloqueos=bloqueos,
+        reglas=reglas,
     )
 
 

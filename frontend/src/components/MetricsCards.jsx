@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { Building2, FolderKanban, Gauge, Vault } from 'lucide-react'
 import { Skeleton } from './Skeleton.jsx'
 import { Card } from './ui/index.js'
+import { formatIndice, promedioIndice } from '../utils/indice.js'
 
 const contar = (lista, prueba) => lista.reduce((n, x) => n + (prueba(x) ? 1 : 0), 0)
 
@@ -31,7 +32,7 @@ export default function MetricsCards({ titulares, expedientes, documentos, loadi
       ],
       bytes,
       completitud,
-      completos: contar(expedientes, (e) => Number(e.porcentaje_completitud || 0) >= 100),
+      indice: promedioIndice(expedientes),
     }
   }, [titulares, expedientes, documentos])
 
@@ -70,19 +71,22 @@ export default function MetricsCards({ titulares, expedientes, documentos, loadi
       pie: <span className="metric-foot">{`${enMB(datos.bytes)} bajo custodia`}</span>,
     },
     {
-      id: 'completitud',
+      // Índice de cumplimiento del DOC-05 (C6). La completitud (documentos
+      // obligatorios presentes) va aparte, con su nombre: no es cumplimiento.
+      id: 'cumplimiento',
       icon: Gauge,
-      label: 'Completitud',
-      valor: `${datos.completitud.toFixed(0)}%`,
-      pie: <span className="metric-foot">{`${datos.completos} de ${expedientes.length} expedientes completos`}</span>,
-      progreso: datos.completitud,
+      label: 'Cumplimiento',
+      valor: formatIndice(datos.indice),
+      pie: <span className="metric-foot">{`Documentos obligatorios: ${datos.completitud.toFixed(0)}% presentes`}</span>,
+      progreso: datos.indice ?? 0,
+      titulo: 'Promedio del índice de cumplimiento de los expedientes: reglas cumplidas entre reglas aplicables',
     },
   ]
 
   return (
     <section className="metrics-grid" aria-label="Indicadores del motor">
-      {tarjetas.map(({ id, icon: Icono, label, valor, pie, progreso }) => (
-        <Card as="article" className="metric-card" key={id}>
+      {tarjetas.map(({ id, icon: Icono, label, valor, pie, progreso, titulo }) => (
+        <Card as="article" className="metric-card" key={id} title={titulo}>
           <span className="squircle" aria-hidden="true">
             <Icono size={15} />
           </span>

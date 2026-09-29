@@ -11,7 +11,7 @@
 | Desarrollo (Scrum Master / Desarrollador) | Oliver Villanueva Pelay, residente (No. de control 21520500) |
 | Stakeholder evaluador | Edgar Loheffelmman (PluriOne) |
 | Asesor interno | Dr. Wilfrido Campos Francisco |
-| Versión del documento | 1.5 — 29 de septiembre de 2026 (1.4: P2; 1.3: P1; 1.2: 28 de septiembre; 1.0: 27 de septiembre de 2026) |
+| Versión del documento | 1.6 — 29 de septiembre de 2026 (1.5: P3; 1.4: P2; 1.3: P1; 1.2: 28 de septiembre; 1.0: 27 de septiembre de 2026) |
 | Estado del producto | En desarrollo: Sprints 1 y 2 implementados, Sprint 3 implementado parcialmente, Sprint 4 implementado salvo HU-31, Módulo 7 pendiente |
 | Documento hermano | [MRD.md](MRD.md) — requerimientos de mercado |
 
@@ -216,7 +216,7 @@ Prioridad tomada de las historias de usuario asociadas (Cap. VII); «—» cuand
 
 | ID | Requerimiento | Prioridad | Estado | Evidencia / nota |
 |---|---|---|---|---|
-| RF-22 | Tablero con porcentaje global de cumplimiento, conformes vs. no conformes y distribución de hallazgos. | Alta | Implementado | Vista de Reportes. |
+| RF-22 | Tablero con porcentaje global de cumplimiento, conformes vs. no conformes y distribución de hallazgos. | Alta | Implementado | Vista de Reportes. El índice de cumplimiento del DOC-05 (§10.5) se agrega junto al porcentaje de expedientes conformes. |
 | RF-23 | Dictamen formal de auditoría por expediente. | Alta | Implementado | `GET /api/v1/reportes/expedientes/{id}`. |
 | RF-24 | Exportación en PDF y Excel (.xlsx). | Alta | Implementado | ReportLab y openpyxl; cada exportación se registra en la bitácora. |
 
@@ -379,6 +379,50 @@ Cada alerta incluye su recomendación correctiva (RF-21). Las alertas se derivan
 | Archivo protegido con contraseña | El Nivel 1 detecta la contraseña de apertura en la carga, custodia el archivo y emite un dictamen No conforme «Archivo protegido, no procesable» (PLUS-02). | Rojo |
 
 Una falla en un documento nunca detiene la validación del resto del expediente.
+
+### 10.5 Índice de cumplimiento del expediente (C6)
+
+[DOC-05, «Modelo de Puntuación de Cumplimiento y Semáforo» y RDS-03; [análisis de brechas](ANALISIS_BRECHAS_MOTOR.md), C6; diagrama [c6-actividad-indice-cumplimiento.puml](uml/c6-actividad-indice-cumplimiento.puml)]
+
+No es una extensión PLUS: el DOC-05 lo define («el porcentaje se obtiene dividiendo el número de reglas cumplidas entre el total de reglas evaluadas, multiplicado por 100») y no estaba implementado. Hasta la versión 1.6 el producto solo medía la **completitud** (documentos obligatorios presentes, HU-12), y el tablero la presentaba junto al porcentaje de expedientes conformes: un expediente No conforme con todos sus obligatorios cargados mostraba «Completitud 100 %».
+
+**Fórmula.** `índice = cumplidas / (cumplidas + incumplidas + pendientes) × 100`. Cada evaluación de una regla termina en cumplida, incumplida, pendiente o no aplica (no cuenta). Sin reglas aplicables, el índice no tiene valor.
+
+| Unidad | Cumplida | Incumplida | Pendiente o no aplica |
+|---|---|---|---|
+| RIE-01, cada obligatorio del tipo | Presente | Ausente (bloqueante si es Crítica) | — |
+| RIE-02, cada anexo exigible | Presente | Ausente | — |
+| RIE-03, cada documento vigente | Íntegro | Alterado (bloqueante; del documento alterado solo cuenta esta regla) | — |
+| RCV, cada documento auditado | Vigente o próximo a vencer | Vencido (bloqueante) | Sin fechas o permanente: no aplica |
+| Titularidad (DOC-08 §6), cada documento auditado | RFC coincide | RFC ajeno | Sin RFC o razón social distinta: pendiente |
+| RSC y RDS, cada elemento del dictamen (incluye RSC-02: firmante identificado) | CUMPLE | NO_CUMPLE | NO_LOCALIZADO o NO_VERIFICABLE: pendiente |
+| RN-03, cotejo del firmante de un contrato o NDA (P2) | ACREDITADO | NO_ACREDITADO o PODER_VENCIDO | PENDIENTE |
+| Documento sin auditar | — | — | Una unidad pendiente |
+| PDF protegido (PLUS-02) | — | Una unidad: archivo no legible | — |
+
+Con el dictamen ratificado, la decisión del analista prevalece (RN-05) en todo lo que viene del dictamen —titularidad, contenido y cotejo—: cumplidas si lo ratificó conforme, incumplidas si lo ratificó no conforme. Lo que el motor calcula a la fecha (integridad y vigencia) no cambia con la ratificación (RN-02).
+
+**Decisiones aprobadas (29/09/2026).**
+
+1. Lo pendiente cuenta en el denominador: por RDS-03, un resultado sin validar no deja que el expediente «alcance el 100 % de cumplimiento».
+2. Sin ponderación por severidad: el DOC-05 define un porcentaje directo; la severidad actúa solo por el bloqueo.
+3. Próximo a vencer cuenta como cumplida: es una advertencia (semáforo amarillo), no un incumplimiento. Un expediente puede mostrar 100 % en amarillo solo por esta causa.
+4. Un documento sin auditar vale una unidad pendiente: sus reglas de contenido se conocen al auditarlo, así que el índice puede bajar después de una auditoría.
+5. El índice global es el promedio de los índices de los expedientes: cada expediente pesa igual.
+
+**Bloqueo por criticidad.** Si falta un obligatorio Crítico, un documento venció o fue alterado —los tres ejemplos del DOC-05—, el índice se marca bloqueado con las reglas que bloquean. El porcentaje no se altera: el semáforo es Rojo «sin importar el porcentaje». El semáforo conserva sus propias reglas (§10.2) y puede ser Rojo sin bloqueo crítico (un dictamen No conforme de severidad Alta).
+
+**Contrato.** Campo nuevo y opcional `evaluacion.indice_cumplimiento` (porcentaje, cumplidas, incumplidas, pendientes, aplicables, bloqueado, bloqueos y el detalle por regla). Se deriva en cada consulta, sin consultas adicionales ni datos persistidos. El tablero muestra el índice promedio como «Cumplimiento» y la completitud por separado, como «Documentos obligatorios presentes»; el indicador del RF-22 de expedientes conformes se conserva con ese nombre.
+
+**Estado:** implementado (revisión del frontend, Lote 3).
+
+| Pieza | Dónde | Pruebas |
+|---|---|---|
+| Cálculo y bloqueo; campo `evaluacion.indice_cumplimiento` | `core-service/motor/cumplimiento.py` (`indice_cumplimiento`), `schemas/expediente_schema.py` | `tests/test_indice_cumplimiento.py` (16 casos, incluido el expediente de desarrollo: 11 de 16) |
+| Índice en el dictamen PDF y Excel, hoja «Reglas» y reporte global («Expedientes conformes» e «Índice de cumplimiento promedio») | `core-service/motor/reportes.py` | `tests/test_tipos_anexos_alertas.py` (la hoja cuadra con la API) |
+| Tarjeta «Cumplimiento», fila y bloque del detalle, tablero | `frontend/src/utils/indice.js`, `components/IndiceCumplimiento.jsx`, `MetricsCards.jsx`, `ExpedientesTab.jsx`, `ReportesTab.jsx` | Capturas a 1366 × 768 en ambos temas y regresión visual |
+
+Verificado en vivo el 29/09/2026: el expediente de desarrollo (Grupo Bimbo, No conforme con sus tres obligatorios) muestra 69 % de cumplimiento (11 de 16 reglas; 2 incumplidas, 3 pendientes) junto a «Documentos obligatorios: 3 de 3».
 
 ---
 

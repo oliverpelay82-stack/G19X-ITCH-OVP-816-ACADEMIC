@@ -5,6 +5,7 @@ import TableroOperativo from './TableroOperativo.jsx'
 import { SkeletonRows } from './Skeleton.jsx'
 import useDebounce from '../hooks/useDebounce.js'
 import { Badge, Card, EmptyRow, SearchBox, Select, Tag } from './ui/index.js'
+import { formatIndice, indiceDe } from '../utils/indice.js'
 import {
   ALERTA_META,
   getEstadoBadge,
@@ -104,7 +105,7 @@ export default function ReportesTab({ expedientes, loading, isOnline = true, onA
 
       <section className="report-grid" aria-label="Indicadores de cumplimiento">
         <Card as="article" className="report-card">
-          <p className="eyebrow">Cumplimiento global</p>
+          <p className="eyebrow">Expedientes conformes</p>
           <p className="report-kpi tabular">{loading ? '—' : `${ind.global.toFixed(1)}%`}</p>
           <p className="field-hint">
             {ind.conformes} de {ind.total} expedientes conformes al 100 %.
@@ -164,11 +165,11 @@ export default function ReportesTab({ expedientes, loading, isOnline = true, onA
         <div className="table-scroll">
           <table className="data-table">
             <colgroup>
-              <col style={{ width: '30%' }} />
-              <col style={{ width: '12%' }} />
+              <col style={{ width: '28%' }} />
+              <col style={{ width: '11%' }} />
               <col style={{ width: '14%' }} />
-              <col style={{ width: '12%' }} />
-              <col style={{ width: '10%' }} />
+              <col style={{ width: '17%' }} />
+              <col style={{ width: '8%' }} />
               <col style={{ width: '22%' }} />
             </colgroup>
             <thead>
@@ -176,7 +177,7 @@ export default function ReportesTab({ expedientes, loading, isOnline = true, onA
                 <th>Expediente</th>
                 <th>Tipo</th>
                 <th>Estado</th>
-                <th className="col-right">Completitud</th>
+                <th className="col-right">Cumplimiento</th>
                 <th className="col-right">Alertas</th>
                 <th className="col-right">Dictamen de cumplimiento</th>
               </tr>
@@ -213,7 +214,14 @@ export default function ReportesTab({ expedientes, loading, isOnline = true, onA
                           {meta.label}
                         </Badge>
                       </td>
-                      <td className="col-right tabular">{Number(e.porcentaje_completitud || 0).toFixed(0)}%</td>
+                      <td className="col-right">
+                        <span className="cell-stack">
+                          <span className="tabular">{formatIndice(indiceDe(e)?.porcentaje)}</span>
+                          <span className="cell-sub tabular">
+                            {Number(e.porcentaje_completitud || 0).toFixed(0)}% obligatorios
+                          </span>
+                        </span>
+                      </td>
                       <td className="col-right tabular">{e.evaluacion?.alertas?.length || 0}</td>
                       <td className="col-right">
                         <ExportarReporte ruta={`/reportes/expedientes/${e.id}`} compacto disabled={!isOnline} />

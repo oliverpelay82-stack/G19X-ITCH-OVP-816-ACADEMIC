@@ -313,8 +313,18 @@ def prueba_reportes(ctx: dict) -> None:
     verificar(not jerga, "El dictamen en PDF está en lenguaje llano", ", ".join(sorted(set(jerga))) or "sin códigos")
     xlsx = client.get(f"/api/v1/reportes/expedientes/{exp_id}", params={"formato": "xlsx"})
     libro = load_workbook(io.BytesIO(xlsx.content))
-    verificar(xlsx.status_code == 200 and libro.sheetnames == ["Dictamen", "Documentos", "Evidencia", "Alertas", "Bitácora"],
-              "Dictamen del expediente en Excel con sus cinco hojas", ", ".join(libro.sheetnames))
+    verificar(xlsx.status_code == 200
+              and libro.sheetnames == ["Dictamen", "Documentos", "Reglas", "Evidencia", "Alertas", "Bitácora"],
+              "Dictamen del expediente en Excel con sus seis hojas", ", ".join(libro.sheetnames))
+    # C6 (PRD §10.5): la hoja «Reglas» es la evidencia del índice de cumplimiento del DOC-05.
+    indice = client.get(f"/api/v1/expedientes/{exp_id}").json()["evaluacion"]["indice_cumplimiento"]
+    reglas = list(libro["Reglas"].iter_rows(min_row=2, values_only=True))
+    ficha = {f[0]: f[1] for f in libro["Dictamen"].iter_rows(min_row=3, values_only=True) if f[0]}
+    verificar(len(reglas) == indice["aplicables"]
+              and sum(f[3] == "Cumplida" for f in reglas) == indice["cumplidas"]
+              and ficha["Índice de cumplimiento"].startswith(f"{indice['porcentaje']:.1f} %"),
+              "La hoja «Reglas» y la ficha cuadran con el índice de cumplimiento",
+              f"{indice['cumplidas']} de {indice['aplicables']}: {ficha['Índice de cumplimiento']}")
     evidencia = list(libro["Evidencia"].iter_rows(min_row=2, values_only=True))
     verificar(len(evidencia) == 4 and all(len(fila[7]) == 64 for fila in evidencia),
               "La evidencia incluye cada dictamen con su huella SHA-256", f"{len(evidencia)} dictámenes")
@@ -328,6 +338,9 @@ def prueba_reportes(ctx: dict) -> None:
               "Reporte global en Excel con todos los expedientes", f"{len(filas)} filas")
     global_pdf = client.get("/api/v1/reportes/cumplimiento", params={"formato": "pdf"})
     verificar(global_pdf.status_code == 200 and global_pdf.content.startswith(b"%PDF-"), "Reporte global en PDF")
+    texto_global = " ".join(p.extract_text() for p in PdfReader(io.BytesIO(global_pdf.content)).pages)
+    verificar("Expedientes conformes" in texto_global and "Índice de cumplimiento promedio" in texto_global,
+              "El reporte global distingue expedientes conformes e índice de cumplimiento promedio")
     verificar(client.get("/api/v1/reportes/cumplimiento", params={"formato": "docx"}).status_code == 422,
               "Un formato no admitido responde 422")
     verificar(client.get("/api/v1/reportes/expedientes/no-existe").status_code == 404, "Expediente inexistente: 404")

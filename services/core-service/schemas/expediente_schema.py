@@ -87,6 +87,28 @@ class CotejoRepresentacionResponse(BaseModel):
     ratificado: bool = False
 
 
+class ReglaEvaluadaResponse(BaseModel):
+    """Una evaluación del índice de cumplimiento (DOC-05, PRD §10.5)."""
+    regla: str
+    nombre: str
+    resultado: str = Field(description="CUMPLIDA, INCUMPLIDA o PENDIENTE")
+    tipo_documento: Optional[str] = None
+    documento_id: Optional[str] = None
+    bloqueante: bool = False
+
+
+class IndiceCumplimientoResponse(BaseModel):
+    """Reglas cumplidas / reglas aplicables × 100, con el bloqueo por criticidad del DOC-05 (C6)."""
+    porcentaje: Optional[float] = Field(None, description="Nulo si no hay reglas aplicables")
+    cumplidas: int
+    incumplidas: int
+    pendientes: int
+    aplicables: int
+    bloqueado: bool
+    bloqueos: list[str] = Field(default_factory=list)
+    reglas: list[ReglaEvaluadaResponse] = Field(default_factory=list)
+
+
 class EvaluacionExpedienteResponse(BaseModel):
     """Desglose del estado consolidado del expediente (RN-01, RN-02, RN-05)."""
     estado: str
@@ -102,6 +124,7 @@ class EvaluacionExpedienteResponse(BaseModel):
     anexos_faltantes: list[AnexoFaltanteResponse] = Field(default_factory=list)
     alertas: list[AlertaResponse] = Field(default_factory=list)
     representacion: list[CotejoRepresentacionResponse] = Field(default_factory=list)
+    indice_cumplimiento: Optional[IndiceCumplimientoResponse] = None
 
 
 class ExpedienteResponse(BaseModel):

@@ -1,0 +1,110 @@
+@startuml c6-actividad-indice-cumplimiento
+' C6 — Índice de cumplimiento del expediente (modelo de puntuación del DOC-05).
+' No es una extensión PLUS: el DOC-05 («Modelo de Puntuación de Cumplimiento y
+' Semáforo») lo define y no estaba implementado (análisis de brechas, C6).
+' Trazabilidad: DOC-05 (porcentaje = reglas cumplidas / reglas evaluadas × 100;
+' bloqueo por criticidad; RDS-03 «antes de que el expediente alcance el 100 %»);
+' RF-19, RF-22, HU-12, HU-26; RN-01, RN-02, RN-03, RN-05.
+' Decisiones aprobadas el 29/09/2026: lo pendiente cuenta en el denominador;
+' sin ponderación por severidad; próximo a vencer cuenta como cumplida; un
+' documento sin auditar vale una unidad pendiente; el índice global es el
+' promedio de los índices de los expedientes.
+' Implementación: services/core-service/motor/cumplimiento.py (indice_cumplimiento)
+' En PlantUML una actividad termina en el primer punto y coma: dentro de los
+' textos se separa con punto.
+
+title C6 — Índice de cumplimiento del expediente (DOC-05)
+
+|core-service · evaluación del expediente|
+start
+:Evaluación en curso (la misma consulta que el semáforo).
+Obligatorios y anexos del catálogo, documentos vigentes,
+dictamen vigente de cada uno, vigencia recalculada (RN-02),
+integridad actual y cotejo de representación (P2);
+note right
+  No hay consultas nuevas ni datos nuevos que
+  guardar: el índice se deriva en cada consulta,
+  como las alertas.
+end note
+
+partition "Reglas del expediente" {
+  :RIE-01, por cada obligatorio del tipo.
+  Presente: cumplida. Ausente: incumplida
+  (bloqueante si su severidad es Crítica);
+  :RIE-02, por cada anexo exigible (su principal está presente).
+  Presente: cumplida. Ausente: incumplida;
+}
+
+partition "Reglas de cada documento vigente" {
+  repeat
+    :Siguiente documento vigente (obligatorio u opcional);
+    if (¿El archivo fue alterado?) then (sí)
+      :RIE-03 incumplida (bloqueante).
+      Solo cuenta la integridad: el contenido
+      de un archivo alterado ya no es evaluable;
+    else (no)
+    :RIE-03 cumplida;
+    if (¿Tiene dictamen?) then (no)
+      :Una unidad pendiente:
+      contenido y titularidad sin evaluar;
+    elseif (¿Dictamen de la validación de la carga\n(PDF protegido)?) then (sí)
+      :Una unidad incumplida: archivo no legible;
+    else (auditado)
+      :RCV. Vigente o próximo a vencer: cumplida.
+      Vencido: incumplida (bloqueante).
+      Sin fechas o permanente: no aplica;
+      :Titularidad. RFC coincide: cumplida.
+      RFC ajeno (dictamen no conforme): incumplida.
+      Sin RFC o razón social distinta: pendiente;
+      :RSC y RDS, cada elemento del dictamen.
+      CUMPLE: cumplida. NO_CUMPLE: incumplida.
+      NO_LOCALIZADO o NO_VERIFICABLE: pendiente;
+      :RN-03, si es contrato o NDA (cotejo de P2).
+      ACREDITADO: cumplida.
+      NO_ACREDITADO o PODER_VENCIDO: incumplida.
+      PENDIENTE: pendiente;
+      if (¿El dictamen está ratificado\npor un analista?) then (sí)
+        :RN-05, la decisión prevalece en todo lo que
+        viene del dictamen (titularidad, contenido y
+        cotejo): cumplidas si se ratificó conforme,
+        incumplidas si se ratificó no conforme;
+      else (no)
+      endif
+    endif
+    endif
+  repeat while (¿Quedan documentos?) is (sí)
+  ->no;
+}
+
+:aplicables = cumplidas + incumplidas + pendientes
+(las que no aplican no cuentan);
+if (¿aplicables = 0?) then (sí)
+  :porcentaje sin valor (nada que evaluar).
+La interfaz muestra «—», no 0 %:
+0 % se leería como «incumple todo»;
+else (no)
+  :porcentaje = cumplidas / aplicables × 100
+  (cada regla vale 1: sin ponderación por severidad);
+endif
+if (¿Alguna incumplida es bloqueante?\n(obligatorio crítico ausente,\nvencido o alterado)) then (sí)
+  :bloqueado = sí, con las reglas que bloquean.
+  El porcentaje no se altera: el semáforo es
+  Rojo «sin importar el porcentaje» (DOC-05);
+else (no)
+  :bloqueado = no;
+endif
+:evaluacion.indice_cumplimiento
+(porcentaje, conteos, bloqueos y detalle por regla);
+note right
+  Campo nuevo y opcional: el contrato de la API
+  no pierde ni renombra claves. El semáforo
+  conserva sus propias reglas (RF-19).
+end note
+
+|Frontend y reportes|
+:Tarjeta «Cumplimiento» (promedio de los índices)
+con los documentos obligatorios presentes aparte.
+Fila del expediente y bloque del detalle.
+PDF y Excel del dictamen con la hoja «Reglas»;
+stop
+@enduml

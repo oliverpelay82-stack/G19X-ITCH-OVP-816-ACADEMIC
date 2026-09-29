@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Check, ChevronDown, FolderKanban, Loader2, Maximize2, Minus, Plus, SearchX, Sparkles, X } from 'lucide-react'
+import { Check, ChevronDown, FolderKanban, Loader2, Lock, Maximize2, Minus, Plus, SearchX, Sparkles, X } from 'lucide-react'
 import { Badge, Button, Card, EmptyState, Field, Input, Modal, SearchBox, Segmented, Select, Tag } from './ui/index.js'
 import { SkeletonCards } from './Skeleton.jsx'
 import useToast from '../hooks/useToast.js'
@@ -8,6 +8,7 @@ import ExportarReporte from './ExportarReporte.jsx'
 import { ListaAlertasAgrupadas } from './Alertas.jsx'
 import DetalleDocumentoModal from './DetalleDocumentoModal.jsx'
 import HistorialExpediente from './HistorialExpediente.jsx'
+import IndiceCumplimiento from './IndiceCumplimiento.jsx'
 import useDebounce from '../hooks/useDebounce.js'
 import { analizarDocumento, createExpediente, getExpedienteById, uploadDocumento } from '../services/api.js'
 import { avisarCarga } from '../utils/nivel1.js'
@@ -22,6 +23,7 @@ import {
   VIGENCIA_META,
 } from '../constants.js'
 import { formatDia, formatRelativo, iniciales } from '../utils/format.js'
+import { formatIndice, indiceDe } from '../utils/indice.js'
 
 /** Estados de cumplimiento del expediente, en el orden del semáforo. */
 const ESTADOS_FILTRO = ['CONFORME', 'EN_REVISION', 'NO_CONFORME']
@@ -242,6 +244,11 @@ function DetalleExpediente({ exp, subiendo, onSubir, iaOnline, onRefresh, docume
   return (
     <div className="exp-detail">
       <div className="exp-detail-main">
+        <IndiceCumplimiento
+          indice={evaluacion?.indice_cumplimiento}
+          presentes={(evaluacion?.obligatorios || []).filter((o) => o.presente).length}
+          obligatorios={(evaluacion?.obligatorios || []).length}
+        />
         <MotivosSemaforo estado={exp.estado_cumplimiento} motivos={evaluacion?.motivos} />
 
         <Card className="table-card table-card--flat">
@@ -591,7 +598,7 @@ export default function ExpedientesTab({
         <div className="exp-list">
           {filtrados.map((exp) => {
             const meta = getEstadoBadge(exp.estado_cumplimiento)
-            const progreso = Math.max(0, Math.min(100, Number(exp.porcentaje_completitud || 0)))
+            const indice = indiceDe(exp)
             const obligatorios = exp.evaluacion?.obligatorios || []
             const presentes = obligatorios.filter((o) => o.presente).length
             const nAlertas = exp.evaluacion?.alertas?.length || 0
@@ -634,12 +641,21 @@ export default function ExpedientesTab({
                   <Badge tono={meta.tono} punto grande>
                     {meta.label}
                   </Badge>
-                  <span className="progress" title={`${presentes} de ${obligatorios.length} documentos obligatorios`}>
-                    <span className="progress-track">
-                      <span className="progress-fill" style={{ width: `${progreso}%` }} />
+                  <span
+                    className="exp-indice"
+                    title={
+                      indice?.bloqueado
+                        ? `Bloqueado: ${indice.bloqueos.join(' ')}`
+                        : 'Índice de cumplimiento: reglas cumplidas entre reglas aplicables'
+                    }
+                  >
+                    <span className="exp-indice-valor tabular">
+                      {indice?.bloqueado && <Lock size={11} strokeWidth={1.75} aria-label="Bloqueado" />}
+                      {formatIndice(indice?.porcentaje)}
+                      <span className="cell-muted"> cumplimiento</span>
                     </span>
-                    <span className="progress-value tabular">
-                      {presentes}/{obligatorios.length}
+                    <span className="cell-sub tabular">
+                      {presentes}/{obligatorios.length} obligatorios
                     </span>
                   </span>
                   <span className="exp-updated cell-muted tabular">{formatRelativo(exp.actualizado_en)}</span>

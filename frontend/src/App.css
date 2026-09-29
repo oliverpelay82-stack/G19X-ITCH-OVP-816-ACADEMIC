@@ -686,6 +686,12 @@
   color: var(--warn);
 }
 
+.notice--bad {
+  background: var(--bad-bg);
+  border-color: var(--bad-border);
+  color: var(--bad);
+}
+
 /* ══════════════════════ 3. CONTROLES ════════════════════════════ */
 .toolbar {
   display: flex;
@@ -1285,36 +1291,24 @@ select option {
 }
 
 /* Progreso */
-.progress {
+/* Columna de la fila del expediente: índice de cumplimiento (C6) y, debajo,
+   los documentos obligatorios presentes. */
+.exp-indice {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.exp-indice-valor {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 4px;
+  font-weight: 600;
+  color: var(--text-primary);
 }
 
-.progress-track {
-  width: 72px;
-  height: 4px;
-  border-radius: var(--r-full);
-  background: var(--bg-muted);
-  overflow: hidden;
-}
-
-/* La completitud mide documentos presentes, no cumplimiento: la barra es
-   neutra para no pintar de verde un expediente No conforme con todos sus
-   obligatorios cargados. El estado lo comunica el semáforo. */
-.progress-fill {
-  display: block;
-  height: 100%;
-  border-radius: var(--r-full);
-  background: var(--text-tertiary);
-  transition: width 0.4s var(--ease);
-}
-
-.progress-value {
-  min-width: 30px;
-  font-size: var(--fs-small);
-  color: var(--text-secondary);
-  text-align: right;
+.exp-indice-valor .cell-muted {
+  font-weight: 400;
 }
 
 /* Estados vacíos */
@@ -3109,6 +3103,111 @@ select option {
 }
 
 /* Por qué el semáforo tiene su color (RNF-08): visible arriba de la tabla */
+/* Índice de cumplimiento del DOC-05 (C6): cifra, barra segmentada con su
+   leyenda (el color nunca va solo), bloqueo y tabla de reglas evaluadas. */
+.indice {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  padding: var(--s-3) var(--s-4);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--bg-surface);
+}
+
+.indice-cabecera {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-3);
+}
+
+.indice-cifra {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-3);
+}
+
+.indice-valor {
+  font-size: var(--fs-metric);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+  color: var(--text-primary);
+}
+
+.indice-barra {
+  display: flex;
+  gap: 2px;
+  height: 6px;
+  border-radius: var(--r-full);
+  background: var(--bg-muted);
+  overflow: hidden;
+}
+
+.indice-segmento {
+  display: block;
+  height: 100%;
+}
+
+.indice-segmento--ok {
+  background: var(--ok-solid);
+}
+
+.indice-segmento--bad {
+  background: var(--bad-solid);
+}
+
+.indice-segmento--warn {
+  background: var(--warn-solid);
+}
+
+.indice-leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-4);
+  font-size: var(--fs-small);
+  color: var(--text-secondary);
+}
+
+.indice-leyenda-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.indice-bloqueo ul {
+  margin: var(--s-1) 0 0;
+  padding-left: var(--s-5);
+}
+
+.indice-bloqueo-titulo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+}
+
+.indice-detalle summary {
+  cursor: pointer;
+}
+
+.indice-detalle[open] summary {
+  margin-bottom: var(--s-2);
+}
+
+.indice-tabla {
+  margin-top: var(--s-2);
+}
+
+.indice-grupo th {
+  padding-top: var(--s-3);
+  font-weight: 600;
+  text-align: left;
+  color: var(--text-primary);
+  background: var(--bg-subtle);
+}
+
 .exp-motivos {
   padding: var(--s-3) var(--s-4);
   border: 1px solid var(--neutral-border);

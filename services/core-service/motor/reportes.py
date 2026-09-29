@@ -34,7 +34,7 @@ from config.catalogo import etiqueta_documento, etiqueta_expediente
 from models.bitacora import BitacoraAuditoria
 from models.dictamen import DictamenAuditoria
 from models.expediente import Expediente
-from motor.cumplimiento import EvaluacionExpediente
+from motor.cumplimiento import UNIDADES_SIN_CODIGO, EvaluacionExpediente
 from motor.redaccion import texto_llano
 
 FORMATOS = {"pdf": "application/pdf", "xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}
@@ -116,6 +116,32 @@ def _ahora() -> str:
 
 def _pct(valor: float) -> str:
     return f"{valor:.1f} %"
+
+
+RESULTADO_INDICE = {"CUMPLIDA": "Cumplida", "INCUMPLIDA": "Incumplida", "PENDIENTE": "Pendiente"}
+
+
+def _texto_indice(ev: EvaluacionExpediente) -> str:
+    """Índice de cumplimiento del DOC-05 (PRD §10.5) en una línea."""
+    indice = ev.indice_cumplimiento
+    if indice is None or indice.porcentaje is None:
+        return "Sin reglas aplicables"
+    texto = (f"{_pct(indice.porcentaje)}: {indice.cumplidas} de {indice.aplicables} reglas cumplidas "
+             f"({indice.incumplidas} incumplidas, {indice.pendientes} pendientes)")
+    if indice.bloqueado:
+        texto += ". Bloqueado: " + " ".join(indice.bloqueos)
+    return texto
+
+
+def _filas_reglas(ev: EvaluacionExpediente) -> list[dict[str, Any]]:
+    """Detalle del índice: la evidencia de cómo se calculó (hoja «Reglas»)."""
+    if ev.indice_cumplimiento is None:
+        return []
+    return [{
+        "documento": etiqueta_documento(r.tipo_documento) if r.tipo_documento else "Expediente",
+        "regla": "—" if r.regla in UNIDADES_SIN_CODIGO else r.regla, "evaluacion": r.nombre, "resultado": RESULTADO_INDICE.get(r.resultado, r.resultado),
+        "bloqueante": "Sí" if r.bloqueante else "",
+    } for r in ev.indice_cumplimiento.reglas]
 
 
 def _filas_documentos(ev: EvaluacionExpediente) -> list[dict[str, Any]]:
@@ -229,7 +255,8 @@ def _ficha_expediente(datos: DatosExpediente) -> list[tuple[str, Any]]:
         ("RFC", titular.rfc if titular else "—"),
         ("Fecha de apertura", _fecha(exp.creado_en)),
         ("Estado de cumplimiento", ESTADO_LEGIBLE.get(ev.estado, ev.estado)),
-        ("Completitud documental", _pct(ev.porcentaje_completitud)),
+        ("Índice de cumplimiento", _texto_indice(ev)),
+        ("Documentos obligatorios presentes", _pct(ev.porcentaje_completitud)),
         ("Documentos faltantes", ", ".join(etiqueta_documento(t) for t in ev.faltantes) or "Ninguno"),
         ("Alertas vigentes", len(ev.alertas)),
         ("Criterio de obligatoriedad", FUENTE_LEGIBLE.get(ev.fuente_obligatorios, ev.fuente_obligatorios)
@@ -253,6 +280,11 @@ def expediente_xlsx(datos: DatosExpediente) -> bytes:
         ("severidad", "Severidad", 12), ("archivo", "Archivo vigente", 40), ("estado", "Estado", 14),
         ("vigencia", "Vigencia", 28),
     ], _filas_documentos(datos.evaluacion))
+
+    _hoja_tabla(libro.create_sheet("Reglas"), [
+        ("documento", "Documento", 34), ("regla", "Regla", 18), ("evaluacion", "Evaluación", 60),
+        ("resultado", "Resultado", 13), ("bloqueante", "Bloquea", 9),
+    ], _filas_reglas(datos.evaluacion))
 
     _hoja_tabla(libro.create_sheet("Evidencia"), [
         ("documento", "Documento", 32), ("archivo", "Archivo", 34), ("estatus", "Estatus", 14),
@@ -281,11 +313,13 @@ def global_xlsx(evaluados: list[tuple[Expediente, EvaluacionExpediente]]) -> byt
     indicadores = _indicadores(evaluados)
     _hoja_ficha(resumen, "Reporte de Cumplimiento Documental", [
         ("Expedientes evaluados", indicadores["total"]),
-        ("Cumplimiento global", _pct(indicadores["porcentaje_global"])),
+        ("Expedientes conformes", _pct(indicadores["porcentaje_global"])),
+        ("Índice de cumplimiento promedio", _pct(indicadores["indice_promedio"])
+         if indicadores["indice_promedio"] is not None else "Sin reglas aplicables"),
         ("Conformes", indicadores["conformes"]),
         ("En revisión", indicadores["en_revision"]),
         ("No conformes", indicadores["no_conformes"]),
-        ("Completitud promedio", _pct(indicadores["completitud_promedio"])),
+        ("Documentos obligatorios presentes (promedio)", _pct(indicadores["completitud_promedio"])),
         ("Alertas vigentes", indicadores["alertas"]),
         *[(f"Alertas {SEVERIDAD_LEGIBLE.get(s, s).lower()}", n) for s, n in indicadores["alertas_por_severidad"]],
         *[(f"Expedientes {etiqueta_expediente(t).lower()}s", n) for t, n in indicadores["por_tipo"]],
@@ -293,7 +327,8 @@ def global_xlsx(evaluados: list[tuple[Expediente, EvaluacionExpediente]]) -> byt
     ])
     _hoja_tabla(libro.create_sheet("Expedientes"), [
         ("folio", "Folio", 26), ("nombre", "Nombre", 30), ("tipo", "Tipo", 14), ("titular", "Titular", 38),
-        ("rfc", "RFC", 16), ("estado", "Estado", 14), ("completitud", "Completitud %", 14),
+        ("rfc", "RFC", 16), ("estado", "Estado", 14), ("indice", "Índice de cumplimiento %", 14),
+        ("completitud", "Documentos obligatorios %", 14),
         ("faltantes", "Faltantes", 50), ("alertas", "Alertas", 9), ("apertura", "Apertura", 17),
     ], _filas_expedientes(evaluados))
     _hoja_tabla(libro.create_sheet("Alertas"), [
@@ -327,6 +362,8 @@ def _resumen_detalle(detalle: dict[str, Any] | None) -> str:
 def _indicadores(evaluados: list[tuple[Expediente, EvaluacionExpediente]]) -> dict[str, Any]:
     estados = Counter(ev.estado for _, ev in evaluados)
     total = len(evaluados)
+    indices = [ev.indice_cumplimiento.porcentaje for _, ev in evaluados
+               if ev.indice_cumplimiento and ev.indice_cumplimiento.porcentaje is not None]
     alertas = [a for _, ev in evaluados for a in ev.alertas]
     orden = list(SEVERIDAD_LEGIBLE)
     por_severidad = sorted(Counter(a.severidad for a in alertas).items(),
@@ -338,6 +375,8 @@ def _indicadores(evaluados: list[tuple[Expediente, EvaluacionExpediente]]) -> di
         "no_conformes": estados.get("NO_CONFORME", 0),
         # Proporción de expedientes que cumplen al 100 % (RF-22).
         "porcentaje_global": round(estados.get("CONFORME", 0) / total * 100, 1) if total else 0.0,
+        # Promedio del índice del DOC-05: cada expediente pesa igual (PRD §10.5).
+        "indice_promedio": round(sum(indices) / len(indices), 1) if indices else None,
         "completitud_promedio": round(sum(ev.porcentaje_completitud for _, ev in evaluados) / total, 1) if total else 0.0,
         "alertas": len(alertas),
         "alertas_por_severidad": por_severidad,
@@ -354,6 +393,7 @@ def _filas_expedientes(evaluados) -> list[dict[str, Any]]:
         "rfc": exp.titular.rfc if exp.titular else "—",
         "estado": ESTADO_LEGIBLE.get(ev.estado, ev.estado),
         "completitud": ev.porcentaje_completitud,
+        "indice": ev.indice_cumplimiento.porcentaje if ev.indice_cumplimiento else None,
         "faltantes": ", ".join(etiqueta_documento(t) for t in ev.faltantes) or "—",
         "alertas": len(ev.alertas),
         "apertura": _fecha(exp.creado_en),
@@ -461,13 +501,15 @@ def expediente_pdf(datos: DatosExpediente) -> bytes:
     ancho = letter[0] - 32 * mm
     exp, ev = datos.expediente, datos.evaluacion
     estado = ESTADO_LEGIBLE.get(ev.estado, ev.estado)
+    porcentaje = ev.indice_cumplimiento.porcentaje if ev.indice_cumplimiento else None
+    indice = _pct(porcentaje) if porcentaje is not None else "—"
     historia: list = [
         Paragraph("Dictamen de Cumplimiento Documental", e["titulo"]),
         Paragraph(f"Expediente {_esc(exp.codigo_expediente)} · emitido el {_ahora()}", e["subtitulo"]),
-        _sello_estado(ev.estado, f"{estado} · completitud {_pct(ev.porcentaje_completitud)} · "
-                                 f"{len(ev.alertas)} alertas vigentes", e, ancho),
+        _sello_estado(ev.estado, f"{estado} · índice de cumplimiento {indice} · documentos obligatorios "
+                                 f"{_pct(ev.porcentaje_completitud)} · {len(ev.alertas)} alertas vigentes", e, ancho),
         Spacer(1, 8),
-        _ficha(_ficha_expediente(datos)[:6], e, ancho),
+        _ficha(_ficha_expediente(datos)[:9], e, ancho),
         Paragraph("Motivos del semáforo", e["seccion"]),
         *[Paragraph(f"• {_esc(texto_llano(m))}", e["texto"]) for m in ev.motivos],
         Paragraph("Documentos exigidos por el catálogo de reglas", e["seccion"]),
@@ -526,20 +568,23 @@ def global_pdf(evaluados: list[tuple[Expediente, EvaluacionExpediente]]) -> byte
         Paragraph("Reporte de Cumplimiento Documental", e["titulo"]),
         Paragraph(f"{ind['total']} expedientes evaluados · emitido el {_ahora()}", e["subtitulo"]),
         _ficha([
-            ("Cumplimiento global", f"{_pct(ind['porcentaje_global'])} de los expedientes son conformes"),
+            ("Expedientes conformes", f"{_pct(ind['porcentaje_global'])} de los expedientes"),
+            ("Índice de cumplimiento promedio", _pct(ind["indice_promedio"])
+             if ind["indice_promedio"] is not None else "Sin reglas aplicables"),
             ("Conformes / En revisión / No conformes",
              f"{ind['conformes']} / {ind['en_revision']} / {ind['no_conformes']}"),
-            ("Completitud promedio", _pct(ind["completitud_promedio"])),
+            ("Documentos obligatorios presentes (promedio)", _pct(ind["completitud_promedio"])),
             ("Alertas vigentes", ", ".join(f"{SEVERIDAD_LEGIBLE.get(s, s)}: {n}" for s, n in
                                            ind["alertas_por_severidad"]) or "Ninguna"),
             ("Expedientes por tipo", ", ".join(f"{etiqueta_expediente(t)}: {n}" for t, n in ind["por_tipo"]) or "—"),
         ], e, ancho),
         Paragraph("Expedientes", e["seccion"]),
         _tabla(
-            [[f["folio"], f["tipo"], f["titular"], f["estado"], f"{f['completitud']:.1f} %", f["alertas"]]
+            [[f["folio"], f["tipo"], f["titular"], f["estado"],
+              f"{f['indice']:.1f} %" if f["indice"] is not None else "—", f"{f['completitud']:.1f} %", f["alertas"]]
              for f in _filas_expedientes(evaluados)],
-            [ancho * p for p in (0.24, 0.12, 0.34, 0.12, 0.1, 0.08)], e,
-            ["Folio", "Tipo", "Titular", "Estado", "Completitud", "Alertas"],
+            [ancho * p for p in (0.22, 0.11, 0.29, 0.12, 0.1, 0.09, 0.07)], e,
+            ["Folio", "Tipo", "Titular", "Estado", "Índice", "Obligatorios", "Alertas"],
         ),
     ]
     alertas = _filas_alertas(evaluados)
