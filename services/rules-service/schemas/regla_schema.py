@@ -8,12 +8,19 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 # Clasificación temática del expediente (RF-01, DOC-02 Tabla 5).
 TipoExpediente = Literal["JURIDICO", "CORPORATIVO", "REGULATORIO"]
 
+# Familias normativas del catálogo (DOC-05): Integridad y Estructura,
+# Cronológicas y de Vigencia, Semánticas y Contractuales, Dinámicas y Sectoriales.
+FamiliaRegla = Literal["RIE", "RCV", "RSC", "RDS"]
+
 
 class ReglaCreate(BaseModel):
     """Datos necesarios para dar de alta una regla en el catálogo (RDS-01)."""
-    codigo_regla: str = Field(..., min_length=3, max_length=20, description="Identificador único, ej. 'RIE-01'")
+    codigo_regla: str = Field(
+        ..., min_length=3, max_length=50,
+        description="Identificador único, ej. 'RIE-01' o, en el alta por tipos, 'RDS-04-COMP_DOMICILIO'",
+    )
     nombre_regla: str = Field(..., min_length=3, max_length=150, description="Nombre corto de la regla")
-    familia_regla: str = Field(..., description="RIE, RCV, RSC o RDS")
+    familia_regla: FamiliaRegla = Field(..., description="RIE, RCV, RSC o RDS")
     descripcion: str = Field(..., min_length=10, description="Descripción funcional de la regla")
     severidad: str = Field(..., description="CRITICA, ALTA, MEDIA o MEDIA_ALTA")
     accion: str = Field(..., max_length=255, description="Acción del sistema ante incumplimiento")

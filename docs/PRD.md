@@ -460,6 +460,25 @@ Documentación interactiva OpenAPI en `/docs` de cada servicio.
 
 Diseñada en DOC-08 y pendiente de implementar: la tabla `usuarios` (email, password_hash bcrypt, nombre_completo, rol, activo) para el Módulo 7.
 
+#### Nota técnica: tipos de datos respecto del diccionario del DOC-08
+
+El diccionario de datos del DOC-08 (Tablas 4 a 8) especifica tipos nativos de PostgreSQL. La implementación usa sus equivalentes portables, como decisión consciente de compatibilidad: la capa de datos se escribe con los tipos genéricos de SQLAlchemy y `config/database.py` admite también `DB_DIALECT=mysql`, así que el esquema no depende de tipos exclusivos de un motor. Verificado en `plurione_compliance` (auditoría del 28/09/2026):
+
+| DOC-08 | Implementación | Por qué | Consecuencia a vigilar |
+|---|---|---|---|
+| `UUID` en llaves primarias y foráneas | `VARCHAR(36)` con un UUID v4 en texto | `String(36)` funciona igual en PostgreSQL y MySQL; el valor sigue siendo un UUID v4 generado por la aplicación. | Ocupa más que el `UUID` nativo (36 frente a 16 bytes); irrelevante al volumen actual. |
+| `TIMESTAMPTZ` | `TIMESTAMP` sin zona | `DateTime` genérico; la aplicación escribe en UTC y los filtros por fecha usan la zona de la sesión de PostgreSQL. | Ver el riesgo «Zona horaria de las marcas de tiempo» (sección 17): migrar a `TIMESTAMPTZ` antes de desplegar en otra zona horaria. |
+| `JSONB` (observaciones, metadatos) | `JSON` | `JSON` genérico, portable; ninguna consulta filtra ni indexa dentro de esos campos. | Si se llegan a consultar por su contenido, migrar a `JSONB` para poder indexarlos. |
+| `NUMERIC(5,4)` en la confianza del dictamen | `DOUBLE PRECISION` | `Float` genérico. | Precisión de sobra para una confianza en [0, 1]. |
+
+`dictamenes_auditoria` además evolucionó respecto de la Tabla 8: el estatus usa el vocabulario del semáforo (CONFORME, EN_REVISION, NO_CONFORME) en lugar de APROBADO, RECHAZADO y REQUIERE_REVISION_HUMANA; los datos extraídos (tipo, RFC, fechas) son columnas en lugar de un único JSON; la vigencia se guarda como resultado de las reglas RCV (`vigencia_resultado`), y la ratificación registra quién (`revisado_por`), cuándo y con qué justificación, a falta de la tabla `usuarios`.
+
+Integridad garantizada por la base, además de la API:
+- Claves foráneas de custodia con `ON DELETE RESTRICT` (titular → expediente → documento → dictamen): nada se borra en cascada.
+- Restricciones `CHECK` de estados del semáforo y del dictamen, tipo de expediente, tipo documental, estado de integridad y familia normativa, construidas en el arranque con los mismos enums que valida la API. `OTRO` se admite como tipo documental heredado (dos documentos custodiados anteriores al catálogo actual).
+- Triggers de inmutabilidad de la bitácora (RF-27) y de los dictámenes (RN-04, RN-05).
+- Índices en la huella SHA-256, el folio (único), el tipo de expediente y `documentos.expediente_id`.
+
 ### 12.5 Privacidad y uso de IA
 
 [DG Cap. III §3.6, Cap. VIII §8.7 y §8.9.1]

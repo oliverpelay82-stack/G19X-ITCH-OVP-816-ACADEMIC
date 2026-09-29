@@ -95,7 +95,7 @@ function FormularioRatificacion({ dictamen, onRatificado, onCancelar }) {
       )
       onRatificado(r)
     } catch (err) {
-      const detalle = Array.isArray(err.detail) ? err.detail.map((d) => d.msg).join(' ') : err.message
+      const detalle = err.message // api.js ya compone el texto de los errores de validación (422)
       setError(detalle)
       toast.error('No se pudo ratificar', detalle)
     } finally {

@@ -21,10 +21,11 @@ class Expediente(Base):
     # Clave primaria UUID
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     
-    # Clave foránea que apunta a titulares_expediente
+    # Clave foránea que apunta a titulares_expediente. RESTRICT: un titular con
+    # expedientes no puede borrarse (cadena de custodia).
     titular_id = Column(
         String(36),
-        ForeignKey("titulares_expediente.id", ondelete="CASCADE"),
+        ForeignKey("titulares_expediente.id", ondelete="RESTRICT"),
         nullable=False,
     )
     

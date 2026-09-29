@@ -24,7 +24,9 @@ class Regla(Base):
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
 
     # Identificador único del catálogo, ej. 'RIE-01', 'RCV-01' (DOC-05)
-    codigo_regla = Column(String(20), unique=True, nullable=False, index=True)
+    # 50: el alta por tipos compone «<código base de hasta 20>-<tipo documental>»
+    # y el tipo más largo del catálogo tiene 24 caracteres (hasta 45 en total).
+    codigo_regla = Column(String(50), unique=True, nullable=False, index=True)
 
     # Nombre corto de la regla, ej. 'Completitud de Expediente'
     nombre_regla = Column(String(150), nullable=False)

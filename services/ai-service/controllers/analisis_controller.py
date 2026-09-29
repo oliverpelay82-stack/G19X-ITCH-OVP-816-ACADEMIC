@@ -296,7 +296,7 @@ def analizar_documento(peticion: AnalisisSemanticoRequest):
             paginas=paginas,
         )
     except ValueError as exc:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=str(exc)) from exc
     except GroqNoDisponibleError as exc:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=f"[Nivel 4] {exc}"
@@ -351,7 +351,7 @@ def chat_documento(peticion: ChatDocumentoRequest):
 
     if not texto.strip():
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail="[Nivel 4] El documento no tiene texto legible sobre el cual responder.",
         )
 

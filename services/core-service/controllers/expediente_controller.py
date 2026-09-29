@@ -77,7 +77,7 @@ def consultar_expedientes(
         tipo = tipo_expediente.strip().upper()
         if tipo not in TIPOS_EXPEDIENTE:
             raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
                 detail=f"Tipo de expediente no reconocido: '{tipo_expediente}'. "
                        f"Valores válidos: {', '.join(TIPOS_EXPEDIENTE)}.",
             )

@@ -61,6 +61,19 @@ _MIGRACIONES_POSTGRES = [
     # RF-06: reglas por tipo de expediente. RIE-02 / RF-07: anexos vinculados.
     "ALTER TABLE reglas_validacion ADD COLUMN IF NOT EXISTS tipo_expediente VARCHAR(20)",
     "ALTER TABLE reglas_validacion ADD COLUMN IF NOT EXISTS documento_principal VARCHAR(50)",
+    # Códigos compuestos del alta por tipos («RDS-04-COMP_DOMICILIO»): hasta 45
+    # caracteres. Ampliar un VARCHAR no reescribe la tabla; solo se aplica si
+    # la columna aún es más corta.
+    """
+    DO $$
+    BEGIN
+        IF (SELECT character_maximum_length FROM information_schema.columns
+             WHERE table_schema = current_schema() AND table_name = 'reglas_validacion'
+               AND column_name = 'codigo_regla') < 50 THEN
+            ALTER TABLE reglas_validacion ALTER COLUMN codigo_regla TYPE VARCHAR(50);
+        END IF;
+    END $$
+    """,
 ]
 
 # Migración de datos, una sola vez (cuando la columna tipo_expediente se crea):
@@ -70,6 +83,31 @@ _ASIGNAR_INVENTARIO_CORPORATIVO = """
     UPDATE reglas_validacion SET tipo_expediente = 'CORPORATIVO'
      WHERE codigo_regla IN ('RIE-01-CSF', 'RIE-01-DOM', 'RIE-01-ACTA') AND tipo_expediente IS NULL
 """
+
+
+def _sentencias_check() -> list[str]:
+    """
+    CHECK de la familia normativa y del tipo de expediente, construidos con los
+    mismos Literal que valida la API (schemas/regla_schema.py). Se reemplazan en
+    cada arranque, así que un valor nuevo en el esquema llega a la base solo.
+    """
+    from typing import get_args
+
+    from schemas.regla_schema import FamiliaRegla, TipoExpediente
+
+    def lista(valores) -> str:
+        return ", ".join("'" + v.replace("'", "''") + "'" for v in valores)
+
+    restricciones = {
+        "ck_reglas_validacion_familia_regla": f"familia_regla IN ({lista(get_args(FamiliaRegla))})",
+        # Nulo: la regla aplica a todos los tipos de expediente (RF-06).
+        "ck_reglas_validacion_tipo_expediente": f"tipo_expediente IS NULL OR tipo_expediente IN ({lista(get_args(TipoExpediente))})",
+    }
+    sentencias = []
+    for nombre, condicion in restricciones.items():
+        sentencias.append(f"ALTER TABLE reglas_validacion DROP CONSTRAINT IF EXISTS {nombre}")
+        sentencias.append(f"ALTER TABLE reglas_validacion ADD CONSTRAINT {nombre} CHECK ({condicion})")
+    return sentencias
 
 
 def init_db():
@@ -88,4 +126,6 @@ def init_db():
                 conn.execute(text(sentencia))
             if columna_previa is None:
                 conn.execute(text(_ASIGNAR_INVENTARIO_CORPORATIVO))
+            for sentencia in _sentencias_check():
+                conn.execute(text(sentencia))
     print("[Base de Datos] Tablas y migraciones sincronizadas con éxito.")

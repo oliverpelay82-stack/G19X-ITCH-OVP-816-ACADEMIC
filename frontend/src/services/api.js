@@ -14,6 +14,26 @@ export const CORE_BASE_URL = import.meta.env.VITE_CORE_URL || 'http://127.0.0.1:
 export const RULES_BASE_URL = import.meta.env.VITE_RULES_URL || 'http://127.0.0.1:8002/api/v1'
 export const AI_BASE_URL = import.meta.env.VITE_AI_URL || 'http://127.0.0.1:8003/api/v1'
 
+/**
+ * Texto legible del `detail` de una respuesta de error. FastAPI lo envía como
+ * cadena en los errores propios (HTTPException) y como lista de objetos
+ * { loc, msg } en los de validación (422); sin esto, la lista llegaba al aviso
+ * como «[object Object]».
+ */
+function mensajeDeError(detail, status) {
+  if (typeof detail === 'string' && detail) return detail
+  if (Array.isArray(detail) && detail.length) {
+    return detail
+      .map((e) => {
+        const campo = Array.isArray(e?.loc) ? e.loc.filter((p) => p !== 'body').join('.') : ''
+        const msg = e?.msg || String(e)
+        return campo ? `${campo}: ${msg}` : msg
+      })
+      .join('; ')
+  }
+  return `Error HTTP ${status}`
+}
+
 class ApiError extends Error {
   constructor(message, status, detail) {
     super(message)
@@ -67,8 +87,7 @@ async function request(baseUrl, path, { method = 'GET', body, isFormData = false
   const payload = contentType.includes('application/json') ? await response.json().catch(() => null) : null
 
   if (!response.ok) {
-    const detail = payload?.detail || `Error HTTP ${response.status}`
-    throw new ApiError(detail, response.status, payload?.detail)
+    throw new ApiError(mensajeDeError(payload?.detail, response.status), response.status, payload?.detail)
   }
 
   return payload
@@ -121,7 +140,7 @@ export async function descargarReporte(ruta, params) {
   }
   if (!response.ok) {
     const payload = await response.json().catch(() => null)
-    throw new ApiError(payload?.detail || `Error HTTP ${response.status}`, response.status, payload?.detail)
+    throw new ApiError(mensajeDeError(payload?.detail, response.status), response.status, payload?.detail)
   }
   const disposicion = response.headers.get('content-disposition') || ''
   const nombre = /filename="([^"]+)"/.exec(disposicion)?.[1] || `reporte.${params?.formato || 'pdf'}`

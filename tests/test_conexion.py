@@ -22,7 +22,7 @@ def probar():
         with engine.connect() as conn:
             result = conn.execute(text("SELECT VERSION();"))
             version = result.scalar()
-            print(f"[OK] Conexión exitosa a PostgreSQL!")
+            print("[OK] Conexión exitosa a PostgreSQL!")
             print(f"[OK] Versión detectada: {version}")
         print("=" * 60)
         return True

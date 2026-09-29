@@ -1,5 +1,6 @@
 # Framework Web
 fastapi>=0.115.0
+starlette>=0.48.0  # status.HTTP_422_UNPROCESSABLE_CONTENT (RFC 9110)
 uvicorn[standard]>=0.30.0
 python-dotenv>=1.0.0
 

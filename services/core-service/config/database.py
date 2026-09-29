@@ -70,6 +70,30 @@ _MIGRACIONES_POSTGRES = [
     # toma del evento APERTURA_EXPEDIENTE de la bitácora.
     "ALTER TABLE expedientes ADD COLUMN IF NOT EXISTS creado_en TIMESTAMP",
     "CREATE INDEX IF NOT EXISTS ix_expedientes_creado_en ON expedientes (creado_en)",
+    # Documentos por expediente: cada evaluación del semáforo filtra por esta FK.
+    "CREATE INDEX IF NOT EXISTS ix_documentos_expediente_id ON documentos (expediente_id)",
+    # Cadena de custodia: borrar un titular o un expediente no arrastra en cascada
+    # a sus expedientes y documentos (antes ON DELETE CASCADE). La FK se busca por
+    # tabla y columna y solo se recrea si aún no es RESTRICT ('r').
+    """
+    DO $$
+    DECLARE
+        fk RECORD;
+    BEGIN
+        FOR fk IN
+            SELECT c.conname, c.conrelid::regclass AS tabla, a.attname AS columna, c.confrelid::regclass AS destino
+              FROM pg_constraint c
+              JOIN pg_attribute a ON a.attrelid = c.conrelid AND a.attnum = c.conkey[1]
+             WHERE c.contype = 'f' AND c.confdeltype <> 'r'
+               AND ((c.conrelid = 'expedientes'::regclass AND a.attname = 'titular_id')
+                 OR (c.conrelid = 'documentos'::regclass AND a.attname = 'expediente_id'))
+        LOOP
+            EXECUTE format('ALTER TABLE %s DROP CONSTRAINT %I', fk.tabla, fk.conname);
+            EXECUTE format('ALTER TABLE %s ADD CONSTRAINT %I FOREIGN KEY (%I) REFERENCES %s (id) ON DELETE RESTRICT',
+                           fk.tabla, fk.conname, fk.columna, fk.destino);
+        END LOOP;
+    END $$
+    """,
     """
     UPDATE expedientes e
        SET creado_en = COALESCE(
@@ -126,6 +150,49 @@ _MIGRACIONES_POSTGRES = [
 ]
 
 
+# Valores heredados que la API ya no crea pero que existen en registros de
+# custodia y no se reescriben (contradirían su evento en la bitácora inmutable).
+_TIPOS_DOCUMENTO_HEREDADOS = ("OTRO",)
+
+
+def _restricciones_check() -> dict[tuple[str, str], tuple[str, ...]]:
+    """
+    Valores permitidos por columna, tomados de los mismos enums y constantes que
+    valida la API, para que la base y la API nunca diverjan.
+    """
+    from typing import get_args
+
+    from motor import cumplimiento, integridad
+    from schemas.dictamen_schema import EstatusDictamen
+    from schemas.documento_schema import TipoDocumentoEnum
+    from schemas.expediente_schema import TipoExpedienteEnum
+
+    estados = (cumplimiento.CONFORME, cumplimiento.EN_REVISION, cumplimiento.NO_CONFORME)
+    return {
+        ("expedientes", "estado_cumplimiento"): estados,
+        ("expedientes", "tipo_expediente"): tuple(t.value for t in TipoExpedienteEnum),
+        ("documentos", "tipo_documento"): tuple(t.value for t in TipoDocumentoEnum) + _TIPOS_DOCUMENTO_HEREDADOS,
+        ("documentos", "estado_integridad"): (integridad.INTEGRO, integridad.ALTERADO),
+        ("dictamenes_auditoria", "estatus"): get_args(EstatusDictamen),
+        ("dictamenes_auditoria", "estatus_preliminar"): get_args(EstatusDictamen),
+    }
+
+
+def _sentencias_check() -> list[str]:
+    """
+    Cada CHECK se reemplaza en cada arranque (DROP IF EXISTS + ADD): si un enum
+    gana un valor, la restricción lo recoge sin migración manual. Si un registro
+    existente no cumple, el arranque falla con el nombre de la restricción.
+    """
+    sentencias = []
+    for (tabla, columna), valores in _restricciones_check().items():
+        nombre = f"ck_{tabla}_{columna}"
+        lista = ", ".join("'" + v.replace("'", "''") + "'" for v in valores)
+        sentencias.append(f"ALTER TABLE {tabla} DROP CONSTRAINT IF EXISTS {nombre}")
+        sentencias.append(f"ALTER TABLE {tabla} ADD CONSTRAINT {nombre} CHECK ({columna} IN ({lista}))")
+    return sentencias
+
+
 def init_db():
     """
     Equivalente a: spring.jpa.hibernate.ddl-auto=update
@@ -136,6 +203,6 @@ def init_db():
     Base.metadata.create_all(bind=engine)
     if engine.dialect.name == "postgresql":
         with engine.begin() as conn:
-            for sentencia in _MIGRACIONES_POSTGRES:
+            for sentencia in _MIGRACIONES_POSTGRES + _sentencias_check():
                 conn.execute(text(sentencia))
     print("[Base de Datos] Tablas y migraciones sincronizadas con éxito.")

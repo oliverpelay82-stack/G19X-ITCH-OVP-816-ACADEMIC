@@ -21,11 +21,14 @@ class Documento(Base):
     # Clave primaria UUID
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     
-    # Clave foránea que apunta a expedientes
+    # Clave foránea que apunta a expedientes. Indexada: cada evaluación del
+    # semáforo y cada listado del expediente filtran por ella. RESTRICT: un
+    # expediente con documentos custodiados no puede borrarse (cadena de custodia).
     expediente_id = Column(
         String(36),
-        ForeignKey("expedientes.id", ondelete="CASCADE"),
+        ForeignKey("expedientes.id", ondelete="RESTRICT"),
         nullable=False,
+        index=True,
     )
     
     # Tipo documental corporativo: 'CSF_SAT', 'COMP_DOMICILIO', 'ACTA_CONSTITUTIVA'

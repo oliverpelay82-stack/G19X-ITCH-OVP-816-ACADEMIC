@@ -67,7 +67,7 @@ def listar_documentos_obligatorios(
     """
     if tipo_expediente and tipo_expediente.strip().upper() not in obligatorios.TIPOS_EXPEDIENTE:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail=f"Tipo de expediente no reconocido: '{tipo_expediente}'. "
                    f"Valores válidos: {', '.join(obligatorios.TIPOS_EXPEDIENTE)}.",
         )
@@ -90,12 +90,12 @@ def crear_regla(regla_dto: ReglaCreate, db: Session = Depends(get_db)):
     tipo_documento = regla_dto.tipo_documento.strip().upper() if regla_dto.tipo_documento else None
     if principal and not tipo_documento:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail="Una regla de anexo (RIE-02) debe indicar el tipo de documento del anexo.",
         )
     if principal and principal == tipo_documento:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail="Un documento no puede ser anexo de sí mismo.",
         )
 

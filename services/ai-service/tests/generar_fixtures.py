@@ -47,7 +47,7 @@ LINEAS = [
     (f"RFC: {RFC_PRUEBA}", 12, False),
     (f"Denominacion o Razon Social: {RAZON_SOCIAL_PRUEBA}", 11, False),
     ("Regimen de capital: SOCIEDAD ANONIMA DE CAPITAL VARIABLE", 11, False),
-    (f"Fecha de inicio de operaciones: 14 de mayo de 2018", 11, False),
+    ("Fecha de inicio de operaciones: 14 de mayo de 2018", 11, False),
     ("Estatus en el padron: ACTIVO", 11, False),
     ("", 10, False),
     ("DATOS DEL DOMICILIO REGISTRADO", 11, True),
