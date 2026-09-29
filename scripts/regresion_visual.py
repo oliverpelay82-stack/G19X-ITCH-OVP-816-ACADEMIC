@@ -6,8 +6,12 @@ Captura cada vista de la interfaz con los datos reales del entorno local en
 una referencia. Además de las seis pestañas cubre los estados que no se ven
 al entrar: la tabla de Empresas, el detalle de un expediente, los modales de
 alta de empresa, apertura de expediente, ingesta y nueva regla, y el modal
-del documento completo (dictamen, verificación de contenido y chat). Sirve para demostrar que una refactorización del sistema de
-diseño no altera la interfaz, o para acotar exactamente dónde la altera.
+del documento completo. Los estados que solo aparecen al interactuar
+(prefijo `_int`: ingesta con archivo, visor, ratificación, auditoría y chat
+simulados, filtros, historial y regla por tipo) están en
+regresion_visual_escenarios.py; ninguno escribe en la base ni consume Groq.
+Sirve para demostrar que una refactorización del sistema de diseño no altera
+la interfaz, o para acotar exactamente dónde la altera.
 
 Requisitos: los tres microservicios y el frontend (`npm run dev`) en marcha,
 y Playwright para Python con el canal de Chrome instalado.
@@ -27,6 +31,8 @@ from pathlib import Path
 from PIL import Image, ImageChops
 from playwright.sync_api import Page, sync_playwright
 
+import regresion_visual_escenarios as escenarios
+
 RAIZ = Path(__file__).resolve().parent.parent
 SALIDA = RAIZ / "frontend" / ".regresion-visual"
 URL = "http://127.0.0.1:5173/"
@@ -40,9 +46,14 @@ VISTAS = ["Empresas", "Expedientes", "Bóveda", "Alertas", "Reportes", "Reglas"]
 # interfaz es la latencia de cada sondeo de salud (de 2 a 4 cifras): se oculta
 # y se le fija el ancho, de modo que no desplaza la tira ni cuenta como
 # diferencia, y el resto de la tira (estado, puerto, modelo) sí se compara.
+#
+# El velo de los modales se pinta opaco: si no, cada captura de un modal
+# incluye, atenuada, la página que queda detrás, y un cambio en esa página
+# (p. ej. las tarjetas de métricas) hacía «cambiar» modales idénticos.
 CSS_CAPTURA = """
 *, *::before, *::after { transition: none !important; animation: none !important; caret-color: transparent !important; }
 .health-metric { display: inline-block; min-width: 7ch; visibility: hidden; }
+.modal-overlay { background: var(--bg-canvas) !important; }
 """
 
 # Diferencia máxima por canal (0-255) que no cuenta como cambio. Los iconos
@@ -60,10 +71,21 @@ UMBRAL_CANAL = 2
 MIN_PIXELES = 5
 
 
+# Variantes tipográficas del sistema de diseño. Google Fonts las sirve con
+# display=swap y cada una se descarga la primera vez que se usa (el 600 al
+# abrir un modal, por ejemplo): sin cargarlas antes, una captura podía salir
+# con la fuente de respaldo según lo que tardara la red.
+FUENTES = ["400 13px Inter", "500 13px Inter", "600 13px Inter", "400 13px 'JetBrains Mono'", "500 13px 'JetBrains Mono'"]
+
+
 def _preparar(pagina: Page, tema: str) -> None:
     pagina.add_init_script(f"localStorage.setItem('plurione-theme-v2', '{tema}')")
     pagina.goto(URL)
     pagina.wait_for_load_state("networkidle")
+    pagina.evaluate(f"Promise.all({FUENTES!r}.map((f) => document.fonts.load(f))).then(() => document.fonts.ready)")
+    faltantes = pagina.evaluate(f"{FUENTES!r}.filter((f) => !document.fonts.check(f))")
+    if faltantes:
+        raise RuntimeError(f"No cargaron las fuentes {faltantes}: la captura saldría con la de respaldo")
     pagina.add_style_tag(content=CSS_CAPTURA)
     pagina.wait_for_timeout(800)
 
@@ -180,6 +202,9 @@ def capturar(destino: str) -> None:
                 _capturar_modal(pagina, carpeta / f"{prefijo}_modal_regla.png")
                 _cerrar_modal(pagina)
                 pagina.close()
+
+                # Estados que solo aparecen al interactuar (ver regresion_visual_escenarios.py).
+                escenarios.capturar_escenarios(navegador, carpeta, ancho, alto, tema, sys.modules[__name__])
         navegador.close()
     print(f"{len(list(carpeta.glob('*.png')))} capturas en {carpeta}")
 
