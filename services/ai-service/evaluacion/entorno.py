@@ -12,10 +12,11 @@ real sobre los PDF del Gold Standard. Solo sustituye los transportes externos:
   * rules-service: vigencia RCV con ``rules-service/motor/vigencia.py`` (puro) y
     criterios RSC de la instantánea del catálogo.
 
-Mientras dura el entorno, la base SQLite del servicio es una temporal, el caché
-de texto en memoria empieza vacío, el caché de inferencias del servicio se apaga
-(para que las latencias grabadas sean reales) y la lectura completa en segundo
-plano no se programa.
+Mientras dura el entorno, la base SQLite del servicio es una temporal (así el
+caché de respuestas del chat, T3, empieza vacío en cada corrida), el caché de
+texto en memoria empieza vacío y la lectura completa en segundo plano no se
+programa. El caché de la auditoría dentro de ``groq_client.generar_json`` no
+interviene: el casete sustituye a esa función completa.
 """
 from __future__ import annotations
 
@@ -288,7 +289,6 @@ class Entorno:
         mp = self._parche
         temporal = tempfile.mkdtemp(prefix="plurione-evaluacion-")
         mp.setattr(settings, "EXTRACCIONES_DB_PATH", os.path.join(temporal, "extracciones.sqlite3"))
-        mp.setattr(settings, "GROQ_CACHE_INFERENCIAS", False)
         mp.setattr(settings, "COMPLETAR_LECTURA_EN_SEGUNDO_PLANO", False)
         mp.setattr(repositorio_texto, "cache_texto", CacheExtracciones(settings.CACHE_MAX_DOCUMENTOS))
         for nombre in ("obtener_metadatos", "verificar_integridad", "leer_binario", "registrar_dictamen",

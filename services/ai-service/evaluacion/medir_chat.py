@@ -159,6 +159,14 @@ def medir(etiqueta: str, modo: str, nombre_bateria: str = "corta") -> dict[str, 
                 _imprimir(turno)
                 mensajes += [{"rol": "usuario", "contenido": pregunta.pregunta},
                              {"rol": "asistente", "contenido": turno["respuesta"]}]
+        # Repetición (T3): otro analista hace las mismas preguntas sueltas, escritas sin
+        # acentos, mayúsculas ni signos. No entra en el resumen principal, que sigue
+        # siendo comparable con la medición base.
+        repeticion = []
+        for pregunta in preguntas:
+            variante = bateria.variante_escrita(pregunta)
+            repeticion.append(_turno(e, cliente, variante, []))
+            _imprimir(repeticion[-1])
         version = e.version()
 
     por_categoria = defaultdict(list)
@@ -175,8 +183,10 @@ def medir(etiqueta: str, modo: str, nombre_bateria: str = "corta") -> dict[str, 
         "por_categoria": {c: _resumen(ts) for c, ts in sorted(por_categoria.items())},
         "sueltas": _resumen([t for t in turnos if "conversacion" not in t]),
         "conversaciones": _resumen([t for t in turnos if "conversacion" in t]),
+        "repeticion": _resumen(repeticion),
         "auditorias": auditorias,
         "turnos": turnos,
+        "turnos_repeticion": repeticion,
     }
 
 
@@ -201,6 +211,8 @@ def tabla(resultado: dict[str, Any]) -> str:
         filas.append(fila(categoria.capitalize(), r))
     if resultado["conversaciones"]["turnos"]:
         filas.append(fila("Conversaciones (4 turnos)", resultado["conversaciones"]))
+    if resultado.get("repeticion", {}).get("turnos"):
+        filas.append(fila("Repetición sin acentos ni signos", resultado["repeticion"]))
     return "\n".join(filas)
 
 

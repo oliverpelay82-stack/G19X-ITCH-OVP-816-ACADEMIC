@@ -32,7 +32,7 @@ from clients.groq_client import GroqNoDisponibleError, GroqRespuestaInvalidaErro
 from clients.rules_client import ReglasNoDisponiblesError
 from config import settings
 from pipelines import analisis_semantico as pipeline_analisis
-from pipelines import fragmentos, repositorio_texto, verificacion_contenido
+from pipelines import cache_chat, fragmentos, repositorio_texto, verificacion_contenido
 from pipelines.extraccion_pipeline import FormatoNoSoportadoError, MotorOcrNoDisponibleError
 from schemas.analisis_schema import AnalisisSemanticoRequest, ChatDocumentoRequest
 
@@ -393,12 +393,24 @@ def chat_documento(peticion: ChatDocumentoRequest):
     mensajes.append({"role": "user", "content": peticion.pregunta})
 
     inicio = time.perf_counter()
-    try:
-        contenido = groq_client.conversar(mensajes)
-    except GroqNoDisponibleError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=f"[Nivel 4] {exc}"
-        ) from exc
+    # T3 (PLUS-10): a temperatura 0.0 una respuesta ya obtenida se reutiliza. La clave
+    # por pregunta normalizada solo aplica al primer turno: con historial, el sentido
+    # de una pregunta corta depende de lo anterior.
+    claves: list[str | None] = []
+    if cache_chat.activo() and not peticion.forzar_modelo:
+        claves.append(cache_chat.clave_exacta(mensajes, settings.GROQ_MAX_TOKENS))
+        if not peticion.historial and documento:
+            claves.append(cache_chat.clave_pregunta(documento.sha256, estado, peticion.pregunta))
+    contenido = cache_chat.leer(claves)
+    origen = "CACHE" if contenido is not None else "MODELO"
+    if contenido is None:
+        try:
+            contenido = groq_client.conversar(mensajes)
+        except GroqNoDisponibleError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=f"[Nivel 4] {exc}"
+            ) from exc
+        cache_chat.guardar(claves, contenido)
 
     # Cada cita «…» se contrasta con el texto completo y, si no está ahí, con el
     # estado en el sistema (una recomendación del catálogo, p. ej.). La que no
@@ -417,6 +429,8 @@ def chat_documento(peticion: ChatDocumentoRequest):
         "respuesta": contenido,
         "citas": citas,
         "con_estado_del_sistema": bool(estado),
+        # MODELO o CACHE (PLUS-10); campo opcional, el contrato previo no cambia.
+        "origen_respuesta": origen,
         "modelo_utilizado": settings.GROQ_MODEL,
         "caracteres_de_contexto": len(seleccion.texto),
         "contexto_truncado": seleccion.recortado,

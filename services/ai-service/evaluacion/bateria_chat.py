@@ -154,5 +154,13 @@ def acierta(respuesta: str, pregunta: Pregunta) -> bool:
     return all(any(normalizar(alternativa) in texto for alternativa in grupo) for grupo in pregunta.contiene)
 
 
+def variante_escrita(pregunta: Pregunta) -> Pregunta:
+    """La misma pregunta como la teclearía otro analista: sin acentos, mayúsculas ni signos."""
+    # Solo los signos de interrogación y exclamación: el punto y la coma de una cifra (99.5 %) son parte del dato.
+    texto = re.sub(r"[¿?¡!]", "", normalizar(pregunta.pregunta)).strip()
+    return Pregunta(pregunta.documento, texto, pregunta.categoria, pregunta.ruta_prevista, pregunta.contiene,
+                    pregunta.ausente)
+
+
 def total_turnos() -> int:
     return len(PREGUNTAS) + sum(len(c) for c in CONVERSACIONES)

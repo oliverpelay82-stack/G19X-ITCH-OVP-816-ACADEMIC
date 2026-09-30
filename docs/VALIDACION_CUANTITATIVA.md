@@ -360,6 +360,18 @@ Implementación previa a P4, con la configuración definitiva del OCR (`n3-3.2|t
 - **Un error real de recuperación:** a «¿Cuál es el tiempo de respuesta de la mesa de ayuda para un incidente de prioridad crítica?» el chat respondió «1 hora» y «30 minutos» (valores de otros servicios del Anexo A) en lugar de 15 minutos. Las siete páginas de niveles de servicio tienen el mismo texto salvo el nombre del servicio, y BM25 no favoreció el fragmento con el encabezado «MESA DE AYUDA». El reordenamiento léxico de T2 debe resolver este caso y se medirá contra él.
 - **La auditoría del documento** consumió 6,995 tokens (6,127 de prompt) y tardó 16.9 s de principio a fin: lectura OCR en frío de las 20 páginas más dos llamadas a Groq (3.5 s y 1.8 s, en paralelo). Es una primera lectura del RNF-02 (≤ 25 s) con la configuración definitiva del OCR, no la medición formal de §7.3.
 
+#### T3 — Caché de respuestas (PLUS-10)
+
+Medición en modo reproducir (sin tokens), con una fase de repetición: cada pregunta suelta se vuelve a hacer como la teclearía otro analista (sin acentos, mayúsculas ni signos de interrogación). Detalle en [`chat_t3.json`](resultados_validacion/chat_t3.json) y [`chat_t3_extensa.json`](resultados_validacion/chat_t3_extensa.json).
+
+| Batería | Turnos nuevos: tokens/turno, p50, exactitud | Repetición: sin modelo | Repetición: tokens/turno | Repetición: p50 / p95 | Repetición: exactitud y citas |
+|---|---|---|---|---|---|
+| Documentos breves | 1,581 · 747 ms · 95 % (sin cambio) | 30/30 | 0 | 22 ms / 30 ms | 93 % · 30/30 verificadas |
+| Contrato de 20 páginas | 3,006 · 1,142 ms · 88 % (sin cambio) | 8/8 | 0 | 25 ms / 32 ms | 88 % · 12/12 verificadas |
+
+- Una pregunta ya respondida sobre el mismo documento y el mismo estado **no vuelve a consumir tokens** y baja de ≈ 0.75–1.1 s a ≈ 25 ms. La exactitud y las citas son las mismas que en la primera respuesta, porque es la misma respuesta (93 % = 28/30: los dos falsos negativos del calificador de la base están entre las preguntas sueltas).
+- T3 no cambia el costo de una pregunta nueva: su ahorro depende de cuánto se repitan las preguntas entre analistas (las sugeridas por la interfaz son las candidatas naturales).
+
 ### 10.2 Precisión y 10.3 Rendimiento
 
 *Pendiente de ejecución.* Tablas previstas:

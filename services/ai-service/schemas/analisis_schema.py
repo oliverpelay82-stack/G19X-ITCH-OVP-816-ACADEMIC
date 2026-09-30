@@ -87,6 +87,11 @@ class ChatDocumentoRequest(_FuenteDocumental):
         max_length=20,
         description="Turnos anteriores de la conversación, del más antiguo al más reciente (máximo 20).",
     )
+    forzar_modelo: bool = Field(
+        default=False,
+        description="Consulta siempre al modelo, sin reutilizar una respuesta guardada (PLUS-10) ni responder "
+                    "con los datos del dictamen (PLUS-07).",
+    )
 
     model_config = {
         "json_schema_extra": {
