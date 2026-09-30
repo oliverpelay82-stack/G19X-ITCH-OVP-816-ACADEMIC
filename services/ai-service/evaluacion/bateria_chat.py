@@ -111,6 +111,27 @@ CONVERSACIONES: list[list[Pregunta]] = [
     ],
 ]
 
+# Batería del documento extenso (contrato marco de 20 páginas, escaneado): los datos
+# están repartidos en todo el texto, así que el contexto del chat llega a su tope.
+DOCUMENTOS_EXTENSOS = ("GS-CONT-EXT-ESC",)
+PREGUNTAS_EXTENSAS: list[Pregunta] = [
+    Pregunta("GS-CONT-EXT-ESC", "¿Qué le falta a este documento?", SUGERIDA, "T0",
+             [["no le falta", "no falta", "completo", "contiene todas", "firmante", "apoderad", "facultades"]]),
+    Pregunta("GS-CONT-EXT-ESC", "Resume los datos clave de este archivo", SUGERIDA, "T0",
+             [["plurione"], ["servicios integrales del norte"]]),
+    Pregunta("GS-CONT-EXT-ESC", "¿Quiénes firman el contrato?", FACTUAL, "T0",
+             [["maria elena ruiz soto"], ["jorge alberto trevino garza"]]),
+    Pregunta("GS-CONT-EXT-ESC", "¿Hasta cuándo está vigente el contrato?", FACTUAL, "T0", [fecha("2027-03-01")]),
+    Pregunta("GS-CONT-EXT-ESC", "¿Cuál es el monto mensual total de los servicios?", LOCALIZACION, "T1",
+             [["185,000", "185000", "185 000", "ciento ochenta y cinco mil"]]),
+    Pregunta("GS-CONT-EXT-ESC", "¿Cuál es el tiempo de respuesta de la mesa de ayuda para un incidente de "
+             "prioridad crítica?", LOCALIZACION, "T1", [["15 minutos", "quince minutos"]]),
+    Pregunta("GS-CONT-EXT-ESC", "¿Qué deductiva se aplica si la disponibilidad de los servidores baja del 99.5 %?",
+             LOCALIZACION, "T1", [["cinco por ciento", "5 %", "5%"]]),
+    Pregunta("GS-CONT-EXT-ESC", "¿Puede el prestador subcontratar los servicios?", INTERPRETATIVA, "MODELO",
+             [["autorizacion"]]),
+]
+
 # Cuántos mensajes previos manda Chat.jsx (MAX_TURNOS_HISTORIAL).
 TURNOS_HISTORIAL_FRONTEND = 6
 

@@ -30,8 +30,17 @@ def test_los_documentos_son_casos_del_gold_standard():
     assert set(b.DOCUMENTOS) <= ids
 
 
+def test_bateria_extensa():
+    from evaluacion import documento_extenso
+    with open(documento_extenso.RUTA_ANOTACION, encoding="utf-8") as f:
+        ids = {c["id"] for c in json.load(f)["casos"]}
+    assert set(b.DOCUMENTOS_EXTENSOS) <= ids
+    assert len(b.PREGUNTAS_EXTENSAS) == 8
+    assert {p.documento for p in b.PREGUNTAS_EXTENSAS} == set(b.DOCUMENTOS_EXTENSOS)
+
+
 def test_cada_pregunta_tiene_como_calificarse():
-    for p in b.PREGUNTAS + [q for c in b.CONVERSACIONES for q in c]:
+    for p in b.PREGUNTAS + b.PREGUNTAS_EXTENSAS + [q for c in b.CONVERSACIONES for q in c]:
         assert p.ausente or (p.contiene and all(p.contiene)), p.pregunta
 
 

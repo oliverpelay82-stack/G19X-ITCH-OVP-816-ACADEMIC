@@ -346,6 +346,20 @@ Implementación previa a P4, con la configuración definitiva del OCR (`n3-3.2|t
 - **Todas las citas (39/39) quedaron verificadas** en el documento o en el sistema.
 - **Auditorías:** 1,743 a 4,421 tokens (las de contrato y NDA hacen dos llamadas: extracción y verificación); la latencia de Groq tuvo dos valores atípicos (10.2 s y 16.2 s) frente a 0.6–3.8 s del resto.
 
+**Documento extenso (contrato marco escaneado de 20 páginas, `evaluacion/documento_extenso.py`).** 1 auditoría y 8 turnos, misma configuración; detalle en [`resultados_validacion/chat_base_extensa.json`](resultados_validacion/chat_base_extensa.json).
+
+| Grupo | Turnos | Tokens/turno | Turnos/min (8,000 TPM) | Sin modelo | p50 ms | p95 ms | Exactitud (IC 95 %) | Citas verificadas |
+|---|---|---|---|---|---|---|---|---|
+| **Total** | 8 | 3,006 | 2.66 | 0 | 1,116 | 1,706 | 88 % (53–98 %) | 12/12 |
+| Sugeridas | 2 | 3,070 | 2.61 | 0 | 1,417 | 1,775 | 100 % | 1/1 |
+| Factuales | 2 | 2,898 | 2.76 | 0 | 1,027 | 1,455 | 100 % | 3/3 |
+| Localización | 3 | 3,046 | 2.63 | 0 | 1,213 | 1,427 | 67 % (21–94 %) | 6/6 |
+| Interpretativa | 1 | 2,976 | 2.69 | 0 | 796 | 796 | 100 % | 2/2 |
+
+- **En un documento largo el turno cuesta el doble** (3,006 tokens contra 1,581): el contexto llega a su tope (5,600 a 6,500 caracteres en todos los turnos) y solo caben 2.7 turnos por minuto. Aquí es donde T2 (PLUS-09) puede ahorrar.
+- **Un error real de recuperación:** a «¿Cuál es el tiempo de respuesta de la mesa de ayuda para un incidente de prioridad crítica?» el chat respondió «1 hora» y «30 minutos» (valores de otros servicios del Anexo A) en lugar de 15 minutos. Las siete páginas de niveles de servicio tienen el mismo texto salvo el nombre del servicio, y BM25 no favoreció el fragmento con el encabezado «MESA DE AYUDA». El reordenamiento léxico de T2 debe resolver este caso y se medirá contra él.
+- **La auditoría del documento** consumió 6,995 tokens (6,127 de prompt) y tardó 16.9 s de principio a fin: lectura OCR en frío de las 20 páginas más dos llamadas a Groq (3.5 s y 1.8 s, en paralelo). Es una primera lectura del RNF-02 (≤ 25 s) con la configuración definitiva del OCR, no la medición formal de §7.3.
+
 ### 10.2 Precisión y 10.3 Rendimiento
 
 *Pendiente de ejecución.* Tablas previstas:

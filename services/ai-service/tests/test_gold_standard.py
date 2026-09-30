@@ -62,3 +62,19 @@ def test_coherencia_con_los_catalogos():
         for codigo in esperado["elementos"]:
             assert codigo in reglas, (caso["id"], codigo)
             assert reglas[codigo]["tipo_documento"] == caso["tipo_registrado"], (caso["id"], codigo)
+
+
+def test_documento_extenso_congelado_y_de_20_paginas():
+    import fitz
+
+    from evaluacion import documento_extenso as ext
+    with open(ext.RUTA_HUELLA, encoding="utf-8") as f:
+        assert _sha256(ext.RUTA_ANOTACION) == f.read().split()[0]
+    with open(ext.RUTA_ANOTACION, encoding="utf-8") as f:
+        casos = json.load(f)["casos"]
+    assert [c["rendicion"] for c in casos] == ["VECTORIAL", "ESCANEADO"]
+    for caso in casos:
+        ruta = os.path.join(gs.DIRECTORIO_DOCUMENTOS, caso["archivo"])
+        assert _sha256(ruta) == caso["sha256_archivo"]
+        with fitz.open(ruta) as documento:
+            assert len(documento) == 20

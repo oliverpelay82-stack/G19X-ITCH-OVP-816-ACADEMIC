@@ -32,6 +32,7 @@ from typing import Any
 
 from evaluacion import entorno  # noqa: I001  (instala los parches antes que el resto del servicio)
 from evaluacion import bateria_chat as bateria
+from evaluacion import documento_extenso
 from evaluacion import gold_standard as gs
 from evaluacion import metricas
 
@@ -46,10 +47,17 @@ class CorridaAbortada(RuntimeError):
     pass
 
 
-def _casos() -> list[dict[str, Any]]:
-    with open(gs.RUTA_ANOTACION, encoding="utf-8") as f:
+BATERIAS = {
+    # nombre: (anotación, documentos, preguntas sueltas, conversaciones)
+    "corta": (gs.RUTA_ANOTACION, bateria.DOCUMENTOS, bateria.PREGUNTAS, bateria.CONVERSACIONES),
+    "extensa": (documento_extenso.RUTA_ANOTACION, bateria.DOCUMENTOS_EXTENSOS, bateria.PREGUNTAS_EXTENSAS, []),
+}
+
+
+def _casos(ruta: str, documentos: tuple[str, ...]) -> list[dict[str, Any]]:
+    with open(ruta, encoding="utf-8") as f:
         casos = json.load(f)["casos"]
-    return [c for c in casos if c["id"] in bateria.DOCUMENTOS]
+    return [c for c in casos if c["id"] in documentos]
 
 
 def _peticion(e: entorno.Entorno, cliente, ruta: str, cuerpo: dict[str, Any]) -> tuple[dict[str, Any], dict]:
@@ -123,8 +131,9 @@ def _resumen(turnos: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
-def medir(etiqueta: str, modo: str) -> dict[str, Any]:
-    casos = _casos()
+def medir(etiqueta: str, modo: str, nombre_bateria: str = "corta") -> dict[str, Any]:
+    ruta_anotacion, documentos, preguntas, conversaciones = BATERIAS[nombre_bateria]
+    casos = _casos(ruta_anotacion, documentos)
     auditorias, turnos = [], []
     with entorno.Entorno(casos, RUTA_CASETE, modo) as e:
         cliente = e.cliente()
@@ -137,10 +146,10 @@ def medir(etiqueta: str, modo: str) -> dict[str, Any]:
                                "estatus_esperado": caso["esperado"]["estatus"], **medicion})
             print(f"[auditoría] {caso['id']:16s} {respuesta['estatus_preliminar']:12s} "
                   f"{medicion['tokens']['total_tokens']:>6} tokens", flush=True)
-        for pregunta in bateria.PREGUNTAS:
+        for pregunta in preguntas:
             turnos.append(_turno(e, cliente, pregunta, []))
             _imprimir(turnos[-1])
-        for numero, conversacion in enumerate(bateria.CONVERSACIONES, start=1):
+        for numero, conversacion in enumerate(conversaciones, start=1):
             mensajes: list[dict[str, str]] = []
             for pregunta in conversacion:
                 historial = mensajes[-bateria.TURNOS_HISTORIAL_FRONTEND:]
@@ -157,6 +166,7 @@ def medir(etiqueta: str, modo: str) -> dict[str, Any]:
         por_categoria[t["categoria"]].append(t)
     return {
         "etiqueta": etiqueta,
+        "bateria": nombre_bateria,
         "modo": modo,
         "ejecutado_en": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "entorno": {**version, "python": platform.python_version(), "sistema": platform.platform(),
@@ -189,7 +199,8 @@ def tabla(resultado: dict[str, Any]) -> str:
     filas.append(fila("**Total**", resultado["resumen"]))
     for categoria, r in resultado["por_categoria"].items():
         filas.append(fila(categoria.capitalize(), r))
-    filas.append(fila("Conversaciones (4 turnos)", resultado["conversaciones"]))
+    if resultado["conversaciones"]["turnos"]:
+        filas.append(fila("Conversaciones (4 turnos)", resultado["conversaciones"]))
     return "\n".join(filas)
 
 
@@ -197,15 +208,18 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--etiqueta", required=True, help="Nombre de la medición (base, t3-t4, t0…)")
     parser.add_argument("--modo", choices=(entorno.GRABAR, entorno.REPRODUCIR), default=entorno.REPRODUCIR)
+    parser.add_argument("--bateria", choices=tuple(BATERIAS), default="corta",
+                        help="corta: 38 turnos sobre 6 documentos breves; extensa: 8 turnos sobre el contrato de 20 páginas")
     args = parser.parse_args()
     os.makedirs(os.path.dirname(RUTA_CASETE), exist_ok=True)
     try:
-        resultado = medir(args.etiqueta, args.modo)
+        resultado = medir(args.etiqueta, args.modo, args.bateria)
     except CorridaAbortada as exc:
         print(f"[abortada] {exc}", file=sys.stderr)
         sys.exit(2)
     os.makedirs(DIRECTORIO_RESULTADOS, exist_ok=True)
-    ruta = os.path.join(DIRECTORIO_RESULTADOS, f"chat_{args.etiqueta}.json")
+    sufijo = "" if args.bateria == "corta" else f"_{args.bateria}"
+    ruta = os.path.join(DIRECTORIO_RESULTADOS, f"chat_{args.etiqueta}{sufijo}.json")
     with open(ruta, "w", encoding="utf-8", newline="\n") as f:
         json.dump(resultado, f, ensure_ascii=False, indent=2)
         f.write("\n")

@@ -1,5 +1,29 @@
 {
  "entradas": {
+  "06f02d6ab6b4a2709ffe278bf3379779c9eeafa6e8970f87e7ac4d84db717e20": {
+   "grabado_en": "2026-09-30T19:24:58+00:00",
+   "latencia_ms": 756,
+   "respuesta": "El monto mensual total de los servicios es de **$185,000.00 M.N.** (ciento ochenta y cinco mil pesos 00/100 M.N.), más el Impuesto al Valor Agregado.\n\nEste dato se encuentra explícitamente en el Anexo B del documento: «Monto mensual total de los servicios: $1 85, 000.00 (ciento ochenta y cinco mil pesos 00/100 M.N.) más el Impuesto al Valor Agregado».",
+   "tipo": "texto",
+   "uso": {
+    "completion_tokens": 118,
+    "desde_cache": false,
+    "prompt_tokens": 3005,
+    "total_tokens": 3123
+   }
+  },
+  "0a37fd3a59120c0d7e778ea7a2710bbed36fd50665d77c89614423b129b9d66d": {
+   "grabado_en": "2026-09-30T19:24:57+00:00",
+   "latencia_ms": 1479,
+   "respuesta": "El contrato está vigente **del 2 de marzo de 2026 al 1 de marzo de 2027**, con posibilidad de renovación por periodos iguales mediante convenio escrito.\n\nEsto se sustenta en la cláusula sexta del documento: «El presente contrato estará vigente del 2 de marzo de 2026 al 1 de marzo de 2027 y podrá renovarse por periodos iguales mediante convenio por escrito firmado con treinta días de anticipación».",
+   "tipo": "texto",
+   "uso": {
+    "completion_tokens": 102,
+    "desde_cache": false,
+    "prompt_tokens": 2891,
+    "total_tokens": 2993
+   }
+  },
   "0bc4f3fbde0973d8bc7f3ec3bec9de4d02c60d33d506a0c0ca40cf33477ea15b": {
    "grabado_en": "2026-09-30T19:05:28+00:00",
    "latencia_ms": 737,
@@ -141,6 +165,18 @@
     "total_tokens": 1953
    }
   },
+  "375e78549db953aca1b2ffa4bc35d4f691395b1b250edf2a66c6b9a600cfebcb": {
+   "grabado_en": "2026-09-30T19:23:56+00:00",
+   "latencia_ms": 989,
+   "respuesta": "El archivo es un **Contrato Marco de Prestación de Servicios** entre **PLURIONE S.A. DE C.V.** (Cliente) y **SERVICIOS INTEGRALES DEL NORTE S.A. DE C.V.** (Prestador), con vigencia del **2 de marzo de 2026 al 1 de marzo de 2027**.\n\nEl dictamen del sistema es **EN_REVISION** (confianza 0.94), pendiente de que el analista confirme la representación legal de los firmantes (**María Elena Ruiz Soto** y **Jorge Alberto Treviño Garza**) contra el poder notarial o acta constitutiva.\n\nEl documento cumple con los elementos del catálogo: objeto, vigencia, penalización, confidencialidad y firmas. No declara fecha de vencimiento explícita más allá de la cláusula de vigencia, por lo que la regla RCV-01 es **NO_APLICA**.",
+   "tipo": "texto",
+   "uso": {
+    "completion_tokens": 202,
+    "desde_cache": false,
+    "prompt_tokens": 2889,
+    "total_tokens": 3091
+   }
+  },
   "3ce28eba1f4b9708f7d69aa51e1253c27336f6cd819cc2b817144634e2cc4ff0": {
    "grabado_en": "2026-09-30T18:56:35+00:00",
    "latencia_ms": 16204,
@@ -246,6 +282,52 @@
     "desde_cache": false,
     "prompt_tokens": 2004,
     "total_tokens": 2076
+   }
+  },
+  "46ea037bd1a530bd9c4e8d21e858193ced68ea46159965a87aa136566bf51a50": {
+   "grabado_en": "2026-09-30T19:20:57+00:00",
+   "latencia_ms": 3527,
+   "respuesta": {
+    "fecha_emision": "2026-03-02",
+    "fecha_vencimiento": null,
+    "firmantes": [
+     {
+      "cargo": "Apoderada legal",
+      "cita": "María Elena Ruiz Soto, Apoderada legal",
+      "empresa": "PLURIONE S.A. DE C.V.",
+      "nombre": "María Elena Ruiz Soto"
+     },
+     {
+      "cargo": "Representante legal",
+      "cita": "Jorge Alberto Treviño Garza, Representante legal",
+      "empresa": "SERVICIOS INTEGRALES DEL NORTE S.A. DE C.V.",
+      "nombre": "Jorge Alberto Treviño Garza"
+     }
+    ],
+    "nivel_confianza": 0.95,
+    "observaciones": "El texto es legible a pesar de algunos errores de OCR (ej. 'INFOF', 'os :'). Se detectaron dos RFC en el documento; se extrajo el del titular del expediente (PLURIONE S.A. DE C.V.) conforme a las instrucciones. No se especifica fecha de vencimiento explícita.",
+    "razon_social_detectada": "PLURIONE S.A. DE C.V.",
+    "rfc_detectado": "PLU180514AB3",
+    "tipo_documento_detectado": "CONTRATO"
+   },
+   "tipo": "json",
+   "uso": {
+    "completion_tokens": 320,
+    "desde_cache": false,
+    "prompt_tokens": 3120,
+    "total_tokens": 3440
+   }
+  },
+  "4abdd195e450b10a0969fe2876f5a9115d59a70bf8924e5fdc059bcdc549ec0f": {
+   "grabado_en": "2026-09-30T19:22:56+00:00",
+   "latencia_ms": 1774,
+   "respuesta": "El documento **no presenta elementos faltantes** según el catálogo; el motor dicta **CUMPLE** para todos los requisitos exigidos (objeto, vigencia, penalización, confidencialidad, firmas y datos del firmante).\n\nLa única observación pendiente es de **verificación externa**: el dictamen está en **EN_REVISION** porque el analista debe confirmar que la apoderada, **María Elena Ruiz Soto**, cuenta con facultades vigentes en el poder notarial o acta constitutiva (RN-03). No aparece en el texto disponible la copia del poder, solo la declaración de que «Su apoderada cuenta con facultades suficientes para obligarla, según la escritura pública número 20,117».",
+   "tipo": "texto",
+   "uso": {
+    "completion_tokens": 158,
+    "desde_cache": false,
+    "prompt_tokens": 2890,
+    "total_tokens": 3048
    }
   },
   "4eda5df77421e52f4f55f666a30d5d3d436b48fc9e49cb9b83df56acaf06a0a0": {
@@ -368,6 +450,63 @@
     "total_tokens": 1985
    }
   },
+  "765f2d16904f0f4680a9d34cf755832f4396beea2c2b8a9155e145e5439616b5": {
+   "grabado_en": "2026-09-30T19:21:55+00:00",
+   "latencia_ms": 1795,
+   "respuesta": {
+    "verificaciones": [
+     {
+      "cita": "PRIMERA. OBJETO. EL PRESTADOR se obliga a prestar a EL CLIENTE los servicios administrados de tecnologías de la información descritos en el Anexo A",
+      "codigo_regla": "RSC-01-CONT-OBJ",
+      "cumple": true,
+      "observacion": "El contrato define explícitamente el objeto en la cláusula primera."
+     },
+     {
+      "cita": "SEXTA. VIGENCIA. El presente contrato estará vigente del 2 de marzo de 2026 al 1 de marzo de 2027... SÉPTIMA. TERMINACIÓN ANTICIPADA. Cualquiera de las partes podrá dar por terminado anticipadamente el contrato",
+      "codigo_regla": "RSC-01-CONT-VIG",
+      "cumple": true,
+      "observacion": "Se establecen la vigencia, la renovación y los procedimientos de terminación anticipada y rescisión."
+     },
+     {
+      "cita": "DÉCIMA SEGUNDA. PENA CONVENCIONAL. En caso de incumplimiento de las obligaciones a su cargo, EL PRESTADOR pagará a EL CLIENTE una pena convencional",
+      "codigo_regla": "RSC-01-CONT-PEN",
+      "cumple": true,
+      "observacion": "El contrato incluye una cláusula específica de pena convencional por incumplimiento."
+     },
+     {
+      "cita": "NOVENA. CONFIDENCIALIDAD. Las partes se obligan recíprocamente a no divulgar la información confidencial que reciban con motivo de este contrato",
+      "codigo_regla": "RSC-01-CONT-CONF",
+      "cumple": true,
+      "observacion": "Existe una cláusula de confidencialidad que obliga a no divulgar información."
+     },
+     {
+      "cita": "FIRMAS Leído que fue el presente contrato... EL CLIENTE - PLURIONE S.A. DE C.V. María Elena Ruiz Soto, Apoderada legal EL PRESTADOR SERVICIOS INTEGRALES DEL NORTE S.A. DE C.V.",
+      "codigo_regla": "RSC-01-CONT-FIRM",
+      "cumple": true,
+      "observacion": "El documento identifica a las partes y contiene el apartado de firmas de sus representantes legales."
+     }
+    ]
+   },
+   "tipo": "json",
+   "uso": {
+    "completion_tokens": 548,
+    "desde_cache": false,
+    "prompt_tokens": 3007,
+    "total_tokens": 3555
+   }
+  },
+  "8d275bd4298e694503c848fbe0c5b7094160cc32874b4be02e2c27dadbe5a385": {
+   "grabado_en": "2026-09-30T19:27:00+00:00",
+   "latencia_ms": 776,
+   "respuesta": "**No**, el prestador no puede subcontratar total ni parcialmente los servicios sin la **autorización previa y por escrito** del cliente.\n\nEl documento lo establece explícitamente en la cláusula décima séptima: «EL PRESTADOR no podrá subcontratar total ni parcialmente los servicios sin la autorización previa y por escrito de EL CLIENTE». Además, se indica que en caso de autorizarse, «seguirá siendo responsable frente a EL CLIENTE de los servicios subcontratados».",
+   "tipo": "texto",
+   "uso": {
+    "completion_tokens": 105,
+    "desde_cache": false,
+    "prompt_tokens": 2871,
+    "total_tokens": 2976
+   }
+  },
   "92723ada799bd9c7caa382eed9de8f8611fd0b45b6fc809acbfb1321b5c8ccf0": {
    "grabado_en": "2026-09-30T19:02:15+00:00",
    "latencia_ms": 2139,
@@ -378,6 +517,18 @@
     "desde_cache": false,
     "prompt_tokens": 1825,
     "total_tokens": 1894
+   }
+  },
+  "95020bb72e48053f045d9aa5365cecdf522b07c77786bb8a3e2c6cf65c39e78d": {
+   "grabado_en": "2026-09-30T19:26:59+00:00",
+   "latencia_ms": 1429,
+   "respuesta": "Si la disponibilidad de los servidores baja del **99.5 %**, se aplica una deductiva del **5 %** si el valor queda entre 99.0 % y 99.5 %, o del **10 %** si es menor al 99.0 %.\n\nEl documento lo establece en el «ANEXO D. DEDUCTIVAS POR NIVELES DE SERVICIO»: «Disponibilidad de los servidores menor a 99.5 % y hasta 99.0 %.: cinco por ciento.» y «Disponibilidad de los servidores menor a 99.0 %: diez por ciento.».",
+   "tipo": "texto",
+   "uso": {
+    "completion_tokens": 135,
+    "desde_cache": false,
+    "prompt_tokens": 2838,
+    "total_tokens": 2973
    }
   },
   "954ae09f12a4f1b56e4df95b6795f31deafc283c0815bd61bf37969f84e51d58": {
@@ -587,6 +738,18 @@
     "total_tokens": 1743
    }
   },
+  "c1b244c7c6735d99742c3b9f1b0beb5413933f343b905f22c339234e20f08209": {
+   "grabado_en": "2026-09-30T19:23:56+00:00",
+   "latencia_ms": 531,
+   "respuesta": "Firman el contrato **María Elena Ruiz Soto** (Apoderada legal de PLURIONE S.A. DE C.V.) y **Jorge Alberto Treviño Garza** (Representante legal de SERVICIOS INTEGRALES DEL NORTE S.A. DE C.V.).\n\nEl documento lo confirma en la sección de firmas: «María Elena Ruiz Soto, Apoderada legal» y «Jorge Alberto Treviño Garza, Representante legal».",
+   "tipo": "texto",
+   "uso": {
+    "completion_tokens": 100,
+    "desde_cache": false,
+    "prompt_tokens": 2704,
+    "total_tokens": 2804
+   }
+  },
   "c1e7c6c02d71d56e9f302be478ec266b0b2ae55109618181e24c993319dbfb51": {
    "grabado_en": "2026-09-30T19:03:16+00:00",
    "latencia_ms": 610,
@@ -677,6 +840,18 @@
     "desde_cache": false,
     "prompt_tokens": 1069,
     "total_tokens": 1133
+   }
+  },
+  "e95fc4f793a7790a6c77a15fcdd480d15de1a85e286269f7d1b081439e1716d9": {
+   "grabado_en": "2026-09-30T19:25:59+00:00",
+   "latencia_ms": 1191,
+   "respuesta": "El tiempo de respuesta para un incidente de **prioridad crítica** es de **1 hora** según la primera tabla de niveles de servicio, aunque el documento contiene una segunda tabla que indica **30 minutos** para la misma prioridad, lo que genera una inconsistencia en el texto disponible.\n\nLa primera mención literal es: «Prioridad Crítica: tiempo de respuesta de 1 hora; tiempo de solución de 6 horas».\nLa segunda mención literal es: «Prioridad Crítica: tiempo de respuesta de 30 minutos; tiempo de solución de 4 horas».\n\nRecomiendo revisar el anexo o cláusula que define los niveles de servicio vigentes para aclarar cuál de las dos tablas aplica, ya que el documento presenta datos contradictorios.",
+   "tipo": "texto",
+   "uso": {
+    "completion_tokens": 159,
+    "desde_cache": false,
+    "prompt_tokens": 2882,
+    "total_tokens": 3041
    }
   },
   "ea8512e55dbc836db569dfc27edd25e0e24277f4b21036ac50130e76dec6b1da": {

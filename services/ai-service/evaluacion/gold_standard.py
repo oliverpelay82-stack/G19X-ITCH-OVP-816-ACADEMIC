@@ -596,8 +596,11 @@ def _sello(imagen_bgr: np.ndarray, azar: np.random.Generator) -> None:
                 cv2.FONT_HERSHEY_SIMPLEX, radio / 150, (170, 80, 40), 3, cv2.LINE_AA)
 
 
-def pdf_escaneado(caso: Caso, vectorial: bytes, dpi: int = 200) -> bytes:
-    """Rasteriza cada página, añade el sello si corresponde, la degrada y la reempaqueta sin capa de texto."""
+def pdf_escaneado(caso: Caso, vectorial: bytes, dpi: int = 200, gris: bool = False) -> bytes:
+    """
+    Rasteriza cada página, añade el sello si corresponde, la degrada y la reempaqueta sin capa de texto.
+    Con ``gris`` la página se guarda en escala de grises, como la entregan muchos escáneres de oficina.
+    """
     semilla = int(hashlib.sha256(caso.id.encode()).hexdigest()[:8], 16)
     azar = np.random.default_rng(semilla)
     destino = fitz.open()
@@ -609,6 +612,8 @@ def pdf_escaneado(caso: Caso, vectorial: bytes, dpi: int = 200) -> bytes:
             if caso.sello_notarial and numero == len(origen) - 1:
                 _sello(bgr, azar)
             degradada = degradar_como_escaneo(bgr, semilla=semilla + numero)
+            if gris:
+                degradada = cv2.cvtColor(degradada, cv2.COLOR_BGR2GRAY)
             _, jpeg = cv2.imencode(".jpg", degradada, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
             hoja = destino.new_page(width=pagina.rect.width, height=pagina.rect.height)
             hoja.insert_image(hoja.rect, stream=jpeg.tobytes())
