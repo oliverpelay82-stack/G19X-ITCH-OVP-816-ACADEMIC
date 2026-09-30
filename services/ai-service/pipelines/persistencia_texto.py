@@ -22,6 +22,10 @@ desacoplado de la base de datos de los otros microservicios (DOC-08).
 La tabla ``inferencias`` guarda, en la misma base, la respuesta JSON del modelo
 por huella de la petición exacta (ver ``clients/groq_client.py``): una
 reauditoría del mismo documento no vuelve a consumir tokens de Groq.
+
+La tabla ``fichas_documento`` guarda, por huella del binario, los datos que la
+última auditoría extrajo y verificó (T0, PLUS-07): con ellos el chat responde las
+preguntas factuales sin llamar al modelo.
 """
 from __future__ import annotations
 
@@ -54,6 +58,15 @@ CREATE TABLE IF NOT EXISTS inferencias (
     clave      TEXT PRIMARY KEY,   -- SHA-256 de modelo + parámetros + mensajes
     respuesta  TEXT NOT NULL,      -- objeto JSON devuelto por el modelo
     creado_en  TEXT NOT NULL
+)
+"""
+
+_ESQUEMA_FICHAS = """
+CREATE TABLE IF NOT EXISTS fichas_documento (
+    sha256       TEXT PRIMARY KEY,   -- huella del binario auditado
+    dictamen_id  TEXT NOT NULL,      -- dictamen del core que produjo la ficha
+    ficha        TEXT NOT NULL,      -- JSON: datos extraídos y verificaciones con su cita
+    creado_en    TEXT NOT NULL
 )
 """
 
@@ -92,6 +105,7 @@ def _conectar() -> sqlite3.Connection:
         conexion.execute(_ESQUEMA)
         conexion.execute(_ESQUEMA_INFERENCIAS)
         conexion.execute(_ESQUEMA_PALABRAS)
+        conexion.execute(_ESQUEMA_FICHAS)
         # Migración de bases previas a la versión en la llave: sus filas quedan
         # con versión vacía, que no coincide con ninguna, y se releen.
         for tabla in ("extracciones", "palabras_ocr"):
@@ -182,6 +196,31 @@ def guardar_inferencia(clave: str, respuesta: dict[str, Any]) -> None:
             conexion.commit()
     except sqlite3.Error:
         pass
+
+
+def guardar_ficha(sha256: str, dictamen_id: str, ficha: dict[str, Any]) -> None:
+    """Ficha de la última auditoría del binario; una auditoría nueva la sustituye."""
+    try:
+        with _candado_escritura, closing(_conectar()) as conexion:
+            conexion.execute(
+                "INSERT OR REPLACE INTO fichas_documento (sha256, dictamen_id, ficha, creado_en) VALUES (?, ?, ?, ?)",
+                (sha256, dictamen_id, json.dumps(ficha, ensure_ascii=False), datetime.now(timezone.utc).isoformat()),
+            )
+            conexion.commit()
+    except sqlite3.Error:
+        pass
+
+
+def leer_ficha(sha256: str) -> dict[str, Any] | None:
+    """Devuelve ``{"dictamen_id", "ficha"}`` o ``None``."""
+    try:
+        with closing(_conectar()) as conexion:
+            fila = conexion.execute(
+                "SELECT dictamen_id, ficha FROM fichas_documento WHERE sha256 = ?", (sha256,)
+            ).fetchone()
+    except sqlite3.Error:
+        return None
+    return {"dictamen_id": fila[0], "ficha": json.loads(fila[1])} if fila else None
 
 
 def leer_palabras(sha256: str, pagina: int) -> list[list[Any]] | None:

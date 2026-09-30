@@ -34,7 +34,10 @@ from clients.groq_client import GroqNoDisponibleError, GroqRespuestaInvalidaErro
 from clients.rules_client import ReglasNoDisponiblesError
 from config import settings
 from pipelines import analisis_semantico as pipeline_analisis
-from pipelines import cache_chat, fragmentos, presupuesto_tokens, repositorio_texto, verificacion_contenido
+from pipelines import (
+    cache_chat, fragmentos, persistencia_texto, presupuesto_tokens, repositorio_texto, respuestas_directas,
+    verificacion_contenido,
+)
 from pipelines.extraccion_pipeline import FormatoNoSoportadoError, MotorOcrNoDisponibleError
 from schemas.analisis_schema import AnalisisSemanticoRequest, ChatDocumentoRequest
 
@@ -159,6 +162,50 @@ def _mensajes_chat(
         mensajes.append({"role": rol, "content": turno.contenido})
     mensajes.append({"role": "user", "content": pregunta})
     return mensajes
+
+
+def _marcar_citas(contenido: str, texto: str, estado: str | None) -> list[dict]:
+    """
+    Cada cita «…» se contrasta con el texto completo y, si no está ahí, con el
+    estado en el sistema (una recomendación del catálogo, p. ej.). La que no
+    aparece literalmente en ninguna fuente se señala en lugar de presentarse
+    como evidencia.
+    """
+    citas = []
+    for c in _CITA.findall(str(contenido)):
+        fuente_cita = (
+            "documento" if verificacion_contenido.cita_literal(c, texto)
+            else "sistema" if estado and verificacion_contenido.cita_en_texto(c, estado)
+            else None
+        )
+        citas.append({"texto": c.strip(), "verificada": fuente_cita is not None, "fuente": fuente_cita})
+    return citas
+
+
+def _con_documento(respuesta: dict, documento: repositorio_texto.TextoDocumento | None, documento_id: str | None):
+    if documento and documento.metadatos:
+        respuesta["documento"] = {
+            "id": documento.metadatos.get("id"),
+            "nombre_archivo_original": documento.metadatos.get("nombre_archivo_original"),
+        }
+    if documento:
+        respuesta["extraccion_nivel_3"] = _estado_lectura(documento_id, documento)
+    return respuesta
+
+
+def _respuesta_desde_dictamen(
+    pregunta: str, texto: str, documento: repositorio_texto.TextoDocumento | None, dictamen: dict | None
+) -> str | None:
+    """
+    T0 (PLUS-07): respuesta con los datos de la última auditoría, sin modelo. Solo si
+    la ficha guardada es la del dictamen vigente y el dictamen es el de este binario.
+    """
+    if not documento or not documento.sha256 or not dictamen or dictamen.get("hash_sha256") != documento.sha256:
+        return None
+    guardada = persistencia_texto.leer_ficha(documento.sha256)
+    if not guardada or guardada["dictamen_id"] != dictamen.get("id"):
+        return None
+    return respuestas_directas.responder(pregunta, texto, guardada["ficha"], dictamen)
 
 
 def _documento(
@@ -376,6 +423,13 @@ def analizar_documento(peticion: AnalisisSemanticoRequest):
     # enviado por el cliente no pertenece a ningún expediente.
     if documento and peticion.documento_id:
         respuesta["persistencia"] = _persistir_dictamen(peticion.documento_id, resultado, peticion.usuario)
+        # T0 (PLUS-07): ficha de lo verificado, ligada al dictamen que el core acaba de guardar.
+        dictamen_guardado = respuesta["persistencia"].get("dictamen") or {}
+        if respuesta["persistencia"].get("guardado") and dictamen_guardado.get("id") and documento.sha256:
+            persistencia_texto.guardar_ficha(
+                documento.sha256, dictamen_guardado["id"],
+                respuestas_directas.ficha_de(resultado, tipo_registrado, respuesta["sello_digital_sat"]),
+            )
     return respuesta
 
 
@@ -412,6 +466,26 @@ def chat_documento(peticion: ChatDocumentoRequest):
             detail="[Nivel 4] El documento no tiene texto legible sobre el cual responder.",
         )
 
+    dictamen = dictamen_en_curso.result() if dictamen_en_curso else None
+    directa = None if peticion.forzar_modelo else _respuesta_desde_dictamen(
+        peticion.pregunta, texto, documento, dictamen)
+    if directa:
+        return _con_documento({
+            "pregunta": peticion.pregunta,
+            "respuesta": directa,
+            "citas": _marcar_citas(directa, texto, None),
+            "con_estado_del_sistema": True,
+            # DATOS_DEL_DICTAMEN (PLUS-07): sin modelo, sin fragmentos y sin tokens.
+            "origen_respuesta": "DATOS_DEL_DICTAMEN",
+            "modelo_utilizado": None,
+            "caracteres_de_contexto": 0,
+            "contexto_truncado": False,
+            "contexto_llm": {"estrategia_contexto": "datos_del_dictamen",
+                             "uso_tokens": dict(cache_chat.USO_DESDE_CACHE, desde_cache=False)},
+            "fuente_texto": fuente,
+            "tiempos_ms": {"resolucion_texto": ms_texto, "inferencia": 0},
+        }, documento, peticion.documento_id)
+
     # En un seguimiento corto ("¿y quién lo firma?") la pregunta anterior aporta
     # el tema; una pregunta completa se busca sola para no arrastrar el anterior.
     consulta = peticion.pregunta
@@ -432,7 +506,6 @@ def chat_documento(peticion: ChatDocumentoRequest):
     paginas = (documento.traza.get("detalle_paginas") if documento else None) or None
     seleccion = fragmentos.seleccionar(texto, consulta, max_fragmentos=max_fragmentos, paginas=paginas)
 
-    dictamen = dictamen_en_curso.result() if dictamen_en_curso else None
     estado = _estado_en_sistema(documento, criterios, dictamen)
     mensajes = _mensajes_chat(seleccion.texto, estado, peticion.historial, peticion.pregunta)
 
@@ -474,24 +547,12 @@ def chat_documento(peticion: ChatDocumentoRequest):
             ) from exc
         cache_chat.guardar(claves, contenido)
 
-    # Cada cita «…» se contrasta con el texto completo y, si no está ahí, con el
-    # estado en el sistema (una recomendación del catálogo, p. ej.). La que no
-    # aparece literalmente en ninguna fuente se señala en lugar de presentarse
-    # como evidencia.
-    citas = []
-    for c in _CITA.findall(str(contenido)):
-        fuente_cita = (
-            "documento" if verificacion_contenido.cita_literal(c, texto)
-            else "sistema" if estado and verificacion_contenido.cita_en_texto(c, estado)
-            else None
-        )
-        citas.append({"texto": c.strip(), "verificada": fuente_cita is not None, "fuente": fuente_cita})
     respuesta = {
         "pregunta": peticion.pregunta,
         "respuesta": contenido,
-        "citas": citas,
+        "citas": _marcar_citas(contenido, texto, estado),
         "con_estado_del_sistema": bool(estado),
-        # MODELO o CACHE (PLUS-10); campo opcional, el contrato previo no cambia.
+        # MODELO, CACHE (PLUS-10) o DATOS_DEL_DICTAMEN (PLUS-07); campo opcional.
         "origen_respuesta": origen,
         "modelo_utilizado": settings.GROQ_MODEL,
         "caracteres_de_contexto": len(seleccion.texto),
@@ -501,11 +562,4 @@ def chat_documento(peticion: ChatDocumentoRequest):
         "fuente_texto": fuente,
         "tiempos_ms": {"resolucion_texto": ms_texto, "inferencia": _ms(inicio)},
     }
-    if documento and documento.metadatos:
-        respuesta["documento"] = {
-            "id": documento.metadatos.get("id"),
-            "nombre_archivo_original": documento.metadatos.get("nombre_archivo_original"),
-        }
-    if documento:
-        respuesta["extraccion_nivel_3"] = _estado_lectura(peticion.documento_id, documento)
-    return respuesta
+    return _con_documento(respuesta, documento, peticion.documento_id)

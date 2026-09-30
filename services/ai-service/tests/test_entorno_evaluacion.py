@@ -91,13 +91,16 @@ def test_grabar_y_reproducir(tmp_path, monkeypatch):
         grabada = cliente.post("/api/v1/ai/analisis-semantico", json={"documento_id": "GS-CSF-01", **TITULAR}).json()
         assert settings.EXTRACCIONES_DB_PATH != ruta_original
         chat = cliente.post("/api/v1/ai/chat-documento",
-                            json={"documento_id": "GS-CSF-01", "pregunta": "¿Cuál es el RFC?"}).json()
+                            json={"documento_id": "GS-CSF-01", "pregunta": "¿Cuál es el RFC?",
+                                           "forzar_modelo": True}).json()
         dictamen = core_client.ultimo_dictamen("GS-CSF-01")
     assert grabada["estatus_preliminar"] == "CONFORME"
     assert grabada["persistencia"]["guardado"] is True
     assert dictamen["reglas_aplicadas"][0]["codigo_regla"] == "RIE-03"
     assert any(r["codigo_regla"] == "RCV-03" and r["resultado"] == "VIGENTE" for r in dictamen["reglas_aplicadas"])
     assert chat["con_estado_del_sistema"] is True
+    # Con forzar_modelo el chat consulta al modelo aunque la ficha de la auditoría pueda responder (PLUS-07).
+    assert chat["origen_respuesta"] == "MODELO"
     assert llamadas == ["json", "texto"]
     assert os.path.exists(ruta)
 
@@ -109,7 +112,8 @@ def test_grabar_y_reproducir(tmp_path, monkeypatch):
         cliente = e.cliente()
         repetida = cliente.post("/api/v1/ai/analisis-semantico", json={"documento_id": "GS-CSF-01", **TITULAR}).json()
         chat_repetido = cliente.post("/api/v1/ai/chat-documento",
-                                     json={"documento_id": "GS-CSF-01", "pregunta": "¿Cuál es el RFC?"}).json()
+                                     json={"documento_id": "GS-CSF-01", "pregunta": "¿Cuál es el RFC?",
+                                           "forzar_modelo": True}).json()
         assert e.casete.faltantes == []
         assert [c["uso"]["total_tokens"] for c in e.casete.consultas] == [1100, 2020]
     assert llamadas == ["json", "texto"]   # ninguna llamada nueva

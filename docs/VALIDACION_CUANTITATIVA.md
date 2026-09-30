@@ -5,7 +5,7 @@
 | Propósito | Demostrar con métricas reproducibles la exactitud de la IA (ISO/IEC 25010, Adecuación funcional › Exactitud) y el rendimiento del sistema (ISO/IEC 25010, Eficiencia de desempeño) frente a RNF-01, RNF-02 y RNF-03, y medir la eficiencia del chat documental antes y después de su optimización (PRD §21.4, P4) |
 | Fase del cronograma | Fase 5 · QA (DOC-07, semanas 13 y 14: «pruebas de precisión de IA»; riesgo «baja precisión en la detección de cláusulas», 13 h de pruebas de precisión) |
 | Fuentes | DOC-01 H12 y H15; DOC-03 (ISO/IEC 25010: «Gold Standard con precisión, exhaustividad y F1»); DOC-04 RNF-01 a RNF-03; DOC-05 (RSC-01, RSC-02, bandas del Nivel 5); DOC-08 §6.2; [PRD.md](PRD.md) §11, §15 y §21.4 |
-| Estado | Diseño aprobado el 30/09/2026, junto con la configuración del OCR (§5) y la optimización del chat (§6). Medición base del chat ejecutada (§10.1); precisión y rendimiento pendientes |
+| Estado | Diseño aprobado el 30/09/2026, junto con la configuración del OCR (§5) y la optimización del chat (§6). Medición base del chat y pasos T3, T4 y T0 de P4 ejecutados (§10.1); precisión y rendimiento pendientes |
 | Restricciones | Sin cambios de arquitectura ni de contratos de API; sin tocar el Módulo 7; ningún dato real de terceros en el repositorio; la suite de precisión corre sin consumir tokens una vez grabada |
 
 ---
@@ -387,6 +387,35 @@ Medición en modo reproducir (sin tokens), con una fase de repetición: cada pre
 - **No la elimina:** la auditoría gasta ≈ 7,000 de los 8,000 tokens del minuto, así que ni el turno acotado (≈ 1,900) cabe y Groq todavía hace esperar. La espera solo desaparece si la pregunta no llega al modelo: es el objetivo de T0 (PLUS-07) y T1 (PLUS-08).
 - Es una corrida por variante (n = 3 preguntas): la tendencia es clara, pero las latencias individuales dependen de cuándo libera Groq la cuota.
 - La auditoría de este escenario tardó 21 a 24 s contra 16.9 s en la línea base: su extracción y su verificación corren en paralelo y comparten la misma cuota del minuto.
+
+#### T0 — Respuestas desde los datos del dictamen (PLUS-07)
+
+Medición con ambas baterías; solo hizo falta 1 llamada nueva a Groq (2,195 tokens): un turno de conversación cuyo historial cambió porque T0 respondió el turno anterior. Detalle en [`chat_t0.json`](resultados_validacion/chat_t0.json) y [`chat_t0_extensa.json`](resultados_validacion/chat_t0_extensa.json).
+
+| Batería | Turnos sin modelo | Tokens/turno | Turnos/min | p50 | p95 | Exactitud | Citas verificadas |
+|---|---|---|---|---|---|---|---|
+| Documentos breves — base | 0/38 | 1,581 | 5.06 | 732 ms | 4,843 ms | 95 % (83–99 %) | 39/39 |
+| Documentos breves — T0 | **15/38** | **959** | **8.34** | **515 ms** | **2,028 ms** | **97 % (87–100 %)** | 42/42 |
+| Contrato de 20 páginas — base | 0/8 | 3,006 | 2.66 | 1,116 ms | 1,706 ms | 88 % (53–98 %) | 12/12 |
+| Contrato de 20 páginas — T0 | **3/8** | **1,888** | **4.24** | **824 ms** | **1,531 ms** | 88 % (53–98 %) | 12/12 |
+
+Por categoría (documentos breves): 7 de las 8 preguntas **sugeridas por la interfaz** y 8 de las 17 **factuales** se responden sin modelo, en ≈ 20 ms; las de localización, interpretativas y de dato ausente siguen yendo al modelo, como estaba previsto (T1 y modelo).
+
+- **Tokens:** −39 % por turno en ambas baterías; la cuota del plan gratuito alcanza para 8.3 turnos por minuto (antes 5.1) en documentos breves y 4.2 (antes 2.7) en el contrato de 20 páginas.
+- **Latencia:** el p95 de los documentos breves baja de 4.8 s a 2.0 s. El p95 de las sugeridas (7.0 s) lo fija la única que sigue en el modelo («¿Cuándo vence?» de un poder sin fecha de vencimiento), por una latencia atípica de Groq.
+- **Exactitud:** sube de 95 % a 97 % en los documentos breves. «¿Cuándo vence?» de la constancia fiscal, que en la base el modelo respondió sin la fecha, ahora se responde con la regla de caducidad del dictamen: «vale hasta el 9 de diciembre de 2026». En el contrato de 20 páginas se mantiene en 88 % (el error de la mesa de ayuda es de localización, T2).
+- **Ninguna respuesta sin modelo afirma que un dato no aparece.** Cuando la ficha no tiene el dato, responde el modelo: en el contrato de 20 páginas la auditoría no extrajo la fecha de vencimiento, y «¿Hasta cuándo está vigente?» fue al modelo, que la localizó con su cita.
+- **Hallazgos corregidos durante la medición** (con sus pruebas de regresión): el nombre de una regla escrito entre «…» se marcaba como cita no verificada; el resumen de un contrato omitía a la contraparte; la redacción de las faltas se atribuye ahora de forma explícita a la verificación del motor.
+
+#### Resumen de P4 hasta T0
+
+| Paso | Qué cambia para el analista | Evidencia |
+|---|---|---|
+| T3 (PLUS-10) | Una pregunta ya respondida sobre el mismo documento y estado: ≈ 25 ms y cero tokens | 38/38 repeticiones desde el caché |
+| T4 (PLUS-11) | Tras una auditoría de 20 páginas, la espera del chat baja un 44 % | 68.3 s → 38.5 s en 3 preguntas |
+| T0 (PLUS-07) | Las preguntas factuales y sugeridas: ≈ 20 ms, cero tokens, con cita del documento | 15/38 y 3/8 turnos sin modelo; −39 % de tokens; exactitud igual o mayor |
+
+Pendientes de P4: T2 (PLUS-09, contexto acotado; debe resolver el error de localización de la mesa de ayuda) y T1 (PLUS-08, pasaje literal para cláusulas nombradas y montos).
 
 ### 10.2 Precisión y 10.3 Rendimiento
 

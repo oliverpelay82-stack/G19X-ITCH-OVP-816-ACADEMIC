@@ -624,6 +624,18 @@
     "total_tokens": 2212
    }
   },
+  "ad17142e3570393f2f654fb797fcede4dbd3f3bde5d5b570393d369592912394": {
+   "grabado_en": "2026-09-30T19:55:09+00:00",
+   "latencia_ms": 2706,
+   "respuesta": "Los cargos indicados en el documento son **Apoderada legal** para María Elena Ruiz Soto y **Representante legal** para Jorge Alberto Treviño Garza.\n\nEl texto lo confirma en el apartado de firmas: «María Elena Ruiz Soto, Apoderada legal» y «Jorge Alberto Treviño Garza, Representante legal».",
+   "tipo": "texto",
+   "uso": {
+    "completion_tokens": 75,
+    "desde_cache": false,
+    "prompt_tokens": 2120,
+    "total_tokens": 2195
+   }
+  },
   "ad1a4ced672c4fecf8a11ecb8442cfffde8ed05ca17252b6f13564d428985256": {
    "grabado_en": "2026-09-30T19:08:17+00:00",
    "latencia_ms": 396,
