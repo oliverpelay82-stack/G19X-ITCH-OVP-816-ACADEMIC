@@ -130,6 +130,30 @@ CHAT = {
 }
 
 
+# Turno del chat respondido sin modelo (PLUS-07): la meta dice «datos del dictamen».
+CHAT_DICTAMEN = {
+    "respuesta": (
+        "Según el dictamen del motor, tienen facultades de representación:\n"
+        "- **Consejo de administración**: «la administración de la sociedad estará a cargo de un consejo de "
+        "administración»"
+    ),
+    "citas": [
+        {
+            "texto": "la administración de la sociedad estará a cargo de un consejo de administración",
+            "verificada": True,
+            "fuente": "documento",
+        },
+    ],
+    "origen_respuesta": "DATOS_DEL_DICTAMEN",
+    "modelo_utilizado": None,
+    "extraccion_nivel_3": {"lectura_completa": True, "total_paginas": 14, "lectura_completa_en_curso": False},
+    "contexto_llm": {
+        "estrategia_contexto": "datos_del_dictamen",
+        "uso_tokens": {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0, "desde_cache": False},
+    },
+}
+
+
 # Cadena de custodia (P3). La base local puede no estar sellada todavía y el
 # número de eventos sellados crece con cada evento: la verificación se fija
 # para que el indicador del historial sea el mismo en todas las corridas.
@@ -293,6 +317,21 @@ def capturar_escenarios(navegador: Browser, carpeta: Path, ancho: int, alto: int
     pagina.locator(".modal").click(position={"x": 5, "y": 5})
     h._capturar_modal(pagina, carpeta / f"{prefijo}_panel_chat.png")
     h._cerrar_modal(pagina)
+
+    # Un turno respondido con los datos del dictamen, sin modelo (PLUS-07): la meta de la
+    # respuesta dice su procedencia. Va aparte para no alterar la captura anterior del chat.
+    pagina.route("**/api/v1/ai/chat-documento", _responder(CHAT_DICTAMEN))
+    pagina.locator("table tbody tr").first.locator("button").last.click()
+    h._esperar(pagina, 1500)
+    pagina.locator(".modal .segmented-item", has_text="Chat").click()
+    pagina.wait_for_timeout(300)
+    pagina.locator(".composer textarea").fill("¿Quién tiene facultades de representación?")
+    pagina.locator(".composer button[type=submit]").click()
+    h._esperar(pagina, 800)
+    pagina.locator(".modal").click(position={"x": 5, "y": 5})
+    h._capturar_modal(pagina, carpeta / f"{prefijo}_panel_chat_sin_modelo.png")
+    h._cerrar_modal(pagina)
+    pagina.route("**/api/v1/ai/chat-documento", _responder(CHAT))
 
     # Expedientes con filtros activos («Limpiar filtros» a la vista) e historial desplegado (HU-30).
     h._ir_a(pagina, "Expedientes")

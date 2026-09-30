@@ -147,6 +147,10 @@ def _cerrar_modal(pagina: Page) -> None:
 def capturar(destino: str) -> None:
     carpeta = SALIDA / destino
     carpeta.mkdir(parents=True, exist_ok=True)
+    # Una corrida anterior puede haber dejado más tramos de un modal (su altura depende del
+    # estado de la base): sin limpiar, «comparar» los reporta como FALTA aunque nada cambió.
+    for anterior in carpeta.glob("*.png"):
+        anterior.unlink()
     with sync_playwright() as p:
         navegador = p.chromium.launch(channel="chrome")
         for ancho, alto in TAMANOS:

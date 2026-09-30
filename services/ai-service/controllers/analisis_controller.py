@@ -36,7 +36,7 @@ from clients.rules_client import ReglasNoDisponiblesError
 from config import settings
 from pipelines import analisis_semantico as pipeline_analisis
 from pipelines import (
-    cache_chat, fragmentos, persistencia_texto, presupuesto_tokens, repositorio_texto, respuestas_directas,
+    cache_chat, fragmentos, pasajes, persistencia_texto, presupuesto_tokens, repositorio_texto, respuestas_directas,
     verificacion_contenido,
 )
 from pipelines.extraccion_pipeline import FormatoNoSoportadoError, MotorOcrNoDisponibleError
@@ -512,6 +512,26 @@ def chat_documento(peticion: ChatDocumentoRequest):
             "tiempos_ms": {"resolucion_texto": ms_texto, "inferencia": 0},
         }, documento, peticion.documento_id)
 
+    # T1 (PLUS-08): la cláusula nombrada o el monto, como pasaje literal con su página.
+    paginas = (documento.traza.get("detalle_paginas") if documento else None) or None
+    pasaje = None if peticion.forzar_modelo else pasajes.responder(peticion.pregunta, texto, paginas)
+    if pasaje:
+        contenido, pagina = pasaje
+        return _con_documento({
+            "pregunta": peticion.pregunta,
+            "respuesta": contenido,
+            "citas": _marcar_citas(contenido, texto, None),
+            "con_estado_del_sistema": False,
+            "origen_respuesta": "PASAJE_DEL_DOCUMENTO",
+            "modelo_utilizado": None,
+            "caracteres_de_contexto": 0,
+            "contexto_truncado": False,
+            "contexto_llm": {"estrategia_contexto": "pasaje_del_documento", "pagina": pagina,
+                             "uso_tokens": dict(cache_chat.USO_DESDE_CACHE, desde_cache=False)},
+            "fuente_texto": fuente,
+            "tiempos_ms": {"resolucion_texto": ms_texto, "inferencia": 0},
+        }, documento, peticion.documento_id)
+
     # En un seguimiento corto ("¿y quién lo firma?") la pregunta anterior aporta
     # el tema; una pregunta completa se busca sola para no arrastrar el anterior.
     consulta = peticion.pregunta
@@ -524,7 +544,6 @@ def chat_documento(peticion: ChatDocumentoRequest):
     tipo_registrado = (documento.metadatos or {}).get("tipo_documento") if documento else None
     criterios = _criterios_chat(tipo_registrado) if tipo_registrado else []
 
-    paginas = (documento.traza.get("detalle_paginas") if documento else None) or None
     general = _es_pregunta_general(peticion.pregunta)
     if general:
         consulta = " ".join([consulta, pipeline_analisis.CONSULTA_AUDITORIA,
@@ -584,7 +603,8 @@ def chat_documento(peticion: ChatDocumentoRequest):
         "respuesta": contenido,
         "citas": _marcar_citas(contenido, texto, estado),
         "con_estado_del_sistema": bool(estado),
-        # MODELO, CACHE (PLUS-10) o DATOS_DEL_DICTAMEN (PLUS-07); campo opcional.
+        # MODELO o CACHE (PLUS-10); las respuestas sin modelo usan DATOS_DEL_DICTAMEN (PLUS-07)
+        # o PASAJE_DEL_DOCUMENTO (PLUS-08). Campo opcional.
         "origen_respuesta": origen,
         "modelo_utilizado": settings.GROQ_MODEL,
         "caracteres_de_contexto": len(seleccion.texto),

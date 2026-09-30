@@ -121,6 +121,8 @@ export function ChatDocumento({ doc, iaOnline }) {
           rol: 'asistente',
           contenido: r?.respuesta || 'El modelo no devolvió contenido.',
           modelo: r?.modelo_utilizado,
+          // Procedencia de la respuesta (modelo, dictamen, pasaje o respuesta ya consultada).
+          origen: r?.origen_respuesta,
           duracion,
           lectura: r?.extraccion_nivel_3,
           contexto: r?.contexto_llm,
@@ -177,7 +179,7 @@ export function ChatDocumento({ doc, iaOnline }) {
                 <>
                   <Citas contexto={m.contexto} />
                   <EstadoLectura lectura={m.lectura} contexto={m.contexto} />
-                  <MetaInferencia modelo={m.modelo} duracion={m.duracion} />
+                  <MetaInferencia modelo={m.modelo} duracion={m.duracion} origen={m.origen} />
                 </>
               )}
             </div>

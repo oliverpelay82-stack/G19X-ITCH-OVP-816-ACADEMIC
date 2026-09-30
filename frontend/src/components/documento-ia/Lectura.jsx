@@ -1,6 +1,6 @@
 // Estado de la lectura del documento, fragmentos consultados y meta de cada respuesta.
 import { useState } from 'react'
-import { FileText, Zap } from 'lucide-react'
+import { FileCheck, FileText, History, Quote, Zap } from 'lucide-react'
 import { useEvidencia } from '../evidencia-context.js'
 import { Badge } from '../ui/index.js'
 import { formatDuracion, nombreModelo } from './formato.js'
@@ -83,12 +83,45 @@ export function Citas({ contexto }) {
   )
 }
 
-/** Micro-meta de una respuesta: tiempo total, con el modelo en el tooltip. */
-export function MetaInferencia({ modelo, duracion }) {
+/**
+ * Procedencia de una respuesta del chat que no consultó al modelo (origen_respuesta
+ * del ai-service). Sin origen, o con MODELO, la meta es la de siempre: «análisis con IA».
+ */
+const PROCEDENCIA = {
+  DATOS_DEL_DICTAMEN: {
+    icono: FileCheck,
+    texto: 'datos del dictamen',
+    detalle: 'Respuesta armada con los datos que la auditoría del documento verificó; no se consultó al modelo.',
+  },
+  PASAJE_DEL_DOCUMENTO: {
+    icono: Quote,
+    texto: 'texto del documento',
+    detalle: 'Pasaje literal del documento, sin interpretación; no se consultó al modelo.',
+  },
+  CACHE: {
+    icono: History,
+    texto: 'respuesta ya consultada',
+    detalle:
+      'La misma pregunta ya se respondió sobre este documento y su dictamen vigente; no se volvió a consultar al modelo.',
+  },
+}
+
+/** Micro-meta de una respuesta: tiempo total y de dónde salió (el modelo, en el tooltip). */
+export function MetaInferencia({ modelo, duracion, origen }) {
+  const procedencia = PROCEDENCIA[origen]
+  if (!procedencia) {
+    return (
+      <span className="inference-meta" title={nombreModelo(modelo)}>
+        <Zap size={11} strokeWidth={1.75} aria-hidden="true" />
+        <span className="tabular">{formatDuracion(duracion)}</span> · análisis con IA
+      </span>
+    )
+  }
+  const Icono = procedencia.icono
   return (
-    <span className="inference-meta" title={nombreModelo(modelo)}>
-      <Zap size={11} strokeWidth={1.75} aria-hidden="true" />
-      <span className="tabular">{formatDuracion(duracion)}</span> · análisis con IA
+    <span className="inference-meta" title={procedencia.detalle}>
+      <Icono size={11} strokeWidth={1.75} aria-hidden="true" />
+      <span className="tabular">{formatDuracion(duracion)}</span> · {procedencia.texto}
     </span>
   )
 }

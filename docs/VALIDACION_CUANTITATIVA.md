@@ -417,6 +417,30 @@ Por categoría (documentos breves): 7 de las 8 preguntas **sugeridas por la inte
 
 Pendientes de P4: T2 (PLUS-09, contexto acotado; debe resolver el error de localización de la mesa de ayuda) y T1 (PLUS-08, pasaje literal para cláusulas nombradas y montos).
 
+#### Lectura 3.3 del Nivel 3 — hallazgo al diagnosticar el error de la mesa de ayuda
+
+El error del documento extenso («¿tiempo de respuesta de la mesa de ayuda?») **no estaba en la búsqueda de fragmentos sino en el OCR**: en las páginas A.1 a A.6 del Anexo A se perdían el título del anexo, el nombre del servicio y su descripción, porque el escaneo tiene los bordes más oscuros que el centro y el corte global de Otsu pintaba de negro las esquinas (22.8 % de la página en negro, por debajo del 25 % que activa el camino adaptativo). La corrección (`_normalizar_iluminacion`, `VERSION_PIPELINE` 3.3) divide la página entre su fondo estimado antes de binarizar:
+
+| Medición (sin modelo, texto impreso conocido) | Lectura 3.2 | Lectura 3.3 |
+|---|---|---|
+| Recall de palabras, 13 escaneos del Gold Standard | 94.3 % | **99.65 %** |
+| Precisión de palabras | 98.6 % | **99.58 %** |
+| Peor documento | 79.9 % (poder notarial) | 98.4 % |
+| Tiempo de OCR de los 13 escaneos | 43.3 s | 40.5 s |
+| Acta real de 14 páginas (sin referencia) | confianza 0.879 | 0.878; recupera el nombre del notario y el distrito en la página 1 |
+
+Con la lectura 3.3 y sin cambiar la búsqueda, la batería del contrato de 20 páginas pasa de 7/8 a **8/8** ([`chat_n33_extensa.json`](resultados_validacion/chat_n33_extensa.json)): la mesa de ayuda se responde con «15 minutos». Tokens por turno con modelo: 2,951.
+
+**Límite diario del proveedor.** La medición de la batería corta con la lectura 3.3 se detuvo porque el plan gratuito de Groq tiene, además del límite por minuto, **200,000 tokens por día** para `qwen/qwen3.8-27b`, que se agotaron el 30/09/2026. Las mediciones que requieren llamadas nuevas (batería corta con la lectura 3.3, T2 y T1) quedan pendientes de la cuota del día siguiente.
+
+**Hallazgo del entorno de medición.** En modo grabar, la llamada real a Groq alimentaba el presupuesto de T4 y acotaba el turno siguiente del chat (en una corrida descartada, «¿hasta cuándo está vigente el contrato?» recibió 1,921 caracteres y el modelo respondió que la fecha no aparecía). Las mediciones de las baterías corren ahora sin presupuesto; solo el escenario de contención lo activa. Del mismo caso salió otra corrección: el estado del sistema decía «vencimiento no declarado» cuando la auditoría no lo extraía; ahora dice «no extraído por el motor».
+
+#### T2 y T1 — implementados; medición con Groq pendiente
+
+- **T2 (PLUS-09):** las preguntas puntuales reciben un contexto enfocado (3,000 caracteres en hasta 3 tramos, reordenados por cobertura de términos y por coincidencia en encabezados distintivos, y recortados al tramo relevante), el estado breve y el historial acotado; el chat tiene su propio tope de respuesta (600 tokens). Sin modelo, sobre el texto del contrato de 20 páginas: las seis preguntas puntuales de la batería extensa reciben su respuesta en 1,130 a 2,842 caracteres contra 6,442 de la selección general (`tests/test_contexto_enfocado.py`). No se compactaron las instrucciones de sistema.
+- **T1 (PLUS-08):** cláusulas nombradas y montos se responden con el renglón literal y su página, sin modelo. Verificado sobre los textos del Gold Standard: 8 pasajes literales con el dato correcto (monto mensual, contraprestación, capital social, prima total, suma asegurada de una cobertura, precio de un servicio, cláusulas de confidencialidad y de subcontratación) y 5 casos que van al modelo (suma asegurada con tres coberturas, pregunta interpretativa, seguimiento de un solo término, pregunta sin monto ni cláusula, anexo sin tema) (`tests/test_pasajes.py`).
+- **Interfaz:** la meta de cada respuesta del chat dice su procedencia («análisis con IA», «datos del dictamen», «texto del documento», «respuesta ya consultada»). Regresión visual: 158 de 158 capturas iguales y un escenario nuevo con una respuesta sin modelo.
+
 ### 10.2 Precisión y 10.3 Rendimiento
 
 *Pendiente de ejecución.* Tablas previstas:

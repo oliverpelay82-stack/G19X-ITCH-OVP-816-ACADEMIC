@@ -197,8 +197,10 @@ def prueba_metricas_y_limites(mp: pytest.MonkeyPatch) -> None:
     r = client.post("/api/v1/ai/analisis-semantico", json={"texto": f"ACTA ... RFC {RFC}", "rfc_titular": RFC})
     verificar(r.status_code == 200 and r.json()["contexto_llm"].get("uso_tokens") == uso,
               "El dictamen trae uso_tokens en contexto_llm", f"HTTP {r.status_code}")
+    # forzar_modelo: la pregunta por un monto la respondería el pasaje literal (PLUS-08), sin modelo.
     r = client.post("/api/v1/ai/chat-documento", json={"texto": "ACTA ... capital social $50,000.00",
-                                                        "pregunta": "¿Cuál es el capital social?"})
+                                                        "pregunta": "¿Cuál es el capital social?",
+                                                        "forzar_modelo": True})
     verificar(r.status_code == 200 and r.json()["contexto_llm"].get("uso_tokens") == uso,
               "El chat trae uso_tokens en contexto_llm", f"HTTP {r.status_code}")
 
