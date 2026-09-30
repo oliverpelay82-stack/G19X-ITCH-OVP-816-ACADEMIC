@@ -149,6 +149,30 @@ _MAX_TINTA_OTSU = 0.25
 MIN_COBERTURA_TINTA = 0.25
 
 
+def _normalizar_iluminacion(gris: np.ndarray) -> np.ndarray:
+    """
+    Divide la página entre su fondo estimado para emparejar la iluminación.
+
+    Un escaneo con iluminación desigual (bordes más oscuros que el centro) hace
+    que el corte global de Otsu pinte de negro las esquinas y borre el texto que
+    cae en ellas, sin llegar a la proporción de tinta que activa el camino
+    adaptativo (medido: 22.8 % de tinta en una página cuyo encabezado se perdió).
+    El fondo es de baja frecuencia: se estima con un cierre morfológico, que
+    borra el texto, sobre la página reducida a 1/8 y se amplía de vuelta, así el
+    paso cuesta milisegundos a 300 ppp. Sobre papel parejo el cociente es ≈ 1 y
+    la página no cambia.
+    """
+    alto, ancho = gris.shape
+    if min(alto, ancho) < 64:
+        return gris
+    reducida = cv2.resize(gris, (max(1, ancho // 8), max(1, alto // 8)), interpolation=cv2.INTER_AREA)
+    k = max(7, (min(reducida.shape) // 20) | 1)
+    fondo = cv2.morphologyEx(reducida, cv2.MORPH_CLOSE, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (k, k)))
+    fondo = cv2.GaussianBlur(fondo, (0, 0), k / 3)
+    fondo = cv2.resize(fondo, (ancho, alto), interpolation=cv2.INTER_LINEAR)
+    return cv2.divide(gris, fondo, scale=255)
+
+
 def preprocesar_imagen(imagen: np.ndarray) -> np.ndarray:
     """
     Acondiciona una página rasterizada para maximizar la exactitud de Tesseract.
@@ -158,6 +182,9 @@ def preprocesar_imagen(imagen: np.ndarray) -> np.ndarray:
 
     Pasos:
       1. Escala de grises: descarta información cromática que el OCR no usa.
+         Después se empareja la iluminación (``_normalizar_iluminacion``): sin
+         ese paso, los bordes oscuros de un escaneo desigual se binarizaban en
+         negro y se perdía el texto de las esquinas.
       2. Ampliación de imágenes pequeñas (fotos de recibos, INE o escaneos a
          baja resolución) hasta ``_ANCHO_MINIMO_OCR`` px, con interpolación
          cúbica: Tesseract pierde exactitud con glifos de pocos píxeles.
@@ -175,6 +202,7 @@ def preprocesar_imagen(imagen: np.ndarray) -> np.ndarray:
     98.0 % → 92.7 % en la constancia escaneada de prueba).
     """
     gris = imagen if imagen.ndim == 2 else cv2.cvtColor(imagen, cv2.COLOR_BGR2GRAY)
+    gris = _normalizar_iluminacion(gris)
 
     alto, ancho = gris.shape
     if ancho < _ANCHO_MINIMO_OCR:
@@ -317,7 +345,8 @@ def palabras_ocr(imagen: np.ndarray) -> list[list[Any]]:
 # preprocesamiento o la configuración del OCR, los documentos se vuelven a leer
 # en lugar de servir un texto de otra lectura (el visor y el dictamen verían
 # documentos distintos). Súbase al modificar cualquier paso de la extracción.
-VERSION_PIPELINE = "3.2"
+# 3.3: normalización de la iluminación antes de la binarización (_normalizar_iluminacion).
+VERSION_PIPELINE = "3.3"
 
 
 @lru_cache(maxsize=1)
