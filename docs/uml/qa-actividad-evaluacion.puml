@@ -1,0 +1,70 @@
+@startuml qa-actividad-evaluacion
+' QA — Actividad de la validación cuantitativa (Fase 5, DOC-07).
+' Trazabilidad: DOC-03 (ISO/IEC 25010, Gold Standard con precisión,
+' exhaustividad y F1); DOC-01 H12; RNF-01 a RNF-03; RSC-01, RSC-02;
+' DOC-08 §6.2; PRD §15 y §21.4. Metodología: docs/VALIDACION_CUANTITATIVA.md
+' Implementación: services/ai-service/evaluacion/ y scripts/benchmark_rendimiento.py
+
+title Validación cuantitativa — Gold Standard, casete de inferencias y benchmarks
+
+|Residente|
+start
+:Especifica los casos del Gold Standard
+(datos ficticios, fechas absolutas);
+:Anota la verdad fundamental a partir
+de la especificación y del DOC-05 / DOC-08;
+:Congela la anotación con su SHA-256
+(antes de ejecutar el sistema);
+
+|Generador|
+:Produce los PDF vectoriales y escaneados
+y la instantánea del catálogo RSC;
+
+|Entorno offline|
+if (¿Modo grabar?) then (sí)
+  :Groq real, con presupuesto
+  de 8,000 tokens por minuto;
+  :Guarda respuesta, tokens y latencia
+  por huella de la petición;
+else (reproducir)
+  :Lee cada respuesta del casete;
+  if (¿Falta una huella?) then (sí)
+    :Aborta la corrida
+    (cero tokens garantizado);
+    stop
+  endif
+endif
+:core-service y rules-service simulados
+(binarios, dictámenes, vigencia RCV pura);
+:Nivel 3 real y endpoints reales del ai-service;
+
+|Métricas|
+fork
+  :Entidades: P, R, F1,
+  alucinación;
+fork again
+  :RSC-01: P, R, F1 por clase,
+  abstención, citas ancladas;
+fork again
+  :RSC-02: P, R, F1 por persona,
+  exactitud del cargo;
+fork again
+  :Niveles 4 y 5: matriz 3 × 3, κ,
+  falsa conformidad, rechazo indebido;
+fork again
+  :Chat: tokens, latencia, exactitud,
+  citas verificadas, respuestas sin modelo;
+end fork
+:Intervalos de Wilson y bootstrap;
+
+|Benchmarks (servicios contra\nplurione_compliance_bench)|
+:RNF-01: p50 / p95 / p99 de la evaluación;
+:RNF-02: Nivel 3 en frío + Nivel 4, 20 páginas;
+:RNF-03: 50 peticiones simultáneas,
+transacciones y cadena de custodia;
+
+|Residente|
+:Integra las tablas en VALIDACION_CUANTITATIVA.md
+y en el PRD §11 y §15;
+stop
+@enduml

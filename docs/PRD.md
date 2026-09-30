@@ -11,7 +11,7 @@
 | Desarrollo (Scrum Master / Desarrollador) | Oliver Villanueva Pelay, residente (No. de control 21520500) |
 | Stakeholder evaluador | Edgar Loheffelmman (PluriOne) |
 | Asesor interno | Dr. Wilfrido Campos Francisco |
-| Versión del documento | 1.7 — 29 de septiembre de 2026 (1.6: índice de cumplimiento; 1.5: P3; 1.4: P2; 1.3: P1; 1.2: 28 de septiembre; 1.0: 27 de septiembre de 2026) |
+| Versión del documento | 1.8 — 30 de septiembre de 2026 (1.7: revisión del frontend; 1.6: índice de cumplimiento; 1.5: P3; 1.4: P2; 1.3: P1; 1.2: 28 de septiembre; 1.0: 27 de septiembre de 2026) |
 | Estado del producto | En desarrollo: Sprints 1 y 2 implementados, Sprint 3 implementado parcialmente, Sprint 4 implementado salvo HU-31, Módulo 7 pendiente |
 | Documento hermano | [MRD.md](MRD.md) — requerimientos de mercado |
 
@@ -866,6 +866,40 @@ Hoy la bitácora es inmutable **porque la base lo impide** (triggers de RF-27): 
 Verificado en vivo el 29/09/2026 con los tres servicios (core sobre la base de pruebas): la ficha PDF se descarga desde el detalle del documento; para un documento cuyo binario ya no está en la bóveda la ficha lo reporta ALTERADO con la cadena íntegra (239 eventos sellados y 11 previos cubiertos por el génesis), y el historial muestra «Cadena de custodia íntegra · 240 eventos sellados».
 
 **Diagramas:** [casos de uso](uml/p3-casos-de-uso-custodia.puml), [actividad del sellado y la verificación](uml/p3-actividad-sellado-verificacion.puml) y [actividad de la ficha de custodia](uml/p3-actividad-ficha-custodia.puml).
+
+### 21.4 P4 — Chat documental eficiente
+
+El chat es la herramienta con la que el auditor consulta un documento sin leerlo completo (RF-13 y HU-20: cita y confianza en cada resultado de la IA). Hoy cada turno envía al modelo las instrucciones, el estado del documento en el sistema, hasta 6,500 caracteres del documento y el historial: ≈ 3,200 a 4,000 tokens, es decir, unos 2 turnos por minuto con el límite de 8,000 tokens por minuto del plan gratuito de Groq, y ninguno si en ese minuto corrió una auditoría. Las cuatro preguntas que sugiere la interfaz («¿Qué le falta?», «¿Qué recomiendas corregir?», «¿Cuándo vence?», «Resume los datos clave») se responden con datos que la auditoría ya extrajo y ancló al texto. P4 responde sin modelo lo que ya está verificado, acota el contexto de lo demás y conserva el contrato de `POST /api/v1/ai/chat-documento` (solo se agregan campos opcionales). Respaldo: RF-13, HU-20 y DOC-05 (cita textual de la evidencia); RNF-02 e ISO/IEC 25010 (eficiencia de desempeño); límite de tokens del proveedor de inferencia (§12.2).
+
+| ID | Requerimiento | Fundamento | Estado |
+|---|---|---|---|
+| PLUS-07 | **Respuestas desde los datos del dictamen (T0).** Al auditar, el ai-service guarda en su SQLite una ficha del documento por huella SHA-256 y versión del Nivel 3 (tipo, RFC, razón social, fechas, personas y verificaciones RSC con su cita anclada y página, sello digital SAT, sentido de la 32-D). Un enrutador de intención determinista responde las preguntas factuales y las sugeridas con una plantilla que lleva el dato en negritas y la cita del dictamen, sin llamar al modelo. Solo responde si la huella del dictamen coincide con la del documento vigente, **nunca afirma una ausencia** (si el dato falta, la pregunta pasa al modelo) y lo que cambia con el tiempo (estatus, vigencia, ratificación) se lee del core en cada turno. Los montos no se agregan a la extracción de la auditoría. | RF-13, HU-20; DOC-05 (cita textual); RN-05 | Planeado |
+| PLUS-08 | **Pasaje literal del documento (T1).** Una pregunta que nombra una cláusula o pregunta por un monto, con un fragmento BM25 claramente superior al siguiente, se responde con el pasaje literal y su página, rotulado como pasaje, sin interpretarlo. | RF-13, HU-20 | Planeado |
+| PLUS-09 | **Contexto acotado (T2).** Presupuesto de contexto según el tipo de pregunta, reordenamiento léxico local de los fragmentos (se mantiene BM25 sin embeddings), estado del sistema completo solo en preguntas de cumplimiento, historial de 2 turnos en el servidor, instrucciones compactas y `max_tokens` propio del chat. | RNF-02; ISO/IEC 25010 | Planeado |
+| PLUS-10 | **Caché de respuestas (T3).** A temperatura 0.0, la respuesta de un primer turno se reutiliza ante la misma petición (la huella incluye el estado del sistema, así que una ratificación la invalida sola) y ante la misma pregunta normalizada. | RNF-02 | Planeado |
+| PLUS-11 | **Presupuesto de tokens y estado en memoria (T4).** El dictamen y los criterios se consultan en paralelo y se conservan en memoria por documento y dictamen; un presupuesto local de tokens por minuto, compartido con la auditoría, reduce el contexto o responde por PLUS-07/PLUS-08 en lugar de esperar los reintentos del SDK. | RNF-02 | Planeado |
+
+**Historias de usuario nuevas**
+
+| ID | Historia | Módulo | Prioridad | Estado |
+|---|---|---|---|---|
+| HU-42 | Como analista, quiero que las preguntas sobre datos ya verificados del documento (titular, fechas, qué le falta, firmantes) se respondan al instante y con la misma cita que el dictamen. | M3 | Alta | Planeado |
+| HU-43 | Como analista, quiero seguir consultando el documento aunque se haya auditado otro en el mismo minuto, sin esperas por el límite del proveedor de IA. | M3 | Media | Planeado |
+
+**Criterios de aceptación**
+
+- En la batería de pruebas del chat ([VALIDACION_CUANTITATIVA.md](VALIDACION_CUANTITATIVA.md) §6), cada paso reduce los tokens por turno sin bajar la exactitud factual ni la proporción de citas verificadas respecto de la medición base.
+- Una respuesta sin modelo nunca afirma que un dato no aparece en el documento.
+- Las citas de las respuestas sin modelo se marcan como verificadas con la misma regla (`cita_literal`) y abren el visor en su página.
+- El contrato de `POST /api/v1/ai/chat-documento` no cambia (solo se agregan `origen_respuesta` y el uso de tokens en cero) y las pruebas existentes del ai-service siguen pasando.
+
+**Consecuencias previstas**
+
+- **Coherencia con el dictamen:** las respuestas sin modelo repiten lo que el dictamen extrajo; si el dictamen se equivocó, el chat no lo contradice. Por eso cada respuesta nombra su fuente y la petición admite un campo opcional para preguntar directamente al modelo.
+- **Datos existentes:** los documentos auditados antes de P4 no tienen ficha; su chat sigue por el modelo hasta que se vuelvan a auditar. Los dictámenes guardados no se tocan.
+- **Evaluación:** la exactitud del chat se mide contra la verdad fundamental del Gold Standard, así que P4 queda cubierto por la misma validación cuantitativa.
+
+**Diagramas:** [actividad del turno del chat](uml/p4-actividad-chat-documental.puml).
 
 ---
 

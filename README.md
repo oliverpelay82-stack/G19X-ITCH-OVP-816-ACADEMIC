@@ -18,7 +18,7 @@ La especificación oficial está en [`docs/ESPECIFICACIONES_DOC01_A_DOC08.txt`](
 
 1. **Integridad estructural y criptográfica:** magic bytes (PDF, JPEG, PNG), 15 MB como máximo y huella SHA-256 (NOM-151-SCFI-2016). Cada lectura del binario la recalcula (RIE-03).
 2. **Reglas deterministas:** inventario obligatorio según el tipo de expediente (RIE-01), anexos (RIE-02) y vigencia (RCV-01, RCV-02 y RCV-03).
-3. **Extracción de texto:** capa vectorial y, para páginas escaneadas, OCR `spa+eng`.
+3. **Extracción de texto:** capa vectorial y, para páginas escaneadas, OCR `spa`.
 4. **Análisis semántico:** el modelo **solo extrae** datos; el dictamen lo calculan reglas del servicio. La titularidad se acredita con el RFC o, si el documento no lo trae, con la razón social. Un tipo documental distinto al registrado pasa a revisión. Los elementos que el catálogo exige a cada tipo (reglas RSC/RDS) se verifican con una **cita literal** que se contrasta con el texto; un elemento no localizado deja el documento en revisión con la recomendación del catálogo, nunca lo rechaza (RSC-01).
 5. **Gobernanza humana:** con confianza ≥ 0.85 el dictamen es CONFORME, y por debajo pasa a revisión humana. Una confianza baja nunca rechaza un documento: solo lo rechazan una vigencia vencida o un RFC ajeno.
 

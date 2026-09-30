@@ -81,7 +81,7 @@ services:
     environment:
       GROQ_API_KEY: ${GROQ_API_KEY:-}
       GROQ_MODEL: qwen/qwen3.8-27b
-      OCR_LANG: spa+eng
+      OCR_LANG: spa
       TESSERACT_CMD: /usr/bin/tesseract
       TESSDATA_PREFIX: /usr/share/tesseract-ocr/5/tessdata
       CORE_BASE_URL: http://plurione-core:8001

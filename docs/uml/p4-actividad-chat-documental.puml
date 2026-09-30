@@ -1,0 +1,71 @@
+@startuml p4-actividad-chat-documental
+' P4 — Actividad del chat documental eficiente (extensión PLUS).
+' Trazabilidad: PLUS-07 a PLUS-11; HU-42, HU-43; RF-13, HU-20 (cita y
+' confianza); RNF-02; DOC-05 (cita textual de la evidencia); RN-05.
+' Contrato sin cambios: POST /api/v1/ai/chat-documento (solo campos opcionales).
+' Implementación prevista: services/ai-service/controllers/analisis_controller.py,
+' pipelines/ficha_documento.py, pipelines/enrutador_chat.py, pipelines/fragmentos.py,
+' clients/groq_client.py
+
+title P4 — Turno del chat documental con respuestas sin modelo, caché y contexto acotado
+
+|Analista|
+start
+:Pregunta sobre un documento
+(Chat.jsx envía documento_id,
+pregunta e historial);
+
+|ai-service|
+:Resuelve el texto (memoria → SQLite; nunca repite el OCR);
+:Estado del sistema desde memoria
+(dictamen y criterios, consultados en paralelo) (T4);
+
+if (¿Ficha vigente (SHA-256 igual al del dictamen),
+intención factual reconocida y el dato
+existe en la ficha? (T0)) then (sí)
+  :Respuesta con plantilla: dato en negritas,
+  cita anclada del dictamen y página;
+  note right
+    Nunca afirma una ausencia: si el dato
+    falta, la pregunta pasa al modelo.
+    Lo vivo (estatus, vigencia, ratificación)
+    se lee del core en cada turno.
+  end note
+  :origen_respuesta = DATOS_DEL_DICTAMEN
+  uso_tokens = 0;
+elseif (¿Nombra una cláusula o pregunta por un
+monto, y BM25 tiene un ganador claro? (T1)) then (sí)
+  :Devuelve el pasaje literal con su página;
+  :origen_respuesta = PASAJE_DEL_DOCUMENTO
+  uso_tokens = 0;
+else (no)
+  :Arma el contexto acotado (T2):
+  presupuesto según la pregunta,
+  reordenamiento léxico local,
+  estado condicional, historial de 2 turnos;
+  if (¿Primer turno con la misma huella
+ya respondido? (T3)) then (sí)
+    :Respuesta desde el caché;
+    :origen_respuesta = CACHE
+    uso_tokens = 0;
+  else (no)
+    if (¿Cabe en el presupuesto local
+de tokens por minuto? (T4)) then (no)
+      :Reduce los fragmentos
+      en lugar de esperar reintentos;
+    endif
+    :Groq Cloud (temperatura 0.0);
+    :origen_respuesta = MODELO;
+  endif
+endif
+
+:Marca cada cita «…» como verificada en el
+documento o en el sistema (cita_literal);
+:Responde con el contrato actual
+(respuesta, citas, contexto_llm, tiempos_ms…);
+
+|Analista|
+:Lee la respuesta; cada cita
+abre el visor en su página;
+stop
+@enduml

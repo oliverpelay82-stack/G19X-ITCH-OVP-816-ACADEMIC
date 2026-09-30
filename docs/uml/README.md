@@ -17,6 +17,8 @@ Estos diagramas complementan los del DOCUMENTO GENERAL (Cap. IV, Figuras 1–6, 
 | P3 — Custodia sellada | [p3-actividad-sellado-verificacion.puml](p3-actividad-sellado-verificacion.puml) | Actividades | Bitácora (RF-27) | PLUS-04, PLUS-05 | MR-21 |
 | P3 — Custodia sellada | [p3-actividad-ficha-custodia.puml](p3-actividad-ficha-custodia.puml) | Actividades | Actualiza F6 | PLUS-06; RF-23, RF-24 | MR-10, MR-21 |
 | C6 — Índice de cumplimiento (DOC-05, no PLUS) | [c6-actividad-indice-cumplimiento.puml](c6-actividad-indice-cumplimiento.puml) | Actividades | Actualiza F5 y F6 | §10.5; RF-19, RF-22, HU-12, HU-26; RN-01, RN-05 | MR-12 |
+| P4 — Chat documental eficiente | [p4-actividad-chat-documental.puml](p4-actividad-chat-documental.puml) | Actividades | Chat del panel de IA | §21.4 PLUS-07 a PLUS-11; HU-42, HU-43; RF-13, HU-20 | MR-22 |
+| QA — Validación cuantitativa (Fase 5, no PLUS) | [qa-actividad-evaluacion.puml](qa-actividad-evaluacion.puml) | Actividades | — | §15; RNF-01 a RNF-03; [VALIDACION_CUANTITATIVA.md](../VALIDACION_CUANTITATIVA.md) | — |
 
 ## Generar las imágenes
 

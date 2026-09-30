@@ -52,7 +52,11 @@ def _resolver_tesseract() -> str:
 
 
 TESSERACT_CMD: str = _resolver_tesseract()
-OCR_LANG: str = os.getenv("OCR_LANG", "spa+eng")
+# Solo español: los documentos del DOC-02 son mexicanos. Añadir "eng" hacía que
+# Tesseract evaluara dos modelos por renglón (≈ 30 % más lento, medido en un acta
+# de 14 páginas) sin mejorar la lectura de RFC, fechas ni razón social
+# (docs/VALIDACION_CUANTITATIVA.md §5).
+OCR_LANG: str = os.getenv("OCR_LANG", "spa")
 
 # Los modelos de idioma se versionan dentro del propio servicio para que el
 # despliegue no dependa de que el instalador de Tesseract haya incluido 'spa'.
@@ -66,9 +70,13 @@ if os.path.isdir(TESSDATA_PREFIX):
 OCR_DPI: int = int(os.getenv("OCR_DPI", "300"))
 
 # Segunda lectura de las zonas con sellos en tinta de color (pipelines/sellos.py):
-# recupera el texto impreso que un sello tapa y lee el texto del propio sello.
-# Rasteriza las páginas escaneadas a color (el triple de memoria por hoja).
-OCR_RELEER_SELLOS: bool = os.getenv("OCR_RELEER_SELLOS", "true").strip().lower() in ("1", "true", "si", "sí", "yes")
+# recupera el texto impreso que un sello tapa y registra la presencia de los
+# sellos. Rasteriza las páginas escaneadas a color (el triple de memoria por
+# hoja). Apagada por defecto: ningún DOC exige detectar sellos en tinta de color
+# (el DOC-08 pide el Sello Digital SAT, que se detecta en el texto) y en el acta
+# real medida la relectura no se activó en ninguna página. Se decide su retiro
+# con el Gold Standard escaneado (docs/VALIDACION_CUANTITATIVA.md §5).
+OCR_RELEER_SELLOS: bool = os.getenv("OCR_RELEER_SELLOS", "false").strip().lower() in ("1", "true", "si", "sí", "yes")
 
 # ── Umbrales del pipeline (DOC-05 y DOC-08) ─────────────────────────
 # Si una página vectorial rinde menos caracteres que esto, se asume que es una
@@ -98,10 +106,11 @@ MAX_CARACTERES_CONTEXTO: int = int(os.getenv("MAX_CARACTERES_CONTEXTO", "6500"))
 # con capa vectorial se siguen leyendo porque su costo es despreciable.
 MAX_PAGINAS_OCR: int = int(os.getenv("MAX_PAGINAS_OCR", "6"))
 
-# Páginas escaneadas que se reconocen en paralelo. Tesseract es CPU-intensivo y
-# no gana con SMT, así que el valor por defecto son los núcleos físicos
-# (la mitad de los procesadores lógicos que reporta el sistema).
-OCR_WORKERS: int = max(1, int(os.getenv("OCR_WORKERS", str((os.cpu_count() or 2) // 2))))
+# Páginas escaneadas que se reconocen en paralelo. Por defecto, los procesadores
+# lógicos: con un hilo OpenMP por proceso, Tesseract sí gana con SMT (acta de 14
+# páginas en un Ryzen 5 3500U de 4 núcleos y 8 hilos: 25.2 s con 4 procesos,
+# 15.9 s con 8; docs/VALIDACION_CUANTITATIVA.md §5).
+OCR_WORKERS: int = max(1, int(os.getenv("OCR_WORKERS", str(os.cpu_count() or 2))))
 
 # Cada proceso de Tesseract abriría por defecto varios hilos OpenMP; con varias
 # páginas en paralelo eso sobresuscribe el CPU y lo vuelve más lento. Un hilo

@@ -154,7 +154,9 @@ informa `paginas_omitidas_ocr` y `extraccion_parcial`, y el endpoint
 páginas.
 
 **OCR en paralelo.** Las páginas escaneadas se reconocen en tandas de
-`OCR_WORKERS` páginas simultáneas (por defecto, los núcleos físicos). La
+`OCR_WORKERS` páginas simultáneas (por defecto, los procesadores lógicos: con un
+hilo OpenMP por proceso, Tesseract sí gana con SMT; ver
+`docs/VALIDACION_CUANTITATIVA.md` §5). La
 rasterización ocurre en el hilo principal, porque PyMuPDF no es seguro entre
 hilos. Cada Tesseract se limita a un hilo interno (`OMP_THREAD_LIMIT=1`) para no
 sobresuscribir el CPU, y el corte temprano se evalúa al terminar cada tanda.
