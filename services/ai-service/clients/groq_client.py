@@ -227,7 +227,8 @@ def conversar(mensajes: list[dict[str, str]], temperatura: float | None = None) 
         respuesta = _client().chat.completions.create(
             model=settings.GROQ_MODEL,
             messages=mensajes,
-            max_tokens=settings.GROQ_MAX_TOKENS,
+            # El chat tiene su propio tope de respuesta (T2, PLUS-09).
+            max_tokens=settings.CHAT_MAX_TOKENS,
             temperature=settings.GROQ_TEMPERATURE if temperatura is None else temperatura,
             top_p=1.0,
         )

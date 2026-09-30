@@ -25,6 +25,7 @@ import threading
 import time
 import unicodedata
 from concurrent.futures import ThreadPoolExecutor
+from types import SimpleNamespace
 
 from fastapi import APIRouter, HTTPException, status
 
@@ -83,9 +84,14 @@ def _es_pregunta_general(pregunta: str) -> bool:
 
 
 def _estado_en_sistema(
-    documento: repositorio_texto.TextoDocumento | None, criterios: list[dict], dictamen: dict | None
+    documento: repositorio_texto.TextoDocumento | None, criterios: list[dict], dictamen: dict | None,
+    breve: bool = False,
 ) -> str | None:
-    """Resumen del documento dentro del sistema: tipo, dictamen vigente y elementos exigidos."""
+    """
+    Resumen del documento dentro del sistema: tipo, dictamen vigente y elementos exigidos.
+    ``breve`` (T2): solo tipo, dictamen y fechas, para preguntas puntuales sobre el contenido;
+    las reglas evaluadas y los elementos exigidos van en las preguntas generales.
+    """
     if documento is None or not documento.metadatos:
         return None
     meta = documento.metadatos
@@ -100,10 +106,14 @@ def _estado_en_sistema(
             f"Dictamen vigente del motor: {dictamen.get('estatus')} (preliminar {dictamen.get('estatus_preliminar')}; "
             f"confianza {f'{confianza:.2f}' if isinstance(confianza, (int, float)) else 'no disponible'}; "
             f"ratificado por un analista: {ratificado})",
-            f"Fechas extraídas: emisión {dictamen.get('fecha_emision_extraida') or 'no localizada'}, "
-            f"vencimiento {dictamen.get('fecha_vencimiento_extraida') or 'no declarado'}; "
+            # «No extraída por el motor», no «no declarada»: que la auditoría no la extrajera
+            # no prueba que el documento no la tenga, y el modelo la repetía como ausencia.
+            f"Fechas extraídas: emisión {dictamen.get('fecha_emision_extraida') or 'no extraída por el motor'}, "
+            f"vencimiento {dictamen.get('fecha_vencimiento_extraida') or 'no extraído por el motor'}; "
             f"vigencia según las reglas: {dictamen.get('vigencia_resultado') or 'no evaluada'}",
         ]
+        if breve:
+            return "\n".join(lineas)
         reglas = [r for r in dictamen.get("reglas_aplicadas") or [] if r.get("codigo_regla")]
         if reglas:
             lineas.append("Reglas evaluadas:")
@@ -115,7 +125,7 @@ def _estado_en_sistema(
             lineas.append(f"Observación del dictamen: {obs}")
     else:
         lineas.append("El documento aún no tiene dictamen del motor.")
-    if criterios:
+    if criterios and not breve:
         lineas.append("Elementos que el catálogo exige a este tipo de documento: "
                       + "; ".join(c["nombre_regla"] for c in criterios))
     return "\n".join(lineas)
@@ -148,6 +158,22 @@ def _criterios_chat(tipo_documento: str | None) -> list[dict]:
     with _candado_criterios:
         _criterios_en_memoria[clave] = (ahora, criterios)
     return criterios
+
+
+def _historial_acotado(historial: list) -> list:
+    """
+    T2: los últimos ``CHAT_MENSAJES_HISTORIAL`` mensajes, con cada respuesta previa del
+    asistente recortada. El documento se vuelve a buscar en cada turno, así que el
+    historial solo aporta el tema de la conversación.
+    """
+    recientes = list(historial)[-settings.CHAT_MENSAJES_HISTORIAL:] if settings.CHAT_MENSAJES_HISTORIAL else []
+    acotado = []
+    for turno in recientes:
+        contenido = turno.contenido
+        if turno.rol.lower().startswith("asist") and len(contenido) > settings.CHAT_CARACTERES_TURNO_ASISTENTE:
+            contenido = contenido[:settings.CHAT_CARACTERES_TURNO_ASISTENTE].rsplit(" ", 1)[0] + "…"
+        acotado.append(SimpleNamespace(rol=turno.rol, contenido=contenido))
+    return acotado
 
 
 def _mensajes_chat(
@@ -498,16 +524,22 @@ def chat_documento(peticion: ChatDocumentoRequest):
     tipo_registrado = (documento.metadatos or {}).get("tipo_documento") if documento else None
     criterios = _criterios_chat(tipo_registrado) if tipo_registrado else []
 
-    max_fragmentos = settings.MAX_FRAGMENTOS_CHAT
-    if _es_pregunta_general(peticion.pregunta):
+    paginas = (documento.traza.get("detalle_paginas") if documento else None) or None
+    general = _es_pregunta_general(peticion.pregunta)
+    if general:
         consulta = " ".join([consulta, pipeline_analisis.CONSULTA_AUDITORIA,
                              *(f"{c['nombre_regla']} {c['criterio']}" for c in criterios)])
-        max_fragmentos += 2
-    paginas = (documento.traza.get("detalle_paginas") if documento else None) or None
-    seleccion = fragmentos.seleccionar(texto, consulta, max_fragmentos=max_fragmentos, paginas=paginas)
+        seleccion = fragmentos.seleccionar(texto, consulta, max_fragmentos=settings.MAX_FRAGMENTOS_CHAT + 2,
+                                           paginas=paginas)
+    else:
+        # T2 (PLUS-09): una pregunta puntual recibe un contexto enfocado y el estado breve.
+        seleccion = fragmentos.seleccionar_enfocado(
+            texto, consulta, presupuesto=settings.CHAT_PRESUPUESTO_PUNTUAL,
+            max_fragmentos=settings.CHAT_FRAGMENTOS_PUNTUALES, paginas=paginas)
 
-    estado = _estado_en_sistema(documento, criterios, dictamen)
-    mensajes = _mensajes_chat(seleccion.texto, estado, peticion.historial, peticion.pregunta)
+    estado = _estado_en_sistema(documento, criterios, dictamen, breve=not general)
+    historial = _historial_acotado(peticion.historial)
+    mensajes = _mensajes_chat(seleccion.texto, estado, historial, peticion.pregunta)
 
     inicio = time.perf_counter()
     # T3 (PLUS-10): a temperatura 0.0 una respuesta ya obtenida se reutiliza. La clave
@@ -515,7 +547,7 @@ def chat_documento(peticion: ChatDocumentoRequest):
     # de una pregunta corta depende de lo anterior.
     claves: list[str | None] = []
     if cache_chat.activo() and not peticion.forzar_modelo:
-        claves.append(cache_chat.clave_exacta(mensajes, settings.GROQ_MAX_TOKENS))
+        claves.append(cache_chat.clave_exacta(mensajes, settings.CHAT_MAX_TOKENS))
         if not peticion.historial and documento:
             claves.append(cache_chat.clave_pregunta(documento.sha256, estado, peticion.pregunta))
     contenido = cache_chat.leer(claves)
@@ -535,8 +567,8 @@ def chat_documento(peticion: ChatDocumentoRequest):
                 texto, consulta, max_fragmentos=2, paginas=paginas,
                 presupuesto=settings.MAX_CARACTERES_CONTEXTO // 3,
             )
-            mensajes = _mensajes_chat(seleccion.texto, estado, peticion.historial[-2:], peticion.pregunta)
-            claves = [cache_chat.clave_exacta(mensajes, settings.GROQ_MAX_TOKENS)] if claves else []
+            mensajes = _mensajes_chat(seleccion.texto, estado, historial[-2:], peticion.pregunta)
+            claves = [cache_chat.clave_exacta(mensajes, settings.CHAT_MAX_TOKENS)] if claves else []
             presupuesto.update(reducido=True, estimado_reducido=presupuesto_tokens.estimar(mensajes))
     if contenido is None:
         try:

@@ -345,6 +345,125 @@ def seleccionar(
     return _armar(texto, encabezado, elegidas, paginas)
 
 
+# ── Contexto enfocado para preguntas puntuales del chat (T2, PLUS-09) ──
+# Candidatas de BM25 que se reordenan; un renglón es «encabezado» si la mayoría de
+# sus letras son mayúsculas o si es un rubro legal; renglones de contexto que se
+# conservan alrededor de cada coincidencia.
+_CANDIDATAS_REORDENAMIENTO = 8
+_RENGLONES_CONTEXTO = 2
+# Un término de la pregunta suma el bono de encabezado solo si aparece en menos de
+# esta fracción de las ventanas: «cláusula» está en el rubro «CLÁUSULAS» de muchas
+# páginas y no distingue ninguna.
+_DF_MAXIMA_ENCABEZADO = 0.3
+
+
+def _es_encabezado(renglon: str) -> bool:
+    letras = [c for c in renglon if c.isalpha()]
+    return bool(_ENCABEZADO_LEGAL.match(renglon)) or (len(letras) >= 4 and
+                                                       sum(c.isupper() for c in letras) / len(letras) > 0.6)
+
+
+def _reordenar(v: Ventana, puntaje: float, base: set[str], distintivos: set[str] | None = None) -> float:
+    """
+    BM25 favorece la ventana donde los términos se repiten; una pregunta puntual
+    («tiempo de respuesta de la mesa de ayuda») se responde en la que reúne más
+    términos distintos y, sobre todo, la que los tiene en un encabezado: siete
+    páginas de niveles de servicio repiten «tiempo de respuesta», pero solo una
+    se titula «MESA DE AYUDA».
+    """
+    if not base:
+        return puntaje
+    renglones = v.texto.splitlines()
+    presentes = set().union(*(set(tokenizar(r)) for r in renglones)) & base if renglones else set()
+    en_encabezado = set().union(*(set(tokenizar(r)) for r in renglones if _es_encabezado(r))) & base \
+        if renglones else set()
+    if distintivos is not None:
+        en_encabezado &= distintivos
+    return puntaje * (0.5 + len(presentes) / len(base)) + 2.0 * len(en_encabezado)
+
+
+def _tramo_relevante(v: Ventana, base: set[str]) -> Ventana:
+    """
+    El tramo contiguo de la ventana entre la primera y la última coincidencia, con
+    ``_RENGLONES_CONTEXTO`` renglones a cada lado y el encabezado inmediato anterior.
+    Es un recorte del texto, no una reescritura: toda cita sigue siendo literal.
+    """
+    renglones = v.texto.splitlines(keepends=True)
+    aciertos = [i for i, r in enumerate(renglones) if set(tokenizar(r)) & base]
+    if not aciertos:
+        return v
+    desde = max(0, aciertos[0] - _RENGLONES_CONTEXTO)
+    encabezado = next((i for i in range(aciertos[0], -1, -1) if _es_encabezado(renglones[i])), None)
+    if encabezado is not None and aciertos[0] - encabezado <= 6:
+        desde = min(desde, encabezado)
+    hasta = min(len(renglones), aciertos[-1] + _RENGLONES_CONTEXTO + 1)
+    inicio = v.inicio + sum(len(r) for r in renglones[:desde])
+    texto = "".join(renglones[desde:hasta])
+    return Ventana(inicio, inicio + len(texto), texto)
+
+
+def _candidatas_reordenadas(texto: str, consulta: str, desde: int = 0) -> list[tuple[Ventana, float]]:
+    """Las mejores ventanas de BM25 a partir de ``desde``, reordenadas por cobertura y encabezados."""
+    terminos = terminos_consulta(consulta)
+    base = set(tokenizar(consulta))
+    indice = _indice(texto, settings.FRAGMENTO_CARACTERES)
+    puntajes = _bm25(indice, terminos) if terminos else [0.0] * len(indice.ventanas)
+    candidatas = sorted(
+        ((v, p) for v, p in zip(indice.ventanas, puntajes) if p > 0 and v.fin > desde),
+        key=lambda c: c[1], reverse=True,
+    )[:_CANDIDATAS_REORDENAMIENTO]
+    distintivos = {t for t in base if indice.df.get(t, 0) < _DF_MAXIMA_ENCABEZADO * len(indice.ventanas)}
+    return sorted(((v, _reordenar(v, p, base, distintivos)) for v, p in candidatas),
+                  key=lambda c: c[1], reverse=True)
+
+
+def tramos_relevantes(texto: str, consulta: str) -> list[tuple[Ventana, float]]:
+    """
+    Tramos del documento para una consulta, del mejor al peor, con su puntaje
+    reordenado; cada tramo es un recorte literal (lo usa el pasaje directo, T1).
+    """
+    texto = texto.strip()
+    base = set(tokenizar(consulta))
+    return [(_tramo_relevante(v, base), p) for v, p in _candidatas_reordenadas(texto, consulta)]
+
+
+def seleccionar_enfocado(
+    texto: str,
+    consulta: str,
+    presupuesto: int,
+    max_fragmentos: int,
+    paginas: list[dict] | None = None,
+) -> SeleccionContexto:
+    """
+    Contexto para una pregunta puntual del chat: encabezado corto y pocos
+    fragmentos, elegidos entre los mejores de BM25 por cobertura de términos y
+    coincidencia en encabezados, y recortados al tramo que contiene las
+    coincidencias. Mantiene BM25 léxico, sin embeddings (decisión documentada).
+    """
+    texto = texto.strip()
+    if len(texto) <= presupuesto:
+        return SeleccionContexto(texto, "completo", len(texto))
+    encabezado, encabezado_fin = _encabezado(texto, presupuesto // 2)
+    terminos = terminos_consulta(consulta)
+    base = set(tokenizar(consulta))
+    candidatas = _candidatas_reordenadas(texto, consulta, encabezado_fin)
+    if not candidatas:
+        return SeleccionContexto(texto[:presupuesto], "inicio", len(texto))
+
+    elegidas: list[tuple[Ventana, float, list[str]]] = []
+    disponible = presupuesto - len(encabezado)
+    for v, puntaje in candidatas:
+        if len(elegidas) >= max_fragmentos:
+            break
+        tramo = _tramo_relevante(v, base)
+        costo = len(tramo.texto.strip()) + len(_SEPARADOR)
+        if costo > disponible or _repite(tramo, [e[0] for e in elegidas]):
+            continue
+        elegidas.append((tramo, puntaje, terminos))
+        disponible -= costo
+    return _armar(texto, encabezado, elegidas, paginas)
+
+
 def seleccionar_por_criterios(
     texto: str,
     consultas: list[str],

@@ -229,3 +229,13 @@ def test_contenido_titularidad(monkeypatch):
 if __name__ == "__main__":
     with pytest.MonkeyPatch.context() as mp:
         sys.exit(main(mp))
+
+
+def test_el_estado_no_afirma_que_falte_una_fecha_que_el_motor_no_extrajo():
+    from types import SimpleNamespace as N
+
+    from controllers import analisis_controller as chat
+    documento = N(metadatos={"id": "d", "nombre_archivo_original": "c.pdf", "tipo_documento": "CONTRATO_SERVICIOS"})
+    estado = chat._estado_en_sistema(documento, [], {"estatus": "EN_REVISION", "fecha_emision_extraida": "2026-03-02",
+                                                      "fecha_vencimiento_extraida": None, "reglas_aplicadas": []})
+    assert "no extraído por el motor" in estado and "no declarado" not in estado

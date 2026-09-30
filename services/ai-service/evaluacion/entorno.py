@@ -162,7 +162,7 @@ class Casete:
 
     def conversar(self, original, mensajes: list[dict[str, str]], temperatura: float | None = None) -> str:
         efectiva = settings.GROQ_TEMPERATURE if temperatura is None else temperatura
-        clave = self.huella("texto", settings.GROQ_MAX_TOKENS, efectiva, mensajes)
+        clave = self.huella("texto", settings.CHAT_MAX_TOKENS, efectiva, mensajes)
         respuesta, entrada = self._resolver("texto", clave, sum(len(m["content"]) for m in mensajes),
                                             lambda: original(mensajes, temperatura))
         resultado = groq_client.RespuestaTexto(respuesta)
@@ -296,6 +296,12 @@ class Entorno:
         temporal = tempfile.mkdtemp(prefix="plurione-evaluacion-")
         mp.setattr(settings, "EXTRACCIONES_DB_PATH", os.path.join(temporal, "extracciones.sqlite3"))
         mp.setattr(settings, "COMPLETAR_LECTURA_EN_SEGUNDO_PLANO", False)
+        # El presupuesto de tokens (T4) depende del reloj y del consumo real: en modo grabar,
+        # la llamada real a Groq lo alimenta y acota el turno siguiente, y al reproducir no.
+        # Las mediciones de las baterías lo desactivan para ser reproducibles y comparables;
+        # solo el escenario de contención (registrar_presupuesto) lo usa.
+        if not self.casete.registrar_presupuesto:
+            mp.setattr(settings, "GROQ_TOKENS_POR_MINUTO", 0)
         mp.setattr(repositorio_texto, "cache_texto", CacheExtracciones(settings.CACHE_MAX_DOCUMENTOS))
         for nombre in ("obtener_metadatos", "verificar_integridad", "leer_binario", "registrar_dictamen",
                        "ultimo_dictamen"):

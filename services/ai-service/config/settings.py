@@ -46,6 +46,20 @@ GROQ_TOKENS_POR_MINUTO: int = int(os.getenv("GROQ_TOKENS_POR_MINUTO", "8000"))
 # documento (el catálogo cambia rara vez). El dictamen se lee en vivo en cada turno.
 CHAT_TTL_CRITERIOS_SEGUNDOS: int = int(os.getenv("CHAT_TTL_CRITERIOS_SEGUNDOS", "300"))
 
+# Contexto del chat (T2, PLUS-09). Una pregunta puntual («¿cuál es el monto?») recibe
+# un contexto enfocado de CHAT_PRESUPUESTO_PUNTUAL caracteres en hasta
+# CHAT_FRAGMENTOS_PUNTUALES tramos; las generales («¿qué le falta?», «resume»)
+# conservan MAX_CARACTERES_CONTEXTO. El historial que llega del cliente se acota a
+# los últimos CHAT_MENSAJES_HISTORIAL mensajes y cada respuesta previa del asistente a
+# CHAT_CARACTERES_TURNO_ASISTENTE caracteres: el contexto se vuelve a buscar en cada
+# turno. CHAT_MAX_TOKENS es el tope de la respuesta del chat (la más larga medida en
+# la línea base fue de 202 tokens).
+CHAT_PRESUPUESTO_PUNTUAL: int = int(os.getenv("CHAT_PRESUPUESTO_PUNTUAL", "3000"))
+CHAT_FRAGMENTOS_PUNTUALES: int = int(os.getenv("CHAT_FRAGMENTOS_PUNTUALES", "3"))
+CHAT_MENSAJES_HISTORIAL: int = int(os.getenv("CHAT_MENSAJES_HISTORIAL", "4"))
+CHAT_CARACTERES_TURNO_ASISTENTE: int = int(os.getenv("CHAT_CARACTERES_TURNO_ASISTENTE", "400"))
+CHAT_MAX_TOKENS: int = int(os.getenv("CHAT_MAX_TOKENS", "600"))
+
 # ── Motor OCR (Tesseract) ───────────────────────────────────────────
 def _resolver_tesseract() -> str:
     """Localiza el binario de Tesseract en PATH o en su ruta típica de Windows."""
