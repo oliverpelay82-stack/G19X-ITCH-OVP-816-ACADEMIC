@@ -21,8 +21,10 @@ alcanzable como una de la página 1. Cada respuesta informa de dónde salió el
 texto, qué fragmentos vio el modelo y cuánto tardó cada fase.
 """
 import re
+import threading
 import time
 import unicodedata
+from concurrent.futures import ThreadPoolExecutor
 
 from fastapi import APIRouter, HTTPException, status
 
@@ -32,7 +34,7 @@ from clients.groq_client import GroqNoDisponibleError, GroqRespuestaInvalidaErro
 from clients.rules_client import ReglasNoDisponiblesError
 from config import settings
 from pipelines import analisis_semantico as pipeline_analisis
-from pipelines import cache_chat, fragmentos, repositorio_texto, verificacion_contenido
+from pipelines import cache_chat, fragmentos, presupuesto_tokens, repositorio_texto, verificacion_contenido
 from pipelines.extraccion_pipeline import FormatoNoSoportadoError, MotorOcrNoDisponibleError
 from schemas.analisis_schema import AnalisisSemanticoRequest, ChatDocumentoRequest
 
@@ -77,7 +79,9 @@ def _es_pregunta_general(pregunta: str) -> bool:
     return bool(_PREGUNTA_GENERAL.search("".join(c for c in normalizada if not unicodedata.combining(c))))
 
 
-def _estado_en_sistema(documento: repositorio_texto.TextoDocumento | None, criterios: list[dict]) -> str | None:
+def _estado_en_sistema(
+    documento: repositorio_texto.TextoDocumento | None, criterios: list[dict], dictamen: dict | None
+) -> str | None:
     """Resumen del documento dentro del sistema: tipo, dictamen vigente y elementos exigidos."""
     if documento is None or not documento.metadatos:
         return None
@@ -86,7 +90,6 @@ def _estado_en_sistema(documento: repositorio_texto.TextoDocumento | None, crite
         f"Archivo: {meta.get('nombre_archivo_original')}",
         f"Tipo registrado en el expediente: {meta.get('tipo_documento')}",
     ]
-    dictamen = core_client.ultimo_dictamen(meta.get("id", ""))
     if dictamen:
         ratificado = f"sí, por {dictamen.get('revisado_por')}" if dictamen.get("revisado_por_humano") else "no"
         confianza = dictamen.get("nivel_confianza")
@@ -113,6 +116,49 @@ def _estado_en_sistema(documento: repositorio_texto.TextoDocumento | None, crite
         lineas.append("Elementos que el catálogo exige a este tipo de documento: "
                       + "; ".join(c["nombre_regla"] for c in criterios))
     return "\n".join(lineas)
+
+
+# T4 (PLUS-11): el dictamen se consulta al core en paralelo con la lectura del
+# texto; los criterios del catálogo se conservan unos minutos en memoria.
+_consultas_chat = ThreadPoolExecutor(max_workers=4, thread_name_prefix="chat-estado")
+_criterios_en_memoria: dict[str, tuple[float, list[dict]]] = {}
+_candado_criterios = threading.Lock()
+
+
+def _criterios_chat(tipo_documento: str | None) -> list[dict]:
+    """
+    Criterios de contenido del tipo de documento para el chat, con vencimiento de
+    ``CHAT_TTL_CRITERIOS_SEGUNDOS``. La auditoría no los usa: consulta siempre al
+    rules-service, porque una regla pausada debe dejar de exigirse de inmediato.
+    Un fallo del rules-service no se guarda.
+    """
+    clave = (tipo_documento or "").upper()
+    ahora = time.monotonic()
+    with _candado_criterios:
+        guardado = _criterios_en_memoria.get(clave)
+    if guardado and ahora - guardado[0] < settings.CHAT_TTL_CRITERIOS_SEGUNDOS:
+        return guardado[1]
+    try:
+        criterios = rules_client.criterios_contenido(tipo_documento)
+    except ReglasNoDisponiblesError:
+        return []
+    with _candado_criterios:
+        _criterios_en_memoria[clave] = (ahora, criterios)
+    return criterios
+
+
+def _mensajes_chat(
+    contexto: str, estado: str | None, historial: list, pregunta: str
+) -> list[dict[str, str]]:
+    mensajes = [{"role": "system", "content": SYSTEM_PROMPT_CHAT}]
+    if estado:
+        mensajes.append({"role": "system", "content": f"=== ESTADO EN EL SISTEMA ===\n{estado}\n=== FIN ==="})
+    mensajes.append({"role": "system", "content": f"=== CONTENIDO DEL DOCUMENTO ===\n{contexto}\n=== FIN ==="})
+    for turno in historial:
+        rol = "assistant" if turno.rol.lower().startswith("asist") else "user"
+        mensajes.append({"role": rol, "content": turno.contenido})
+    mensajes.append({"role": "user", "content": pregunta})
+    return mensajes
 
 
 def _documento(
@@ -348,7 +394,16 @@ def chat_documento(peticion: ChatDocumentoRequest):
     tokens de Groq, y el hilo de la conversación no desplaza al documento.
     """
     inicio = time.perf_counter()
-    texto, documento, fuente = _resolver_contenido(peticion.documento_id, peticion.texto)
+    dictamen_en_curso = (
+        _consultas_chat.submit(core_client.ultimo_dictamen, peticion.documento_id)
+        if peticion.documento_id and not (peticion.texto or "").strip() else None
+    )
+    try:
+        texto, documento, fuente = _resolver_contenido(peticion.documento_id, peticion.texto)
+    except HTTPException:
+        if dictamen_en_curso:
+            dictamen_en_curso.cancel()
+        raise
     ms_texto = _ms(inicio)
 
     if not texto.strip():
@@ -367,10 +422,7 @@ def chat_documento(peticion: ChatDocumentoRequest):
         consulta = f"{consulta} {anterior}"
 
     tipo_registrado = (documento.metadatos or {}).get("tipo_documento") if documento else None
-    try:
-        criterios = rules_client.criterios_contenido(tipo_registrado)
-    except ReglasNoDisponiblesError:
-        criterios = []
+    criterios = _criterios_chat(tipo_registrado) if tipo_registrado else []
 
     max_fragmentos = settings.MAX_FRAGMENTOS_CHAT
     if _es_pregunta_general(peticion.pregunta):
@@ -380,17 +432,9 @@ def chat_documento(peticion: ChatDocumentoRequest):
     paginas = (documento.traza.get("detalle_paginas") if documento else None) or None
     seleccion = fragmentos.seleccionar(texto, consulta, max_fragmentos=max_fragmentos, paginas=paginas)
 
-    mensajes = [{"role": "system", "content": SYSTEM_PROMPT_CHAT}]
-    estado = _estado_en_sistema(documento, criterios)
-    if estado:
-        mensajes.append({"role": "system", "content": f"=== ESTADO EN EL SISTEMA ===\n{estado}\n=== FIN ==="})
-    mensajes.append(
-        {"role": "system", "content": f"=== CONTENIDO DEL DOCUMENTO ===\n{seleccion.texto}\n=== FIN ==="}
-    )
-    for turno in peticion.historial:
-        rol = "assistant" if turno.rol.lower().startswith("asist") else "user"
-        mensajes.append({"role": rol, "content": turno.contenido})
-    mensajes.append({"role": "user", "content": peticion.pregunta})
+    dictamen = dictamen_en_curso.result() if dictamen_en_curso else None
+    estado = _estado_en_sistema(documento, criterios, dictamen)
+    mensajes = _mensajes_chat(seleccion.texto, estado, peticion.historial, peticion.pregunta)
 
     inicio = time.perf_counter()
     # T3 (PLUS-10): a temperatura 0.0 una respuesta ya obtenida se reutiliza. La clave
@@ -403,6 +447,24 @@ def chat_documento(peticion: ChatDocumentoRequest):
             claves.append(cache_chat.clave_pregunta(documento.sha256, estado, peticion.pregunta))
     contenido = cache_chat.leer(claves)
     origen = "CACHE" if contenido is not None else "MODELO"
+    presupuesto = None
+    if contenido is None and presupuesto_tokens.presupuesto.activo():
+        # T4 (PLUS-11): si la petición no cabe en lo que queda del minuto (una auditoría
+        # acaba de consumir la cuota), se acota el contexto en lugar de esperar los
+        # reintentos del SDK. La respuesta a un contexto acotado no se guarda bajo las
+        # claves del contexto completo.
+        estimado = presupuesto_tokens.estimar(mensajes)
+        usados = presupuesto_tokens.presupuesto.usados()
+        presupuesto = {"limite": presupuesto_tokens.presupuesto.limite, "usados_ultimo_minuto": usados,
+                       "estimado": estimado, "reducido": False}
+        if not presupuesto_tokens.presupuesto.cabe(estimado):
+            seleccion = fragmentos.seleccionar(
+                texto, consulta, max_fragmentos=2, paginas=paginas,
+                presupuesto=settings.MAX_CARACTERES_CONTEXTO // 3,
+            )
+            mensajes = _mensajes_chat(seleccion.texto, estado, peticion.historial[-2:], peticion.pregunta)
+            claves = [cache_chat.clave_exacta(mensajes, settings.GROQ_MAX_TOKENS)] if claves else []
+            presupuesto.update(reducido=True, estimado_reducido=presupuesto_tokens.estimar(mensajes))
     if contenido is None:
         try:
             contenido = groq_client.conversar(mensajes)
@@ -418,12 +480,12 @@ def chat_documento(peticion: ChatDocumentoRequest):
     # como evidencia.
     citas = []
     for c in _CITA.findall(str(contenido)):
-        fuente = (
+        fuente_cita = (
             "documento" if verificacion_contenido.cita_literal(c, texto)
             else "sistema" if estado and verificacion_contenido.cita_en_texto(c, estado)
             else None
         )
-        citas.append({"texto": c.strip(), "verificada": fuente is not None, "fuente": fuente})
+        citas.append({"texto": c.strip(), "verificada": fuente_cita is not None, "fuente": fuente_cita})
     respuesta = {
         "pregunta": peticion.pregunta,
         "respuesta": contenido,
@@ -434,7 +496,8 @@ def chat_documento(peticion: ChatDocumentoRequest):
         "modelo_utilizado": settings.GROQ_MODEL,
         "caracteres_de_contexto": len(seleccion.texto),
         "contexto_truncado": seleccion.recortado,
-        "contexto_llm": {**seleccion.traza(), "uso_tokens": groq_client.uso_de(contenido)},
+        "contexto_llm": {**seleccion.traza(), "uso_tokens": groq_client.uso_de(contenido),
+                         **({"presupuesto_tokens": presupuesto} if presupuesto else {})},
         "fuente_texto": fuente,
         "tiempos_ms": {"resolucion_texto": ms_texto, "inferencia": _ms(inicio)},
     }

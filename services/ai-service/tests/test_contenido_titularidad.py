@@ -27,7 +27,7 @@ import pytest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from clients import core_client, groq_client, rules_client  # noqa: E402
+from clients import groq_client, rules_client  # noqa: E402
 from clients.groq_client import GroqNoDisponibleError  # noqa: E402
 from pipelines import analisis_semantico, verificacion_contenido  # noqa: E402
 
@@ -204,15 +204,16 @@ def main(mp: pytest.MonkeyPatch) -> int:
               and chat._es_pregunta_general("Resume el acta")
               and not chat._es_pregunta_general("¿Quién es el comisario?"),
               "Detecta preguntas generales para ampliar la búsqueda de fragmentos")
-    mp.setattr(core_client, "ultimo_dictamen", lambda documento_id: {
+    # El chat consulta el dictamen en paralelo con la lectura del texto (T4) y se lo pasa al estado.
+    dictamen = {
         "estatus": "EN_REVISION", "estatus_preliminar": "EN_REVISION", "nivel_confianza": 0.9,
         "revisado_por_humano": False, "fecha_emision_extraida": "2015-03-10", "fecha_vencimiento_extraida": None,
         "vigencia_resultado": "SIN_REGLAS", "observaciones": ["Dictamen EN_REVISION: omisión relevante."],
         "reglas_aplicadas": [{"codigo_regla": "RSC-ACTA-RPC", "nombre_regla": "Inscripción", "resultado": "NO_LOCALIZADO",
-                              "detalle": "Sin folio.", "recomendacion": "Solicitar la boleta."}]})
+                              "detalle": "Sin folio.", "recomendacion": "Solicitar la boleta."}]}
     documento = SimpleNamespace(metadatos={"id": "doc-1", "nombre_archivo_original": "acta.pdf",
                                            "tipo_documento": "ACTA_CONSTITUTIVA"})
-    estado = chat._estado_en_sistema(documento, CRITERIOS_ACTA)
+    estado = chat._estado_en_sistema(documento, CRITERIOS_ACTA, dictamen)
     verificar("EN_REVISION" in estado and "Solicitar la boleta" in estado and "Escritura pública" in estado,
               "El chat recibe el dictamen, las recomendaciones y los elementos exigidos")
 

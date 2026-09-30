@@ -372,6 +372,22 @@ Medición en modo reproducir (sin tokens), con una fase de repetición: cada pre
 - Una pregunta ya respondida sobre el mismo documento y el mismo estado **no vuelve a consumir tokens** y baja de ≈ 0.75–1.1 s a ≈ 25 ms. La exactitud y las citas son las mismas que en la primera respuesta, porque es la misma respuesta (93 % = 28/30: los dos falsos negativos del calificador de la base están entre las preguntas sueltas).
 - T3 no cambia el costo de una pregunta nueva: su ahorro depende de cuánto se repitan las preguntas entre analistas (las sugeridas por la interfaz son las candidatas naturales).
 
+#### T4 — Presupuesto de tokens y estado del chat (PLUS-11)
+
+**Sin cuota compartida** (modo reproducir, ambas baterías; [`chat_t4.json`](resultados_validacion/chat_t4.json), [`chat_t4_extensa.json`](resultados_validacion/chat_t4_extensa.json)): los mismos tokens, respuestas y exactitud que T3. Ninguna huella faltó en el casete, lo que prueba que el refactor envía al modelo exactamente los mismos mensajes. En el entorno offline el core y el rules-service son simulados, así que el ahorro de consultarlos en paralelo y de conservar los criterios en memoria no se refleja en estas latencias.
+
+**Contención con la auditoría** (Groq real; [`chat_t4_contencion.json`](resultados_validacion/chat_t4_contencion.json); `evaluacion/escenario_contencion.py`): se audita el contrato escaneado de 20 páginas (≈ 7,000 tokens) y enseguida se hacen 3 preguntas (monto del Anexo B, deductiva del Anexo D y subcontratación), primero con T4 desactivado y, tras 65 s, activado. Casete y SQLite nuevos en cada variante.
+
+| Variante | Auditoría | Pregunta 1 | Pregunta 2 | Pregunta 3 | Espera total del chat | Tokens/turno | Aciertos |
+|---|---|---|---|---|---|---|---|
+| Sin T4 (contexto completo; el SDK espera y reintenta) | 23.5 s · 6,995 | 25.1 s | 17.3 s | 25.9 s | 68.3 s | ≈ 3,020 | 3/3 |
+| Con T4 (contexto acotado a ≈ 1,950 caracteres) | 21.2 s · 7,003 | 9.9 s | 22.4 s | 6.2 s | 38.5 s | ≈ 1,850 | 3/3 |
+
+- T4 **reduce la espera del chat un 44 %** y sus tokens un 39 % sin perder aciertos en estas tres preguntas (el pasaje correcto quedó dentro del contexto acotado).
+- **No la elimina:** la auditoría gasta ≈ 7,000 de los 8,000 tokens del minuto, así que ni el turno acotado (≈ 1,900) cabe y Groq todavía hace esperar. La espera solo desaparece si la pregunta no llega al modelo: es el objetivo de T0 (PLUS-07) y T1 (PLUS-08).
+- Es una corrida por variante (n = 3 preguntas): la tendencia es clara, pero las latencias individuales dependen de cuándo libera Groq la cuota.
+- La auditoría de este escenario tardó 21 a 24 s contra 16.9 s en la línea base: su extracción y su verificación corren en paralelo y comparten la misma cuota del minuto.
+
 ### 10.2 Precisión y 10.3 Rendimiento
 
 *Pendiente de ejecución.* Tablas previstas:

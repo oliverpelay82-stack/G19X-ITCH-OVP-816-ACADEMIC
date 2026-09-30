@@ -43,7 +43,7 @@ import pytest  # noqa: E402
 from clients import core_client, groq_client, rules_client  # noqa: E402
 from config import settings  # noqa: E402
 from evaluacion import gold_standard as gs  # noqa: E402
-from pipelines import analisis_semantico, repositorio_texto  # noqa: E402
+from pipelines import analisis_semantico, presupuesto_tokens, repositorio_texto  # noqa: E402
 from pipelines.cache_extracciones import CacheExtracciones  # noqa: E402
 
 GRABAR, REPRODUCIR = "grabar", "reproducir"
@@ -91,7 +91,7 @@ class _Presupuesto:
 class Casete:
     """Respuestas de Groq por huella de la petición exacta."""
 
-    def __init__(self, ruta: str, modo: str):
+    def __init__(self, ruta: str, modo: str, registrar_presupuesto: bool = False):
         if modo not in (GRABAR, REPRODUCIR):
             raise ValueError(f"Modo desconocido: {modo}")
         self.ruta, self.modo = ruta, modo
@@ -102,6 +102,9 @@ class Casete:
         self._candado = threading.Lock()
         self._presupuesto = _Presupuesto(TOKENS_POR_MINUTO)
         self.consultas: list[dict[str, Any]] = []   # uso de cada llamada de la corrida, en orden
+        # Escenario de contención (T4): las llamadas reales entran en el presupuesto de
+        # tokens del servicio, como lo haría groq_client, que aquí está sustituido.
+        self.registrar_presupuesto = registrar_presupuesto
         # Huellas pedidas en reproducción que no estaban grabadas. La excepción basta
         # para abortar, pero se registran por si una capa intermedia la convirtiera en
         # un 500: quien use el entorno debe comprobar que la lista quedó vacía.
@@ -130,6 +133,8 @@ class Casete:
             latencia = round((time.perf_counter() - inicio) * 1000)
             uso = getattr(respuesta, "uso", None) or {}
             registro[1] = float(uso.get("total_tokens") or registro[1])
+            if self.registrar_presupuesto:
+                presupuesto_tokens.presupuesto.registrar(uso.get("total_tokens"))
             entrada = {
                 "tipo": tipo,
                 "respuesta": dict(respuesta) if tipo == "json" else str(respuesta),
@@ -279,8 +284,9 @@ class Entorno:
     ``id`` de cada caso es su ``documento_id``.
     """
 
-    def __init__(self, casos: list[dict[str, Any]], ruta_casete: str, modo: str = REPRODUCIR):
-        self.casete = Casete(ruta_casete, modo)
+    def __init__(self, casos: list[dict[str, Any]], ruta_casete: str, modo: str = REPRODUCIR,
+                 registrar_presupuesto: bool = False):
+        self.casete = Casete(ruta_casete, modo, registrar_presupuesto)
         self.core = CoreSimulado(casos)
         self.reglas = ReglasSimuladas()
         self._parche = pytest.MonkeyPatch()

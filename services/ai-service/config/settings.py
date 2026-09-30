@@ -38,6 +38,13 @@ GROQ_TEMPERATURE: float = float(os.getenv("GROQ_TEMPERATURE", "0.0"))
 GROQ_CACHE_INFERENCIAS: bool = os.getenv("GROQ_CACHE_INFERENCIAS", "true").strip().lower() in (
     "1", "true", "si", "sí", "yes",
 )
+# Límite de tokens por minuto del plan de Groq (8,000 en el gratuito). El chat
+# acota su contexto si su petición no cabe en lo que el proceso gastó en el último
+# minuto (T4, PLUS-11; pipelines/presupuesto_tokens.py). 0 lo desactiva.
+GROQ_TOKENS_POR_MINUTO: int = int(os.getenv("GROQ_TOKENS_POR_MINUTO", "8000"))
+# Segundos que el chat conserva en memoria los criterios de contenido de un tipo de
+# documento (el catálogo cambia rara vez). El dictamen se lee en vivo en cada turno.
+CHAT_TTL_CRITERIOS_SEGUNDOS: int = int(os.getenv("CHAT_TTL_CRITERIOS_SEGUNDOS", "300"))
 
 # ── Motor OCR (Tesseract) ───────────────────────────────────────────
 def _resolver_tesseract() -> str:

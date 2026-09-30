@@ -23,7 +23,7 @@ from openai import OpenAI, APIError, APIConnectionError, RateLimitError
 from config import settings
 # El caché de inferencias vive en la misma SQLite que el texto extraído: es la
 # única persistencia local del servicio (DOC-08).
-from pipelines import persistencia_texto
+from pipelines import persistencia_texto, presupuesto_tokens
 
 # Tope del sondeo de salud: /health nunca debe esperar el timeout de inferencia.
 _TIMEOUT_SONDEO_SEGUNDOS = 5
@@ -62,6 +62,12 @@ def _uso(respuesta: Any) -> dict[str, Any] | None:
 
 # Una respuesta servida por el caché no consume tokens del cupo de Groq.
 _USO_DESDE_CACHE = {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0, "desde_cache": True}
+
+
+def _registrar(uso: dict[str, Any] | None) -> None:
+    """T4 (PLUS-11): cada llamada real entra en la cuenta de tokens del último minuto."""
+    if uso:
+        presupuesto_tokens.presupuesto.registrar(uso.get("total_tokens"))
 
 
 def uso_de(respuesta: Any) -> dict[str, Any] | None:
@@ -205,6 +211,7 @@ def generar_json(prompt: str, system: str) -> dict[str, Any]:
     if clave:
         persistencia_texto.guardar_inferencia(clave, resultado)
     resultado.uso = _uso(respuesta)
+    _registrar(resultado.uso)
     return resultado
 
 
@@ -228,4 +235,5 @@ def conversar(mensajes: list[dict[str, str]], temperatura: float | None = None) 
         raise _traducir(exc) from exc
     texto = RespuestaTexto((respuesta.choices[0].message.content or "").strip())
     texto.uso = _uso(respuesta)
+    _registrar(texto.uso)
     return texto

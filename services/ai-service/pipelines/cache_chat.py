@@ -8,10 +8,10 @@ una respuesta ya obtenida se reutiliza sin consumir tokens. Dos claves:
     incluyen el estado del sistema, los fragmentos y el historial). Cubre
     cualquier turno repetido tal cual.
   * **Por pregunta normalizada**, solo en el primer turno (sin historial): la
-    huella del documento, la versión de su lectura, el estado del sistema y los
-    términos de la pregunta según el mismo tokenizador de la búsqueda BM25 (sin
-    acentos, mayúsculas, signos ni palabras vacías). «¿Cuándo vence?» y «cuando
-    vence» comparten respuesta. Las negaciones se conservan en la clave: «¿quién
+    huella del documento, la versión de su lectura, el estado del sistema y las
+    palabras de la pregunta, en orden, sin mayúsculas, acentos ni signos.
+    «¿Cuándo vence?» y «cuando vence» comparten respuesta. No se quitan palabras
+    ni cifras: «cláusula 7» y «cláusula 9», «Anexo A» y «Anexo B» o «¿quién
     firma?» y «¿quién no firma?» son preguntas distintas.
 
 Como la clave incluye el estado del sistema (dictamen vigente, su ratificación y
@@ -31,7 +31,6 @@ from config import settings
 from pipelines import extraccion_pipeline, fragmentos, persistencia_texto
 
 _PREFIJO = "chat:"
-_NEGACIONES = {"no", "sin", "ni", "nunca", "ningun", "ninguna", "excepto", "salvo"}
 USO_DESDE_CACHE = {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0, "desde_cache": True}
 
 
@@ -49,8 +48,9 @@ def clave_exacta(mensajes: list[dict[str, str]], max_tokens: int) -> str:
 
 
 def terminos_pregunta(pregunta: str) -> list[str]:
-    palabras = set(re.findall(r"[a-z]+", fragmentos._normalizar(pregunta)))
-    return sorted(set(fragmentos.tokenizar(pregunta)) | (palabras & _NEGACIONES))
+    # No se usa el tokenizador de BM25: descarta palabras vacías y las de un solo
+    # carácter, y con ellas cifras y letras que cambian la pregunta («cláusula 7»).
+    return re.findall(r"[a-z0-9]+", fragmentos._normalizar(pregunta))
 
 
 def clave_pregunta(sha256: str | None, estado: str | None, pregunta: str) -> str | None:

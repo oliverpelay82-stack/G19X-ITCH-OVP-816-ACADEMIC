@@ -76,6 +76,13 @@ def test_la_misma_pregunta_sale_del_cache(entorno):
     assert segunda["citas"] == primera["citas"] and segunda["citas"][0]["verificada"] is True
 
 
+def test_otra_clausula_no_reutiliza_la_respuesta(entorno):
+    cliente, llamadas, _ = entorno
+    assert _preguntar(cliente, "¿Qué plazo fija la cláusula 7?")["origen_respuesta"] == "MODELO"
+    assert _preguntar(cliente, "¿Qué plazo fija la cláusula 9?")["origen_respuesta"] == "MODELO"
+    assert len(llamadas) == 2
+
+
 def test_variante_normalizada_si_y_negacion_no(entorno):
     cliente, llamadas, _ = entorno
     _preguntar(cliente, "¿Cuál es el RFC del contribuyente?")
@@ -115,7 +122,18 @@ def test_forzar_modelo_y_cache_apagado(entorno, monkeypatch):
 
 
 def test_terminos_de_la_clave():
-    assert cache_chat.terminos_pregunta("¿Cuándo VENCE este documento?") == cache_chat.terminos_pregunta(
-        "cuando vence este documento")
-    assert "no" in cache_chat.terminos_pregunta("¿Quién no firma?")
+    t = cache_chat.terminos_pregunta
+    assert t("¿Cuándo VENCE este documento?") == t("cuando vence este documento")
+    assert t("¿Quién no firma?") != t("¿Quién firma?")
+    # Regresión: el tokenizador de BM25 descartaba las palabras de un carácter.
+    assert t("¿Qué plazo fija la cláusula 7?") != t("¿Qué plazo fija la cláusula 9?")
+    assert t("¿Qué dice el Anexo A?") != t("¿Qué dice el Anexo B?")
+    assert t("¿Qué pasa si baja del 99.5 %?") == t("que pasa si baja del 99.5 %")
     assert cache_chat.clave_pregunta(None, "estado", "¿Quién firma?") is None
+
+
+def test_fuente_texto_es_la_del_texto_y_no_la_de_la_ultima_cita(entorno):
+    cliente, _, _ = entorno
+    respuesta = _preguntar(cliente, "¿Cuál es el RFC del contribuyente?")
+    assert respuesta["citas"][0]["fuente"] == "documento"
+    assert respuesta["fuente_texto"] == "memoria"

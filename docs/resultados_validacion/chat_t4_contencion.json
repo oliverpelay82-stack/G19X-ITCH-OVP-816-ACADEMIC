@@ -1,0 +1,124 @@
+{
+  "ejecutado_en": "2026-09-30T19:47:02+00:00",
+  "modelo": "qwen/qwen3.8-27b",
+  "variantes": [
+    {
+      "variante": "sin_t4",
+      "limite_tokens_por_minuto": 0,
+      "auditoria": {
+        "http": 200,
+        "ms": 23544,
+        "tokens": 6995
+      },
+      "turnos": [
+        {
+          "pregunta": "¿Cuál es el monto mensual total de los servicios?",
+          "http": 200,
+          "ms": 25142,
+          "tokens": 3123,
+          "latencia_groq_ms": [
+            25064
+          ],
+          "presupuesto_tokens": null,
+          "caracteres_de_contexto": 6349,
+          "acierta": true,
+          "respuesta": "El monto mensual total de los servicios es de **$185,000.00 M.N.** (ciento ochenta y cinco mil pesos 00/100 M.N.), más el Impuesto al Valor Agregado.\n\nEste dato se encuentra explícitamente en el Anexo B del documento: «Monto mensual total de los servicios: $1 85, 000.00 (ciento ochenta y cinco mil pesos 00/100 M.N.) más el Impuesto al Valor Agregado»."
+        },
+        {
+          "pregunta": "¿Qué deductiva se aplica si la disponibilidad de los servidores baja del 99.5 %?",
+          "http": 200,
+          "ms": 17299,
+          "tokens": 2973,
+          "latencia_groq_ms": [
+            17240
+          ],
+          "presupuesto_tokens": null,
+          "caracteres_de_contexto": 6486,
+          "acierta": true,
+          "respuesta": "Si la disponibilidad de los servidores baja del **99.5 %**, se aplica una deductiva del **5 %** si el valor queda entre 99.0 % y 99.5 %, o del **10 %** si es menor al 99.0 %.\n\nEl documento lo establece en el «ANEXO D. DEDUCTIVAS POR NIVELES DE SERVICIO»: «Disponibilidad de los servidores menor a 99.5 % y hasta 99.0 %.: cinco por ciento.» y «Disponibilidad de los servidores menor a 99.0 %: diez por ciento.»."
+        },
+        {
+          "pregunta": "¿Puede el prestador subcontratar los servicios?",
+          "http": 200,
+          "ms": 25913,
+          "tokens": 2976,
+          "latencia_groq_ms": [
+            25845
+          ],
+          "presupuesto_tokens": null,
+          "caracteres_de_contexto": 6451,
+          "acierta": true,
+          "respuesta": "**No**, el prestador no puede subcontratar total ni parcialmente los servicios sin la **autorización previa y por escrito** del cliente.\n\nEl documento lo establece explícitamente en la cláusula décima séptima: «EL PRESTADOR no podrá subcontratar total ni parcialmente los servicios sin la autorización previa y por escrito de EL CLIENTE». Además, se indica que en caso de autorizarse, «seguirá siendo responsable frente a EL CLIENTE de los servicios subcontratados»."
+        }
+      ]
+    },
+    {
+      "variante": "con_t4",
+      "limite_tokens_por_minuto": 8000,
+      "auditoria": {
+        "http": 200,
+        "ms": 21194,
+        "tokens": 7003
+      },
+      "turnos": [
+        {
+          "pregunta": "¿Cuál es el monto mensual total de los servicios?",
+          "http": 200,
+          "ms": 9906,
+          "tokens": 1879,
+          "latencia_groq_ms": [
+            9858
+          ],
+          "presupuesto_tokens": {
+            "limite": 7600,
+            "usados_ultimo_minuto": 14006,
+            "estimado": 3561,
+            "reducido": true,
+            "estimado_reducido": 2216
+          },
+          "caracteres_de_contexto": 1910,
+          "acierta": true,
+          "respuesta": "El monto mensual total de los servicios es de **$185,000.00 M.N.** más el Impuesto al Valor Agregado.\n\nEste dato se encuentra explícitamente en el Anexo B del documento: «Monto mensual total de los servicios: $1 85, 000.00 (ciento ochenta y cinco mil pesos 00/100 M.N.) más el Impuesto al Valor Agregado»."
+        },
+        {
+          "pregunta": "¿Qué deductiva se aplica si la disponibilidad de los servidores baja del 99.5 %?",
+          "http": 200,
+          "ms": 22405,
+          "tokens": 1867,
+          "latencia_groq_ms": [
+            22259
+          ],
+          "presupuesto_tokens": {
+            "limite": 7600,
+            "usados_ultimo_minuto": 17764,
+            "estimado": 3612,
+            "reducido": true,
+            "estimado_reducido": 2239
+          },
+          "caracteres_de_contexto": 1955,
+          "acierta": true,
+          "respuesta": "Si la disponibilidad de los servidores baja del 99.5 %, se aplica una **deductiva del cinco por ciento** si el porcentaje queda «menor a 99.5 % y hasta 99.0 %», o una **deductiva del diez por ciento** si es «menor a 99.0 %».\n\nEl documento especifica literalmente: «Disponibilidad de los servidores menor a 99.5 % y hasta 99.0 %.: cinco por ciento» y «Disponibilidad de los servidores menor a 99.0 %: diez por ciento»."
+        },
+        {
+          "pregunta": "¿Puede el prestador subcontratar los servicios?",
+          "http": 200,
+          "ms": 6195,
+          "tokens": 1802,
+          "latencia_groq_ms": [
+            5927
+          ],
+          "presupuesto_tokens": {
+            "limite": 7600,
+            "usados_ultimo_minuto": 21498,
+            "estimado": 3591,
+            "reducido": true,
+            "estimado_reducido": 2234
+          },
+          "caracteres_de_contexto": 1973,
+          "acierta": true,
+          "respuesta": "**No**, el prestador no puede subcontratar los servicios sin la **autorización previa y por escrito** del cliente.\n\nEl documento lo establece explícitamente en la cláusula décima séptima: «EL PRESTADOR no podrá subcontratar total ni parcialmente los servicios sin la autorización previa y por escrito de EL CLIENTE»."
+        }
+      ]
+    }
+  ]
+}
