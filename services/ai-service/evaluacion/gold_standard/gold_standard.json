@@ -1,0 +1,1445 @@
+{
+  "version": 1,
+  "fecha_referencia": "2026-09-30",
+  "titular": {
+    "rfc": "PLU180514AB3",
+    "razon_social": "PLURIONE S.A. DE C.V."
+  },
+  "catalogo_reglas_sha256": "4080b081d2e073d3ea94060ad3a761e3aef42bd22aca9c31ab234e2e9d0fff59",
+  "casos": [
+    {
+      "id": "GS-CSF-01",
+      "caso_base": "GS-CSF-01",
+      "archivo": "gs-csf-01.pdf",
+      "rendicion": "VECTORIAL",
+      "tipo_registrado": "CSF_SAT",
+      "descripcion": "Constancia vigente del titular",
+      "titular": {
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V."
+      },
+      "sello_notarial": false,
+      "esperado": {
+        "tipo_documento": "CONSTANCIA_SITUACION_FISCAL",
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V.",
+        "fecha_emision": "2026-09-10",
+        "fecha_vencimiento": null,
+        "estatus": "CONFORME",
+        "motivo": "RFC del titular y 20 días de antigüedad (RCV-03: máximo 90).",
+        "personas": [],
+        "elementos": {}
+      },
+      "sha256_archivo": "53f696937dc65cee0ac742b449ccd1b49176c93fb1469792afb2eb7e23ee7a65",
+      "texto_referencia": "DOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nCONSTANCIA DE SITUACIÓN FISCAL\nSERVICIO DE ADMINISTRACIÓN TRIBUTARIA (FICTICIO)\n\nDATOS DE IDENTIFICACIÓN DEL CONTRIBUYENTE\nRFC: PLU180514AB3\nDenominación o Razón Social: PLURIONE S.A. DE C.V.\nRégimen de capital: SOCIEDAD ANÓNIMA DE CAPITAL VARIABLE\nFecha de inicio de operaciones: 14 de mayo de 2018\nEstatus en el padrón: ACTIVO\n\nDATOS DEL DOMICILIO REGISTRADO\nCalle: AVENIDA TECNOLÓGICO   Número exterior: 2909   Colonia: CENTRO\nMunicipio: CHIHUAHUA   Entidad Federativa: CHIHUAHUA   Código Postal: 31200\n\nRÉGIMENES\nRégimen General de Ley Personas Morales   Fecha de alta: 14/05/2018\n\nLugar y fecha de emisión: CHIHUAHUA, CHIHUAHUA, a 10 de septiembre de 2026\n\nCadena original del sello digital:\n||1.0|2026-09-10T09:14:22|PLU180514AB3|CONSTANCIA DE SITUACION FISCAL|31200||"
+    },
+    {
+      "id": "GS-CSF-01-ESC",
+      "caso_base": "GS-CSF-01",
+      "archivo": "gs-csf-01-esc.pdf",
+      "rendicion": "ESCANEADO",
+      "tipo_registrado": "CSF_SAT",
+      "descripcion": "Constancia vigente del titular",
+      "titular": {
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V."
+      },
+      "sello_notarial": false,
+      "esperado": {
+        "tipo_documento": "CONSTANCIA_SITUACION_FISCAL",
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V.",
+        "fecha_emision": "2026-09-10",
+        "fecha_vencimiento": null,
+        "estatus": "CONFORME",
+        "motivo": "RFC del titular y 20 días de antigüedad (RCV-03: máximo 90).",
+        "personas": [],
+        "elementos": {}
+      },
+      "sha256_archivo": "c450c044289c6ca975f583338baff62cb82b7d1039fdb67ffa57cc3ddc2efb9f",
+      "texto_referencia": "DOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nCONSTANCIA DE SITUACIÓN FISCAL\nSERVICIO DE ADMINISTRACIÓN TRIBUTARIA (FICTICIO)\n\nDATOS DE IDENTIFICACIÓN DEL CONTRIBUYENTE\nRFC: PLU180514AB3\nDenominación o Razón Social: PLURIONE S.A. DE C.V.\nRégimen de capital: SOCIEDAD ANÓNIMA DE CAPITAL VARIABLE\nFecha de inicio de operaciones: 14 de mayo de 2018\nEstatus en el padrón: ACTIVO\n\nDATOS DEL DOMICILIO REGISTRADO\nCalle: AVENIDA TECNOLÓGICO   Número exterior: 2909   Colonia: CENTRO\nMunicipio: CHIHUAHUA   Entidad Federativa: CHIHUAHUA   Código Postal: 31200\n\nRÉGIMENES\nRégimen General de Ley Personas Morales   Fecha de alta: 14/05/2018\n\nLugar y fecha de emisión: CHIHUAHUA, CHIHUAHUA, a 10 de septiembre de 2026\n\nCadena original del sello digital:\n||1.0|2026-09-10T09:14:22|PLU180514AB3|CONSTANCIA DE SITUACION FISCAL|31200||"
+    },
+    {
+      "id": "GS-CSF-02",
+      "caso_base": "GS-CSF-02",
+      "archivo": "gs-csf-02.pdf",
+      "rendicion": "VECTORIAL",
+      "tipo_registrado": "CSF_SAT",
+      "descripcion": "Constancia con más de 90 días",
+      "titular": {
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V."
+      },
+      "sello_notarial": false,
+      "esperado": {
+        "tipo_documento": "CONSTANCIA_SITUACION_FISCAL",
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V.",
+        "fecha_emision": "2026-05-04",
+        "fecha_vencimiento": null,
+        "estatus": "NO_CONFORME",
+        "motivo": "149 días de antigüedad: caducidad estricta RCV-03 (90 días).",
+        "personas": [],
+        "elementos": {}
+      },
+      "sha256_archivo": "a17e894d54f4f2b54a77e6934af2093190009842503df32ecdece58acb39d492",
+      "texto_referencia": "DOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nCONSTANCIA DE SITUACIÓN FISCAL\nSERVICIO DE ADMINISTRACIÓN TRIBUTARIA (FICTICIO)\n\nDATOS DE IDENTIFICACIÓN DEL CONTRIBUYENTE\nRFC: PLU180514AB3\nDenominación o Razón Social: PLURIONE S.A. DE C.V.\nRégimen de capital: SOCIEDAD ANÓNIMA DE CAPITAL VARIABLE\nFecha de inicio de operaciones: 14 de mayo de 2018\nEstatus en el padrón: ACTIVO\n\nDATOS DEL DOMICILIO REGISTRADO\nCalle: AVENIDA TECNOLÓGICO   Número exterior: 2909   Colonia: CENTRO\nMunicipio: CHIHUAHUA   Entidad Federativa: CHIHUAHUA   Código Postal: 31200\n\nRÉGIMENES\nRégimen General de Ley Personas Morales   Fecha de alta: 14/05/2018\n\nLugar y fecha de emisión: CHIHUAHUA, CHIHUAHUA, a 4 de mayo de 2026\n\nCadena original del sello digital:\n||1.0|2026-05-04T09:14:22|PLU180514AB3|CONSTANCIA DE SITUACION FISCAL|31200||"
+    },
+    {
+      "id": "GS-CSF-03",
+      "caso_base": "GS-CSF-03",
+      "archivo": "gs-csf-03.pdf",
+      "rendicion": "VECTORIAL",
+      "tipo_registrado": "CSF_SAT",
+      "descripcion": "Constancia de otro contribuyente",
+      "titular": {
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V."
+      },
+      "sello_notarial": false,
+      "esperado": {
+        "tipo_documento": "CONSTANCIA_SITUACION_FISCAL",
+        "rfc": "CBA120809QW4",
+        "razon_social": "COMERCIALIZADORA DEL BAJIO S.A. DE C.V.",
+        "fecha_emision": "2026-09-10",
+        "fecha_vencimiento": null,
+        "estatus": "NO_CONFORME",
+        "motivo": "El RFC del documento no es el del titular del expediente (DOC-08: RFC ajeno).",
+        "personas": [],
+        "elementos": {}
+      },
+      "sha256_archivo": "d9f26b992d2708d9f35a17fb73da0aa40b5f01d30e72515f17c9474bd346c893",
+      "texto_referencia": "DOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nCONSTANCIA DE SITUACIÓN FISCAL\nSERVICIO DE ADMINISTRACIÓN TRIBUTARIA (FICTICIO)\n\nDATOS DE IDENTIFICACIÓN DEL CONTRIBUYENTE\nRFC: CBA120809QW4\nDenominación o Razón Social: COMERCIALIZADORA DEL BAJIO S.A. DE C.V.\nRégimen de capital: SOCIEDAD ANÓNIMA DE CAPITAL VARIABLE\nFecha de inicio de operaciones: 14 de mayo de 2018\nEstatus en el padrón: ACTIVO\n\nDATOS DEL DOMICILIO REGISTRADO\nCalle: AVENIDA TECNOLÓGICO   Número exterior: 2909   Colonia: CENTRO\nMunicipio: CHIHUAHUA   Entidad Federativa: CHIHUAHUA   Código Postal: 31200\n\nRÉGIMENES\nRégimen General de Ley Personas Morales   Fecha de alta: 14/05/2018\n\nLugar y fecha de emisión: CHIHUAHUA, CHIHUAHUA, a 10 de septiembre de 2026\n\nCadena original del sello digital:\n||1.0|2026-09-10T09:14:22|CBA120809QW4|CONSTANCIA DE SITUACION FISCAL|31200||"
+    },
+    {
+      "id": "GS-CSF-03-ESC",
+      "caso_base": "GS-CSF-03",
+      "archivo": "gs-csf-03-esc.pdf",
+      "rendicion": "ESCANEADO",
+      "tipo_registrado": "CSF_SAT",
+      "descripcion": "Constancia de otro contribuyente",
+      "titular": {
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V."
+      },
+      "sello_notarial": false,
+      "esperado": {
+        "tipo_documento": "CONSTANCIA_SITUACION_FISCAL",
+        "rfc": "CBA120809QW4",
+        "razon_social": "COMERCIALIZADORA DEL BAJIO S.A. DE C.V.",
+        "fecha_emision": "2026-09-10",
+        "fecha_vencimiento": null,
+        "estatus": "NO_CONFORME",
+        "motivo": "El RFC del documento no es el del titular del expediente (DOC-08: RFC ajeno).",
+        "personas": [],
+        "elementos": {}
+      },
+      "sha256_archivo": "394a451461d00d71065902dffc4c44f8a83c88ac163bd6eff5150f24d18fb24e",
+      "texto_referencia": "DOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nCONSTANCIA DE SITUACIÓN FISCAL\nSERVICIO DE ADMINISTRACIÓN TRIBUTARIA (FICTICIO)\n\nDATOS DE IDENTIFICACIÓN DEL CONTRIBUYENTE\nRFC: CBA120809QW4\nDenominación o Razón Social: COMERCIALIZADORA DEL BAJIO S.A. DE C.V.\nRégimen de capital: SOCIEDAD ANÓNIMA DE CAPITAL VARIABLE\nFecha de inicio de operaciones: 14 de mayo de 2018\nEstatus en el padrón: ACTIVO\n\nDATOS DEL DOMICILIO REGISTRADO\nCalle: AVENIDA TECNOLÓGICO   Número exterior: 2909   Colonia: CENTRO\nMunicipio: CHIHUAHUA   Entidad Federativa: CHIHUAHUA   Código Postal: 31200\n\nRÉGIMENES\nRégimen General de Ley Personas Morales   Fecha de alta: 14/05/2018\n\nLugar y fecha de emisión: CHIHUAHUA, CHIHUAHUA, a 10 de septiembre de 2026\n\nCadena original del sello digital:\n||1.0|2026-09-10T09:14:22|CBA120809QW4|CONSTANCIA DE SITUACION FISCAL|31200||"
+    },
+    {
+      "id": "GS-CSF-04",
+      "caso_base": "GS-CSF-04",
+      "archivo": "gs-csf-04.pdf",
+      "rendicion": "VECTORIAL",
+      "tipo_registrado": "CSF_SAT",
+      "descripcion": "Constancia sin RFC legible, razón social del titular",
+      "titular": {
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V."
+      },
+      "sello_notarial": false,
+      "esperado": {
+        "tipo_documento": "CONSTANCIA_SITUACION_FISCAL",
+        "rfc": null,
+        "razon_social": "PLURIONE S.A. DE C.V.",
+        "fecha_emision": "2026-09-10",
+        "fecha_vencimiento": null,
+        "estatus": "CONFORME",
+        "motivo": "Sin RFC, la titularidad se verifica por la razón social (DG Cap. I: «el nombre o el RFC»); vigente.",
+        "personas": [],
+        "elementos": {}
+      },
+      "sha256_archivo": "b3cd9ee600295ae400431d4950a8c8a0795d9f30b88675bf51d295c5890a10b5",
+      "texto_referencia": "DOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nCONSTANCIA DE SITUACIÓN FISCAL\nSERVICIO DE ADMINISTRACIÓN TRIBUTARIA (FICTICIO)\n\nDATOS DE IDENTIFICACIÓN DEL CONTRIBUYENTE\nDenominación o Razón Social: PLURIONE S.A. DE C.V.\nRégimen de capital: SOCIEDAD ANÓNIMA DE CAPITAL VARIABLE\nFecha de inicio de operaciones: 14 de mayo de 2018\nEstatus en el padrón: ACTIVO\n\nDATOS DEL DOMICILIO REGISTRADO\nCalle: AVENIDA TECNOLÓGICO   Número exterior: 2909   Colonia: CENTRO\nMunicipio: CHIHUAHUA   Entidad Federativa: CHIHUAHUA   Código Postal: 31200\n\nRÉGIMENES\nRégimen General de Ley Personas Morales   Fecha de alta: 14/05/2018\n\nLugar y fecha de emisión: CHIHUAHUA, CHIHUAHUA, a 10 de septiembre de 2026\n\nCadena original del sello digital:\n||1.0|2026-09-10T09:14:22|XAXX010101000|CONSTANCIA DE SITUACION FISCAL|31200||"
+    },
+    {
+      "id": "GS-OPIN-01",
+      "caso_base": "GS-OPIN-01",
+      "archivo": "gs-opin-01.pdf",
+      "rendicion": "VECTORIAL",
+      "tipo_registrado": "OPINION_CUMPLIMIENTO",
+      "descripcion": "Opinión positiva vigente",
+      "titular": {
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V."
+      },
+      "sello_notarial": false,
+      "esperado": {
+        "tipo_documento": "OPINION_CUMPLIMIENTO",
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V.",
+        "fecha_emision": "2026-09-18",
+        "fecha_vencimiento": null,
+        "estatus": "CONFORME",
+        "motivo": "Sentido positivo y 12 días de antigüedad (RCV-04: máximo 30).",
+        "personas": [],
+        "elementos": {
+          "RSC-OPIN-SENT": true
+        }
+      },
+      "sha256_archivo": "8c1d0a860f517f51d4dc5438ce33250e3b71ba31e8a463d4a60c0d3b91419057",
+      "texto_referencia": "DOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nOPINIÓN DEL CUMPLIMIENTO DE OBLIGACIONES FISCALES\nSERVICIO DE ADMINISTRACIÓN TRIBUTARIA (FICTICIO)\n\nFolio: 26NA4471902\nFecha de emisión: 18/09/2026\nRFC: PLU180514AB3\nNombre, denominación o razón social: PLURIONE S.A. DE C.V.\n\nEn atención a su solicitud de opinión del cumplimiento de obligaciones fiscales, conforme al\nartículo 32-D del Código Fiscal de la Federación, se informa que:\nSentido de la opinión: POSITIVO\n\nEl contribuyente se encuentra al corriente en el cumplimiento de sus obligaciones fiscales.\n\nLa presente opinión se emite con base en la información de las bases de datos institucionales\na la fecha de su emisión.\n\nCadena original del sello digital:\n||26NA4471902|PLU180514AB3|2026-09-18|POSITIVO||"
+    },
+    {
+      "id": "GS-OPIN-01-ESC",
+      "caso_base": "GS-OPIN-01",
+      "archivo": "gs-opin-01-esc.pdf",
+      "rendicion": "ESCANEADO",
+      "tipo_registrado": "OPINION_CUMPLIMIENTO",
+      "descripcion": "Opinión positiva vigente",
+      "titular": {
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V."
+      },
+      "sello_notarial": false,
+      "esperado": {
+        "tipo_documento": "OPINION_CUMPLIMIENTO",
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V.",
+        "fecha_emision": "2026-09-18",
+        "fecha_vencimiento": null,
+        "estatus": "CONFORME",
+        "motivo": "Sentido positivo y 12 días de antigüedad (RCV-04: máximo 30).",
+        "personas": [],
+        "elementos": {
+          "RSC-OPIN-SENT": true
+        }
+      },
+      "sha256_archivo": "d90d16559bf57b8aba03e55344dbccc302fe614f1202c350f8e2354646752c17",
+      "texto_referencia": "DOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nOPINIÓN DEL CUMPLIMIENTO DE OBLIGACIONES FISCALES\nSERVICIO DE ADMINISTRACIÓN TRIBUTARIA (FICTICIO)\n\nFolio: 26NA4471902\nFecha de emisión: 18/09/2026\nRFC: PLU180514AB3\nNombre, denominación o razón social: PLURIONE S.A. DE C.V.\n\nEn atención a su solicitud de opinión del cumplimiento de obligaciones fiscales, conforme al\nartículo 32-D del Código Fiscal de la Federación, se informa que:\nSentido de la opinión: POSITIVO\n\nEl contribuyente se encuentra al corriente en el cumplimiento de sus obligaciones fiscales.\n\nLa presente opinión se emite con base en la información de las bases de datos institucionales\na la fecha de su emisión.\n\nCadena original del sello digital:\n||26NA4471902|PLU180514AB3|2026-09-18|POSITIVO||"
+    },
+    {
+      "id": "GS-OPIN-02",
+      "caso_base": "GS-OPIN-02",
+      "archivo": "gs-opin-02.pdf",
+      "rendicion": "VECTORIAL",
+      "tipo_registrado": "OPINION_CUMPLIMIENTO",
+      "descripcion": "Opinión negativa",
+      "titular": {
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V."
+      },
+      "sello_notarial": false,
+      "esperado": {
+        "tipo_documento": "OPINION_CUMPLIMIENTO",
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V.",
+        "fecha_emision": "2026-09-18",
+        "fecha_vencimiento": null,
+        "estatus": "NO_CONFORME",
+        "motivo": "Sentido negativo: el documento contradice el requisito (RSC-OPIN-SENT).",
+        "personas": [],
+        "elementos": {
+          "RSC-OPIN-SENT": false
+        }
+      },
+      "sha256_archivo": "004ec3fd84ddb9284b493d37d2b3d9ecc0f71786932d9f9c3341510df7168661",
+      "texto_referencia": "DOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nOPINIÓN DEL CUMPLIMIENTO DE OBLIGACIONES FISCALES\nSERVICIO DE ADMINISTRACIÓN TRIBUTARIA (FICTICIO)\n\nFolio: 26NA4471903\nFecha de emisión: 18/09/2026\nRFC: PLU180514AB3\nNombre, denominación o razón social: PLURIONE S.A. DE C.V.\n\nEn atención a su solicitud de opinión del cumplimiento de obligaciones fiscales, conforme al\nartículo 32-D del Código Fiscal de la Federación, se informa que:\nSentido de la opinión: NEGATIVO\n\nSe identificaron omisiones en la presentación de declaraciones del ejercicio 2025.\nEl contribuyente debe regularizar su situación fiscal.\n\nLa presente opinión se emite con base en la información de las bases de datos institucionales\na la fecha de su emisión.\n\nCadena original del sello digital:\n||26NA4471903|PLU180514AB3|2026-09-18|NEGATIVO||"
+    },
+    {
+      "id": "GS-OPIN-03",
+      "caso_base": "GS-OPIN-03",
+      "archivo": "gs-opin-03.pdf",
+      "rendicion": "VECTORIAL",
+      "tipo_registrado": "OPINION_CUMPLIMIENTO",
+      "descripcion": "Opinión positiva con más de 30 días",
+      "titular": {
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V."
+      },
+      "sello_notarial": false,
+      "esperado": {
+        "tipo_documento": "OPINION_CUMPLIMIENTO",
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V.",
+        "fecha_emision": "2026-07-20",
+        "fecha_vencimiento": null,
+        "estatus": "NO_CONFORME",
+        "motivo": "72 días de antigüedad: caducidad estricta RCV-04 (30 días).",
+        "personas": [],
+        "elementos": {
+          "RSC-OPIN-SENT": true
+        }
+      },
+      "sha256_archivo": "14d8f75b99380469e5127d66a6302395a21a3cc13986229c1ca84788a4845103",
+      "texto_referencia": "DOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nOPINIÓN DEL CUMPLIMIENTO DE OBLIGACIONES FISCALES\nSERVICIO DE ADMINISTRACIÓN TRIBUTARIA (FICTICIO)\n\nFolio: 26NA4471904\nFecha de emisión: 20/07/2026\nRFC: PLU180514AB3\nNombre, denominación o razón social: PLURIONE S.A. DE C.V.\n\nEn atención a su solicitud de opinión del cumplimiento de obligaciones fiscales, conforme al\nartículo 32-D del Código Fiscal de la Federación, se informa que:\nSentido de la opinión: POSITIVO\n\nEl contribuyente se encuentra al corriente en el cumplimiento de sus obligaciones fiscales.\n\nLa presente opinión se emite con base en la información de las bases de datos institucionales\na la fecha de su emisión.\n\nCadena original del sello digital:\n||26NA4471904|PLU180514AB3|2026-07-20|POSITIVO||"
+    },
+    {
+      "id": "GS-OPIN-04",
+      "caso_base": "GS-OPIN-04",
+      "archivo": "gs-opin-04.pdf",
+      "rendicion": "VECTORIAL",
+      "tipo_registrado": "OPINION_CUMPLIMIENTO",
+      "descripcion": "Opinión positiva de otro contribuyente",
+      "titular": {
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V."
+      },
+      "sello_notarial": false,
+      "esperado": {
+        "tipo_documento": "OPINION_CUMPLIMIENTO",
+        "rfc": "CBA120809QW4",
+        "razon_social": "COMERCIALIZADORA DEL BAJIO S.A. DE C.V.",
+        "fecha_emision": "2026-09-18",
+        "fecha_vencimiento": null,
+        "estatus": "NO_CONFORME",
+        "motivo": "RFC ajeno al titular del expediente.",
+        "personas": [],
+        "elementos": {
+          "RSC-OPIN-SENT": true
+        }
+      },
+      "sha256_archivo": "4b68b9a3e91b90d579e647b6b61f419f046e0b5d71f9f1c09dd11dacc0f4bbbd",
+      "texto_referencia": "DOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nOPINIÓN DEL CUMPLIMIENTO DE OBLIGACIONES FISCALES\nSERVICIO DE ADMINISTRACIÓN TRIBUTARIA (FICTICIO)\n\nFolio: 26NA4471905\nFecha de emisión: 18/09/2026\nRFC: CBA120809QW4\nNombre, denominación o razón social: COMERCIALIZADORA DEL BAJIO S.A. DE C.V.\n\nEn atención a su solicitud de opinión del cumplimiento de obligaciones fiscales, conforme al\nartículo 32-D del Código Fiscal de la Federación, se informa que:\nSentido de la opinión: POSITIVO\n\nEl contribuyente se encuentra al corriente en el cumplimiento de sus obligaciones fiscales.\n\nLa presente opinión se emite con base en la información de las bases de datos institucionales\na la fecha de su emisión.\n\nCadena original del sello digital:\n||26NA4471905|CBA120809QW4|2026-09-18|POSITIVO||"
+    },
+    {
+      "id": "GS-DOM-01",
+      "caso_base": "GS-DOM-01",
+      "archivo": "gs-dom-01.pdf",
+      "rendicion": "VECTORIAL",
+      "tipo_registrado": "COMP_DOMICILIO",
+      "descripcion": "Recibo reciente",
+      "titular": {
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V."
+      },
+      "sello_notarial": false,
+      "esperado": {
+        "tipo_documento": "COMPROBANTE_DOMICILIO",
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V.",
+        "fecha_emision": "2026-08-28",
+        "fecha_vencimiento": null,
+        "estatus": "CONFORME",
+        "motivo": "33 días de antigüedad (RCV-02: máximo 90).",
+        "personas": [],
+        "elementos": {}
+      },
+      "sha256_archivo": "333d9f35711be319123d9eff2fc97dc3db9e5612a3dcff070d6771b11c218f6b",
+      "texto_referencia": "DOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nRECIBO DE SUMINISTRO DE ENERGÍA ELÉCTRICA\nSUMINISTRADORA DE ENERGÍA DEL NORTE (FICTICIA)\n\nNombre del usuario: PLURIONE S.A. DE C.V.\nRFC: PLU180514AB3\nNúmero de servicio: 581 204 773 912\nDomicilio del servicio: AVENIDA TECNOLÓGICO 2909, COL. CENTRO, C.P. 31200, CHIHUAHUA, CHIH.\nTarifa: GDMTH   Periodo facturado: bimestre anterior\n\nFecha de emisión: 28 de agosto de 2026\nTotal a pagar: $18,420.00 M.N.\n\nEste recibo es comprobante de domicilio para los trámites que así lo requieran."
+    },
+    {
+      "id": "GS-DOM-01-ESC",
+      "caso_base": "GS-DOM-01",
+      "archivo": "gs-dom-01-esc.pdf",
+      "rendicion": "ESCANEADO",
+      "tipo_registrado": "COMP_DOMICILIO",
+      "descripcion": "Recibo reciente",
+      "titular": {
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V."
+      },
+      "sello_notarial": false,
+      "esperado": {
+        "tipo_documento": "COMPROBANTE_DOMICILIO",
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V.",
+        "fecha_emision": "2026-08-28",
+        "fecha_vencimiento": null,
+        "estatus": "CONFORME",
+        "motivo": "33 días de antigüedad (RCV-02: máximo 90).",
+        "personas": [],
+        "elementos": {}
+      },
+      "sha256_archivo": "42e7d45db7d0ea2dbca0ef90ed379945d9384d6e18911066f9d690c7bf6715b6",
+      "texto_referencia": "DOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nRECIBO DE SUMINISTRO DE ENERGÍA ELÉCTRICA\nSUMINISTRADORA DE ENERGÍA DEL NORTE (FICTICIA)\n\nNombre del usuario: PLURIONE S.A. DE C.V.\nRFC: PLU180514AB3\nNúmero de servicio: 581 204 773 912\nDomicilio del servicio: AVENIDA TECNOLÓGICO 2909, COL. CENTRO, C.P. 31200, CHIHUAHUA, CHIH.\nTarifa: GDMTH   Periodo facturado: bimestre anterior\n\nFecha de emisión: 28 de agosto de 2026\nTotal a pagar: $18,420.00 M.N.\n\nEste recibo es comprobante de domicilio para los trámites que así lo requieran."
+    },
+    {
+      "id": "GS-DOM-02",
+      "caso_base": "GS-DOM-02",
+      "archivo": "gs-dom-02.pdf",
+      "rendicion": "VECTORIAL",
+      "tipo_registrado": "COMP_DOMICILIO",
+      "descripcion": "Recibo con más de 90 días",
+      "titular": {
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V."
+      },
+      "sello_notarial": false,
+      "esperado": {
+        "tipo_documento": "COMPROBANTE_DOMICILIO",
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V.",
+        "fecha_emision": "2026-04-15",
+        "fecha_vencimiento": null,
+        "estatus": "NO_CONFORME",
+        "motivo": "168 días de antigüedad: caducidad estricta RCV-02 (90 días).",
+        "personas": [],
+        "elementos": {}
+      },
+      "sha256_archivo": "ab015ca5922a9ce14509f658652a1e288d77f16f79fe3da503f7cfe986721a33",
+      "texto_referencia": "DOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nRECIBO DE SUMINISTRO DE ENERGÍA ELÉCTRICA\nSUMINISTRADORA DE ENERGÍA DEL NORTE (FICTICIA)\n\nNombre del usuario: PLURIONE S.A. DE C.V.\nRFC: PLU180514AB3\nNúmero de servicio: 581 204 773 912\nDomicilio del servicio: AVENIDA TECNOLÓGICO 2909, COL. CENTRO, C.P. 31200, CHIHUAHUA, CHIH.\nTarifa: GDMTH   Periodo facturado: bimestre anterior\n\nFecha de emisión: 15 de abril de 2026\nTotal a pagar: $18,420.00 M.N.\n\nEste recibo es comprobante de domicilio para los trámites que así lo requieran."
+    },
+    {
+      "id": "GS-ACTA-01",
+      "caso_base": "GS-ACTA-01",
+      "archivo": "gs-acta-01.pdf",
+      "rendicion": "VECTORIAL",
+      "tipo_registrado": "ACTA_CONSTITUTIVA",
+      "descripcion": "Acta completa",
+      "titular": {
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V."
+      },
+      "sello_notarial": false,
+      "esperado": {
+        "tipo_documento": "ACTA_CONSTITUTIVA",
+        "rfc": null,
+        "razon_social": "PLURIONE S.A. DE C.V.",
+        "fecha_emision": "2018-05-14",
+        "fecha_vencimiento": null,
+        "estatus": "CONFORME",
+        "motivo": "Escritura y notario, inscripción en el RPC y administración presentes; sin vencimiento.",
+        "personas": [
+          {
+            "nombre": "Héctor Daniel Quiroga Salas",
+            "cargo": "Administrador Único"
+          },
+          {
+            "nombre": "María Elena Ruiz Soto",
+            "cargo": "Apoderada"
+          }
+        ],
+        "elementos": {
+          "RSC-ACTA-ESCR": true,
+          "RSC-ACTA-RPC": true,
+          "RSC-ACTA-ADMON": true
+        }
+      },
+      "sha256_archivo": "81ce4284b26cc94573efc26b2ddb2ca2126634fab6ebea50a6398e3a412d89ca",
+      "texto_referencia": "DOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nESCRITURA PÚBLICA NÚMERO 12,845\nLIBRO 312\n\nEn la ciudad de Chihuahua, Chihuahua, a 14 de mayo de 2018, ante mí, Lic. Ernesto Valdivia\nCortés,\nNotario Público número 27 de este Distrito Judicial Morelos, comparecen los señores\nHéctor Daniel Quiroga Salas y Laura Patricia Ibarra Montes, y dijeron que por medio del presente\ninstrumento\notorgan el CONTRATO DE SOCIEDAD por el que se constituye una Sociedad Anónima de Capital\nVariable, al tenor de los siguientes:\n\nESTATUTOS\nARTÍCULO PRIMERO. DENOMINACIÓN.\nLa sociedad se denominará PLURIONE S.A. DE C.V.\nARTÍCULO SEGUNDO. OBJETO SOCIAL.\nLa sociedad tendrá por objeto el desarrollo de soluciones de software, consultoría en\ntecnologías de la información y la prestación de servicios de capacitación.\nARTÍCULO TERCERO. DURACIÓN.\nLa duración de la sociedad será de noventa y nueve años contados a partir de su constitución.\nARTÍCULO CUARTO. DOMICILIO.\nEl domicilio de la sociedad será la ciudad de Chihuahua, Chihuahua.\nARTÍCULO QUINTO. CAPITAL SOCIAL.\nEl capital social mínimo fijo es de $50,000.00 M.N., representado por 500 acciones\nordinarias, nominativas, con valor nominal de $100.00 cada una, suscritas así:\nHéctor Daniel Quiroga Salas: 250 acciones.   Laura Patricia Ibarra Montes: 250 acciones.\n\nDOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nARTÍCULO SEXTO. ADMINISTRACIÓN.\nLa administración de la sociedad estará a cargo de un Administrador Único, quien tendrá la\nrepresentación legal de la sociedad con poder general para pleitos y cobranzas, actos de\nadministración y actos de dominio.\n\nCLÁUSULAS TRANSITORIAS\nPRIMERA. Se designa como Administrador Único a Héctor Daniel Quiroga Salas.\nSEGUNDA. Se otorga a María Elena Ruiz Soto poder general para pleitos y cobranzas y actos\nde administración, para que represente a la sociedad ante toda clase de autoridades.\nTERCERA. Se designa como Comisario a Ana Sofía Beltrán Ruelas.\n\nLeído que fue el presente instrumento a los comparecientes, lo ratifican y firman ante mí.\nDOY FE.\nLic. Ernesto Valdivia Cortés   Notario Público número 27\n\nNOTA DE INSCRIPCIÓN\nEl primer testimonio de esta escritura quedó inscrito en el Registro Público de Comercio de\nChihuahua bajo el Folio Mercantil Electrónico número 48213*1, el 4 de junio de 2018."
+    },
+    {
+      "id": "GS-ACTA-01-ESC",
+      "caso_base": "GS-ACTA-01",
+      "archivo": "gs-acta-01-esc.pdf",
+      "rendicion": "ESCANEADO",
+      "tipo_registrado": "ACTA_CONSTITUTIVA",
+      "descripcion": "Acta completa",
+      "titular": {
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V."
+      },
+      "sello_notarial": true,
+      "esperado": {
+        "tipo_documento": "ACTA_CONSTITUTIVA",
+        "rfc": null,
+        "razon_social": "PLURIONE S.A. DE C.V.",
+        "fecha_emision": "2018-05-14",
+        "fecha_vencimiento": null,
+        "estatus": "CONFORME",
+        "motivo": "Escritura y notario, inscripción en el RPC y administración presentes; sin vencimiento.",
+        "personas": [
+          {
+            "nombre": "Héctor Daniel Quiroga Salas",
+            "cargo": "Administrador Único"
+          },
+          {
+            "nombre": "María Elena Ruiz Soto",
+            "cargo": "Apoderada"
+          }
+        ],
+        "elementos": {
+          "RSC-ACTA-ESCR": true,
+          "RSC-ACTA-RPC": true,
+          "RSC-ACTA-ADMON": true
+        }
+      },
+      "sha256_archivo": "161f722abfe8d7a263260b840a3403b091e54fa185e576e57be7cd823109cf3d",
+      "texto_referencia": "DOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nESCRITURA PÚBLICA NÚMERO 12,845\nLIBRO 312\n\nEn la ciudad de Chihuahua, Chihuahua, a 14 de mayo de 2018, ante mí, Lic. Ernesto Valdivia\nCortés,\nNotario Público número 27 de este Distrito Judicial Morelos, comparecen los señores\nHéctor Daniel Quiroga Salas y Laura Patricia Ibarra Montes, y dijeron que por medio del presente\ninstrumento\notorgan el CONTRATO DE SOCIEDAD por el que se constituye una Sociedad Anónima de Capital\nVariable, al tenor de los siguientes:\n\nESTATUTOS\nARTÍCULO PRIMERO. DENOMINACIÓN.\nLa sociedad se denominará PLURIONE S.A. DE C.V.\nARTÍCULO SEGUNDO. OBJETO SOCIAL.\nLa sociedad tendrá por objeto el desarrollo de soluciones de software, consultoría en\ntecnologías de la información y la prestación de servicios de capacitación.\nARTÍCULO TERCERO. DURACIÓN.\nLa duración de la sociedad será de noventa y nueve años contados a partir de su constitución.\nARTÍCULO CUARTO. DOMICILIO.\nEl domicilio de la sociedad será la ciudad de Chihuahua, Chihuahua.\nARTÍCULO QUINTO. CAPITAL SOCIAL.\nEl capital social mínimo fijo es de $50,000.00 M.N., representado por 500 acciones\nordinarias, nominativas, con valor nominal de $100.00 cada una, suscritas así:\nHéctor Daniel Quiroga Salas: 250 acciones.   Laura Patricia Ibarra Montes: 250 acciones.\n\nDOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nARTÍCULO SEXTO. ADMINISTRACIÓN.\nLa administración de la sociedad estará a cargo de un Administrador Único, quien tendrá la\nrepresentación legal de la sociedad con poder general para pleitos y cobranzas, actos de\nadministración y actos de dominio.\n\nCLÁUSULAS TRANSITORIAS\nPRIMERA. Se designa como Administrador Único a Héctor Daniel Quiroga Salas.\nSEGUNDA. Se otorga a María Elena Ruiz Soto poder general para pleitos y cobranzas y actos\nde administración, para que represente a la sociedad ante toda clase de autoridades.\nTERCERA. Se designa como Comisario a Ana Sofía Beltrán Ruelas.\n\nLeído que fue el presente instrumento a los comparecientes, lo ratifican y firman ante mí.\nDOY FE.\nLic. Ernesto Valdivia Cortés   Notario Público número 27\n\nNOTA DE INSCRIPCIÓN\nEl primer testimonio de esta escritura quedó inscrito en el Registro Público de Comercio de\nChihuahua bajo el Folio Mercantil Electrónico número 48213*1, el 4 de junio de 2018."
+    },
+    {
+      "id": "GS-ACTA-02",
+      "caso_base": "GS-ACTA-02",
+      "archivo": "gs-acta-02.pdf",
+      "rendicion": "VECTORIAL",
+      "tipo_registrado": "ACTA_CONSTITUTIVA",
+      "descripcion": "Acta sin inscripción en el RPC",
+      "titular": {
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V."
+      },
+      "sello_notarial": false,
+      "esperado": {
+        "tipo_documento": "ACTA_CONSTITUTIVA",
+        "rfc": null,
+        "razon_social": "PLURIONE S.A. DE C.V.",
+        "fecha_emision": "2018-05-14",
+        "fecha_vencimiento": null,
+        "estatus": "EN_REVISION",
+        "motivo": "Falta la inscripción en el Registro Público de Comercio (RSC-ACTA-RPC).",
+        "personas": [
+          {
+            "nombre": "Héctor Daniel Quiroga Salas",
+            "cargo": "Administrador Único"
+          },
+          {
+            "nombre": "María Elena Ruiz Soto",
+            "cargo": "Apoderada"
+          }
+        ],
+        "elementos": {
+          "RSC-ACTA-ESCR": true,
+          "RSC-ACTA-RPC": false,
+          "RSC-ACTA-ADMON": true
+        }
+      },
+      "sha256_archivo": "e496edf37b605796e665cae9b140e187431c483ea82702fae94ef00c663137a4",
+      "texto_referencia": "DOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nESCRITURA PÚBLICA NÚMERO 12,845\nLIBRO 312\n\nEn la ciudad de Chihuahua, Chihuahua, a 14 de mayo de 2018, ante mí, Lic. Ernesto Valdivia\nCortés,\nNotario Público número 27 de este Distrito Judicial Morelos, comparecen los señores\nHéctor Daniel Quiroga Salas y Laura Patricia Ibarra Montes, y dijeron que por medio del presente\ninstrumento\notorgan el CONTRATO DE SOCIEDAD por el que se constituye una Sociedad Anónima de Capital\nVariable, al tenor de los siguientes:\n\nESTATUTOS\nARTÍCULO PRIMERO. DENOMINACIÓN.\nLa sociedad se denominará PLURIONE S.A. DE C.V.\nARTÍCULO SEGUNDO. OBJETO SOCIAL.\nLa sociedad tendrá por objeto el desarrollo de soluciones de software, consultoría en\ntecnologías de la información y la prestación de servicios de capacitación.\nARTÍCULO TERCERO. DURACIÓN.\nLa duración de la sociedad será de noventa y nueve años contados a partir de su constitución.\nARTÍCULO CUARTO. DOMICILIO.\nEl domicilio de la sociedad será la ciudad de Chihuahua, Chihuahua.\nARTÍCULO QUINTO. CAPITAL SOCIAL.\nEl capital social mínimo fijo es de $50,000.00 M.N., representado por 500 acciones\nordinarias, nominativas, con valor nominal de $100.00 cada una, suscritas así:\nHéctor Daniel Quiroga Salas: 250 acciones.   Laura Patricia Ibarra Montes: 250 acciones.\n\nDOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nARTÍCULO SEXTO. ADMINISTRACIÓN.\nLa administración de la sociedad estará a cargo de un Administrador Único, quien tendrá la\nrepresentación legal de la sociedad con poder general para pleitos y cobranzas, actos de\nadministración y actos de dominio.\n\nCLÁUSULAS TRANSITORIAS\nPRIMERA. Se designa como Administrador Único a Héctor Daniel Quiroga Salas.\nSEGUNDA. Se otorga a María Elena Ruiz Soto poder general para pleitos y cobranzas y actos\nde administración, para que represente a la sociedad ante toda clase de autoridades.\nTERCERA. Se designa como Comisario a Ana Sofía Beltrán Ruelas.\n\nLeído que fue el presente instrumento a los comparecientes, lo ratifican y firman ante mí.\nDOY FE.\nLic. Ernesto Valdivia Cortés   Notario Público número 27"
+    },
+    {
+      "id": "GS-ACTA-03",
+      "caso_base": "GS-ACTA-03",
+      "archivo": "gs-acta-03.pdf",
+      "rendicion": "VECTORIAL",
+      "tipo_registrado": "ACTA_CONSTITUTIVA",
+      "descripcion": "Acta con la inscripción en el apéndice final",
+      "titular": {
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V."
+      },
+      "sello_notarial": false,
+      "esperado": {
+        "tipo_documento": "ACTA_CONSTITUTIVA",
+        "rfc": null,
+        "razon_social": "PLURIONE S.A. DE C.V.",
+        "fecha_emision": "2018-05-14",
+        "fecha_vencimiento": null,
+        "estatus": "CONFORME",
+        "motivo": "Completa; la inscripción está en la última página (la auditoría lee todo el documento).",
+        "personas": [
+          {
+            "nombre": "Héctor Daniel Quiroga Salas",
+            "cargo": "Administrador Único"
+          },
+          {
+            "nombre": "María Elena Ruiz Soto",
+            "cargo": "Apoderada"
+          }
+        ],
+        "elementos": {
+          "RSC-ACTA-ESCR": true,
+          "RSC-ACTA-RPC": true,
+          "RSC-ACTA-ADMON": true
+        }
+      },
+      "sha256_archivo": "71bc752563314d467d75581eb30e441ec9d58252c0d27cb0b4fdcc6c5b6ff7c4",
+      "texto_referencia": "DOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nESCRITURA PÚBLICA NÚMERO 12,845\nLIBRO 312\n\nEn la ciudad de Chihuahua, Chihuahua, a 14 de mayo de 2018, ante mí, Lic. Ernesto Valdivia\nCortés,\nNotario Público número 27 de este Distrito Judicial Morelos, comparecen los señores\nHéctor Daniel Quiroga Salas y Laura Patricia Ibarra Montes, y dijeron que por medio del presente\ninstrumento\notorgan el CONTRATO DE SOCIEDAD por el que se constituye una Sociedad Anónima de Capital\nVariable, al tenor de los siguientes:\n\nESTATUTOS\nARTÍCULO PRIMERO. DENOMINACIÓN.\nLa sociedad se denominará PLURIONE S.A. DE C.V.\nARTÍCULO SEGUNDO. OBJETO SOCIAL.\nLa sociedad tendrá por objeto el desarrollo de soluciones de software, consultoría en\ntecnologías de la información y la prestación de servicios de capacitación.\nARTÍCULO TERCERO. DURACIÓN.\nLa duración de la sociedad será de noventa y nueve años contados a partir de su constitución.\nARTÍCULO CUARTO. DOMICILIO.\nEl domicilio de la sociedad será la ciudad de Chihuahua, Chihuahua.\nARTÍCULO QUINTO. CAPITAL SOCIAL.\nEl capital social mínimo fijo es de $50,000.00 M.N., representado por 500 acciones\nordinarias, nominativas, con valor nominal de $100.00 cada una, suscritas así:\nHéctor Daniel Quiroga Salas: 250 acciones.   Laura Patricia Ibarra Montes: 250 acciones.\n\nDOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nARTÍCULO SEXTO. ADMINISTRACIÓN.\nLa administración de la sociedad estará a cargo de un Administrador Único, quien tendrá la\nrepresentación legal de la sociedad con poder general para pleitos y cobranzas, actos de\nadministración y actos de dominio.\n\nCLÁUSULAS TRANSITORIAS\nPRIMERA. Se designa como Administrador Único a Héctor Daniel Quiroga Salas.\nSEGUNDA. Se otorga a María Elena Ruiz Soto poder general para pleitos y cobranzas y actos\nde administración, para que represente a la sociedad ante toda clase de autoridades.\nTERCERA. Se designa como Comisario a Ana Sofía Beltrán Ruelas.\n\nLeído que fue el presente instrumento a los comparecientes, lo ratifican y firman ante mí.\nDOY FE.\nLic. Ernesto Valdivia Cortés   Notario Público número 27\n\nDOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nAPÉNDICE\nDocumentos agregados al apéndice de esta escritura: permiso de uso de denominación,\nidentificaciones de los comparecientes y comprobante de pago de derechos.\n\nNOTA DE INSCRIPCIÓN\nEl primer testimonio de esta escritura quedó inscrito en el Registro Público de Comercio de\nChihuahua bajo el Folio Mercantil Electrónico número 48213*1, el 4 de junio de 2018."
+    },
+    {
+      "id": "GS-ACTA-03-ESC",
+      "caso_base": "GS-ACTA-03",
+      "archivo": "gs-acta-03-esc.pdf",
+      "rendicion": "ESCANEADO",
+      "tipo_registrado": "ACTA_CONSTITUTIVA",
+      "descripcion": "Acta con la inscripción en el apéndice final",
+      "titular": {
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V."
+      },
+      "sello_notarial": true,
+      "esperado": {
+        "tipo_documento": "ACTA_CONSTITUTIVA",
+        "rfc": null,
+        "razon_social": "PLURIONE S.A. DE C.V.",
+        "fecha_emision": "2018-05-14",
+        "fecha_vencimiento": null,
+        "estatus": "CONFORME",
+        "motivo": "Completa; la inscripción está en la última página (la auditoría lee todo el documento).",
+        "personas": [
+          {
+            "nombre": "Héctor Daniel Quiroga Salas",
+            "cargo": "Administrador Único"
+          },
+          {
+            "nombre": "María Elena Ruiz Soto",
+            "cargo": "Apoderada"
+          }
+        ],
+        "elementos": {
+          "RSC-ACTA-ESCR": true,
+          "RSC-ACTA-RPC": true,
+          "RSC-ACTA-ADMON": true
+        }
+      },
+      "sha256_archivo": "3f4b22a9d4d02907702968494342175cbc74342c63b3e618df17a4ddec472b75",
+      "texto_referencia": "DOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nESCRITURA PÚBLICA NÚMERO 12,845\nLIBRO 312\n\nEn la ciudad de Chihuahua, Chihuahua, a 14 de mayo de 2018, ante mí, Lic. Ernesto Valdivia\nCortés,\nNotario Público número 27 de este Distrito Judicial Morelos, comparecen los señores\nHéctor Daniel Quiroga Salas y Laura Patricia Ibarra Montes, y dijeron que por medio del presente\ninstrumento\notorgan el CONTRATO DE SOCIEDAD por el que se constituye una Sociedad Anónima de Capital\nVariable, al tenor de los siguientes:\n\nESTATUTOS\nARTÍCULO PRIMERO. DENOMINACIÓN.\nLa sociedad se denominará PLURIONE S.A. DE C.V.\nARTÍCULO SEGUNDO. OBJETO SOCIAL.\nLa sociedad tendrá por objeto el desarrollo de soluciones de software, consultoría en\ntecnologías de la información y la prestación de servicios de capacitación.\nARTÍCULO TERCERO. DURACIÓN.\nLa duración de la sociedad será de noventa y nueve años contados a partir de su constitución.\nARTÍCULO CUARTO. DOMICILIO.\nEl domicilio de la sociedad será la ciudad de Chihuahua, Chihuahua.\nARTÍCULO QUINTO. CAPITAL SOCIAL.\nEl capital social mínimo fijo es de $50,000.00 M.N., representado por 500 acciones\nordinarias, nominativas, con valor nominal de $100.00 cada una, suscritas así:\nHéctor Daniel Quiroga Salas: 250 acciones.   Laura Patricia Ibarra Montes: 250 acciones.\n\nDOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nARTÍCULO SEXTO. ADMINISTRACIÓN.\nLa administración de la sociedad estará a cargo de un Administrador Único, quien tendrá la\nrepresentación legal de la sociedad con poder general para pleitos y cobranzas, actos de\nadministración y actos de dominio.\n\nCLÁUSULAS TRANSITORIAS\nPRIMERA. Se designa como Administrador Único a Héctor Daniel Quiroga Salas.\nSEGUNDA. Se otorga a María Elena Ruiz Soto poder general para pleitos y cobranzas y actos\nde administración, para que represente a la sociedad ante toda clase de autoridades.\nTERCERA. Se designa como Comisario a Ana Sofía Beltrán Ruelas.\n\nLeído que fue el presente instrumento a los comparecientes, lo ratifican y firman ante mí.\nDOY FE.\nLic. Ernesto Valdivia Cortés   Notario Público número 27\n\nDOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nAPÉNDICE\nDocumentos agregados al apéndice de esta escritura: permiso de uso de denominación,\nidentificaciones de los comparecientes y comprobante de pago de derechos.\n\nNOTA DE INSCRIPCIÓN\nEl primer testimonio de esta escritura quedó inscrito en el Registro Público de Comercio de\nChihuahua bajo el Folio Mercantil Electrónico número 48213*1, el 4 de junio de 2018."
+    },
+    {
+      "id": "GS-ACTA-04",
+      "caso_base": "GS-ACTA-04",
+      "archivo": "gs-acta-04.pdf",
+      "rendicion": "VECTORIAL",
+      "tipo_registrado": "ACTA_CONSTITUTIVA",
+      "descripcion": "Se registró como acta y es un poder notarial",
+      "titular": {
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V."
+      },
+      "sello_notarial": false,
+      "esperado": {
+        "tipo_documento": "PODER_NOTARIAL",
+        "rfc": null,
+        "razon_social": "PLURIONE S.A. DE C.V.",
+        "fecha_emision": "2025-01-10",
+        "fecha_vencimiento": null,
+        "estatus": "EN_REVISION",
+        "motivo": "El contenido es un poder notarial, no un acta: tipo incompatible con el registrado.",
+        "personas": [
+          {
+            "nombre": "María Elena Ruiz Soto",
+            "cargo": "Apoderado"
+          }
+        ],
+        "elementos": {
+          "RSC-ACTA-ESCR": true,
+          "RSC-ACTA-RPC": false,
+          "RSC-ACTA-ADMON": false
+        }
+      },
+      "sha256_archivo": "7c190d02a52f691a1a31774f430685785fd86dfd8bce33c607169bbc70bbf832",
+      "texto_referencia": "DOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nESCRITURA PÚBLICA NÚMERO 20,117\nPODER GENERAL\n\nEn la ciudad de Chihuahua, Chihuahua, a 10 de enero de 2025, ante mí, Lic. Ernesto Valdivia\nCortés,\nNotario Público número 27 de este Distrito Judicial Morelos, compareció\nPLURIONE S.A. DE C.V., representada por su Administrador Único Héctor Daniel Quiroga Salas,\nquien acredita su personalidad con la escritura pública número 12,845, y dijo que otorga\nPODER GENERAL a favor de María Elena Ruiz Soto, en adelante el apoderado,\nal tenor de las siguientes:\n\nCLÁUSULAS\nPRIMERA. El apoderado podrá ejercer el poder general para pleitos y cobranzas y para\nactos de administración, en los términos de los dos primeros párrafos del artículo 2554\ndel Código Civil Federal, con todas las facultades generales y las especiales que\nrequieran cláusula especial conforme a la ley.\nSEGUNDA. El presente poder se otorga por tiempo indefinido y podrá revocarse en cualquier\nmomento.\n\nLeído que fue el presente instrumento al compareciente, lo ratifica y firma ante mí. DOY FE.\nLic. Ernesto Valdivia Cortés   Notario Público número 27"
+    },
+    {
+      "id": "GS-PODER-01",
+      "caso_base": "GS-PODER-01",
+      "archivo": "gs-poder-01.pdf",
+      "rendicion": "VECTORIAL",
+      "tipo_registrado": "PODER_NOTARIAL",
+      "descripcion": "Poder general completo",
+      "titular": {
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V."
+      },
+      "sello_notarial": false,
+      "esperado": {
+        "tipo_documento": "PODER_NOTARIAL",
+        "rfc": null,
+        "razon_social": "PLURIONE S.A. DE C.V.",
+        "fecha_emision": "2025-01-10",
+        "fecha_vencimiento": null,
+        "estatus": "CONFORME",
+        "motivo": "Otorgado ante notario, identifica otorgante y apoderado y señala facultades.",
+        "personas": [
+          {
+            "nombre": "María Elena Ruiz Soto",
+            "cargo": "Apoderado"
+          }
+        ],
+        "elementos": {
+          "RSC-PODER-NOT": true,
+          "RSC-PODER-PART": true,
+          "RSC-PODER-FAC": true
+        }
+      },
+      "sha256_archivo": "7c190d02a52f691a1a31774f430685785fd86dfd8bce33c607169bbc70bbf832",
+      "texto_referencia": "DOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nESCRITURA PÚBLICA NÚMERO 20,117\nPODER GENERAL\n\nEn la ciudad de Chihuahua, Chihuahua, a 10 de enero de 2025, ante mí, Lic. Ernesto Valdivia\nCortés,\nNotario Público número 27 de este Distrito Judicial Morelos, compareció\nPLURIONE S.A. DE C.V., representada por su Administrador Único Héctor Daniel Quiroga Salas,\nquien acredita su personalidad con la escritura pública número 12,845, y dijo que otorga\nPODER GENERAL a favor de María Elena Ruiz Soto, en adelante el apoderado,\nal tenor de las siguientes:\n\nCLÁUSULAS\nPRIMERA. El apoderado podrá ejercer el poder general para pleitos y cobranzas y para\nactos de administración, en los términos de los dos primeros párrafos del artículo 2554\ndel Código Civil Federal, con todas las facultades generales y las especiales que\nrequieran cláusula especial conforme a la ley.\nSEGUNDA. El presente poder se otorga por tiempo indefinido y podrá revocarse en cualquier\nmomento.\n\nLeído que fue el presente instrumento al compareciente, lo ratifica y firma ante mí. DOY FE.\nLic. Ernesto Valdivia Cortés   Notario Público número 27"
+    },
+    {
+      "id": "GS-PODER-01-ESC",
+      "caso_base": "GS-PODER-01",
+      "archivo": "gs-poder-01-esc.pdf",
+      "rendicion": "ESCANEADO",
+      "tipo_registrado": "PODER_NOTARIAL",
+      "descripcion": "Poder general completo",
+      "titular": {
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V."
+      },
+      "sello_notarial": true,
+      "esperado": {
+        "tipo_documento": "PODER_NOTARIAL",
+        "rfc": null,
+        "razon_social": "PLURIONE S.A. DE C.V.",
+        "fecha_emision": "2025-01-10",
+        "fecha_vencimiento": null,
+        "estatus": "CONFORME",
+        "motivo": "Otorgado ante notario, identifica otorgante y apoderado y señala facultades.",
+        "personas": [
+          {
+            "nombre": "María Elena Ruiz Soto",
+            "cargo": "Apoderado"
+          }
+        ],
+        "elementos": {
+          "RSC-PODER-NOT": true,
+          "RSC-PODER-PART": true,
+          "RSC-PODER-FAC": true
+        }
+      },
+      "sha256_archivo": "8c7ca842d843a1ab21cc796423c60af685a9353939fdeeaca6fa3f2f67905ad6",
+      "texto_referencia": "DOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nESCRITURA PÚBLICA NÚMERO 20,117\nPODER GENERAL\n\nEn la ciudad de Chihuahua, Chihuahua, a 10 de enero de 2025, ante mí, Lic. Ernesto Valdivia\nCortés,\nNotario Público número 27 de este Distrito Judicial Morelos, compareció\nPLURIONE S.A. DE C.V., representada por su Administrador Único Héctor Daniel Quiroga Salas,\nquien acredita su personalidad con la escritura pública número 12,845, y dijo que otorga\nPODER GENERAL a favor de María Elena Ruiz Soto, en adelante el apoderado,\nal tenor de las siguientes:\n\nCLÁUSULAS\nPRIMERA. El apoderado podrá ejercer el poder general para pleitos y cobranzas y para\nactos de administración, en los términos de los dos primeros párrafos del artículo 2554\ndel Código Civil Federal, con todas las facultades generales y las especiales que\nrequieran cláusula especial conforme a la ley.\nSEGUNDA. El presente poder se otorga por tiempo indefinido y podrá revocarse en cualquier\nmomento.\n\nLeído que fue el presente instrumento al compareciente, lo ratifica y firma ante mí. DOY FE.\nLic. Ernesto Valdivia Cortés   Notario Público número 27"
+    },
+    {
+      "id": "GS-PODER-02",
+      "caso_base": "GS-PODER-02",
+      "archivo": "gs-poder-02.pdf",
+      "rendicion": "VECTORIAL",
+      "tipo_registrado": "PODER_NOTARIAL",
+      "descripcion": "Poder sin facultades definidas",
+      "titular": {
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V."
+      },
+      "sello_notarial": false,
+      "esperado": {
+        "tipo_documento": "PODER_NOTARIAL",
+        "rfc": null,
+        "razon_social": "PLURIONE S.A. DE C.V.",
+        "fecha_emision": "2025-01-10",
+        "fecha_vencimiento": null,
+        "estatus": "EN_REVISION",
+        "motivo": "No señala facultades de pleitos y cobranzas, administración o dominio (RSC-PODER-FAC).",
+        "personas": [
+          {
+            "nombre": "María Elena Ruiz Soto",
+            "cargo": "Apoderado"
+          }
+        ],
+        "elementos": {
+          "RSC-PODER-NOT": true,
+          "RSC-PODER-PART": true,
+          "RSC-PODER-FAC": false
+        }
+      },
+      "sha256_archivo": "224e00608f2e7fd9e5f916ad5ccd0d03f2a37e7fddd8271296d0d128a3362381",
+      "texto_referencia": "DOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nESCRITURA PÚBLICA NÚMERO 20,117\nPODER GENERAL\n\nEn la ciudad de Chihuahua, Chihuahua, a 10 de enero de 2025, ante mí, Lic. Ernesto Valdivia\nCortés,\nNotario Público número 27 de este Distrito Judicial Morelos, compareció\nPLURIONE S.A. DE C.V., representada por su Administrador Único Héctor Daniel Quiroga Salas,\nquien acredita su personalidad con la escritura pública número 12,845, y dijo que otorga\nPODER GENERAL a favor de María Elena Ruiz Soto, en adelante el apoderado,\nal tenor de las siguientes:\n\nCLÁUSULAS\nPRIMERA. El apoderado representará a la otorgante en los asuntos que esta le encomiende\npor escrito.\nSEGUNDA. El presente poder se otorga por tiempo indefinido y podrá revocarse en cualquier\nmomento.\n\nLeído que fue el presente instrumento al compareciente, lo ratifica y firma ante mí. DOY FE.\nLic. Ernesto Valdivia Cortés   Notario Público número 27"
+    },
+    {
+      "id": "GS-PODER-03",
+      "caso_base": "GS-PODER-03",
+      "archivo": "gs-poder-03.pdf",
+      "rendicion": "VECTORIAL",
+      "tipo_registrado": "PODER_NOTARIAL",
+      "descripcion": "Poder a dos apoderados",
+      "titular": {
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V."
+      },
+      "sello_notarial": false,
+      "esperado": {
+        "tipo_documento": "PODER_NOTARIAL",
+        "rfc": null,
+        "razon_social": "PLURIONE S.A. DE C.V.",
+        "fecha_emision": "2025-01-10",
+        "fecha_vencimiento": null,
+        "estatus": "CONFORME",
+        "motivo": "Completo, con dos apoderados.",
+        "personas": [
+          {
+            "nombre": "María Elena Ruiz Soto",
+            "cargo": "Apoderado"
+          },
+          {
+            "nombre": "Rodrigo Esteban Lara Villaseñor",
+            "cargo": "Apoderado"
+          }
+        ],
+        "elementos": {
+          "RSC-PODER-NOT": true,
+          "RSC-PODER-PART": true,
+          "RSC-PODER-FAC": true
+        }
+      },
+      "sha256_archivo": "70e7064d807e5b881ccc3de27ffa91199ce2bbdd3cfc7314142554dfbc0418cb",
+      "texto_referencia": "DOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nESCRITURA PÚBLICA NÚMERO 20,117\nPODER GENERAL\n\nEn la ciudad de Chihuahua, Chihuahua, a 10 de enero de 2025, ante mí, Lic. Ernesto Valdivia\nCortés,\nNotario Público número 27 de este Distrito Judicial Morelos, compareció\nPLURIONE S.A. DE C.V., representada por su Administrador Único Héctor Daniel Quiroga Salas,\nquien acredita su personalidad con la escritura pública número 12,845, y dijo que otorga\nPODER GENERAL a favor de María Elena Ruiz Soto y Rodrigo Esteban Lara Villaseñor, en adelante el\napoderado,\nal tenor de las siguientes:\n\nCLÁUSULAS\nPRIMERA. El apoderado podrá ejercer el poder general para pleitos y cobranzas y para\nactos de administración, en los términos de los dos primeros párrafos del artículo 2554\ndel Código Civil Federal, con todas las facultades generales y las especiales que\nrequieran cláusula especial conforme a la ley.\nSEGUNDA. El presente poder se otorga por tiempo indefinido y podrá revocarse en cualquier\nmomento.\n\nLeído que fue el presente instrumento al compareciente, lo ratifica y firma ante mí. DOY FE.\nLic. Ernesto Valdivia Cortés   Notario Público número 27"
+    },
+    {
+      "id": "GS-CONT-01",
+      "caso_base": "GS-CONT-01",
+      "archivo": "gs-cont-01.pdf",
+      "rendicion": "VECTORIAL",
+      "tipo_registrado": "CONTRATO_SERVICIOS",
+      "descripcion": "Contrato completo",
+      "titular": {
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V."
+      },
+      "sello_notarial": false,
+      "esperado": {
+        "tipo_documento": "CONTRATO",
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V.",
+        "fecha_emision": "2026-03-02",
+        "fecha_vencimiento": "2027-03-01",
+        "estatus": "EN_REVISION",
+        "motivo": "Todas las cláusulas presentes; el contrato identifica a sus firmantes y RSC-02 deja la decisión al analista (DOC-05).",
+        "personas": [
+          {
+            "nombre": "María Elena Ruiz Soto",
+            "cargo": "Apoderada legal"
+          },
+          {
+            "nombre": "Jorge Alberto Treviño Garza",
+            "cargo": "Representante legal"
+          }
+        ],
+        "elementos": {
+          "RSC-01-CONT-OBJ": true,
+          "RSC-01-CONT-VIG": true,
+          "RSC-01-CONT-PEN": true,
+          "RSC-01-CONT-CONF": true,
+          "RSC-01-CONT-FIRM": true
+        }
+      },
+      "sha256_archivo": "83fc5ab8ed0ba90c602e445298b29091db93d7ea51254646c8af5b44c9c36d51",
+      "texto_referencia": "DOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nCONTRATO DE PRESTACIÓN DE SERVICIOS\n\nContrato de prestación de servicios que celebran, por una parte, PLURIONE S.A. DE C.V.,\ncon RFC PLU180514AB3, en lo sucesivo EL CLIENTE, representada por María Elena Ruiz Soto,\ny por la otra, SERVICIOS INTEGRALES DEL NORTE S.A. DE C.V., con RFC SIN150302KL7, en lo sucesivo\nEL PRESTADOR, representada por Jorge Alberto Treviño Garza, al tenor de las siguientes:\n\nDECLARACIONES\nI. Declara EL CLIENTE que es una sociedad mercantil constituida conforme a las leyes mexicanas,\nsegún consta en la escritura pública número 12,845 otorgada ante el Notario Público número 27\nde Chihuahua, y que su apoderada cuenta con facultades suficientes para obligarla.\nII. Declara EL PRESTADOR que cuenta con la capacidad técnica y los recursos necesarios para\nprestar los servicios objeto de este contrato.\n\n\nDOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nCLÁUSULAS\nPRIMERA. OBJETO. EL PRESTADOR se obliga a prestar a EL CLIENTE los servicios de\nsoporte técnico y mantenimiento de su infraestructura de cómputo descritos en el Anexo A.\nSEGUNDA. CONTRAPRESTACIÓN. EL CLIENTE pagará a EL PRESTADOR la cantidad mensual de\n$185,000.00 (ciento ochenta y cinco mil pesos 00/100 M.N.) más el Impuesto al Valor\nAgregado, dentro de los diez días naturales siguientes a la recepción de la factura.\nTERCERA. VIGENCIA Y TERMINACIÓN ANTICIPADA. El presente contrato estará vigente del\n2 de marzo de 2026 al 1 de marzo de 2027. Cualquiera de las partes podrá darlo por\nterminado anticipadamente mediante aviso por escrito con treinta días naturales de\nanticipación, sin responsabilidad para ninguna de ellas.\nCUARTA. CONFIDENCIALIDAD. Las partes se obligan recíprocamente a no divulgar la\ninformación confidencial que reciban con motivo de este contrato, durante su vigencia y\ndos años posteriores a su terminación.\nQUINTA. PENA CONVENCIONAL. En caso de incumplimiento de las obligaciones a su cargo,\nEL PRESTADOR pagará a EL CLIENTE una pena convencional equivalente al diez por ciento\ndel monto mensual de la contraprestación por cada mes de incumplimiento.\nSEXTA. JURISDICCIÓN. Para la interpretación y cumplimiento de este contrato, las partes\nse someten a los tribunales competentes de la ciudad de Chihuahua, Chihuahua.\n\nLeído que fue el presente contrato, las partes lo firman por duplicado en la ciudad de\nChihuahua, Chihuahua, el 2 de marzo de 2026.\n\nEL CLIENTE\nPLURIONE S.A. DE C.V.\nMaría Elena Ruiz Soto, Apoderada legal\n\nEL PRESTADOR\nSERVICIOS INTEGRALES DEL NORTE S.A. DE C.V.\nJorge Alberto Treviño Garza, Representante legal"
+    },
+    {
+      "id": "GS-CONT-01-ESC",
+      "caso_base": "GS-CONT-01",
+      "archivo": "gs-cont-01-esc.pdf",
+      "rendicion": "ESCANEADO",
+      "tipo_registrado": "CONTRATO_SERVICIOS",
+      "descripcion": "Contrato completo",
+      "titular": {
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V."
+      },
+      "sello_notarial": false,
+      "esperado": {
+        "tipo_documento": "CONTRATO",
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V.",
+        "fecha_emision": "2026-03-02",
+        "fecha_vencimiento": "2027-03-01",
+        "estatus": "EN_REVISION",
+        "motivo": "Todas las cláusulas presentes; el contrato identifica a sus firmantes y RSC-02 deja la decisión al analista (DOC-05).",
+        "personas": [
+          {
+            "nombre": "María Elena Ruiz Soto",
+            "cargo": "Apoderada legal"
+          },
+          {
+            "nombre": "Jorge Alberto Treviño Garza",
+            "cargo": "Representante legal"
+          }
+        ],
+        "elementos": {
+          "RSC-01-CONT-OBJ": true,
+          "RSC-01-CONT-VIG": true,
+          "RSC-01-CONT-PEN": true,
+          "RSC-01-CONT-CONF": true,
+          "RSC-01-CONT-FIRM": true
+        }
+      },
+      "sha256_archivo": "5d76886eac8d7ccc0558001fd3f418f01ae0a9944a8b2c69e062b226202cbc8c",
+      "texto_referencia": "DOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nCONTRATO DE PRESTACIÓN DE SERVICIOS\n\nContrato de prestación de servicios que celebran, por una parte, PLURIONE S.A. DE C.V.,\ncon RFC PLU180514AB3, en lo sucesivo EL CLIENTE, representada por María Elena Ruiz Soto,\ny por la otra, SERVICIOS INTEGRALES DEL NORTE S.A. DE C.V., con RFC SIN150302KL7, en lo sucesivo\nEL PRESTADOR, representada por Jorge Alberto Treviño Garza, al tenor de las siguientes:\n\nDECLARACIONES\nI. Declara EL CLIENTE que es una sociedad mercantil constituida conforme a las leyes mexicanas,\nsegún consta en la escritura pública número 12,845 otorgada ante el Notario Público número 27\nde Chihuahua, y que su apoderada cuenta con facultades suficientes para obligarla.\nII. Declara EL PRESTADOR que cuenta con la capacidad técnica y los recursos necesarios para\nprestar los servicios objeto de este contrato.\n\n\nDOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nCLÁUSULAS\nPRIMERA. OBJETO. EL PRESTADOR se obliga a prestar a EL CLIENTE los servicios de\nsoporte técnico y mantenimiento de su infraestructura de cómputo descritos en el Anexo A.\nSEGUNDA. CONTRAPRESTACIÓN. EL CLIENTE pagará a EL PRESTADOR la cantidad mensual de\n$185,000.00 (ciento ochenta y cinco mil pesos 00/100 M.N.) más el Impuesto al Valor\nAgregado, dentro de los diez días naturales siguientes a la recepción de la factura.\nTERCERA. VIGENCIA Y TERMINACIÓN ANTICIPADA. El presente contrato estará vigente del\n2 de marzo de 2026 al 1 de marzo de 2027. Cualquiera de las partes podrá darlo por\nterminado anticipadamente mediante aviso por escrito con treinta días naturales de\nanticipación, sin responsabilidad para ninguna de ellas.\nCUARTA. CONFIDENCIALIDAD. Las partes se obligan recíprocamente a no divulgar la\ninformación confidencial que reciban con motivo de este contrato, durante su vigencia y\ndos años posteriores a su terminación.\nQUINTA. PENA CONVENCIONAL. En caso de incumplimiento de las obligaciones a su cargo,\nEL PRESTADOR pagará a EL CLIENTE una pena convencional equivalente al diez por ciento\ndel monto mensual de la contraprestación por cada mes de incumplimiento.\nSEXTA. JURISDICCIÓN. Para la interpretación y cumplimiento de este contrato, las partes\nse someten a los tribunales competentes de la ciudad de Chihuahua, Chihuahua.\n\nLeído que fue el presente contrato, las partes lo firman por duplicado en la ciudad de\nChihuahua, Chihuahua, el 2 de marzo de 2026.\n\nEL CLIENTE\nPLURIONE S.A. DE C.V.\nMaría Elena Ruiz Soto, Apoderada legal\n\nEL PRESTADOR\nSERVICIOS INTEGRALES DEL NORTE S.A. DE C.V.\nJorge Alberto Treviño Garza, Representante legal"
+    },
+    {
+      "id": "GS-CONT-02",
+      "caso_base": "GS-CONT-02",
+      "archivo": "gs-cont-02.pdf",
+      "rendicion": "VECTORIAL",
+      "tipo_registrado": "CONTRATO_SERVICIOS",
+      "descripcion": "Sin confidencialidad",
+      "titular": {
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V."
+      },
+      "sello_notarial": false,
+      "esperado": {
+        "tipo_documento": "CONTRATO",
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V.",
+        "fecha_emision": "2026-03-02",
+        "fecha_vencimiento": "2027-03-01",
+        "estatus": "EN_REVISION",
+        "motivo": "Falta la cláusula de confidencialidad: omisión contractual relevante (RSC-01).",
+        "personas": [
+          {
+            "nombre": "María Elena Ruiz Soto",
+            "cargo": "Apoderada legal"
+          },
+          {
+            "nombre": "Jorge Alberto Treviño Garza",
+            "cargo": "Representante legal"
+          }
+        ],
+        "elementos": {
+          "RSC-01-CONT-OBJ": true,
+          "RSC-01-CONT-VIG": true,
+          "RSC-01-CONT-PEN": true,
+          "RSC-01-CONT-CONF": false,
+          "RSC-01-CONT-FIRM": true
+        }
+      },
+      "sha256_archivo": "1b35c9e372ee4371f324777f7904021fd8901330f80fea2603e1dde03dee0ee3",
+      "texto_referencia": "DOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nCONTRATO DE PRESTACIÓN DE SERVICIOS\n\nContrato de prestación de servicios que celebran, por una parte, PLURIONE S.A. DE C.V.,\ncon RFC PLU180514AB3, en lo sucesivo EL CLIENTE, representada por María Elena Ruiz Soto,\ny por la otra, SERVICIOS INTEGRALES DEL NORTE S.A. DE C.V., con RFC SIN150302KL7, en lo sucesivo\nEL PRESTADOR, representada por Jorge Alberto Treviño Garza, al tenor de las siguientes:\n\nDECLARACIONES\nI. Declara EL CLIENTE que es una sociedad mercantil constituida conforme a las leyes mexicanas,\nsegún consta en la escritura pública número 12,845 otorgada ante el Notario Público número 27\nde Chihuahua, y que su apoderada cuenta con facultades suficientes para obligarla.\nII. Declara EL PRESTADOR que cuenta con la capacidad técnica y los recursos necesarios para\nprestar los servicios objeto de este contrato.\n\n\nDOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nCLÁUSULAS\nPRIMERA. OBJETO. EL PRESTADOR se obliga a prestar a EL CLIENTE los servicios de\nsoporte técnico y mantenimiento de su infraestructura de cómputo descritos en el Anexo A.\nSEGUNDA. CONTRAPRESTACIÓN. EL CLIENTE pagará a EL PRESTADOR la cantidad mensual de\n$185,000.00 (ciento ochenta y cinco mil pesos 00/100 M.N.) más el Impuesto al Valor\nAgregado, dentro de los diez días naturales siguientes a la recepción de la factura.\nTERCERA. VIGENCIA Y TERMINACIÓN ANTICIPADA. El presente contrato estará vigente del\n2 de marzo de 2026 al 1 de marzo de 2027. Cualquiera de las partes podrá darlo por\nterminado anticipadamente mediante aviso por escrito con treinta días naturales de\nanticipación, sin responsabilidad para ninguna de ellas.\nCUARTA. PENA CONVENCIONAL. En caso de incumplimiento de las obligaciones a su cargo,\nEL PRESTADOR pagará a EL CLIENTE una pena convencional equivalente al diez por ciento\ndel monto mensual de la contraprestación por cada mes de incumplimiento.\nQUINTA. JURISDICCIÓN. Para la interpretación y cumplimiento de este contrato, las partes\nse someten a los tribunales competentes de la ciudad de Chihuahua, Chihuahua.\n\nLeído que fue el presente contrato, las partes lo firman por duplicado en la ciudad de\nChihuahua, Chihuahua, el 2 de marzo de 2026.\n\nEL CLIENTE\nPLURIONE S.A. DE C.V.\nMaría Elena Ruiz Soto, Apoderada legal\n\nEL PRESTADOR\nSERVICIOS INTEGRALES DEL NORTE S.A. DE C.V.\nJorge Alberto Treviño Garza, Representante legal"
+    },
+    {
+      "id": "GS-CONT-03",
+      "caso_base": "GS-CONT-03",
+      "archivo": "gs-cont-03.pdf",
+      "rendicion": "VECTORIAL",
+      "tipo_registrado": "CONTRATO_SERVICIOS",
+      "descripcion": "Sin penalización",
+      "titular": {
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V."
+      },
+      "sello_notarial": false,
+      "esperado": {
+        "tipo_documento": "CONTRATO",
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V.",
+        "fecha_emision": "2026-03-02",
+        "fecha_vencimiento": "2027-03-01",
+        "estatus": "EN_REVISION",
+        "motivo": "Falta la penalización por incumplimiento: omisión contractual relevante (RSC-01).",
+        "personas": [
+          {
+            "nombre": "María Elena Ruiz Soto",
+            "cargo": "Apoderada legal"
+          },
+          {
+            "nombre": "Jorge Alberto Treviño Garza",
+            "cargo": "Representante legal"
+          }
+        ],
+        "elementos": {
+          "RSC-01-CONT-OBJ": true,
+          "RSC-01-CONT-VIG": true,
+          "RSC-01-CONT-PEN": false,
+          "RSC-01-CONT-CONF": true,
+          "RSC-01-CONT-FIRM": true
+        }
+      },
+      "sha256_archivo": "065102f3a5dffb2b1773634a5daf9a131177f95aa12cd0c15678e561065ead42",
+      "texto_referencia": "DOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nCONTRATO DE PRESTACIÓN DE SERVICIOS\n\nContrato de prestación de servicios que celebran, por una parte, PLURIONE S.A. DE C.V.,\ncon RFC PLU180514AB3, en lo sucesivo EL CLIENTE, representada por María Elena Ruiz Soto,\ny por la otra, SERVICIOS INTEGRALES DEL NORTE S.A. DE C.V., con RFC SIN150302KL7, en lo sucesivo\nEL PRESTADOR, representada por Jorge Alberto Treviño Garza, al tenor de las siguientes:\n\nDECLARACIONES\nI. Declara EL CLIENTE que es una sociedad mercantil constituida conforme a las leyes mexicanas,\nsegún consta en la escritura pública número 12,845 otorgada ante el Notario Público número 27\nde Chihuahua, y que su apoderada cuenta con facultades suficientes para obligarla.\nII. Declara EL PRESTADOR que cuenta con la capacidad técnica y los recursos necesarios para\nprestar los servicios objeto de este contrato.\n\n\nDOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nCLÁUSULAS\nPRIMERA. OBJETO. EL PRESTADOR se obliga a prestar a EL CLIENTE los servicios de\nsoporte técnico y mantenimiento de su infraestructura de cómputo descritos en el Anexo A.\nSEGUNDA. CONTRAPRESTACIÓN. EL CLIENTE pagará a EL PRESTADOR la cantidad mensual de\n$185,000.00 (ciento ochenta y cinco mil pesos 00/100 M.N.) más el Impuesto al Valor\nAgregado, dentro de los diez días naturales siguientes a la recepción de la factura.\nTERCERA. VIGENCIA Y TERMINACIÓN ANTICIPADA. El presente contrato estará vigente del\n2 de marzo de 2026 al 1 de marzo de 2027. Cualquiera de las partes podrá darlo por\nterminado anticipadamente mediante aviso por escrito con treinta días naturales de\nanticipación, sin responsabilidad para ninguna de ellas.\nCUARTA. CONFIDENCIALIDAD. Las partes se obligan recíprocamente a no divulgar la\ninformación confidencial que reciban con motivo de este contrato, durante su vigencia y\ndos años posteriores a su terminación.\nQUINTA. JURISDICCIÓN. Para la interpretación y cumplimiento de este contrato, las partes\nse someten a los tribunales competentes de la ciudad de Chihuahua, Chihuahua.\n\nLeído que fue el presente contrato, las partes lo firman por duplicado en la ciudad de\nChihuahua, Chihuahua, el 2 de marzo de 2026.\n\nEL CLIENTE\nPLURIONE S.A. DE C.V.\nMaría Elena Ruiz Soto, Apoderada legal\n\nEL PRESTADOR\nSERVICIOS INTEGRALES DEL NORTE S.A. DE C.V.\nJorge Alberto Treviño Garza, Representante legal"
+    },
+    {
+      "id": "GS-CONT-03-ESC",
+      "caso_base": "GS-CONT-03",
+      "archivo": "gs-cont-03-esc.pdf",
+      "rendicion": "ESCANEADO",
+      "tipo_registrado": "CONTRATO_SERVICIOS",
+      "descripcion": "Sin penalización",
+      "titular": {
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V."
+      },
+      "sello_notarial": false,
+      "esperado": {
+        "tipo_documento": "CONTRATO",
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V.",
+        "fecha_emision": "2026-03-02",
+        "fecha_vencimiento": "2027-03-01",
+        "estatus": "EN_REVISION",
+        "motivo": "Falta la penalización por incumplimiento: omisión contractual relevante (RSC-01).",
+        "personas": [
+          {
+            "nombre": "María Elena Ruiz Soto",
+            "cargo": "Apoderada legal"
+          },
+          {
+            "nombre": "Jorge Alberto Treviño Garza",
+            "cargo": "Representante legal"
+          }
+        ],
+        "elementos": {
+          "RSC-01-CONT-OBJ": true,
+          "RSC-01-CONT-VIG": true,
+          "RSC-01-CONT-PEN": false,
+          "RSC-01-CONT-CONF": true,
+          "RSC-01-CONT-FIRM": true
+        }
+      },
+      "sha256_archivo": "72235458495161a6b544dd174480b76826bdecd4eecded92da91a999234fc42a",
+      "texto_referencia": "DOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nCONTRATO DE PRESTACIÓN DE SERVICIOS\n\nContrato de prestación de servicios que celebran, por una parte, PLURIONE S.A. DE C.V.,\ncon RFC PLU180514AB3, en lo sucesivo EL CLIENTE, representada por María Elena Ruiz Soto,\ny por la otra, SERVICIOS INTEGRALES DEL NORTE S.A. DE C.V., con RFC SIN150302KL7, en lo sucesivo\nEL PRESTADOR, representada por Jorge Alberto Treviño Garza, al tenor de las siguientes:\n\nDECLARACIONES\nI. Declara EL CLIENTE que es una sociedad mercantil constituida conforme a las leyes mexicanas,\nsegún consta en la escritura pública número 12,845 otorgada ante el Notario Público número 27\nde Chihuahua, y que su apoderada cuenta con facultades suficientes para obligarla.\nII. Declara EL PRESTADOR que cuenta con la capacidad técnica y los recursos necesarios para\nprestar los servicios objeto de este contrato.\n\n\nDOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nCLÁUSULAS\nPRIMERA. OBJETO. EL PRESTADOR se obliga a prestar a EL CLIENTE los servicios de\nsoporte técnico y mantenimiento de su infraestructura de cómputo descritos en el Anexo A.\nSEGUNDA. CONTRAPRESTACIÓN. EL CLIENTE pagará a EL PRESTADOR la cantidad mensual de\n$185,000.00 (ciento ochenta y cinco mil pesos 00/100 M.N.) más el Impuesto al Valor\nAgregado, dentro de los diez días naturales siguientes a la recepción de la factura.\nTERCERA. VIGENCIA Y TERMINACIÓN ANTICIPADA. El presente contrato estará vigente del\n2 de marzo de 2026 al 1 de marzo de 2027. Cualquiera de las partes podrá darlo por\nterminado anticipadamente mediante aviso por escrito con treinta días naturales de\nanticipación, sin responsabilidad para ninguna de ellas.\nCUARTA. CONFIDENCIALIDAD. Las partes se obligan recíprocamente a no divulgar la\ninformación confidencial que reciban con motivo de este contrato, durante su vigencia y\ndos años posteriores a su terminación.\nQUINTA. JURISDICCIÓN. Para la interpretación y cumplimiento de este contrato, las partes\nse someten a los tribunales competentes de la ciudad de Chihuahua, Chihuahua.\n\nLeído que fue el presente contrato, las partes lo firman por duplicado en la ciudad de\nChihuahua, Chihuahua, el 2 de marzo de 2026.\n\nEL CLIENTE\nPLURIONE S.A. DE C.V.\nMaría Elena Ruiz Soto, Apoderada legal\n\nEL PRESTADOR\nSERVICIOS INTEGRALES DEL NORTE S.A. DE C.V.\nJorge Alberto Treviño Garza, Representante legal"
+    },
+    {
+      "id": "GS-CONT-04",
+      "caso_base": "GS-CONT-04",
+      "archivo": "gs-cont-04.pdf",
+      "rendicion": "VECTORIAL",
+      "tipo_registrado": "CONTRATO_SERVICIOS",
+      "descripcion": "Sin vigencia ni terminación",
+      "titular": {
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V."
+      },
+      "sello_notarial": false,
+      "esperado": {
+        "tipo_documento": "CONTRATO",
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V.",
+        "fecha_emision": "2026-03-02",
+        "fecha_vencimiento": null,
+        "estatus": "EN_REVISION",
+        "motivo": "Falta la vigencia y la terminación anticipada (RSC-01).",
+        "personas": [
+          {
+            "nombre": "María Elena Ruiz Soto",
+            "cargo": "Apoderada legal"
+          },
+          {
+            "nombre": "Jorge Alberto Treviño Garza",
+            "cargo": "Representante legal"
+          }
+        ],
+        "elementos": {
+          "RSC-01-CONT-OBJ": true,
+          "RSC-01-CONT-VIG": false,
+          "RSC-01-CONT-PEN": true,
+          "RSC-01-CONT-CONF": true,
+          "RSC-01-CONT-FIRM": true
+        }
+      },
+      "sha256_archivo": "8a1cc890f757c26c2f683cf0cf23e41ac228a6399041160178a85213f76d86b9",
+      "texto_referencia": "DOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nCONTRATO DE PRESTACIÓN DE SERVICIOS\n\nContrato de prestación de servicios que celebran, por una parte, PLURIONE S.A. DE C.V.,\ncon RFC PLU180514AB3, en lo sucesivo EL CLIENTE, representada por María Elena Ruiz Soto,\ny por la otra, SERVICIOS INTEGRALES DEL NORTE S.A. DE C.V., con RFC SIN150302KL7, en lo sucesivo\nEL PRESTADOR, representada por Jorge Alberto Treviño Garza, al tenor de las siguientes:\n\nDECLARACIONES\nI. Declara EL CLIENTE que es una sociedad mercantil constituida conforme a las leyes mexicanas,\nsegún consta en la escritura pública número 12,845 otorgada ante el Notario Público número 27\nde Chihuahua, y que su apoderada cuenta con facultades suficientes para obligarla.\nII. Declara EL PRESTADOR que cuenta con la capacidad técnica y los recursos necesarios para\nprestar los servicios objeto de este contrato.\n\n\nDOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nCLÁUSULAS\nPRIMERA. OBJETO. EL PRESTADOR se obliga a prestar a EL CLIENTE los servicios de\nsoporte técnico y mantenimiento de su infraestructura de cómputo descritos en el Anexo A.\nSEGUNDA. CONTRAPRESTACIÓN. EL CLIENTE pagará a EL PRESTADOR la cantidad mensual de\n$185,000.00 (ciento ochenta y cinco mil pesos 00/100 M.N.) más el Impuesto al Valor\nAgregado, dentro de los diez días naturales siguientes a la recepción de la factura.\nTERCERA. CONFIDENCIALIDAD. Las partes se obligan recíprocamente a no divulgar la\ninformación confidencial que reciban con motivo de este contrato, durante su vigencia y\ndos años posteriores a su terminación.\nCUARTA. PENA CONVENCIONAL. En caso de incumplimiento de las obligaciones a su cargo,\nEL PRESTADOR pagará a EL CLIENTE una pena convencional equivalente al diez por ciento\ndel monto mensual de la contraprestación por cada mes de incumplimiento.\nQUINTA. JURISDICCIÓN. Para la interpretación y cumplimiento de este contrato, las partes\nse someten a los tribunales competentes de la ciudad de Chihuahua, Chihuahua.\n\nLeído que fue el presente contrato, las partes lo firman por duplicado en la ciudad de\nChihuahua, Chihuahua, el 2 de marzo de 2026.\n\nEL CLIENTE\nPLURIONE S.A. DE C.V.\nMaría Elena Ruiz Soto, Apoderada legal\n\nEL PRESTADOR\nSERVICIOS INTEGRALES DEL NORTE S.A. DE C.V.\nJorge Alberto Treviño Garza, Representante legal"
+    },
+    {
+      "id": "GS-CONT-05",
+      "caso_base": "GS-CONT-05",
+      "archivo": "gs-cont-05.pdf",
+      "rendicion": "VECTORIAL",
+      "tipo_registrado": "CONTRATO_SERVICIOS",
+      "descripcion": "Sin objeto",
+      "titular": {
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V."
+      },
+      "sello_notarial": false,
+      "esperado": {
+        "tipo_documento": "CONTRATO",
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V.",
+        "fecha_emision": "2026-03-02",
+        "fecha_vencimiento": "2027-03-01",
+        "estatus": "EN_REVISION",
+        "motivo": "No define el objeto del contrato (RSC-01-CONT-OBJ).",
+        "personas": [
+          {
+            "nombre": "María Elena Ruiz Soto",
+            "cargo": "Apoderada legal"
+          },
+          {
+            "nombre": "Jorge Alberto Treviño Garza",
+            "cargo": "Representante legal"
+          }
+        ],
+        "elementos": {
+          "RSC-01-CONT-OBJ": false,
+          "RSC-01-CONT-VIG": true,
+          "RSC-01-CONT-PEN": true,
+          "RSC-01-CONT-CONF": true,
+          "RSC-01-CONT-FIRM": true
+        }
+      },
+      "sha256_archivo": "5488cc6a532ffb08557834cf615be93880290f2aab0bc2289c6b57d996e218a4",
+      "texto_referencia": "DOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nCONTRATO DE PRESTACIÓN DE SERVICIOS\n\nContrato de prestación de servicios que celebran, por una parte, PLURIONE S.A. DE C.V.,\ncon RFC PLU180514AB3, en lo sucesivo EL CLIENTE, representada por María Elena Ruiz Soto,\ny por la otra, SERVICIOS INTEGRALES DEL NORTE S.A. DE C.V., con RFC SIN150302KL7, en lo sucesivo\nEL PRESTADOR, representada por Jorge Alberto Treviño Garza, al tenor de las siguientes:\n\nDECLARACIONES\nI. Declara EL CLIENTE que es una sociedad mercantil constituida conforme a las leyes mexicanas,\nsegún consta en la escritura pública número 12,845 otorgada ante el Notario Público número 27\nde Chihuahua, y que su apoderada cuenta con facultades suficientes para obligarla.\nII. Declara EL PRESTADOR que cuenta con la capacidad técnica y los recursos necesarios para\nprestar los servicios objeto de este contrato.\n\n\nDOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nCLÁUSULAS\nPRIMERA. CONTRAPRESTACIÓN. EL CLIENTE pagará a EL PRESTADOR la cantidad mensual de\n$185,000.00 (ciento ochenta y cinco mil pesos 00/100 M.N.) más el Impuesto al Valor\nAgregado, dentro de los diez días naturales siguientes a la recepción de la factura.\nSEGUNDA. VIGENCIA Y TERMINACIÓN ANTICIPADA. El presente contrato estará vigente del\n2 de marzo de 2026 al 1 de marzo de 2027. Cualquiera de las partes podrá darlo por\nterminado anticipadamente mediante aviso por escrito con treinta días naturales de\nanticipación, sin responsabilidad para ninguna de ellas.\nTERCERA. CONFIDENCIALIDAD. Las partes se obligan recíprocamente a no divulgar la\ninformación confidencial que reciban con motivo de este contrato, durante su vigencia y\ndos años posteriores a su terminación.\nCUARTA. PENA CONVENCIONAL. En caso de incumplimiento de las obligaciones a su cargo,\nEL PRESTADOR pagará a EL CLIENTE una pena convencional equivalente al diez por ciento\ndel monto mensual de la contraprestación por cada mes de incumplimiento.\nQUINTA. JURISDICCIÓN. Para la interpretación y cumplimiento de este contrato, las partes\nse someten a los tribunales competentes de la ciudad de Chihuahua, Chihuahua.\n\nLeído que fue el presente contrato, las partes lo firman por duplicado en la ciudad de\nChihuahua, Chihuahua, el 2 de marzo de 2026.\n\nEL CLIENTE\nPLURIONE S.A. DE C.V.\nMaría Elena Ruiz Soto, Apoderada legal\n\nEL PRESTADOR\nSERVICIOS INTEGRALES DEL NORTE S.A. DE C.V.\nJorge Alberto Treviño Garza, Representante legal"
+    },
+    {
+      "id": "GS-CONT-06",
+      "caso_base": "GS-CONT-06",
+      "archivo": "gs-cont-06.pdf",
+      "rendicion": "VECTORIAL",
+      "tipo_registrado": "CONTRATO_SERVICIOS",
+      "descripcion": "Sin apartado de firmas",
+      "titular": {
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V."
+      },
+      "sello_notarial": false,
+      "esperado": {
+        "tipo_documento": "CONTRATO",
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V.",
+        "fecha_emision": "2026-03-02",
+        "fecha_vencimiento": "2027-03-01",
+        "estatus": "EN_REVISION",
+        "motivo": "No contiene el apartado de firmas (RSC-01-CONT-FIRM); los representantes solo se mencionan en el proemio.",
+        "personas": [
+          {
+            "nombre": "María Elena Ruiz Soto",
+            "cargo": "Apoderada legal"
+          },
+          {
+            "nombre": "Jorge Alberto Treviño Garza",
+            "cargo": "Representante legal"
+          }
+        ],
+        "elementos": {
+          "RSC-01-CONT-OBJ": true,
+          "RSC-01-CONT-VIG": true,
+          "RSC-01-CONT-PEN": true,
+          "RSC-01-CONT-CONF": true,
+          "RSC-01-CONT-FIRM": false
+        }
+      },
+      "sha256_archivo": "f07c7dc20b09f90430047992fff2980159affe0d35115a9551364ebc11cba832",
+      "texto_referencia": "DOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nCONTRATO DE PRESTACIÓN DE SERVICIOS\n\nContrato de prestación de servicios que celebran, por una parte, PLURIONE S.A. DE C.V.,\ncon RFC PLU180514AB3, en lo sucesivo EL CLIENTE, representada por María Elena Ruiz Soto,\ny por la otra, SERVICIOS INTEGRALES DEL NORTE S.A. DE C.V., con RFC SIN150302KL7, en lo sucesivo\nEL PRESTADOR, representada por Jorge Alberto Treviño Garza, al tenor de las siguientes:\n\nDECLARACIONES\nI. Declara EL CLIENTE que es una sociedad mercantil constituida conforme a las leyes mexicanas,\nsegún consta en la escritura pública número 12,845 otorgada ante el Notario Público número 27\nde Chihuahua, y que su apoderada cuenta con facultades suficientes para obligarla.\nII. Declara EL PRESTADOR que cuenta con la capacidad técnica y los recursos necesarios para\nprestar los servicios objeto de este contrato.\n\n\nDOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nCLÁUSULAS\nPRIMERA. OBJETO. EL PRESTADOR se obliga a prestar a EL CLIENTE los servicios de\nsoporte técnico y mantenimiento de su infraestructura de cómputo descritos en el Anexo A.\nSEGUNDA. CONTRAPRESTACIÓN. EL CLIENTE pagará a EL PRESTADOR la cantidad mensual de\n$185,000.00 (ciento ochenta y cinco mil pesos 00/100 M.N.) más el Impuesto al Valor\nAgregado, dentro de los diez días naturales siguientes a la recepción de la factura.\nTERCERA. VIGENCIA Y TERMINACIÓN ANTICIPADA. El presente contrato estará vigente del\n2 de marzo de 2026 al 1 de marzo de 2027. Cualquiera de las partes podrá darlo por\nterminado anticipadamente mediante aviso por escrito con treinta días naturales de\nanticipación, sin responsabilidad para ninguna de ellas.\nCUARTA. CONFIDENCIALIDAD. Las partes se obligan recíprocamente a no divulgar la\ninformación confidencial que reciban con motivo de este contrato, durante su vigencia y\ndos años posteriores a su terminación.\nQUINTA. PENA CONVENCIONAL. En caso de incumplimiento de las obligaciones a su cargo,\nEL PRESTADOR pagará a EL CLIENTE una pena convencional equivalente al diez por ciento\ndel monto mensual de la contraprestación por cada mes de incumplimiento.\nSEXTA. JURISDICCIÓN. Para la interpretación y cumplimiento de este contrato, las partes\nse someten a los tribunales competentes de la ciudad de Chihuahua, Chihuahua."
+    },
+    {
+      "id": "GS-CONT-07",
+      "caso_base": "GS-CONT-07",
+      "archivo": "gs-cont-07.pdf",
+      "rendicion": "VECTORIAL",
+      "tipo_registrado": "CONTRATO_SERVICIOS",
+      "descripcion": "Tres firmantes",
+      "titular": {
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V."
+      },
+      "sello_notarial": false,
+      "esperado": {
+        "tipo_documento": "CONTRATO",
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V.",
+        "fecha_emision": "2026-03-02",
+        "fecha_vencimiento": "2027-03-01",
+        "estatus": "EN_REVISION",
+        "motivo": "Completo, con dos firmantes por el cliente; el contrato identifica a sus firmantes y RSC-02 deja la decisión al analista (DOC-05).",
+        "personas": [
+          {
+            "nombre": "María Elena Ruiz Soto",
+            "cargo": "Apoderada legal"
+          },
+          {
+            "nombre": "Jorge Alberto Treviño Garza",
+            "cargo": "Representante legal"
+          },
+          {
+            "nombre": "Laura Patricia Ibarra Montes",
+            "cargo": "Directora General"
+          }
+        ],
+        "elementos": {
+          "RSC-01-CONT-OBJ": true,
+          "RSC-01-CONT-VIG": true,
+          "RSC-01-CONT-PEN": true,
+          "RSC-01-CONT-CONF": true,
+          "RSC-01-CONT-FIRM": true
+        }
+      },
+      "sha256_archivo": "164401e8d20280e627ec8add07594201424e4cacdc1f0bf3c0248f9b46d235d4",
+      "texto_referencia": "DOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nCONTRATO DE PRESTACIÓN DE SERVICIOS\n\nContrato de prestación de servicios que celebran, por una parte, PLURIONE S.A. DE C.V.,\ncon RFC PLU180514AB3, en lo sucesivo EL CLIENTE, representada por María Elena Ruiz Soto,\ny por la otra, SERVICIOS INTEGRALES DEL NORTE S.A. DE C.V., con RFC SIN150302KL7, en lo sucesivo\nEL PRESTADOR, representada por Jorge Alberto Treviño Garza, al tenor de las siguientes:\n\nDECLARACIONES\nI. Declara EL CLIENTE que es una sociedad mercantil constituida conforme a las leyes mexicanas,\nsegún consta en la escritura pública número 12,845 otorgada ante el Notario Público número 27\nde Chihuahua, y que su apoderada cuenta con facultades suficientes para obligarla.\nII. Declara EL PRESTADOR que cuenta con la capacidad técnica y los recursos necesarios para\nprestar los servicios objeto de este contrato.\n\n\nDOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nCLÁUSULAS\nPRIMERA. OBJETO. EL PRESTADOR se obliga a prestar a EL CLIENTE los servicios de\nsoporte técnico y mantenimiento de su infraestructura de cómputo descritos en el Anexo A.\nSEGUNDA. CONTRAPRESTACIÓN. EL CLIENTE pagará a EL PRESTADOR la cantidad mensual de\n$185,000.00 (ciento ochenta y cinco mil pesos 00/100 M.N.) más el Impuesto al Valor\nAgregado, dentro de los diez días naturales siguientes a la recepción de la factura.\nTERCERA. VIGENCIA Y TERMINACIÓN ANTICIPADA. El presente contrato estará vigente del\n2 de marzo de 2026 al 1 de marzo de 2027. Cualquiera de las partes podrá darlo por\nterminado anticipadamente mediante aviso por escrito con treinta días naturales de\nanticipación, sin responsabilidad para ninguna de ellas.\nCUARTA. CONFIDENCIALIDAD. Las partes se obligan recíprocamente a no divulgar la\ninformación confidencial que reciban con motivo de este contrato, durante su vigencia y\ndos años posteriores a su terminación.\nQUINTA. PENA CONVENCIONAL. En caso de incumplimiento de las obligaciones a su cargo,\nEL PRESTADOR pagará a EL CLIENTE una pena convencional equivalente al diez por ciento\ndel monto mensual de la contraprestación por cada mes de incumplimiento.\nSEXTA. JURISDICCIÓN. Para la interpretación y cumplimiento de este contrato, las partes\nse someten a los tribunales competentes de la ciudad de Chihuahua, Chihuahua.\n\nLeído que fue el presente contrato, las partes lo firman por duplicado en la ciudad de\nChihuahua, Chihuahua, el 2 de marzo de 2026.\n\nEL CLIENTE\nPLURIONE S.A. DE C.V.\nMaría Elena Ruiz Soto, Apoderada legal\nLaura Patricia Ibarra Montes, Directora General\n\nEL PRESTADOR\nSERVICIOS INTEGRALES DEL NORTE S.A. DE C.V.\nJorge Alberto Treviño Garza, Representante legal"
+    },
+    {
+      "id": "GS-CONT-07-ESC",
+      "caso_base": "GS-CONT-07",
+      "archivo": "gs-cont-07-esc.pdf",
+      "rendicion": "ESCANEADO",
+      "tipo_registrado": "CONTRATO_SERVICIOS",
+      "descripcion": "Tres firmantes",
+      "titular": {
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V."
+      },
+      "sello_notarial": false,
+      "esperado": {
+        "tipo_documento": "CONTRATO",
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V.",
+        "fecha_emision": "2026-03-02",
+        "fecha_vencimiento": "2027-03-01",
+        "estatus": "EN_REVISION",
+        "motivo": "Completo, con dos firmantes por el cliente; el contrato identifica a sus firmantes y RSC-02 deja la decisión al analista (DOC-05).",
+        "personas": [
+          {
+            "nombre": "María Elena Ruiz Soto",
+            "cargo": "Apoderada legal"
+          },
+          {
+            "nombre": "Jorge Alberto Treviño Garza",
+            "cargo": "Representante legal"
+          },
+          {
+            "nombre": "Laura Patricia Ibarra Montes",
+            "cargo": "Directora General"
+          }
+        ],
+        "elementos": {
+          "RSC-01-CONT-OBJ": true,
+          "RSC-01-CONT-VIG": true,
+          "RSC-01-CONT-PEN": true,
+          "RSC-01-CONT-CONF": true,
+          "RSC-01-CONT-FIRM": true
+        }
+      },
+      "sha256_archivo": "19ab7858d60e51356d9bec21612c1d0c53532a9c7d2df85edefaea9ca4aad82f",
+      "texto_referencia": "DOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nCONTRATO DE PRESTACIÓN DE SERVICIOS\n\nContrato de prestación de servicios que celebran, por una parte, PLURIONE S.A. DE C.V.,\ncon RFC PLU180514AB3, en lo sucesivo EL CLIENTE, representada por María Elena Ruiz Soto,\ny por la otra, SERVICIOS INTEGRALES DEL NORTE S.A. DE C.V., con RFC SIN150302KL7, en lo sucesivo\nEL PRESTADOR, representada por Jorge Alberto Treviño Garza, al tenor de las siguientes:\n\nDECLARACIONES\nI. Declara EL CLIENTE que es una sociedad mercantil constituida conforme a las leyes mexicanas,\nsegún consta en la escritura pública número 12,845 otorgada ante el Notario Público número 27\nde Chihuahua, y que su apoderada cuenta con facultades suficientes para obligarla.\nII. Declara EL PRESTADOR que cuenta con la capacidad técnica y los recursos necesarios para\nprestar los servicios objeto de este contrato.\n\n\nDOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nCLÁUSULAS\nPRIMERA. OBJETO. EL PRESTADOR se obliga a prestar a EL CLIENTE los servicios de\nsoporte técnico y mantenimiento de su infraestructura de cómputo descritos en el Anexo A.\nSEGUNDA. CONTRAPRESTACIÓN. EL CLIENTE pagará a EL PRESTADOR la cantidad mensual de\n$185,000.00 (ciento ochenta y cinco mil pesos 00/100 M.N.) más el Impuesto al Valor\nAgregado, dentro de los diez días naturales siguientes a la recepción de la factura.\nTERCERA. VIGENCIA Y TERMINACIÓN ANTICIPADA. El presente contrato estará vigente del\n2 de marzo de 2026 al 1 de marzo de 2027. Cualquiera de las partes podrá darlo por\nterminado anticipadamente mediante aviso por escrito con treinta días naturales de\nanticipación, sin responsabilidad para ninguna de ellas.\nCUARTA. CONFIDENCIALIDAD. Las partes se obligan recíprocamente a no divulgar la\ninformación confidencial que reciban con motivo de este contrato, durante su vigencia y\ndos años posteriores a su terminación.\nQUINTA. PENA CONVENCIONAL. En caso de incumplimiento de las obligaciones a su cargo,\nEL PRESTADOR pagará a EL CLIENTE una pena convencional equivalente al diez por ciento\ndel monto mensual de la contraprestación por cada mes de incumplimiento.\nSEXTA. JURISDICCIÓN. Para la interpretación y cumplimiento de este contrato, las partes\nse someten a los tribunales competentes de la ciudad de Chihuahua, Chihuahua.\n\nLeído que fue el presente contrato, las partes lo firman por duplicado en la ciudad de\nChihuahua, Chihuahua, el 2 de marzo de 2026.\n\nEL CLIENTE\nPLURIONE S.A. DE C.V.\nMaría Elena Ruiz Soto, Apoderada legal\nLaura Patricia Ibarra Montes, Directora General\n\nEL PRESTADOR\nSERVICIOS INTEGRALES DEL NORTE S.A. DE C.V.\nJorge Alberto Treviño Garza, Representante legal"
+    },
+    {
+      "id": "GS-NDA-01",
+      "caso_base": "GS-NDA-01",
+      "archivo": "gs-nda-01.pdf",
+      "rendicion": "VECTORIAL",
+      "tipo_registrado": "ACUERDO_CONFIDENCIALIDAD",
+      "descripcion": "NDA completo",
+      "titular": {
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V."
+      },
+      "sello_notarial": false,
+      "esperado": {
+        "tipo_documento": "CONTRATO",
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V.",
+        "fecha_emision": "2026-06-15",
+        "fecha_vencimiento": "2029-06-15",
+        "estatus": "EN_REVISION",
+        "motivo": "Completo; el contrato identifica a sus firmantes y RSC-02 deja la decisión al analista (DOC-05).",
+        "personas": [
+          {
+            "nombre": "María Elena Ruiz Soto",
+            "cargo": "Apoderada legal"
+          },
+          {
+            "nombre": "Jorge Alberto Treviño Garza",
+            "cargo": "Representante legal"
+          }
+        ],
+        "elementos": {
+          "RSC-01-NDA-NODIV": true,
+          "RSC-01-NDA-PART": true,
+          "RSC-01-NDA-VIG": true
+        }
+      },
+      "sha256_archivo": "c55f575a889afdbc0f140498184c81795a6ba5736a32eed9684014bb636079b0",
+      "texto_referencia": "DOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nACUERDO DE CONFIDENCIALIDAD\n\nAcuerdo que celebran PLURIONE S.A. DE C.V., con RFC PLU180514AB3, representada por\nMaría Elena Ruiz Soto, y SERVICIOS INTEGRALES DEL NORTE S.A. DE C.V., con RFC SIN150302KL7,\nrepresentada por\nJorge Alberto Treviño Garza, en la ciudad de Chihuahua, Chihuahua, el 15 de junio de 2026.\n\nCLÁUSULAS\nPRIMERA. INFORMACIÓN CONFIDENCIAL. Se considera información confidencial toda la información\ntécnica, comercial y financiera que una parte entregue a la otra con motivo del proyecto de\nmigración de sistemas.\nSEGUNDA. NO DIVULGACIÓN. La parte receptora se obliga a no divulgar, publicar ni transmitir\na terceros la información confidencial, y a usarla exclusivamente para el proyecto.\nTERCERA. VIGENCIA. Las obligaciones de este acuerdo estarán vigentes hasta el 15 de junio\nde 2029.\n\nFIRMAS\nPLURIONE S.A. DE C.V.   María Elena Ruiz Soto, Apoderada legal\nSERVICIOS INTEGRALES DEL NORTE S.A. DE C.V.   Jorge Alberto Treviño Garza, Representante legal"
+    },
+    {
+      "id": "GS-NDA-01-ESC",
+      "caso_base": "GS-NDA-01",
+      "archivo": "gs-nda-01-esc.pdf",
+      "rendicion": "ESCANEADO",
+      "tipo_registrado": "ACUERDO_CONFIDENCIALIDAD",
+      "descripcion": "NDA completo",
+      "titular": {
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V."
+      },
+      "sello_notarial": false,
+      "esperado": {
+        "tipo_documento": "CONTRATO",
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V.",
+        "fecha_emision": "2026-06-15",
+        "fecha_vencimiento": "2029-06-15",
+        "estatus": "EN_REVISION",
+        "motivo": "Completo; el contrato identifica a sus firmantes y RSC-02 deja la decisión al analista (DOC-05).",
+        "personas": [
+          {
+            "nombre": "María Elena Ruiz Soto",
+            "cargo": "Apoderada legal"
+          },
+          {
+            "nombre": "Jorge Alberto Treviño Garza",
+            "cargo": "Representante legal"
+          }
+        ],
+        "elementos": {
+          "RSC-01-NDA-NODIV": true,
+          "RSC-01-NDA-PART": true,
+          "RSC-01-NDA-VIG": true
+        }
+      },
+      "sha256_archivo": "b07af6338e00edb2e9742af532a230002ebc13ef32512c3eeade00f969e56b29",
+      "texto_referencia": "DOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nACUERDO DE CONFIDENCIALIDAD\n\nAcuerdo que celebran PLURIONE S.A. DE C.V., con RFC PLU180514AB3, representada por\nMaría Elena Ruiz Soto, y SERVICIOS INTEGRALES DEL NORTE S.A. DE C.V., con RFC SIN150302KL7,\nrepresentada por\nJorge Alberto Treviño Garza, en la ciudad de Chihuahua, Chihuahua, el 15 de junio de 2026.\n\nCLÁUSULAS\nPRIMERA. INFORMACIÓN CONFIDENCIAL. Se considera información confidencial toda la información\ntécnica, comercial y financiera que una parte entregue a la otra con motivo del proyecto de\nmigración de sistemas.\nSEGUNDA. NO DIVULGACIÓN. La parte receptora se obliga a no divulgar, publicar ni transmitir\na terceros la información confidencial, y a usarla exclusivamente para el proyecto.\nTERCERA. VIGENCIA. Las obligaciones de este acuerdo estarán vigentes hasta el 15 de junio\nde 2029.\n\nFIRMAS\nPLURIONE S.A. DE C.V.   María Elena Ruiz Soto, Apoderada legal\nSERVICIOS INTEGRALES DEL NORTE S.A. DE C.V.   Jorge Alberto Treviño Garza, Representante legal"
+    },
+    {
+      "id": "GS-NDA-02",
+      "caso_base": "GS-NDA-02",
+      "archivo": "gs-nda-02.pdf",
+      "rendicion": "VECTORIAL",
+      "tipo_registrado": "ACUERDO_CONFIDENCIALIDAD",
+      "descripcion": "NDA sin obligación de no divulgación",
+      "titular": {
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V."
+      },
+      "sello_notarial": false,
+      "esperado": {
+        "tipo_documento": "CONTRATO",
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V.",
+        "fecha_emision": "2026-06-15",
+        "fecha_vencimiento": "2029-06-15",
+        "estatus": "EN_REVISION",
+        "motivo": "Falta la cláusula de no divulgación (RSC-01-NDA-NODIV).",
+        "personas": [
+          {
+            "nombre": "María Elena Ruiz Soto",
+            "cargo": "Apoderada legal"
+          },
+          {
+            "nombre": "Jorge Alberto Treviño Garza",
+            "cargo": "Representante legal"
+          }
+        ],
+        "elementos": {
+          "RSC-01-NDA-NODIV": false,
+          "RSC-01-NDA-PART": true,
+          "RSC-01-NDA-VIG": true
+        }
+      },
+      "sha256_archivo": "94bd6181c97ed7ac48841cf4d59a68594ad30890b1af87565459950ff03089db",
+      "texto_referencia": "DOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nACUERDO DE CONFIDENCIALIDAD\n\nAcuerdo que celebran PLURIONE S.A. DE C.V., con RFC PLU180514AB3, representada por\nMaría Elena Ruiz Soto, y SERVICIOS INTEGRALES DEL NORTE S.A. DE C.V., con RFC SIN150302KL7,\nrepresentada por\nJorge Alberto Treviño Garza, en la ciudad de Chihuahua, Chihuahua, el 15 de junio de 2026.\n\nCLÁUSULAS\nPRIMERA. INFORMACIÓN CONFIDENCIAL. Se considera información confidencial toda la información\ntécnica, comercial y financiera que una parte entregue a la otra con motivo del proyecto de\nmigración de sistemas.\nSEGUNDA. ENTREGA. La información se entregará por los medios que las partes acuerden.\nTERCERA. VIGENCIA. Las obligaciones de este acuerdo estarán vigentes hasta el 15 de junio\nde 2029.\n\nFIRMAS\nPLURIONE S.A. DE C.V.   María Elena Ruiz Soto, Apoderada legal\nSERVICIOS INTEGRALES DEL NORTE S.A. DE C.V.   Jorge Alberto Treviño Garza, Representante legal"
+    },
+    {
+      "id": "GS-NDA-03",
+      "caso_base": "GS-NDA-03",
+      "archivo": "gs-nda-03.pdf",
+      "rendicion": "VECTORIAL",
+      "tipo_registrado": "ACUERDO_CONFIDENCIALIDAD",
+      "descripcion": "NDA sin vigencia",
+      "titular": {
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V."
+      },
+      "sello_notarial": false,
+      "esperado": {
+        "tipo_documento": "CONTRATO",
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V.",
+        "fecha_emision": "2026-06-15",
+        "fecha_vencimiento": null,
+        "estatus": "EN_REVISION",
+        "motivo": "Falta la vigencia de la obligación de confidencialidad (RSC-01-NDA-VIG).",
+        "personas": [
+          {
+            "nombre": "María Elena Ruiz Soto",
+            "cargo": "Apoderada legal"
+          },
+          {
+            "nombre": "Jorge Alberto Treviño Garza",
+            "cargo": "Representante legal"
+          }
+        ],
+        "elementos": {
+          "RSC-01-NDA-NODIV": true,
+          "RSC-01-NDA-PART": true,
+          "RSC-01-NDA-VIG": false
+        }
+      },
+      "sha256_archivo": "75dc530c5704bba498c3fb2e247fe6f840ede102751341b7525d808e0365d4c5",
+      "texto_referencia": "DOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nACUERDO DE CONFIDENCIALIDAD\n\nAcuerdo que celebran PLURIONE S.A. DE C.V., con RFC PLU180514AB3, representada por\nMaría Elena Ruiz Soto, y SERVICIOS INTEGRALES DEL NORTE S.A. DE C.V., con RFC SIN150302KL7,\nrepresentada por\nJorge Alberto Treviño Garza, en la ciudad de Chihuahua, Chihuahua, el 15 de junio de 2026.\n\nCLÁUSULAS\nPRIMERA. INFORMACIÓN CONFIDENCIAL. Se considera información confidencial toda la información\ntécnica, comercial y financiera que una parte entregue a la otra con motivo del proyecto de\nmigración de sistemas.\nSEGUNDA. NO DIVULGACIÓN. La parte receptora se obliga a no divulgar, publicar ni transmitir\na terceros la información confidencial, y a usarla exclusivamente para el proyecto.\n\nFIRMAS\nPLURIONE S.A. DE C.V.   María Elena Ruiz Soto, Apoderada legal\nSERVICIOS INTEGRALES DEL NORTE S.A. DE C.V.   Jorge Alberto Treviño Garza, Representante legal"
+    },
+    {
+      "id": "GS-POL-01",
+      "caso_base": "GS-POL-01",
+      "archivo": "gs-pol-01.pdf",
+      "rendicion": "VECTORIAL",
+      "tipo_registrado": "POLIZA_SEGURO",
+      "descripcion": "Póliza vigente",
+      "titular": {
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V."
+      },
+      "sello_notarial": false,
+      "esperado": {
+        "tipo_documento": "POLIZA",
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V.",
+        "fecha_emision": "2025-12-20",
+        "fecha_vencimiento": "2027-01-01",
+        "estatus": "CONFORME",
+        "motivo": "Coberturas y sumas aseguradas presentes; vence en 93 días (RCV-01: vigente).",
+        "personas": [],
+        "elementos": {
+          "RSC-POL-COB": true
+        }
+      },
+      "sha256_archivo": "9b3c01631aa08336fbab963fe621aa007666d2d240c221756f028d926371a360",
+      "texto_referencia": "DOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nPÓLIZA DE SEGURO DE DAÑOS EMPRESARIAL\nASEGURADORA DEL PACÍFICO (FICTICIA)\n\nNúmero de póliza: DAE-2026-004871\nAsegurado: PLURIONE S.A. DE C.V.   RFC: PLU180514AB3\nUbicación asegurada: AVENIDA TECNOLÓGICO 2909, COL. CENTRO, CHIHUAHUA, CHIH.\nFecha de emisión: 20/12/2025\nVigencia: desde las 12:00 horas del 01/01/2026 hasta las 12:00 horas del 01/01/2027\n\nCOBERTURAS CONTRATADAS\nIncendio de edificio y contenidos        Suma asegurada: $5,000,000.00\nRobo con violencia                        Suma asegurada: $750,000.00\nResponsabilidad civil general             Suma asegurada: $2,000,000.00\nPrima total: $48,930.00 M.N."
+    },
+    {
+      "id": "GS-POL-01-ESC",
+      "caso_base": "GS-POL-01",
+      "archivo": "gs-pol-01-esc.pdf",
+      "rendicion": "ESCANEADO",
+      "tipo_registrado": "POLIZA_SEGURO",
+      "descripcion": "Póliza vigente",
+      "titular": {
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V."
+      },
+      "sello_notarial": false,
+      "esperado": {
+        "tipo_documento": "POLIZA",
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V.",
+        "fecha_emision": "2025-12-20",
+        "fecha_vencimiento": "2027-01-01",
+        "estatus": "CONFORME",
+        "motivo": "Coberturas y sumas aseguradas presentes; vence en 93 días (RCV-01: vigente).",
+        "personas": [],
+        "elementos": {
+          "RSC-POL-COB": true
+        }
+      },
+      "sha256_archivo": "48a5a4793abe1f0e55e5aa5768d4b02b2672169b4681b183f33d76b846816923",
+      "texto_referencia": "DOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nPÓLIZA DE SEGURO DE DAÑOS EMPRESARIAL\nASEGURADORA DEL PACÍFICO (FICTICIA)\n\nNúmero de póliza: DAE-2026-004871\nAsegurado: PLURIONE S.A. DE C.V.   RFC: PLU180514AB3\nUbicación asegurada: AVENIDA TECNOLÓGICO 2909, COL. CENTRO, CHIHUAHUA, CHIH.\nFecha de emisión: 20/12/2025\nVigencia: desde las 12:00 horas del 01/01/2026 hasta las 12:00 horas del 01/01/2027\n\nCOBERTURAS CONTRATADAS\nIncendio de edificio y contenidos        Suma asegurada: $5,000,000.00\nRobo con violencia                        Suma asegurada: $750,000.00\nResponsabilidad civil general             Suma asegurada: $2,000,000.00\nPrima total: $48,930.00 M.N."
+    },
+    {
+      "id": "GS-POL-02",
+      "caso_base": "GS-POL-02",
+      "archivo": "gs-pol-02.pdf",
+      "rendicion": "VECTORIAL",
+      "tipo_registrado": "POLIZA_SEGURO",
+      "descripcion": "Póliza vencida",
+      "titular": {
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V."
+      },
+      "sello_notarial": false,
+      "esperado": {
+        "tipo_documento": "POLIZA",
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V.",
+        "fecha_emision": "2024-12-18",
+        "fecha_vencimiento": "2026-01-01",
+        "estatus": "NO_CONFORME",
+        "motivo": "Venció el 1 de enero de 2026 (RCV-01).",
+        "personas": [],
+        "elementos": {
+          "RSC-POL-COB": true
+        }
+      },
+      "sha256_archivo": "070262c889005fbbde3f52bdacbb8314d3dc14c6d7ea43026587f394f9e1f481",
+      "texto_referencia": "DOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nPÓLIZA DE SEGURO DE DAÑOS EMPRESARIAL\nASEGURADORA DEL PACÍFICO (FICTICIA)\n\nNúmero de póliza: DAE-2026-004871\nAsegurado: PLURIONE S.A. DE C.V.   RFC: PLU180514AB3\nUbicación asegurada: AVENIDA TECNOLÓGICO 2909, COL. CENTRO, CHIHUAHUA, CHIH.\nFecha de emisión: 18/12/2024\nVigencia: desde las 12:00 horas del 01/01/2025 hasta las 12:00 horas del 01/01/2026\n\nCOBERTURAS CONTRATADAS\nIncendio de edificio y contenidos        Suma asegurada: $5,000,000.00\nRobo con violencia                        Suma asegurada: $750,000.00\nResponsabilidad civil general             Suma asegurada: $2,000,000.00\nPrima total: $48,930.00 M.N."
+    },
+    {
+      "id": "GS-LIC-01",
+      "caso_base": "GS-LIC-01",
+      "archivo": "gs-lic-01.pdf",
+      "rendicion": "VECTORIAL",
+      "tipo_registrado": "LICENCIA_OPERACION",
+      "descripcion": "Licencia sin giro autorizado",
+      "titular": {
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V."
+      },
+      "sello_notarial": false,
+      "esperado": {
+        "tipo_documento": "LICENCIA",
+        "rfc": "PLU180514AB3",
+        "razon_social": "PLURIONE S.A. DE C.V.",
+        "fecha_emision": "2026-01-05",
+        "fecha_vencimiento": "2026-12-31",
+        "estatus": "EN_REVISION",
+        "motivo": "No indica el giro o actividad autorizada (RSC-LIC-GIRO).",
+        "personas": [],
+        "elementos": {
+          "RSC-LIC-GIRO": false
+        }
+      },
+      "sha256_archivo": "a0142b9f481697d99d0ead9853e0f100dc097bab0bad793459de27743713513a",
+      "texto_referencia": "DOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nLICENCIA DE FUNCIONAMIENTO\nMUNICIPIO DE CHIHUAHUA (FICTICIO) - DIRECCIÓN DE DESARROLLO URBANO\n\nNúmero de licencia: LF-2026-01933\nTitular: PLURIONE S.A. DE C.V.   RFC: PLU180514AB3\nDomicilio del establecimiento: AVENIDA TECNOLÓGICO 2909, COL. CENTRO, C.P. 31200\nFecha de expedición: 05/01/2026\nVigencia: hasta el 31/12/2026\n\nLa presente licencia autoriza el funcionamiento del establecimiento en el domicilio señalado,\nsujeta al cumplimiento de la normatividad municipal aplicable."
+    }
+  ]
+}

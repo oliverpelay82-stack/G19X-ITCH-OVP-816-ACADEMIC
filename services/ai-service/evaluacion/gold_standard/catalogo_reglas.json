@@ -1,0 +1,258 @@
+{
+  "origen": "services/rules-service/seed_reglas_validacion.py",
+  "reglas": [
+    {
+      "codigo_regla": "RCV-01",
+      "nombre_regla": "Vigencia Mandatoria",
+      "familia_regla": "RCV",
+      "descripcion": "El sistema calcula la diferencia en días entre la fecha de vencimiento del documento y la fecha actual. Si la diferencia es negativa, el documento está vencido (Severidad Alta, Semáforo Rojo). Si está entre 0 y 30 días, el documento está próximo a vencer (Severidad Media, Semáforo Amarillo). Si es mayor a 30 días, el documento está vigente (Semáforo Verde).",
+      "severidad": "ALTA",
+      "accion": "Vencido: Semáforo Rojo. Próximo a vencer (0-30 días): Semáforo Amarillo. Vigente (>30 días): Semáforo Verde.",
+      "tipo_documento": null,
+      "documento_obligatorio": true,
+      "dias_maximos_vigencia": 30
+    },
+    {
+      "codigo_regla": "RCV-02",
+      "nombre_regla": "Caducidad Estricta del Comprobante de Domicilio Fiscal",
+      "familia_regla": "RCV",
+      "descripcion": "El comprobante de domicilio fiscal tiene una vigencia legal predeterminada: no puede tener más de 90 días naturales de antigüedad. El sistema calcula la diferencia entre la fecha de evaluación y la fecha de emisión del documento; si supera los 90 días, el documento se marca automáticamente como vencido y requiere actualización inmediata. Si el documento no declara fecha de emisión, la antigüedad no puede verificarse y el caso se turna a revisión humana.",
+      "severidad": "ALTA",
+      "accion": "Más de 90 días desde la emisión: documento vencido, Semáforo Rojo y solicitud de un comprobante actualizado.",
+      "tipo_documento": "COMP_DOMICILIO",
+      "documento_obligatorio": true,
+      "dias_maximos_vigencia": 90
+    },
+    {
+      "codigo_regla": "RCV-03",
+      "nombre_regla": "Caducidad Estricta de la Constancia de Situación Fiscal",
+      "familia_regla": "RCV",
+      "descripcion": "La constancia de situación fiscal debe haberse emitido en los últimos 3 meses (90 días naturales), conforme al inventario del expediente corporativo del DOC-02. El sistema calcula la diferencia entre la fecha de evaluación y la fecha de emisión; si supera los 90 días, la constancia se marca como vencida y debe solicitarse una actualizada al portal del SAT. Si el documento no declara fecha de emisión, el caso se turna a revisión humana.",
+      "severidad": "ALTA",
+      "accion": "Más de 90 días desde la emisión: constancia vencida, Semáforo Rojo y solicitud de una constancia actualizada.",
+      "tipo_documento": "CSF_SAT",
+      "documento_obligatorio": true,
+      "dias_maximos_vigencia": 90
+    },
+    {
+      "codigo_regla": "RCV-04",
+      "nombre_regla": "Caducidad Estricta de la Opinión de Cumplimiento (32-D)",
+      "familia_regla": "RCV",
+      "descripcion": "La opinión de cumplimiento de obligaciones fiscales (artículo 32-D del Código Fiscal de la Federación) tiene una vigencia de 30 días naturales a partir de su emisión (DOC-05, caducidad estricta). El sistema calcula la diferencia entre la fecha de evaluación y la fecha de emisión; si supera los 30 días, la opinión se marca como vencida. Si el documento no declara fecha de emisión, el caso se turna a revisión humana.",
+      "severidad": "ALTA",
+      "accion": "Más de 30 días desde la emisión: opinión vencida, Semáforo Rojo y solicitud de una opinión actualizada al portal del SAT.",
+      "tipo_documento": "OPINION_CUMPLIMIENTO",
+      "documento_obligatorio": false,
+      "dias_maximos_vigencia": 30
+    },
+    {
+      "codigo_regla": "RSC-OPIN-SENT",
+      "nombre_regla": "Sentido positivo de la opinión de cumplimiento",
+      "familia_regla": "RSC",
+      "descripcion": "La opinión de cumplimiento declara expresamente su sentido. Positivo: el contribuyente está al corriente de sus obligaciones fiscales. Negativo: el dictamen es NO_CONFORME. Sin obligaciones, no inscrito o sin sentido legible: revisión humana.",
+      "severidad": "ALTA",
+      "accion": "Solicitar al titular una opinión de cumplimiento en sentido positivo emitida en los últimos 30 días; si es negativa, debe regularizar su situación fiscal ante el SAT antes de continuar.",
+      "tipo_documento": "OPINION_CUMPLIMIENTO",
+      "documento_obligatorio": false,
+      "dias_maximos_vigencia": null
+    },
+    {
+      "codigo_regla": "RSC-02-CONT",
+      "nombre_regla": "Datos del firmante y representación legal",
+      "familia_regla": "RSC",
+      "descripcion": "La inteligencia artificial extrae del documento los datos visibles del firmante (nombre, cargo y empresa que representa) y los presenta al analista, que confirma si corresponden con las facultades acreditadas en el poder notarial o el acta constitutiva del mismo expediente (DOC-05, RSC-02; RN-03).",
+      "severidad": "ALTA",
+      "accion": "Confirmar que el firmante del titular corresponde con un apoderado con facultades vigentes en el poder notarial o el acta constitutiva del expediente y ratificar el dictamen con esa justificación (RN-03, RN-05).",
+      "tipo_documento": "CONTRATO_SERVICIOS",
+      "documento_obligatorio": false,
+      "dias_maximos_vigencia": null
+    },
+    {
+      "codigo_regla": "RSC-02-NDA",
+      "nombre_regla": "Datos del firmante y representación legal",
+      "familia_regla": "RSC",
+      "descripcion": "La inteligencia artificial extrae del documento los datos visibles del firmante (nombre, cargo y empresa que representa) y los presenta al analista, que confirma si corresponden con las facultades acreditadas en el poder notarial o el acta constitutiva del mismo expediente (DOC-05, RSC-02; RN-03).",
+      "severidad": "ALTA",
+      "accion": "Confirmar que el firmante del titular corresponde con un apoderado con facultades vigentes en el poder notarial o el acta constitutiva del expediente y ratificar el dictamen con esa justificación (RN-03, RN-05).",
+      "tipo_documento": "ACUERDO_CONFIDENCIALIDAD",
+      "documento_obligatorio": false,
+      "dias_maximos_vigencia": null
+    },
+    {
+      "codigo_regla": "RSC-01-CONT-OBJ",
+      "nombre_regla": "Objeto del contrato",
+      "familia_regla": "RSC",
+      "descripcion": "El contrato define su objeto: los servicios que se prestan.",
+      "severidad": "MEDIA_ALTA",
+      "accion": "Solicitar la versión del contrato que defina con claridad el objeto de los servicios.",
+      "tipo_documento": "CONTRATO_SERVICIOS",
+      "documento_obligatorio": false,
+      "dias_maximos_vigencia": null
+    },
+    {
+      "codigo_regla": "RSC-01-CONT-VIG",
+      "nombre_regla": "Vigencia y terminación anticipada",
+      "familia_regla": "RSC",
+      "descripcion": "El contrato establece su vigencia o duración y el procedimiento de terminación anticipada o rescisión.",
+      "severidad": "MEDIA_ALTA",
+      "accion": "Revisar con el área jurídica la vigencia y la cláusula de rescisión; si faltan, solicitar un convenio modificatorio que las incorpore.",
+      "tipo_documento": "CONTRATO_SERVICIOS",
+      "documento_obligatorio": false,
+      "dias_maximos_vigencia": null
+    },
+    {
+      "codigo_regla": "RSC-01-CONT-PEN",
+      "nombre_regla": "Penalización por incumplimiento",
+      "familia_regla": "RSC",
+      "descripcion": "El contrato establece penas convencionales o penalizaciones por incumplimiento.",
+      "severidad": "MEDIA_ALTA",
+      "accion": "Omisión contractual relevante: revisar con el área jurídica la inclusión de penas convencionales.",
+      "tipo_documento": "CONTRATO_SERVICIOS",
+      "documento_obligatorio": false,
+      "dias_maximos_vigencia": null
+    },
+    {
+      "codigo_regla": "RSC-01-CONT-CONF",
+      "nombre_regla": "Confidencialidad y no divulgación",
+      "familia_regla": "RSC",
+      "descripcion": "El contrato incluye una obligación de confidencialidad o de no divulgación entre las partes.",
+      "severidad": "MEDIA_ALTA",
+      "accion": "Omisión contractual relevante: incorporar la cláusula de confidencialidad o anexar un acuerdo de confidencialidad (NDA).",
+      "tipo_documento": "CONTRATO_SERVICIOS",
+      "documento_obligatorio": false,
+      "dias_maximos_vigencia": null
+    },
+    {
+      "codigo_regla": "RSC-01-CONT-FIRM",
+      "nombre_regla": "Firmas de las partes",
+      "familia_regla": "RSC",
+      "descripcion": "El contrato identifica a las partes y contiene el apartado de firmas de sus representantes.",
+      "severidad": "MEDIA_ALTA",
+      "accion": "Solicitar el ejemplar firmado por todas las partes.",
+      "tipo_documento": "CONTRATO_SERVICIOS",
+      "documento_obligatorio": false,
+      "dias_maximos_vigencia": null
+    },
+    {
+      "codigo_regla": "RSC-01-NDA-NODIV",
+      "nombre_regla": "Cláusula de no divulgación",
+      "familia_regla": "RSC",
+      "descripcion": "El acuerdo contiene una cláusula de no divulgación de la información confidencial.",
+      "severidad": "MEDIA_ALTA",
+      "accion": "Solicitar la versión del acuerdo que incluya la obligación de no divulgación.",
+      "tipo_documento": "ACUERDO_CONFIDENCIALIDAD",
+      "documento_obligatorio": false,
+      "dias_maximos_vigencia": null
+    },
+    {
+      "codigo_regla": "RSC-01-NDA-PART",
+      "nombre_regla": "Identificación de las partes",
+      "familia_regla": "RSC",
+      "descripcion": "El acuerdo identifica a las partes que se obligan a la confidencialidad.",
+      "severidad": "MEDIA_ALTA",
+      "accion": "Solicitar el acuerdo con la identificación completa de las partes.",
+      "tipo_documento": "ACUERDO_CONFIDENCIALIDAD",
+      "documento_obligatorio": false,
+      "dias_maximos_vigencia": null
+    },
+    {
+      "codigo_regla": "RSC-01-NDA-VIG",
+      "nombre_regla": "Vigencia de la confidencialidad",
+      "familia_regla": "RSC",
+      "descripcion": "El acuerdo establece la vigencia o duración de la obligación de confidencialidad.",
+      "severidad": "MEDIA_ALTA",
+      "accion": "Revisar con el área jurídica la vigencia de la obligación de confidencialidad.",
+      "tipo_documento": "ACUERDO_CONFIDENCIALIDAD",
+      "documento_obligatorio": false,
+      "dias_maximos_vigencia": null
+    },
+    {
+      "codigo_regla": "RSC-ACTA-ESCR",
+      "nombre_regla": "Escritura pública y notario",
+      "familia_regla": "RSC",
+      "descripcion": "El acta indica el número de escritura o instrumento público y el notario o corredor público ante quien se otorgó.",
+      "severidad": "MEDIA_ALTA",
+      "accion": "Solicitar la copia certificada completa del acta, en la que consten el número de escritura y los datos del notario.",
+      "tipo_documento": "ACTA_CONSTITUTIVA",
+      "documento_obligatorio": false,
+      "dias_maximos_vigencia": null
+    },
+    {
+      "codigo_regla": "RSC-ACTA-RPC",
+      "nombre_regla": "Inscripción en el Registro Público de Comercio",
+      "familia_regla": "RSC",
+      "descripcion": "El acta incluye la constancia o los datos de inscripción en el Registro Público de la Propiedad y del Comercio (folio mercantil).",
+      "severidad": "MEDIA_ALTA",
+      "accion": "Solicitar la boleta o constancia de inscripción en el Registro Público de Comercio.",
+      "tipo_documento": "ACTA_CONSTITUTIVA",
+      "documento_obligatorio": false,
+      "dias_maximos_vigencia": null
+    },
+    {
+      "codigo_regla": "RSC-ACTA-ADMON",
+      "nombre_regla": "Administración y facultades de representación",
+      "familia_regla": "RSC",
+      "descripcion": "El acta designa al órgano de administración (administrador único o consejo de administración) y señala quién ejerce la representación legal y con qué facultades.",
+      "severidad": "MEDIA_ALTA",
+      "accion": "Verificar en el acta o en un poder notarial vigente quién ejerce la representación legal y con qué facultades (RN-03).",
+      "tipo_documento": "ACTA_CONSTITUTIVA",
+      "documento_obligatorio": false,
+      "dias_maximos_vigencia": null
+    },
+    {
+      "codigo_regla": "RSC-PODER-NOT",
+      "nombre_regla": "Otorgamiento ante notario",
+      "familia_regla": "RSC",
+      "descripcion": "El poder fue otorgado ante notario público e indica el número de escritura.",
+      "severidad": "MEDIA_ALTA",
+      "accion": "Solicitar el testimonio notarial del poder con el número de escritura.",
+      "tipo_documento": "PODER_NOTARIAL",
+      "documento_obligatorio": false,
+      "dias_maximos_vigencia": null
+    },
+    {
+      "codigo_regla": "RSC-PODER-PART",
+      "nombre_regla": "Otorgante y apoderado",
+      "familia_regla": "RSC",
+      "descripcion": "El poder identifica al otorgante (poderdante) y al apoderado.",
+      "severidad": "MEDIA_ALTA",
+      "accion": "Solicitar el poder con la identificación completa del otorgante y del apoderado.",
+      "tipo_documento": "PODER_NOTARIAL",
+      "documento_obligatorio": false,
+      "dias_maximos_vigencia": null
+    },
+    {
+      "codigo_regla": "RSC-PODER-FAC",
+      "nombre_regla": "Facultades conferidas",
+      "familia_regla": "RSC",
+      "descripcion": "El poder señala las facultades conferidas: pleitos y cobranzas, actos de administración o actos de dominio.",
+      "severidad": "MEDIA_ALTA",
+      "accion": "Verificar que las facultades del apoderado basten para los actos que suscribe (RN-03).",
+      "tipo_documento": "PODER_NOTARIAL",
+      "documento_obligatorio": false,
+      "dias_maximos_vigencia": null
+    },
+    {
+      "codigo_regla": "RSC-POL-COB",
+      "nombre_regla": "Coberturas y suma asegurada",
+      "familia_regla": "RSC",
+      "descripcion": "La póliza especifica las coberturas contratadas y la suma asegurada.",
+      "severidad": "MEDIA_ALTA",
+      "accion": "Solicitar la carátula de la póliza con el detalle de coberturas y suma asegurada.",
+      "tipo_documento": "POLIZA_SEGURO",
+      "documento_obligatorio": false,
+      "dias_maximos_vigencia": null
+    },
+    {
+      "codigo_regla": "RSC-LIC-GIRO",
+      "nombre_regla": "Giro o actividad autorizada",
+      "familia_regla": "RSC",
+      "descripcion": "La licencia indica el giro o la actividad que autoriza a operar.",
+      "severidad": "MEDIA_ALTA",
+      "accion": "Verificar que la licencia corresponda al giro empresarial del titular; si no lo indica, solicitar la licencia completa.",
+      "tipo_documento": "LICENCIA_OPERACION",
+      "documento_obligatorio": false,
+      "dias_maximos_vigencia": null
+    }
+  ]
+}

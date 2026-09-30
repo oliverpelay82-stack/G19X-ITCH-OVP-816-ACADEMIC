@@ -1,0 +1,1166 @@
+{
+  "etiqueta": "base",
+  "modo": "grabar",
+  "ejecutado_en": "2026-09-30T19:10:18+00:00",
+  "entorno": {
+    "modelo": "qwen/qwen3.8-27b",
+    "version_lectura": "n3-3.2|tesseract-5.4.0.20240606|spa|300dpi|sin-sellos",
+    "ocr_workers": 8,
+    "gold_standard_sha256": "89789fa9864623ff57bc7eb697334663b5a6858453309ea270ac79088421abe5",
+    "casete": "chat.json",
+    "fecha_referencia": "2026-09-30",
+    "python": "3.12.10",
+    "sistema": "Windows-11-10.0.26300-SP0",
+    "procesador": "AMD64 Family 23 Model 24 Stepping 1, AuthenticAMD"
+  },
+  "resumen": {
+    "turnos": 38,
+    "tokens_promedio": 1580.6,
+    "tokens_promedio_con_modelo": 1580.6,
+    "prompt_promedio": 1499.3,
+    "completion_promedio": 81.2,
+    "tokens_totales": 60061,
+    "turnos_por_minuto": 5.06,
+    "sin_modelo": 0,
+    "latencia_p50_ms": 732.5,
+    "latencia_p95_ms": 4842.59999999999,
+    "aciertos": 36,
+    "exactitud": 0.9474,
+    "exactitud_ic95": [
+      0.8271423311893115,
+      0.9854460975514631
+    ],
+    "citas": 39,
+    "citas_verificadas": 39,
+    "proporcion_citas_verificadas": 1.0
+  },
+  "por_categoria": {
+    "AUSENTE": {
+      "turnos": 2,
+      "tokens_promedio": 1545.5,
+      "tokens_promedio_con_modelo": 1545.5,
+      "prompt_promedio": 1452.0,
+      "completion_promedio": 93.5,
+      "tokens_totales": 3091,
+      "turnos_por_minuto": 5.18,
+      "sin_modelo": 0,
+      "latencia_p50_ms": 629.5,
+      "latencia_p95_ms": 744.25,
+      "aciertos": 2,
+      "exactitud": 1.0,
+      "exactitud_ic95": [
+        0.34237195288961925,
+        1.0
+      ],
+      "citas": 2,
+      "citas_verificadas": 2,
+      "proporcion_citas_verificadas": 1.0
+    },
+    "FACTUAL": {
+      "turnos": 17,
+      "tokens_promedio": 1585.9,
+      "tokens_promedio_con_modelo": 1585.9,
+      "prompt_promedio": 1521.1,
+      "completion_promedio": 64.9,
+      "tokens_totales": 26961,
+      "turnos_por_minuto": 5.04,
+      "sin_modelo": 0,
+      "latencia_p50_ms": 715.0,
+      "latencia_p95_ms": 3618.799999999994,
+      "aciertos": 17,
+      "exactitud": 1.0,
+      "exactitud_ic95": [
+        0.8156763396284354,
+        1.0
+      ],
+      "citas": 20,
+      "citas_verificadas": 20,
+      "proporcion_citas_verificadas": 1.0
+    },
+    "INTERPRETATIVA": {
+      "turnos": 4,
+      "tokens_promedio": 1498.8,
+      "tokens_promedio_con_modelo": 1498.8,
+      "prompt_promedio": 1397.0,
+      "completion_promedio": 101.8,
+      "tokens_totales": 5995,
+      "turnos_por_minuto": 5.34,
+      "sin_modelo": 0,
+      "latencia_p50_ms": 620.0,
+      "latencia_p95_ms": 1277.95,
+      "aciertos": 3,
+      "exactitud": 0.75,
+      "exactitud_ic95": [
+        0.3006360524426366,
+        0.9544139373553637
+      ],
+      "citas": 6,
+      "citas_verificadas": 6,
+      "proporcion_citas_verificadas": 1.0
+    },
+    "LOCALIZACION": {
+      "turnos": 7,
+      "tokens_promedio": 1586.6,
+      "tokens_promedio_con_modelo": 1586.6,
+      "prompt_promedio": 1501.9,
+      "completion_promedio": 84.7,
+      "tokens_totales": 11106,
+      "turnos_por_minuto": 5.04,
+      "sin_modelo": 0,
+      "latencia_p50_ms": 532.0,
+      "latencia_p95_ms": 1216.0,
+      "aciertos": 7,
+      "exactitud": 1.0,
+      "exactitud_ic95": [
+        0.6456611570247934,
+        1.0
+      ],
+      "citas": 7,
+      "citas_verificadas": 7,
+      "proporcion_citas_verificadas": 1.0
+    },
+    "SUGERIDA": {
+      "turnos": 8,
+      "tokens_promedio": 1613.5,
+      "tokens_promedio_con_modelo": 1613.5,
+      "prompt_promedio": 1514.0,
+      "completion_promedio": 99.5,
+      "tokens_totales": 12908,
+      "turnos_por_minuto": 4.96,
+      "sin_modelo": 0,
+      "latencia_p50_ms": 866.0,
+      "latencia_p95_ms": 8260.850000000002,
+      "aciertos": 7,
+      "exactitud": 0.875,
+      "exactitud_ic95": [
+        0.5291051942301386,
+        0.9775830911367038
+      ],
+      "citas": 4,
+      "citas_verificadas": 4,
+      "proporcion_citas_verificadas": 1.0
+    }
+  },
+  "sueltas": {
+    "turnos": 30,
+    "tokens_promedio": 1497.3,
+    "tokens_promedio_con_modelo": 1497.3,
+    "prompt_promedio": 1412.4,
+    "completion_promedio": 84.9,
+    "tokens_totales": 44920,
+    "turnos_por_minuto": 5.34,
+    "sin_modelo": 0,
+    "latencia_p50_ms": 753.5,
+    "latencia_p95_ms": 7564.200000000004,
+    "aciertos": 28,
+    "exactitud": 0.9333,
+    "exactitud_ic95": [
+      0.7867618227892791,
+      0.9815233646723066
+    ],
+    "citas": 30,
+    "citas_verificadas": 30,
+    "proporcion_citas_verificadas": 1.0
+  },
+  "conversaciones": {
+    "turnos": 8,
+    "tokens_promedio": 1892.6,
+    "tokens_promedio_con_modelo": 1892.6,
+    "prompt_promedio": 1825.4,
+    "completion_promedio": 67.2,
+    "tokens_totales": 15141,
+    "turnos_por_minuto": 4.23,
+    "sin_modelo": 0,
+    "latencia_p50_ms": 596.5,
+    "latencia_p95_ms": 1840.4,
+    "aciertos": 8,
+    "exactitud": 1.0,
+    "exactitud_ic95": [
+      0.6755843804891231,
+      1.0
+    ],
+    "citas": 9,
+    "citas_verificadas": 9,
+    "proporcion_citas_verificadas": 1.0
+  },
+  "auditorias": [
+    {
+      "documento": "GS-CSF-01",
+      "estatus": "CONFORME",
+      "estatus_esperado": "CONFORME",
+      "consultas_groq": 1,
+      "tokens": {
+        "prompt_tokens": 1658,
+        "completion_tokens": 168,
+        "total_tokens": 1826
+      },
+      "latencia_groq_ms": [
+        3820
+      ],
+      "latencia_endpoint_ms": 4368
+    },
+    {
+      "documento": "GS-OPIN-01",
+      "estatus": "CONFORME",
+      "estatus_esperado": "CONFORME",
+      "consultas_groq": 1,
+      "tokens": {
+        "prompt_tokens": 1585,
+        "completion_tokens": 158,
+        "total_tokens": 1743
+      },
+      "latencia_groq_ms": [
+        583
+      ],
+      "latencia_endpoint_ms": 633
+    },
+    {
+      "documento": "GS-ACTA-01-ESC",
+      "estatus": "CONFORME",
+      "estatus_esperado": "CONFORME",
+      "consultas_groq": 2,
+      "tokens": {
+        "prompt_tokens": 3197,
+        "completion_tokens": 518,
+        "total_tokens": 3715
+      },
+      "latencia_groq_ms": [
+        16204,
+        1359
+      ],
+      "latencia_endpoint_ms": 5080
+    },
+    {
+      "documento": "GS-PODER-01",
+      "estatus": "CONFORME",
+      "estatus_esperado": "CONFORME",
+      "consultas_groq": 2,
+      "tokens": {
+        "prompt_tokens": 2596,
+        "completion_tokens": 511,
+        "total_tokens": 3107
+      },
+      "latencia_groq_ms": [
+        1326,
+        1907
+      ],
+      "latencia_endpoint_ms": 1962
+    },
+    {
+      "documento": "GS-CONT-01",
+      "estatus": "EN_REVISION",
+      "estatus_esperado": "EN_REVISION",
+      "consultas_groq": 2,
+      "tokens": {
+        "prompt_tokens": 3485,
+        "completion_tokens": 936,
+        "total_tokens": 4421
+      },
+      "latencia_groq_ms": [
+        1305,
+        1465
+      ],
+      "latencia_endpoint_ms": -48508
+    },
+    {
+      "documento": "GS-CONT-03",
+      "estatus": "EN_REVISION",
+      "estatus_esperado": "EN_REVISION",
+      "consultas_groq": 2,
+      "tokens": {
+        "prompt_tokens": 3363,
+        "completion_tokens": 840,
+        "total_tokens": 4203
+      },
+      "latencia_groq_ms": [
+        10174,
+        1161
+      ],
+      "latencia_endpoint_ms": -3777
+    }
+  ],
+  "turnos": [
+    {
+      "documento": "GS-CONT-01",
+      "pregunta": "¿Qué le falta a este documento?",
+      "categoria": "SUGERIDA",
+      "ruta_prevista": "T0",
+      "turnos_previos": 0,
+      "respuesta": "El documento **no presenta elementos faltantes** según el catálogo, ya que el motor dictaminó **CUMPLE** para todos los requisitos exigidos (objeto, vigencia, penalización, confidencialidad, firmas y datos del firmante).\n\nLa única acción pendiente es administrativa: el dictamen está en **EN_REVISION** porque el analista debe confirmar que la firma de **María Elena Ruiz Soto** corresponde a un apoderado con facultades vigentes en el poder notarial o acta constitutiva (regla RSC-02, RN-03).",
+      "acierta": true,
+      "citas": 0,
+      "citas_verificadas": 0,
+      "origen_respuesta": "MODELO",
+      "caracteres_de_contexto": 2674,
+      "consultas_groq": 1,
+      "tokens": {
+        "prompt_tokens": 1879,
+        "completion_tokens": 124,
+        "total_tokens": 2003
+      },
+      "latencia_groq_ms": [
+        3803
+      ],
+      "latencia_endpoint_ms": 3822
+    },
+    {
+      "documento": "GS-CONT-01",
+      "pregunta": "¿Quiénes firman el contrato?",
+      "categoria": "FACTUAL",
+      "ruta_prevista": "T0",
+      "turnos_previos": 0,
+      "respuesta": "Firman el contrato **María Elena Ruiz Soto** (Apoderada legal de PLURIONE S.A. DE C.V.) y **Jorge Alberto Treviño Garza** (Representante legal de SERVICIOS INTEGRALES DEL NORTE S.A. DE C.V.).\n\nEl documento lo confirma en el apartado de firmas: «María Elena Ruiz Soto, Apoderada legal» y «Jorge Alberto Treviño Garza, Representante legal».",
+      "acierta": true,
+      "citas": 2,
+      "citas_verificadas": 2,
+      "origen_respuesta": "MODELO",
+      "caracteres_de_contexto": 2674,
+      "consultas_groq": 1,
+      "tokens": {
+        "prompt_tokens": 1880,
+        "completion_tokens": 100,
+        "total_tokens": 1980
+      },
+      "latencia_groq_ms": [
+        1513
+      ],
+      "latencia_endpoint_ms": 1527
+    },
+    {
+      "documento": "GS-CONT-01",
+      "pregunta": "¿Cuál es el monto de la contraprestación?",
+      "categoria": "LOCALIZACION",
+      "ruta_prevista": "T1",
+      "turnos_previos": 0,
+      "respuesta": "El monto de la contraprestación es de **$185,000.00 M.N. mensuales**, más el Impuesto al Valor Agregado.\n\nEsto se sustenta en la cláusula segunda del documento: «EL CLIENTE pagará a EL PRESTADOR la cantidad mensual de $185,000.00 (ciento ochenta y cinco mil pesos 00/100 M.N.) más el Impuesto al Valor Agregado».",
+      "acierta": true,
+      "citas": 1,
+      "citas_verificadas": 1,
+      "origen_respuesta": "MODELO",
+      "caracteres_de_contexto": 2674,
+      "consultas_groq": 1,
+      "tokens": {
+        "prompt_tokens": 1883,
+        "completion_tokens": 105,
+        "total_tokens": 1988
+      },
+      "latencia_groq_ms": [
+        514
+      ],
+      "latencia_endpoint_ms": 532
+    },
+    {
+      "documento": "GS-CONT-01",
+      "pregunta": "¿Qué dice la cláusula de penalización?",
+      "categoria": "LOCALIZACION",
+      "ruta_prevista": "T1",
+      "turnos_previos": 0,
+      "respuesta": "La cláusula quinta establece que, ante el incumplimiento de sus obligaciones, **EL PRESTADOR** pagará a EL CLIENTE una **pena convencional equivalente al diez por ciento del monto mensual de la contraprestación por cada mes de incumplimiento**.\n\nEsto se sustenta en el texto literal: «QUINTA. PENA CONVENCIONAL. En caso de incumplimiento de las obligaciones a su cargo, EL PRESTADOR pagará a EL CLIENTE una pena convencional equivalente al diez por ciento del monto mensual de la contraprestación por cada mes de incumplimiento».",
+      "acierta": true,
+      "citas": 1,
+      "citas_verificadas": 1,
+      "origen_respuesta": "MODELO",
+      "caracteres_de_contexto": 2674,
+      "consultas_groq": 1,
+      "tokens": {
+        "prompt_tokens": 1881,
+        "completion_tokens": 125,
+        "total_tokens": 2006
+      },
+      "latencia_groq_ms": [
+        756
+      ],
+      "latencia_endpoint_ms": 768
+    },
+    {
+      "documento": "GS-CONT-01",
+      "pregunta": "¿Puede el cliente terminar el contrato antes de tiempo?",
+      "categoria": "INTERPRETATIVA",
+      "ruta_prevista": "MODELO",
+      "turnos_previos": 0,
+      "respuesta": "**Sí**, el cliente puede terminar el contrato anticipadamente mediante **aviso por escrito con treinta días naturales de anticipación**, sin responsabilidad para ninguna de las partes.\n\nEsto se sustenta en la cláusula tercera del documento: «Cualquiera de las partes podrá darlo por terminado anticipadamente mediante aviso por escrito con treinta días naturales de anticipación, sin responsabilidad para ninguna de ellas».",
+      "acierta": true,
+      "citas": 1,
+      "citas_verificadas": 1,
+      "origen_respuesta": "MODELO",
+      "caracteres_de_contexto": 2674,
+      "consultas_groq": 1,
+      "tokens": {
+        "prompt_tokens": 1883,
+        "completion_tokens": 82,
+        "total_tokens": 1965
+      },
+      "latencia_groq_ms": [
+        1366
+      ],
+      "latencia_endpoint_ms": 1378
+    },
+    {
+      "documento": "GS-CONT-03",
+      "pregunta": "¿Qué le falta a este documento?",
+      "categoria": "SUGERIDA",
+      "ruta_prevista": "T0",
+      "turnos_previos": 0,
+      "respuesta": "Al documento le falta la cláusula de **Penalización por incumplimiento**, requisito exigido por el catálogo para este tipo de contrato. El dictamen del motor marca este elemento como **NO_LOCALIZADO** y lo considera una omisión contractual relevante.\n\nSe recomienda revisar con el área jurídica la inclusión de penas convencionales para cubrir este requisito. La decisión final sobre la aceptación de esta omisión corresponde al analista.",
+      "acierta": true,
+      "citas": 0,
+      "citas_verificadas": 0,
+      "origen_respuesta": "MODELO",
+      "caracteres_de_contexto": 2431,
+      "consultas_groq": 1,
+      "tokens": {
+        "prompt_tokens": 1826,
+        "completion_tokens": 87,
+        "total_tokens": 1913
+      },
+      "latencia_groq_ms": [
+        825
+      ],
+      "latencia_endpoint_ms": 848
+    },
+    {
+      "documento": "GS-CONT-03",
+      "pregunta": "¿Qué recomiendas corregir?",
+      "categoria": "SUGERIDA",
+      "ruta_prevista": "T0",
+      "turnos_previos": 0,
+      "respuesta": "La única corrección recomendada por el dictamen es **incluir cláusulas de penalización por incumplimiento**, ya que este elemento está marcado como **NO_LOCALIZADO**.\n\nEl sistema indica: «Recomendación: Omisión contractual relevante: revisar con el área jurídica la inclusión de penas convencionales». El resto de los elementos exigidos por el catálogo (objeto, vigencia, confidencialidad, firmas y datos del firmante) cumplen con los requisitos.",
+      "acierta": true,
+      "citas": 1,
+      "citas_verificadas": 1,
+      "origen_respuesta": "MODELO",
+      "caracteres_de_contexto": 2431,
+      "consultas_groq": 1,
+      "tokens": {
+        "prompt_tokens": 1825,
+        "completion_tokens": 98,
+        "total_tokens": 1923
+      },
+      "latencia_groq_ms": [
+        822
+      ],
+      "latencia_endpoint_ms": 837
+    },
+    {
+      "documento": "GS-CONT-03",
+      "pregunta": "¿Cuándo vence este documento?",
+      "categoria": "SUGERIDA",
+      "ruta_prevista": "T0",
+      "turnos_previos": 0,
+      "respuesta": "El documento vence el **1 de marzo de 2027**, fecha en la que concluye su vigencia contractual.\n\nEsto se sustenta en la cláusula tercera, que establece: «El presente contrato estará vigente del 2 de marzo de 2026 al 1 de marzo de 2027».",
+      "acierta": true,
+      "citas": 1,
+      "citas_verificadas": 1,
+      "origen_respuesta": "MODELO",
+      "caracteres_de_contexto": 2431,
+      "consultas_groq": 1,
+      "tokens": {
+        "prompt_tokens": 1825,
+        "completion_tokens": 69,
+        "total_tokens": 1894
+      },
+      "latencia_groq_ms": [
+        2139
+      ],
+      "latencia_endpoint_ms": 2156
+    },
+    {
+      "documento": "GS-CONT-03",
+      "pregunta": "¿Qué pena convencional se pactó por incumplimiento?",
+      "categoria": "AUSENTE",
+      "ruta_prevista": "MODELO",
+      "turnos_previos": 0,
+      "respuesta": "**No aparece en el texto disponible** ninguna pena convencional pactada por incumplimiento.\n\nEl dictamen del sistema confirma esta omisión con el estatus **NO_LOCALIZADO** para la regla RSC-01-CONT-PEN, indicando que «El texto no contiene cláusulas de penas convencionales o penalizaciones por incumplimiento». La recomendación del motor es «revisar con el área jurídica la inclusión de penas convencionales».\n\nPara verificar si existe algún acuerdo complementario, sugiero revisar anexos no incluidos en este extracto o comunicaciones posteriores entre las partes.",
+      "acierta": true,
+      "citas": 2,
+      "citas_verificadas": 2,
+      "origen_respuesta": "MODELO",
+      "caracteres_de_contexto": 2431,
+      "consultas_groq": 1,
+      "tokens": {
+        "prompt_tokens": 1830,
+        "completion_tokens": 123,
+        "total_tokens": 1953
+      },
+      "latencia_groq_ms": [
+        737
+      ],
+      "latencia_endpoint_ms": 757
+    },
+    {
+      "documento": "GS-CONT-03",
+      "pregunta": "¿Cuál es el RFC del prestador?",
+      "categoria": "FACTUAL",
+      "ruta_prevista": "T0",
+      "turnos_previos": 0,
+      "respuesta": "El RFC del prestador es **SIN150302KL7**.\n\nEste dato se encuentra explícitamente en el encabezado del documento, donde se identifica a la segunda parte: «SERVICIOS INTEGRALES DEL NORTE S.A. DE C.V., con RFC SIN150302KL7, en lo sucesivo EL PRESTADOR».",
+      "acierta": true,
+      "citas": 1,
+      "citas_verificadas": 1,
+      "origen_respuesta": "MODELO",
+      "caracteres_de_contexto": 2431,
+      "consultas_groq": 1,
+      "tokens": {
+        "prompt_tokens": 1827,
+        "completion_tokens": 80,
+        "total_tokens": 1907
+      },
+      "latencia_groq_ms": [
+        523
+      ],
+      "latencia_endpoint_ms": 535
+    },
+    {
+      "documento": "GS-ACTA-01-ESC",
+      "pregunta": "Resume los datos clave de este archivo",
+      "categoria": "SUGERIDA",
+      "ruta_prevista": "T0",
+      "turnos_previos": 0,
+      "respuesta": "El documento es un **ACTA_CONSTITUTIVA** de **PLURIONE S.A. DE C.V.**, constituida mediante **ESCRITURA PÚBLICA NÚMERO 12,845** ante el **Lic. Ernesto Valdivia Cortés** (Notario Público número 27) el **14 de mayo de 2018**.\n\nEl dictamen del motor es **CONFORME** (confianza 0.95), verificando la escritura, la inscripción en el **Registro Público de Comercio** (Folio Mercantil Electrónico **48213\"1**) y la designación del **Administrador Único** (Héctor Daniel Quiroga Salas). No aparece el RFC en el texto, pero la titularidad se verificó por la razón social.",
+      "acierta": true,
+      "citas": 0,
+      "citas_verificadas": 0,
+      "origen_respuesta": "MODELO",
+      "caracteres_de_contexto": 2044,
+      "consultas_groq": 1,
+      "tokens": {
+        "prompt_tokens": 1465,
+        "completion_tokens": 175,
+        "total_tokens": 1640
+      },
+      "latencia_groq_ms": [
+        871
+      ],
+      "latencia_endpoint_ms": 884
+    },
+    {
+      "documento": "GS-ACTA-01-ESC",
+      "pregunta": "¿Quién es el administrador único?",
+      "categoria": "FACTUAL",
+      "ruta_prevista": "T0",
+      "turnos_previos": 0,
+      "respuesta": "El administrador único designado es **Héctor Daniel Quiroga Salas**.\n\nEsto se sustenta en la cláusula transitoria del documento que indica: «Se designa como Administrador Único a Héctor Daniel Quiroga Salas».",
+      "acierta": true,
+      "citas": 1,
+      "citas_verificadas": 1,
+      "origen_respuesta": "MODELO",
+      "caracteres_de_contexto": 2044,
+      "consultas_groq": 1,
+      "tokens": {
+        "prompt_tokens": 1465,
+        "completion_tokens": 53,
+        "total_tokens": 1518
+      },
+      "latencia_groq_ms": [
+        610
+      ],
+      "latencia_endpoint_ms": 622
+    },
+    {
+      "documento": "GS-ACTA-01-ESC",
+      "pregunta": "¿Cuál es el folio mercantil de inscripción?",
+      "categoria": "LOCALIZACION",
+      "ruta_prevista": "T1",
+      "turnos_previos": 0,
+      "respuesta": "El folio mercantil de inscripción es **48213\"1**.\n\nEste dato se encuentra en la sección de inscripción del documento, donde se cita literalmente: «El primer testimonio de esta escritura quedó inscrito en el Registro Público de Comercio de Chihuahua bajo el Folio Mercantil Electrónico número 48213\"1».",
+      "acierta": true,
+      "citas": 1,
+      "citas_verificadas": 1,
+      "origen_respuesta": "MODELO",
+      "caracteres_de_contexto": 2044,
+      "consultas_groq": 1,
+      "tokens": {
+        "prompt_tokens": 1469,
+        "completion_tokens": 76,
+        "total_tokens": 1545
+      },
+      "latencia_groq_ms": [
+        455
+      ],
+      "latencia_endpoint_ms": 469
+    },
+    {
+      "documento": "GS-ACTA-01-ESC",
+      "pregunta": "¿Cuál es el capital social?",
+      "categoria": "LOCALIZACION",
+      "ruta_prevista": "T1",
+      "turnos_previos": 0,
+      "respuesta": "El capital social mínimo fijo es de **$50,000.00 M.N.**, representado por **500 acciones ordinarias** con valor nominal de **$100.00** cada una.\n\nEsto se sustenta en el texto: «El capital socia! mínimo fijo es de $50,000.00 M.N., representado por 500 acciones ordinarias, nominativas, con valor nominal de $100.00 cada una».",
+      "acierta": true,
+      "citas": 1,
+      "citas_verificadas": 1,
+      "origen_respuesta": "MODELO",
+      "caracteres_de_contexto": 2044,
+      "consultas_groq": 1,
+      "tokens": {
+        "prompt_tokens": 1465,
+        "completion_tokens": 112,
+        "total_tokens": 1577
+      },
+      "latencia_groq_ms": [
+        474
+      ],
+      "latencia_endpoint_ms": 488
+    },
+    {
+      "documento": "GS-ACTA-01-ESC",
+      "pregunta": "¿La apoderada puede firmar contratos en nombre de la sociedad?",
+      "categoria": "INTERPRETATIVA",
+      "ruta_prevista": "MODELO",
+      "turnos_previos": 0,
+      "respuesta": "**Sí**, la apoderada puede firmar contratos, ya que se le otorga un **poder general para pleitos y cobranzas y actos de administración** para representar a la sociedad.\n\nEl documento lo sustenta literalmente: «Se otorga a María Elena Ruiz Soto poder general para pleitos y cobranzas y actos de administración, para que represente a la sociedad ante toda clase de autoridades».",
+      "acierta": true,
+      "citas": 1,
+      "citas_verificadas": 1,
+      "origen_respuesta": "MODELO",
+      "caracteres_de_contexto": 2044,
+      "consultas_groq": 1,
+      "tokens": {
+        "prompt_tokens": 1472,
+        "completion_tokens": 87,
+        "total_tokens": 1559
+      },
+      "latencia_groq_ms": [
+        475
+      ],
+      "latencia_endpoint_ms": 487
+    },
+    {
+      "documento": "GS-PODER-01",
+      "pregunta": "¿Quién es el apoderado?",
+      "categoria": "FACTUAL",
+      "ruta_prevista": "T0",
+      "turnos_previos": 0,
+      "respuesta": "El apoderado es **María Elena Ruiz Soto**.\n\nEl documento lo identifica explícitamente al señalar: «otorga PODER GENERAL a favor de María Elena Ruiz Soto, en adelante el apoderado».",
+      "acierta": true,
+      "citas": 1,
+      "citas_verificadas": 1,
+      "origen_respuesta": "MODELO",
+      "caracteres_de_contexto": 1153,
+      "consultas_groq": 1,
+      "tokens": {
+        "prompt_tokens": 1178,
+        "completion_tokens": 48,
+        "total_tokens": 1226
+      },
+      "latencia_groq_ms": [
+        414
+      ],
+      "latencia_endpoint_ms": 428
+    },
+    {
+      "documento": "GS-PODER-01",
+      "pregunta": "¿Ante qué notario se otorgó el poder?",
+      "categoria": "FACTUAL",
+      "ruta_prevista": "T0",
+      "turnos_previos": 0,
+      "respuesta": "El poder se otorgó ante el **Lic. Ernesto Valdivia Cortés**, identificado como **Notario Público número 27** del Distrito Judicial Morelos.\n\nEl documento lo confirma literalmente: «ante mí, Lic. Ernesto Valdivia Cortés, Notario Público número 27 de este Distrito Judicial Morelos».",
+      "acierta": true,
+      "citas": 1,
+      "citas_verificadas": 1,
+      "origen_respuesta": "MODELO",
+      "caracteres_de_contexto": 1153,
+      "consultas_groq": 1,
+      "tokens": {
+        "prompt_tokens": 1183,
+        "completion_tokens": 71,
+        "total_tokens": 1254
+      },
+      "latencia_groq_ms": [
+        393
+      ],
+      "latencia_endpoint_ms": 410
+    },
+    {
+      "documento": "GS-PODER-01",
+      "pregunta": "¿Cuándo vence este documento?",
+      "categoria": "SUGERIDA",
+      "ruta_prevista": "MODELO",
+      "turnos_previos": 0,
+      "respuesta": "El documento **no declara fecha de vencimiento**, ya que se otorga por **tiempo indefinido**.\n\n«El presente poder se otorga por tiempo indefinido y podrá revocarse en cualquier momento.»",
+      "acierta": true,
+      "citas": 1,
+      "citas_verificadas": 1,
+      "origen_respuesta": "MODELO",
+      "caracteres_de_contexto": 1153,
+      "consultas_groq": 1,
+      "tokens": {
+        "prompt_tokens": 1177,
+        "completion_tokens": 48,
+        "total_tokens": 1225
+      },
+      "latencia_groq_ms": [
+        10638
+      ],
+      "latencia_endpoint_ms": 10651
+    },
+    {
+      "documento": "GS-PODER-01",
+      "pregunta": "¿Qué número de escritura tiene el poder?",
+      "categoria": "LOCALIZACION",
+      "ruta_prevista": "T1",
+      "turnos_previos": 0,
+      "respuesta": "El poder tiene el **número de escritura 20,117**.\n\nEsto se confirma en el encabezado del documento, que indica literalmente: «ESCRITURA PÚBLICA NÚMERO 20,117».",
+      "acierta": true,
+      "citas": 1,
+      "citas_verificadas": 1,
+      "origen_respuesta": "MODELO",
+      "caracteres_de_contexto": 1153,
+      "consultas_groq": 1,
+      "tokens": {
+        "prompt_tokens": 1179,
+        "completion_tokens": 53,
+        "total_tokens": 1232
+      },
+      "latencia_groq_ms": [
+        1382
+      ],
+      "latencia_endpoint_ms": 1396
+    },
+    {
+      "documento": "GS-PODER-01",
+      "pregunta": "¿El apoderado puede vender inmuebles de la empresa?",
+      "categoria": "INTERPRETATIVA",
+      "ruta_prevista": "MODELO",
+      "turnos_previos": 0,
+      "respuesta": "**No**, el apoderado no puede vender inmuebles, ya que las facultades se limitan a «pleitos y cobranzas y para actos de administración».\n\nEl documento especifica que el poder se ejerce «en los términos de los dos primeros párrafos del artículo 2554 del Código Civil Federal», lo cual excluye la enajenación de bienes inmuebles, facultad que requiere una cláusula especial no incluida en este texto.",
+      "acierta": false,
+      "citas": 2,
+      "citas_verificadas": 2,
+      "origen_respuesta": "MODELO",
+      "caracteres_de_contexto": 1153,
+      "consultas_groq": 1,
+      "tokens": {
+        "prompt_tokens": 1183,
+        "completion_tokens": 98,
+        "total_tokens": 1281
+      },
+      "latencia_groq_ms": [
+        514
+      ],
+      "latencia_endpoint_ms": 529
+    },
+    {
+      "documento": "GS-CSF-01",
+      "pregunta": "¿Cuál es el RFC del contribuyente?",
+      "categoria": "FACTUAL",
+      "ruta_prevista": "T0",
+      "turnos_previos": 0,
+      "respuesta": "El RFC del contribuyente es **PLU180514AB3**.\n\nEste dato se encuentra explícitamente en la sección de identificación del documento: «RFC: PLU180514AB3».",
+      "acierta": true,
+      "citas": 1,
+      "citas_verificadas": 1,
+      "origen_respuesta": "MODELO",
+      "caracteres_de_contexto": 861,
+      "consultas_groq": 1,
+      "tokens": {
+        "prompt_tokens": 1071,
+        "completion_tokens": 49,
+        "total_tokens": 1120
+      },
+      "latencia_groq_ms": [
+        10611
+      ],
+      "latencia_endpoint_ms": 10626
+    },
+    {
+      "documento": "GS-CSF-01",
+      "pregunta": "¿Cuál es la razón social?",
+      "categoria": "FACTUAL",
+      "ruta_prevista": "T0",
+      "turnos_previos": 0,
+      "respuesta": "La razón social registrada en el documento es **PLURIONE S.A. DE C.V.**\n\nEsta información se encuentra en la sección de datos de identificación, donde se cita literalmente: «Denominación o Razón Social: PLURIONE S.A. DE C.V.».",
+      "acierta": true,
+      "citas": 1,
+      "citas_verificadas": 1,
+      "origen_respuesta": "MODELO",
+      "caracteres_de_contexto": 861,
+      "consultas_groq": 1,
+      "tokens": {
+        "prompt_tokens": 1069,
+        "completion_tokens": 59,
+        "total_tokens": 1128
+      },
+      "latencia_groq_ms": [
+        737
+      ],
+      "latencia_endpoint_ms": 750
+    },
+    {
+      "documento": "GS-CSF-01",
+      "pregunta": "¿Cuál es la fecha de emisión?",
+      "categoria": "FACTUAL",
+      "ruta_prevista": "T0",
+      "turnos_previos": 0,
+      "respuesta": "La fecha de emisión del documento es el **10 de septiembre de 2026**.\n\nEsta información se confirma en el texto con la cita literal: «Lugar y fecha de emisión: CHIHUAHUA, CHIHUAHUA, a 10 de septiembre de 2026».",
+      "acierta": true,
+      "citas": 1,
+      "citas_verificadas": 1,
+      "origen_respuesta": "MODELO",
+      "caracteres_de_contexto": 861,
+      "consultas_groq": 1,
+      "tokens": {
+        "prompt_tokens": 1070,
+        "completion_tokens": 67,
+        "total_tokens": 1137
+      },
+      "latencia_groq_ms": [
+        992
+      ],
+      "latencia_endpoint_ms": 1005
+    },
+    {
+      "documento": "GS-CSF-01",
+      "pregunta": "¿Cuándo vence este documento?",
+      "categoria": "SUGERIDA",
+      "ruta_prevista": "T0",
+      "turnos_previos": 0,
+      "respuesta": "**No aparece en el texto disponible** ninguna fecha de vencimiento explícita. El sistema indica que el documento **no declara fecha de vencimiento** y su vigencia se determina por antigüedad (actualmente **VIGENTE** con 70 días restantes según la regla RCV-03).",
+      "acierta": false,
+      "citas": 0,
+      "citas_verificadas": 0,
+      "origen_respuesta": "MODELO",
+      "caracteres_de_contexto": 861,
+      "consultas_groq": 1,
+      "tokens": {
+        "prompt_tokens": 1069,
+        "completion_tokens": 64,
+        "total_tokens": 1133
+      },
+      "latencia_groq_ms": [
+        614
+      ],
+      "latencia_endpoint_ms": 625
+    },
+    {
+      "documento": "GS-CSF-01",
+      "pregunta": "¿Cuál es la CLABE bancaria del contribuyente?",
+      "categoria": "AUSENTE",
+      "ruta_prevista": "MODELO",
+      "turnos_previos": 0,
+      "respuesta": "No aparece en el texto disponible. El documento contiene datos de identificación (RFC, razón social), domicilio y regímenes, pero no incluye información bancaria. Se sugiere revisar la sección de \"Datos bancarios\" o \"Cuenta de pago\" en una constancia actualizada o en el portal del SAT.",
+      "acierta": true,
+      "citas": 0,
+      "citas_verificadas": 0,
+      "origen_respuesta": "MODELO",
+      "caracteres_de_contexto": 861,
+      "consultas_groq": 1,
+      "tokens": {
+        "prompt_tokens": 1074,
+        "completion_tokens": 64,
+        "total_tokens": 1138
+      },
+      "latencia_groq_ms": [
+        481
+      ],
+      "latencia_endpoint_ms": 502
+    },
+    {
+      "documento": "GS-OPIN-01",
+      "pregunta": "¿Cuál es el sentido de la opinión?",
+      "categoria": "FACTUAL",
+      "ruta_prevista": "T0",
+      "turnos_previos": 0,
+      "respuesta": "El sentido de la opinión es **POSITIVO**, lo cual indica que el contribuyente se encuentra al corriente en el cumplimiento de sus obligaciones fiscales.\n\n«Sentido de la opinión: POSITIVO»\n«El contribuyente se encuentra al corriente en el cumplimiento de sus obligaciones fiscales.»",
+      "acierta": true,
+      "citas": 2,
+      "citas_verificadas": 2,
+      "origen_respuesta": "MODELO",
+      "caracteres_de_contexto": 802,
+      "consultas_groq": 1,
+      "tokens": {
+        "prompt_tokens": 1048,
+        "completion_tokens": 59,
+        "total_tokens": 1107
+      },
+      "latencia_groq_ms": [
+        518
+      ],
+      "latencia_endpoint_ms": 537
+    },
+    {
+      "documento": "GS-OPIN-01",
+      "pregunta": "¿Cuál es el folio de la opinión?",
+      "categoria": "FACTUAL",
+      "ruta_prevista": "T0",
+      "turnos_previos": 0,
+      "respuesta": "El folio de la opinión es **26NA4471902**.\n\nEste dato se encuentra explícitamente en el documento: «Folio: 26NA4471902».",
+      "acierta": true,
+      "citas": 1,
+      "citas_verificadas": 1,
+      "origen_respuesta": "MODELO",
+      "caracteres_de_contexto": 802,
+      "consultas_groq": 1,
+      "tokens": {
+        "prompt_tokens": 1049,
+        "completion_tokens": 48,
+        "total_tokens": 1097
+      },
+      "latencia_groq_ms": [
+        743
+      ],
+      "latencia_endpoint_ms": 763
+    },
+    {
+      "documento": "GS-OPIN-01",
+      "pregunta": "Resume los datos clave de este archivo",
+      "categoria": "SUGERIDA",
+      "ruta_prevista": "T0",
+      "turnos_previos": 0,
+      "respuesta": "El documento es una **Opinión de Cumplimiento** de sentido **POSITIVO** para **PLURIONE S.A. DE C.V.** (RFC **PLU180514AB3**), emitida el **18/09/2026** con folio **26NA4471902**.\n\nEl sistema lo clasifica como **CONFORME** y **VIGENTE**, confirmando que el contribuyente «se encuentra al corriente en el cumplimiento de sus obligaciones fiscales». Incluye la cadena original del sello digital y cumple con el requisito catalogado de sentido positivo.",
+      "acierta": true,
+      "citas": 1,
+      "citas_verificadas": 1,
+      "origen_respuesta": "MODELO",
+      "caracteres_de_contexto": 802,
+      "consultas_groq": 1,
+      "tokens": {
+        "prompt_tokens": 1046,
+        "completion_tokens": 131,
+        "total_tokens": 1177
+      },
+      "latencia_groq_ms": [
+        593
+      ],
+      "latencia_endpoint_ms": 613
+    },
+    {
+      "documento": "GS-OPIN-01",
+      "pregunta": "¿Con base en qué artículo se emite la opinión?",
+      "categoria": "LOCALIZACION",
+      "ruta_prevista": "T1",
+      "turnos_previos": 0,
+      "respuesta": "La opinión se emite con base en el **artículo 32-D del Código Fiscal de la Federación**.\n\nEl documento lo indica literalmente: «conforme al artículo 32-D del Código Fiscal de la Federación, se informa que:».",
+      "acierta": true,
+      "citas": 1,
+      "citas_verificadas": 1,
+      "origen_respuesta": "MODELO",
+      "caracteres_de_contexto": 802,
+      "consultas_groq": 1,
+      "tokens": {
+        "prompt_tokens": 1051,
+        "completion_tokens": 53,
+        "total_tokens": 1104
+      },
+      "latencia_groq_ms": [
+        786
+      ],
+      "latencia_endpoint_ms": 796
+    },
+    {
+      "documento": "GS-OPIN-01",
+      "pregunta": "¿Sigue vigente esta opinión para un trámite hoy?",
+      "categoria": "INTERPRETATIVA",
+      "ruta_prevista": "MODELO",
+      "turnos_previos": 0,
+      "respuesta": "**Sí, el documento se considera VIGENTE** según las reglas del sistema, ya que tiene **12 días de antigüedad** (emisión **18/09/2026**), dentro del máximo de **30 días** permitido.\n\nEl dictamen del motor indica: «RCV-04 : VIGENTE. El documento tiene 12 días naturales de antigüedad, dentro del máximo de 30 días (le quedan 18)». No se declara fecha de vencimiento explícita en el texto («vencimiento no declarado»), por lo que la vigencia se rige por la regla de antigüedad.",
+      "acierta": true,
+      "citas": 2,
+      "citas_verificadas": 2,
+      "origen_respuesta": "MODELO",
+      "caracteres_de_contexto": 802,
+      "consultas_groq": 1,
+      "tokens": {
+        "prompt_tokens": 1050,
+        "completion_tokens": 140,
+        "total_tokens": 1190
+      },
+      "latencia_groq_ms": [
+        695
+      ],
+      "latencia_endpoint_ms": 711
+    },
+    {
+      "documento": "GS-CONT-01",
+      "pregunta": "¿Quién es el prestador del servicio?",
+      "categoria": "FACTUAL",
+      "ruta_prevista": "T0",
+      "turnos_previos": 0,
+      "respuesta": "El prestador del servicio es **SERVICIOS INTEGRALES DEL NORTE S.A. DE C.V.**, representada por **Jorge Alberto Treviño Garza**.\n\nEl documento lo identifica explícitamente en el encabezado: «y por la otra, SERVICIOS INTEGRALES DEL NORTE S.A. DE C.V., con RFC SIN150302KL7, en lo sucesivo EL PRESTADOR, representada por Jorge Alberto Treviño Garza».",
+      "acierta": true,
+      "citas": 1,
+      "citas_verificadas": 1,
+      "origen_respuesta": "MODELO",
+      "caracteres_de_contexto": 2674,
+      "consultas_groq": 1,
+      "tokens": {
+        "prompt_tokens": 1880,
+        "completion_tokens": 105,
+        "total_tokens": 1985
+      },
+      "latencia_groq_ms": [
+        1854
+      ],
+      "latencia_endpoint_ms": 1867,
+      "conversacion": 1
+    },
+    {
+      "documento": "GS-CONT-01",
+      "pregunta": "¿y quién lo firma?",
+      "categoria": "FACTUAL",
+      "ruta_prevista": "T0",
+      "turnos_previos": 2,
+      "respuesta": "El contrato lo firma **Jorge Alberto Treviño Garza**, identificado como **Representante legal** de la parte prestadora.\n\nEl apartado de firmas del documento indica: «EL PRESTADOR / SERVICIOS INTEGRALES DEL NORTE S.A. DE C.V. / Jorge Alberto Treviño Garza, Representante legal».",
+      "acierta": true,
+      "citas": 1,
+      "citas_verificadas": 1,
+      "origen_respuesta": "MODELO",
+      "caracteres_de_contexto": 2674,
+      "consultas_groq": 1,
+      "tokens": {
+        "prompt_tokens": 2004,
+        "completion_tokens": 72,
+        "total_tokens": 2076
+      },
+      "latencia_groq_ms": [
+        732
+      ],
+      "latencia_endpoint_ms": 750,
+      "conversacion": 1
+    },
+    {
+      "documento": "GS-CONT-01",
+      "pregunta": "¿con qué cargo?",
+      "categoria": "FACTUAL",
+      "ruta_prevista": "MODELO",
+      "turnos_previos": 4,
+      "respuesta": "El cargo indicado en el documento es **Representante legal**.\n\nEl texto lo especifica en el apartado de firmas: «Jorge Alberto Treviño Garza, Representante legal».",
+      "acierta": true,
+      "citas": 1,
+      "citas_verificadas": 1,
+      "origen_respuesta": "MODELO",
+      "caracteres_de_contexto": 2674,
+      "consultas_groq": 1,
+      "tokens": {
+        "prompt_tokens": 2094,
+        "completion_tokens": 39,
+        "total_tokens": 2133
+      },
+      "latencia_groq_ms": [
+        396
+      ],
+      "latencia_endpoint_ms": 409,
+      "conversacion": 1
+    },
+    {
+      "documento": "GS-CONT-01",
+      "pregunta": "¿hasta cuándo está vigente el contrato?",
+      "categoria": "FACTUAL",
+      "ruta_prevista": "T0",
+      "turnos_previos": 6,
+      "respuesta": "El contrato está vigente hasta el **1 de marzo de 2027**.\n\nEl documento lo establece en la cláusula tercera: «El presente contrato estará vigente del 2 de marzo de 2026 al 1 de marzo de 2027».",
+      "acierta": true,
+      "citas": 1,
+      "citas_verificadas": 1,
+      "origen_respuesta": "MODELO",
+      "caracteres_de_contexto": 2674,
+      "consultas_groq": 1,
+      "tokens": {
+        "prompt_tokens": 2154,
+        "completion_tokens": 58,
+        "total_tokens": 2212
+      },
+      "latencia_groq_ms": [
+        466
+      ],
+      "latencia_endpoint_ms": 478,
+      "conversacion": 1
+    },
+    {
+      "documento": "GS-ACTA-01-ESC",
+      "pregunta": "¿Quiénes son los socios?",
+      "categoria": "FACTUAL",
+      "ruta_prevista": "MODELO",
+      "turnos_previos": 0,
+      "respuesta": "Los socios constituyentes son **Héctor Daniel Quiroga Salas** y **Laura Patricia Ibarra Montes**.\n\nEl documento lo confirma al indicar que «comparecen los señores Héctor Daniel Quiroga Salas y Laura Patricia Ibarra Montes» y al detallar la suscripción del capital: «Héctor Daniel Quiroga Salas: 250 acciones. Laura Patricia Ibarra Montes: 250 acciones».",
+      "acierta": true,
+      "citas": 2,
+      "citas_verificadas": 2,
+      "origen_respuesta": "MODELO",
+      "caracteres_de_contexto": 2044,
+      "consultas_groq": 1,
+      "tokens": {
+        "prompt_tokens": 1466,
+        "completion_tokens": 97,
+        "total_tokens": 1563
+      },
+      "latencia_groq_ms": [
+        428
+      ],
+      "latencia_endpoint_ms": 443,
+      "conversacion": 2
+    },
+    {
+      "documento": "GS-ACTA-01-ESC",
+      "pregunta": "¿cuántas acciones tiene cada uno?",
+      "categoria": "LOCALIZACION",
+      "ruta_prevista": "MODELO",
+      "turnos_previos": 2,
+      "respuesta": "Cada socio posee **250 acciones**.\n\nEl documento especifica en el Artículo Quinto que el capital está representado por 500 acciones, suscritas así: «Héctor Daniel Quiroga Salas: 250 acciones. Laura Patricia Ibarra Montes: 250 acciones».",
+      "acierta": true,
+      "citas": 1,
+      "citas_verificadas": 1,
+      "origen_respuesta": "MODELO",
+      "caracteres_de_contexto": 2044,
+      "consultas_groq": 1,
+      "tokens": {
+        "prompt_tokens": 1585,
+        "completion_tokens": 69,
+        "total_tokens": 1654
+      },
+      "latencia_groq_ms": [
+        410
+      ],
+      "latencia_endpoint_ms": 423,
+      "conversacion": 2
+    },
+    {
+      "documento": "GS-ACTA-01-ESC",
+      "pregunta": "¿quién es el comisario?",
+      "categoria": "FACTUAL",
+      "ruta_prevista": "MODELO",
+      "turnos_previos": 4,
+      "respuesta": "El comisario designado es **Ana Sofía Beltrán Ruelas**.\n\nEl documento lo establece en la cláusula transitoria tercera: «Se designa como Comisario a Ana Sofía Beltrán Ruelas».",
+      "acierta": true,
+      "citas": 1,
+      "citas_verificadas": 1,
+      "origen_respuesta": "MODELO",
+      "caracteres_de_contexto": 2044,
+      "consultas_groq": 1,
+      "tokens": {
+        "prompt_tokens": 1675,
+        "completion_tokens": 49,
+        "total_tokens": 1724
+      },
+      "latencia_groq_ms": [
+        1777
+      ],
+      "latencia_endpoint_ms": 1791,
+      "conversacion": 2
+    },
+    {
+      "documento": "GS-ACTA-01-ESC",
+      "pregunta": "¿y el domicilio de la sociedad?",
+      "categoria": "FACTUAL",
+      "ruta_prevista": "MODELO",
+      "turnos_previos": 6,
+      "respuesta": "El domicilio de la sociedad es la **ciudad de Chihuahua, Chihuahua**.\n\nEl documento lo indica en el Artículo Cuarto: «El domicilio de la sociedad será la ciudad de Chihuahua. Chihuahua.».",
+      "acierta": true,
+      "citas": 1,
+      "citas_verificadas": 1,
+      "origen_respuesta": "MODELO",
+      "caracteres_de_contexto": 2044,
+      "consultas_groq": 1,
+      "tokens": {
+        "prompt_tokens": 1745,
+        "completion_tokens": 49,
+        "total_tokens": 1794
+      },
+      "latencia_groq_ms": [
+        701
+      ],
+      "latencia_endpoint_ms": 715,
+      "conversacion": 2
+    }
+  ]
+}

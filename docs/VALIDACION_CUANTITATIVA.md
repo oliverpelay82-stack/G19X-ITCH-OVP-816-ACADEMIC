@@ -5,7 +5,7 @@
 | Propósito | Demostrar con métricas reproducibles la exactitud de la IA (ISO/IEC 25010, Adecuación funcional › Exactitud) y el rendimiento del sistema (ISO/IEC 25010, Eficiencia de desempeño) frente a RNF-01, RNF-02 y RNF-03, y medir la eficiencia del chat documental antes y después de su optimización (PRD §21.4, P4) |
 | Fase del cronograma | Fase 5 · QA (DOC-07, semanas 13 y 14: «pruebas de precisión de IA»; riesgo «baja precisión en la detección de cláusulas», 13 h de pruebas de precisión) |
 | Fuentes | DOC-01 H12 y H15; DOC-03 (ISO/IEC 25010: «Gold Standard con precisión, exhaustividad y F1»); DOC-04 RNF-01 a RNF-03; DOC-05 (RSC-01, RSC-02, bandas del Nivel 5); DOC-08 §6.2; [PRD.md](PRD.md) §11, §15 y §21.4 |
-| Estado | Diseño aprobado el 30/09/2026, junto con la configuración del OCR (§5) y la optimización del chat (§6). Las secciones 9 y 10 se llenan al ejecutar la suite |
+| Estado | Diseño aprobado el 30/09/2026, junto con la configuración del OCR (§5) y la optimización del chat (§6). Medición base del chat ejecutada (§10.1); precisión y rendimiento pendientes |
 | Restricciones | Sin cambios de arquitectura ni de contratos de API; sin tocar el Módulo 7; ningún dato real de terceros en el repositorio; la suite de precisión corre sin consumir tokens una vez grabada |
 
 ---
@@ -247,7 +247,7 @@ El chat es la herramienta con la que el auditor consulta el documento; su optimi
 
 ### 6.4 Protocolo y criterios de aceptación
 
-- **Tokens y latencia** se miden con Groq real (modo `grabar`), sin contención de cuota; la corrida base consume ≈ 6 auditorías × 6,200 + 38 turnos × ≈ 3,500 ≈ **170,000 tokens**, una vez.
+- **Tokens y latencia** se miden con Groq real (modo `grabar`), sin contención de cuota; la corrida base consumió 79,076 tokens (19,015 de auditorías y 60,061 de chat; se estimaban ≈ 170,000, §10.1).
 - **Exactitud** se recalcula en modo `reproducir` sin tokens.
 - Cada paso de P4 se acepta solo si: la exactitud factual y las citas verificadas **no bajan** respecto a la base; ninguna respuesta sin modelo afirma una ausencia; y el contrato de `POST /ai/chat-documento` y las pruebas existentes se mantienen.
 
@@ -322,8 +322,33 @@ Orden: (1) documentación; (2) configuración del OCR; (3) métricas, Gold Stand
 
 ## 10. Resultados
 
+### 10.1 Chat documental — medición base (30/09/2026)
+
+Implementación previa a P4, con la configuración definitiva del OCR (`n3-3.2|tesseract-5.4.0|spa|300dpi|sin-sellos`, 8 procesos), `qwen/qwen3.8-27b` en Groq a temperatura 0.0, sin contención de cuota. Corrida grabada con Groq real: 6 auditorías (19,015 tokens) y 38 turnos de chat (60,061 tokens). La reproducción desde el casete (`evaluacion/casetes/chat.json`) da las mismas respuestas y los mismos tokens sin llamar a Groq. Detalle por turno: [`resultados_validacion/chat_base.json`](resultados_validacion/chat_base.json).
+
+| Grupo | Turnos | Tokens/turno | Turnos/min (8,000 TPM) | Sin modelo | p50 ms | p95 ms | Exactitud (IC 95 %) | Citas verificadas |
+|---|---|---|---|---|---|---|---|---|
+| **Total** | 38 | 1,581 | 5.06 | 0 | 732 | 4,843 | 95 % (83–99 %) | 39/39 |
+| Sugeridas por la interfaz | 8 | 1,614 | 4.96 | 0 | 866 | 8,261 | 88 % (53–98 %) | 4/4 |
+| Factuales | 17 | 1,586 | 5.04 | 0 | 715 | 3,619 | 100 % (82–100 %) | 20/20 |
+| Localización | 7 | 1,587 | 5.04 | 0 | 532 | 1,216 | 100 % (65–100 %) | 7/7 |
+| Interpretativas | 4 | 1,499 | 5.34 | 0 | 620 | 1,278 | 75 % (30–95 %) | 6/6 |
+| Dato ausente | 2 | 1,546 | 5.18 | 0 | 630 | 744 | 100 % (34–100 %) | 2/2 |
+| Conversaciones (4 turnos) | 8 | 1,893 | 4.23 | 0 | 596 | 1,840 | 100 % (68–100 %) | 9/9 |
+
+(Las categorías suman 17 factuales y 7 de localización porque incluyen los turnos de las conversaciones.)
+
+**Lectura de la medición base:**
+
+- **La estimación previa de ≈ 3,200–4,000 tokens por turno era alta.** El prompt real va de 1,046 a 2,154 tokens y la respuesta de 39 a 175: los documentos del Gold Standard son de 1 a 3 páginas y BM25 envía solo 800 a 2,700 caracteres de contexto, lejos del tope de 6,500. En documentos largos (actas reales de 14 a 26 páginas) el contexto llega al tope y el turno se acerca a la estimación; la batería no los cubre todavía.
+- **La latencia típica ya es baja** (p50 ≈ 0.7 s); el problema es la **cola**: p95 de 4.8 s y un máximo de 10.6 s, variaciones del proveedor que no dependen del prompt. Las respuestas sin modelo (T0 y T1) eliminan esa cola en las preguntas que cubren.
+- **Exactitud 36/38.** Los dos fallos son **falsos negativos del calificador**, no errores del chat: «¿El apoderado puede vender inmuebles?» se respondió correctamente («No… las facultades se limitan a pleitos y cobranzas y actos de administración… excluye la enajenación») sin usar la palabra esperada «dominio», y «¿Cuándo vence?» de la constancia respondió «no declara fecha de vencimiento… VIGENTE con 70 días restantes según RCV-03» (70 días = 9 de diciembre de 2026) sin escribir la fecha. La regla de la batería se congeló antes de ejecutar y no se ajusta a posteriori; la cifra oficial es 95 %.
+- **Todas las citas (39/39) quedaron verificadas** en el documento o en el sistema.
+- **Auditorías:** 1,743 a 4,421 tokens (las de contrato y NDA hacen dos llamadas: extracción y verificación); la latencia de Groq tuvo dos valores atípicos (10.2 s y 16.2 s) frente a 0.6–3.8 s del resto.
+
+### 10.2 Precisión y 10.3 Rendimiento
+
 *Pendiente de ejecución.* Tablas previstas:
 
-- **10.1 Chat documental:** base y cada paso de P4 (tokens por turno, turnos por minuto, latencia p50/p95, exactitud, citas verificadas, respuestas sin modelo).
 - **10.2 Precisión:** extracción por campo (P, R, F1, IC 95 %, n); elementos RSC por regla y por rendición; RSC-02; matriz de confusión 3 × 3, κ, falsa conformidad y rechazo indebido; calibración por banda; CER del OCR.
 - **10.3 Rendimiento:** RNF-01 (p50/p95/p99 por tamaño de expediente, con y sin auditoría en curso); RNF-02 por documento y etapa, configuración anterior contra definitiva; RNF-03 por escenario; conclusión por RNF (Cumple / No cumple).
