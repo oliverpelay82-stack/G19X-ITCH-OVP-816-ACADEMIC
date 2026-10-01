@@ -1,0 +1,52 @@
+@startuml p6-casos-de-uso-autenticidad
+' P6 — Autenticidad del archivo, trazabilidad del catálogo y operación.
+' Trazabilidad: M1 (HU-49; DOC-02), PLUS-16 (HU-50; NOM-151), PLUS-17 (HU-51;
+' DOC-02), PLUS-18 (HU-52; ISO/IEC 27001 A.8.7), M5 (HU-53; RN-03), M6 (HU-54;
+' protocolo del DOC-05), PLUS-19 (HU-55; RNF-02), PLUS-20 (HU-56; ISO 30301), Q-a.
+' Implementación prevista: services/core-service/motor/rfc.py, motor/senales_pdf.py,
+' motor/cumplimiento.py; services/rules-service (versión del catálogo);
+' services/ai-service/pipelines/qr_sat.py y clients/groq_client.py (cuota).
+
+title P6 — Autenticidad del archivo, catálogo y operación
+
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Analista de cumplimiento" as Analista
+actor "Responsable de cumplimiento" as Responsable
+actor "Auditor externo" as Auditor
+actor "Administrador" as Admin
+
+rectangle "Motor de validación" {
+  usecase "Registrar titular con RFC validado\n(formato, fecha y dígito verificador)" as UC1
+  usecase "Detectar señales de edición del PDF\n(PLUS-16)" as UC2
+  usecase "Leer el QR del SAT y cotejar su RFC\n(PLUS-17)" as UC3
+  usecase "Señalar contenido activo en el PDF\n(PLUS-18)" as UC4
+  usecase "Alertar archivo presente en el\nexpediente de otro titular" as UC5
+  usecase "Guardar la versión del catálogo\nen cada dictamen" as UC6
+  usecase "Ver la cuota diaria de la IA\n(PLUS-19)" as UC7
+  usecase "Ver días en espera de lo pendiente\n(PLUS-20)" as UC8
+  usecase "Ratificar con el motivo a la vista\n(Nivel 5)" as UC9
+}
+
+Analista --> UC1
+Analista --> UC9
+UC2 ..> UC9 : <<extend>>\nSAT retocado
+UC3 ..> UC9 : <<extend>>\nQR ajeno u otro RFC
+UC4 ..> UC9 : <<extend>>
+Analista --> UC5
+Auditor --> UC6
+Admin --> UC7
+Responsable --> UC8
+
+note right of UC1
+  Formato, longitud y fecha: 422.
+  Dígito que no coincide: advertencia
+  (RFC_DIGITO_ESTRICTO=true lo rechaza).
+end note
+
+note right of UC3
+  El motor no consulta al SAT: el analista
+  recibe el enlace oficial del QR.
+end note
+@enduml

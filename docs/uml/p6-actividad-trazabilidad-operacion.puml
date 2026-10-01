@@ -1,0 +1,46 @@
+@startuml p6-actividad-trazabilidad-operacion
+' P6 — Versión del catálogo, cuota diaria de la IA y antigüedad de lo pendiente.
+' Trazabilidad: M6 (HU-54; protocolo del DOC-05), PLUS-19 (HU-55; RNF-02),
+' PLUS-20 (HU-56; ISO 30301); P5 (dictamen reproducible y procesamiento diferido).
+' Implementación prevista: services/rules-service/controllers/regla_controller.py,
+' services/ai-service/controllers/analisis_controller.py, clients/groq_client.py,
+' pipelines/diferidos.py, controllers/health_controller.py;
+' services/core-service/models/dictamen.py y motor/cumplimiento.py; frontend.
+
+title P6 — Catálogo, cuota y antigüedad
+
+|ai-service|
+start
+:Auditoría de un documento;
+:Consulta la versión del catálogo
+(GET /api/v1/reglas/version → cat-…);
+|rules-service|
+:Huella SHA-256 del catálogo completo
+(código, estado, severidad, parámetros, alcance);
+|ai-service|
+:Llama a Groq y suma los tokens
+usados en el día (UTC);
+if (¿429 por cuota diaria?) then (sí)
+  :Marca la cuota agotada hasta
+  el tiempo de espera indicado;
+  :Procesamiento diferido (P5)
+  espera sin gastar intentos;
+else (no)
+  |core-service|
+  :Guarda el dictamen con version_catalogo
+  (protegida por el trigger de RN-05);
+endif
+
+|core-service|
+:Evaluación del expediente:
+días en espera de cada dictamen
+En revisión sin ratificar;
+:Alerta «Pendiente de ratificación»
+con los días; bandeja por antigüedad;
+
+|Frontend|
+:Detalle de salud: cuota diaria de la IA;
+:Reportes: pendientes, el más antiguo
+y el promedio de días en espera;
+stop
+@enduml

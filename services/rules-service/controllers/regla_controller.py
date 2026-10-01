@@ -3,15 +3,15 @@ Controlador de Reglas de Validación.
 Equivalente a @RestController @RequestMapping("/api/v1/reglas") en Spring Boot.
 """
 from dataclasses import asdict
-from datetime import date
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
+from config import zona_horaria
 from config.database import get_db
 from models.regla import Regla
-from motor import obligatorios, vigencia
+from motor import obligatorios, version_catalogo, vigencia
 from schemas.regla_schema import (
     DocumentoObligatorioResponse,
     EvaluacionVigenciaRequest,
@@ -42,7 +42,7 @@ def evaluar_vigencia(peticion: EvaluacionVigenciaRequest, db: Session = Depends(
         tipo_documento=peticion.tipo_documento,
         fecha_emision=peticion.fecha_emision,
         fecha_vencimiento=peticion.fecha_vencimiento,
-        fecha_referencia=peticion.fecha_referencia or date.today(),
+        fecha_referencia=peticion.fecha_referencia or zona_horaria.hoy(),
     )
     return asdict(resultado)
 
@@ -53,6 +53,7 @@ def evaluar_vigencia(peticion: EvaluacionVigenciaRequest, db: Session = Depends(
     summary="Documentos y anexos que exige un tipo de expediente según las reglas RIE activas (HU-09, HU-10)",
 )
 def listar_documentos_obligatorios(
+    response: Response,
     tipo_expediente: Optional[str] = Query(
         None, description="JURIDICO, CORPORATIVO o REGULATORIO; sin él se devuelven las reglas de todos los tipos"
     ),
@@ -72,6 +73,8 @@ def listar_documentos_obligatorios(
                    f"Valores válidos: {', '.join(obligatorios.TIPOS_EXPEDIENTE)}.",
         )
     reglas = db.query(Regla).filter(Regla.familia_regla == "RIE", Regla.activo.is_(True)).all()
+    # M6: el core recibe la versión del catálogo con el inventario, sin otra consulta.
+    response.headers[version_catalogo.CABECERA] = version_catalogo.calcular(db.query(Regla).all())
     return [asdict(d) for d in obligatorios.documentos_obligatorios(reglas, tipo_expediente)]
 
 
@@ -152,6 +155,23 @@ def listar_reglas(
     if tipo_expediente:
         query = query.filter(or_(Regla.tipo_expediente.is_(None), Regla.tipo_expediente == tipo_expediente.upper()))
     return query.order_by(Regla.codigo_regla.asc()).all()
+
+
+@router.get(
+    "/version",
+    summary="Versión del catálogo de reglas (huella de todas las reglas, activas y pausadas)",
+)
+def version_del_catalogo(db: Session = Depends(get_db)):
+    """
+    M6 (PRD §21.6): cada dictamen guarda esta versión para saber con qué
+    catálogo se emitió aunque después se pause o cambie una regla.
+    """
+    reglas = db.query(Regla).all()
+    return {
+        "version_catalogo": version_catalogo.calcular(reglas),
+        "reglas": len(reglas),
+        "reglas_activas": sum(1 for r in reglas if r.activo),
+    }
 
 
 @router.get(

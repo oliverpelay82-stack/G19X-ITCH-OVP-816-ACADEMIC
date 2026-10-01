@@ -21,6 +21,32 @@ function Dato({ label, children, ancho = false }) {
 }
 
 /**
+ * P6 (PLUS-16, PLUS-18): edición posterior a la emisión y contenido activo del
+ * PDF. Las que llevan a revisión se destacan; en un escaneo o un acta las de
+ * edición solo se informan.
+ */
+function SenalesArchivo({ documento }) {
+  const senales = documento.senales_pdf
+  if (!senales) return <span className="cell-sub">Se calcularán en la próxima verificación programada.</span>
+  if (senales.no_analizable) return <span className="cell-sub">No se pudo analizar la estructura del PDF.</span>
+  const revision = documento.senales_revision || []
+  const informativas = revision.length ? [] : (senales.edicion || []).map((e) => e.detalle)
+  const programa = senales.productor || senales.creador
+  return (
+    <span className="cell-stack">
+      {revision.map((motivo) => (
+        <span key={motivo} className="senal-archivo senal-archivo--warn">
+          {motivo}
+        </span>
+      ))}
+      {informativas.length > 0 && <span>Informativo: el PDF {informativas.join('; ')}.</span>}
+      {!revision.length && !informativas.length && <span>Sin señales de edición ni contenido activo.</span>}
+      {programa && <span className="cell-sub">Generado con {programa}</span>}
+    </span>
+  )
+}
+
+/**
  * Estado del documento para el encabezado del modal, a partir de la evaluación
  * de su expediente: el del dictamen si es la versión vigente de su tipo,
  * «Sustituido» si hay una posterior y «Alterado» si su huella ya no coincide.
@@ -319,6 +345,11 @@ export default function DetalleDocumentoModal({ documento, lista, expediente, ia
               <Badge tono="ok">Íntegro al ingresar</Badge>
             )}
           </Dato>
+          {documento.mime_type === 'application/pdf' && (
+            <Dato label="Señales del archivo" ancho>
+              <SenalesArchivo documento={documento} />
+            </Dato>
+          )}
         </KeyValueList>
       </InspectorDocumento>
     </Modal>

@@ -21,6 +21,9 @@ Estos diagramas complementan los del DOCUMENTO GENERAL (Cap. IV, Figuras 1–6, 
 | P5 — Integridad permanente y dictamen reproducible | [p5-casos-de-uso-integridad-reproducibilidad.puml](p5-casos-de-uso-integridad-reproducibilidad.puml) | Casos de uso | F3, F6 y reevaluación programada | §21.5 PLUS-14, PLUS-15; HU-33, HU-44 a HU-48 | MR-11, MR-21, MR-23 |
 | P5 — Integridad permanente y dictamen reproducible | [p5-actividad-barrido-integridad.puml](p5-actividad-barrido-integridad.puml) | Actividades | Reevaluación programada y actualiza F6 | PLUS-14, PLUS-15; RIE-03, RF-23, RF-24, RF-27 | MR-11, MR-21, MR-23 |
 | P5 — Integridad permanente y dictamen reproducible | [p5-actividad-excepciones-auditoria.puml](p5-actividad-excepciones-auditoria.puml) | Actividades | Actualiza F3 | DOC-05 (Tabla 1 y protocolo); HU-33, HU-46 a HU-48; RF-13, RF-18 | MR-23 |
+| P6 — Autenticidad del archivo, catálogo y operación | [p6-casos-de-uso-autenticidad.puml](p6-casos-de-uso-autenticidad.puml) | Casos de uso | F1, F3 y Reportes | §21.6 M1, M5, M6, PLUS-16 a PLUS-20; HU-49 a HU-56 | MR-24 |
+| P6 — Autenticidad del archivo, catálogo y operación | [p6-actividad-senales-archivo.puml](p6-actividad-senales-archivo.puml) | Actividades | Actualiza F1 y F3 | PLUS-16 a PLUS-18, M5; NOM-151, ISO/IEC 27001 A.8.7, DOC-02 | MR-24 |
+| P6 — Autenticidad del archivo, catálogo y operación | [p6-actividad-trazabilidad-operacion.puml](p6-actividad-trazabilidad-operacion.puml) | Actividades | F3, salud y Reportes | M6, PLUS-19, PLUS-20; protocolo del DOC-05, RNF-02 | MR-24 |
 | QA — Validación cuantitativa (Fase 5, no PLUS) | [qa-actividad-evaluacion.puml](qa-actividad-evaluacion.puml) | Actividades | — | §15; RNF-01 a RNF-03; [VALIDACION_CUANTITATIVA.md](../VALIDACION_CUANTITATIVA.md) | — |
 
 ## Generar las imágenes

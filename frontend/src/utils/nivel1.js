@@ -47,7 +47,9 @@ export async function analizarNivel1(file) {
  */
 export function avisarCarga(toast, documento, exito) {
   if (documento?.advertencia_nivel_1) {
-    toast.alerta('PDF protegido con contraseña', documento.advertencia_nivel_1)
+    // P6 (PLUS-18): la misma advertencia de la carga explica también el contenido activo.
+    const titulo = documento.senales_pdf?.contenido_activo?.length ? 'Contenido activo en el PDF' : 'PDF protegido con contraseña'
+    toast.alerta(titulo, documento.advertencia_nivel_1)
   } else {
     toast.exito('Documento custodiado', exito)
   }

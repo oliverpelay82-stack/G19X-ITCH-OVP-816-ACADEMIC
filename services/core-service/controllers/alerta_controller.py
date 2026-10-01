@@ -51,4 +51,5 @@ def listar_alertas(
                 rfc=exp.titular.rfc if exp.titular else None,
                 estado_expediente=exp.estado_cumplimiento,
             ))
-    return sorted(alertas, key=lambda a: cumplimiento.rango_severidad(a.severidad))
+    # PLUS-20: dentro de cada severidad, primero lo que más tiempo lleva esperando.
+    return sorted(alertas, key=lambda a: (cumplimiento.rango_severidad(a.severidad), -(a.dias_en_espera or 0)))

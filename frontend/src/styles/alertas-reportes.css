@@ -585,3 +585,10 @@
     border-left: 0;
   }
 }
+
+/* PLUS-20: antigüedad de lo que espera ratificación. */
+.tablero-antiguedad {
+  margin: 0 0 var(--s-2);
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+}

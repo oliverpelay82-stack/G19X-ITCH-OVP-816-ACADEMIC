@@ -57,13 +57,25 @@ function detalle(servicio, estado, tono, reglas) {
   return lineas.join('\n')
 }
 
-/** Resumen de una línea: el peor estado manda (sin respuesta, degradado, comprobando, en línea). */
-function resumen(servicios) {
+/** Resumen de una línea: el peor estado manda (sin respuesta, degradado, comprobando, cuota agotada, en línea). */
+function resumen(servicios, cuota) {
   const caidos = servicios.filter((x) => x.tono === 'bad').length
   if (caidos) return { tono: 'bad', texto: caidos === 1 ? '1 servicio sin respuesta' : `${caidos} servicios sin respuesta` }
   if (servicios.some((x) => x.tono === 'warn')) return { tono: 'warn', texto: 'Servicio degradado' }
   if (servicios.some((x) => x.tono === 'off')) return { tono: 'off', texto: 'Comprobando servicios…' }
+  if (cuota?.agotada) return { tono: 'warn', texto: 'Cuota diaria de IA agotada' }
   return { tono: 'ok', texto: 'Servicios en línea' }
+}
+
+const horaLocal = (iso) => new Date(iso).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })
+
+/** PLUS-19: tokens del día frente al límite del proveedor (estimación de esta instancia). */
+function textoCuota(cuota) {
+  if (cuota.agotada) {
+    return `Cuota diaria de IA agotada${cuota.disponible_desde ? ` · se libera a las ${horaLocal(cuota.disponible_desde)}` : ''}`
+  }
+  if (!cuota.limite) return `IA hoy: ${cuota.usados.toLocaleString('es-MX')} tokens`
+  return `IA hoy: ${cuota.usados.toLocaleString('es-MX')} de ${cuota.limite.toLocaleString('es-MX')} tokens (${Math.round(cuota.porcentaje)} %)`
 }
 
 /**
@@ -78,7 +90,8 @@ export default function SystemHealth({ health, reglas = [] }) {
     const estado = health?.[s.key]
     return { s, estado, tono: tonoServicio(estado), puerto: PUERTOS[s.key] || s.puerto }
   })
-  const general = resumen(servicios)
+  const cuota = health?.ai?.payload?.motor_inferencia?.cuota_diaria
+  const general = resumen(servicios, cuota)
   return (
     <div className={`health health--${general.tono}`} tabIndex={0} aria-label={`Estado del sistema: ${general.texto}`}>
       <span className={`status-dot status-dot--${general.tono}`} aria-hidden="true" />
@@ -96,6 +109,11 @@ export default function SystemHealth({ health, reglas = [] }) {
             </li>
           )
         })}
+        {cuota && (
+          <li className={`health-cuota${cuota.agotada ? ' health-cuota--warn' : ''}`} title={cuota.estimacion}>
+            {textoCuota(cuota)}
+          </li>
+        )}
       </ul>
     </div>
   )

@@ -48,12 +48,13 @@ from typing import Any
 from sqlalchemy.orm import Session
 
 from clients import rules_client
+from config import zona_horaria
 from config.catalogo import etiqueta_documento
 from models.bitacora import EVENTO_EVALUACION_REGLAS
 from models.dictamen import ORIGEN_NIVEL_1, ORIGEN_NIVEL_3_ILEGIBLE, DictamenAuditoria
 from models.documento import Documento
 from models.expediente import Expediente
-from motor import bitacora
+from motor import bitacora, senales_pdf
 from motor import representacion as cotejo_legal
 from motor.redaccion import dias, fecha_legible, texto_llano
 
@@ -102,6 +103,13 @@ ALERTA_SIN_AUDITAR = "PENDIENTE_AUDITORIA"
 # P5 (DOC-05, Tabla 1): excepciones del procesamiento.
 ALERTA_ILEGIBLE = "DOCUMENTO_ILEGIBLE"
 ALERTA_DIFERIDO = "PROCESAMIENTO_DIFERIDO"
+# P6 (PRD §21.6): señales del archivo.
+ALERTA_POSIBLE_EDICION = "POSIBLE_EDICION"
+ALERTA_CONTENIDO_ACTIVO = "CONTENIDO_ACTIVO"
+ALERTA_OTRO_TITULAR = "ARCHIVO_DE_OTRO_TITULAR"
+# M5: documentos que dos titulares pueden compartir legítimamente (las partes de un contrato).
+TIPOS_BILATERALES = frozenset({"CONTRATO_SERVICIOS", "ACUERDO_CONFIDENCIALIDAD", "ANEXO_CONTRATO",
+                               "CONVENIO_MODIFICATORIO"})
 ALERTA_CONTENIDO = "CONTENIDO_NO_LOCALIZADO"
 # P2 (RSC-02, RN-03): el firmante del contrato no está acreditado por un poder o acta vigente.
 ALERTA_REPRESENTACION = "REPRESENTACION_NO_ACREDITADA"
@@ -131,6 +139,13 @@ class EstadoDocumento:
     # de origen NIVEL_3_ILEGIBLE sin ratificar) y auditoría diferida.
     ilegible: bool = False
     procesamiento_diferido: dict | None = None
+    # P6: señales de edición que pesan para su tipo (PLUS-16) y contenido activo (PLUS-18).
+    senales_edicion: list[str] = field(default_factory=list)
+    contenido_activo: list[str] = field(default_factory=list)
+    # M5: folios de expedientes de otros titulares que custodian el mismo archivo.
+    en_otros_titulares: list[str] = field(default_factory=list)
+    # PLUS-20: días que su dictamen En revisión lleva esperando ratificación.
+    dias_en_espera: int | None = None
 
 
 @dataclass
@@ -144,6 +159,8 @@ class Alerta:
     tipo_documento: str | None = None
     regla: str | None = None
     documento_id: str | None = None
+    # PLUS-20: antigüedad de un pendiente de ratificación (ordena la bandeja).
+    dias_en_espera: int | None = None
 
 
 @dataclass
@@ -192,6 +209,8 @@ class EvaluacionExpediente:
     representacion: list[cotejo_legal.CotejoRepresentacion] = field(default_factory=list)
     # C6: índice de cumplimiento del DOC-05 (PRD §10.5).
     indice_cumplimiento: IndiceCumplimiento | None = None
+    # M6: versión del catálogo de reglas con que se evaluó (nula con el respaldo del DOC-02).
+    version_catalogo: str | None = None
 
 
 @dataclass
@@ -279,6 +298,39 @@ def _severidad_por_anticipacion(dias: int) -> str | None:
     return severidad
 
 
+def _dias_en_espera(dictamen: DictamenAuditoria | None, hoy: date) -> int | None:
+    """
+    PLUS-20: días desde que se emitió un dictamen que aún espera ratificación.
+    ``creado_en`` se guarda en UTC sin zona; se cuenta en la zona del negocio,
+    la misma de ``hoy``, para que un dictamen de la noche no cuente un día de más.
+    """
+    if dictamen is None or dictamen.revisado_por_humano or dictamen.creado_en is None:
+        return None
+    return max((hoy - zona_horaria.fecha_local(dictamen.creado_en)).days, 0)
+
+
+def _huellas_en_otros_titulares(db: Session, expediente: Expediente, documentos: list[Documento]) -> dict[str, list[str]]:
+    """
+    M5: huella → folios de expedientes de **otro titular** que custodian el mismo
+    archivo. Dentro del mismo expediente PLUS-01 ya rechaza la carga; entre
+    expedientes del mismo titular es normal (un acta en el corporativo y en el jurídico).
+    """
+    huellas = {d.hash_sha256 for d in documentos}
+    if not huellas or not expediente.titular_id:
+        return {}
+    filas = (
+        db.query(Documento.hash_sha256, Expediente.codigo_expediente)
+        .join(Expediente, Documento.expediente_id == Expediente.id)
+        .filter(Documento.hash_sha256.in_(huellas), Expediente.titular_id != expediente.titular_id)
+        .distinct()
+        .all()
+    )
+    folios: dict[str, set[str]] = {}
+    for huella, folio in filas:
+        folios.setdefault(huella, set()).add(folio)
+    return {huella: sorted(f) for huella, f in folios.items()}
+
+
 def evaluar(
     db: Session,
     expediente: Expediente,
@@ -286,7 +338,7 @@ def evaluar(
     hoy: date | None = None,
 ) -> EvaluacionExpediente:
     """Calcula el semáforo y las alertas del expediente sin modificar nada."""
-    hoy = hoy or date.today()
+    hoy = hoy or zona_horaria.hoy()
     tipo_expediente = (expediente.tipo_expediente or "CORPORATIVO").upper()
     inventario = inventario or rules_client.obtener_documentos_obligatorios(tipo_expediente)
     requeridos = inventario.documentos
@@ -301,6 +353,7 @@ def evaluar(
     for doc in documentos:
         vigentes.setdefault(doc.tipo_documento, doc)
     dictamenes = ultimos_dictamenes(db, [d.id for d in vigentes.values()])
+    otros_titulares = _huellas_en_otros_titulares(db, expediente, list(vigentes.values()))
 
     # RIE-02: anexos que se vuelven exigibles porque su documento principal está presente.
     anexos_exigidos: dict[str, dict[str, str]] = {}
@@ -341,6 +394,10 @@ def evaluar(
                 ilegible=bool(dictamen and dictamen.origen == ORIGEN_NIVEL_3_ILEGIBLE
                               and not dictamen.revisado_por_humano),
                 procesamiento_diferido=doc.procesamiento_diferido or None,
+                senales_edicion=senales_pdf.codigos_edicion(tipo, doc.senales_pdf),
+                contenido_activo=list((doc.senales_pdf or {}).get("contenido_activo") or []),
+                en_otros_titulares=otros_titulares.get(doc.hash_sha256, []),
+                dias_en_espera=_dias_en_espera(dictamen, hoy) if estado == EN_REVISION else None,
             )
         )
 
@@ -451,6 +508,7 @@ def evaluar(
         alertas=alertas,
         representacion=cotejos,
         indice_cumplimiento=indice_cumplimiento(obligatorios, estados, dictamenes, vigencias, cotejos),
+        version_catalogo=getattr(inventario, "version_catalogo", None),
     )
 
 
@@ -670,6 +728,52 @@ def _alertas(
             ))
             continue
 
+        # M5: casi siempre una carga equivocada o un documento ajeno; en un contrato,
+        # las dos partes pueden custodiar el mismo archivo.
+        if e.en_otros_titulares:
+            bilateral = e.tipo_documento in TIPOS_BILATERALES
+            alertas.append(Alerta(
+                codigo=ALERTA_OTRO_TITULAR,
+                # Solo las cuatro severidades del DOC-05 (PRD §19).
+                severidad="MEDIA" if bilateral else "MEDIA_ALTA",
+                titulo=f"Archivo en el expediente de otro titular: {nombre}",
+                detalle=(f"El mismo archivo («{e.nombre_archivo_original}») está custodiado en "
+                         f"{', '.join(e.en_otros_titulares)}, de otro titular."
+                         + (" En un contrato puede ser legítimo: lo firman las dos partes." if bilateral else "")),
+                recomendacion=("Confirmar que el documento corresponda a este titular; si fue una carga equivocada, "
+                               "custodiar el documento correcto, que sustituye a este."),
+                tipo_documento=e.tipo_documento, documento_id=e.documento_id,
+            ))
+
+        # P6 (PLUS-18): el archivo sigue teniendo contenido activo aunque se ratifique.
+        if e.contenido_activo:
+            alertas.append(Alerta(
+                codigo=ALERTA_CONTENIDO_ACTIVO,
+                severidad="ALTA",
+                titulo=f"Contenido activo en el PDF: {nombre}",
+                detalle=(f"«{e.nombre_archivo_original}» contiene "
+                         f"{senales_pdf.descripcion_activo(e.contenido_activo)}."),
+                recomendacion=("No abrir el original en un lector con JavaScript habilitado (el visor del motor "
+                               "muestra páginas como imagen) y solicitar al emisor una versión sin contenido "
+                               "activo: sustituye a esta."),
+                tipo_documento=e.tipo_documento, documento_id=e.documento_id,
+            ))
+        # P6 (PLUS-16): un documento del SAT con señales de retoque; la ratificación la resuelve.
+        if e.senales_edicion and not e.revisado_por_humano:
+            documento = vigentes.get(e.tipo_documento)
+            detalles = "; ".join(s["detalle"] for s in ((documento.senales_pdf or {}).get("edicion") or [])) \
+                if documento else ""
+            alertas.append(Alerta(
+                codigo=ALERTA_POSIBLE_EDICION,
+                severidad="MEDIA_ALTA",
+                titulo=f"Posible edición del archivo: {nombre}",
+                detalle=(f"El SAT emite este documento electrónicamente y «{e.nombre_archivo_original}» "
+                         f"muestra señales de modificación: {detalles}."),
+                recomendacion=("Validar el documento en el portal del SAT o pedir al titular que lo descargue de "
+                               "nuevo; después, ratificar su dictamen."),
+                tipo_documento=e.tipo_documento, documento_id=e.documento_id,
+            ))
+
         if vigencia and vigencia.estado == VENCIDO:
             if vigencia.criterio == CRITERIO_ANTIGUEDAD and vigencia.limite_dias is not None:
                 recomendacion = (
@@ -829,13 +933,15 @@ def _alertas(
                 codigo=ALERTA_REVISION_HUMANA,
                 severidad="MEDIA",
                 titulo=f"Pendiente de ratificación: {nombre}",
-                detalle=texto_llano(motivo)
-                or "El motor no pudo resolver el dictamen de forma automática (confianza o vigencia).",
+                detalle=(texto_llano(motivo)
+                         or "El motor no pudo resolver el dictamen de forma automática (confianza o vigencia).")
+                + (f" Lleva {dias(e.dias_en_espera)} esperando ratificación." if e.dias_en_espera else ""),
                 recomendacion=(
                     "Un analista debe confirmar o corregir el dictamen, con una justificación, desde el panel de "
                     "auditoría del documento."
                 ),
                 tipo_documento=e.tipo_documento, documento_id=e.documento_id,
+                dias_en_espera=e.dias_en_espera,
             ))
         elif e.estado == SIN_DICTAMEN and e.obligatorio and not e.procesamiento_diferido:
             alertas.append(Alerta(

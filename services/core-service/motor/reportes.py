@@ -30,6 +30,7 @@ from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import mm
 from reportlab.platypus import KeepTogether, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
+from config import zona_horaria
 from config.catalogo import etiqueta_documento, etiqueta_expediente
 from models.bitacora import BitacoraAuditoria
 from models.dictamen import DictamenAuditoria
@@ -131,8 +132,8 @@ def _fecha(valor: Any) -> str:
 
 
 def _ahora() -> str:
-    """Hora local del servidor con su desfase, la misma referencia que las fechas de la base."""
-    ahora = datetime.now().astimezone()
+    """Hora de emisión en la zona del negocio (la misma con que se calculan las vigencias), con su desfase."""
+    ahora = zona_horaria.ahora()
     desfase = ahora.strftime("%z")
     return f"{ahora.strftime('%Y-%m-%d %H:%M')} (UTC{desfase[:3]}:{desfase[3:]})"
 
@@ -229,6 +230,7 @@ def _evidencia(datos: DatosExpediente) -> list[dict[str, Any]]:
             "modelo": dictamen.modelo_utilizado or "—",
             "lectura": dictamen.version_lectura or "no registrada",
             "instrucciones": dictamen.version_instrucciones or "no registrada",
+            "catalogo": dictamen.version_catalogo or "no registrada",
             "fecha": _fecha(dictamen.creado_en),
             "ratificacion": ratificacion,
             "observaciones": " ".join(texto_llano(o) for o in dictamen.observaciones or [] if o),
@@ -286,6 +288,7 @@ def _ficha_expediente(datos: DatosExpediente) -> list[tuple[str, Any]]:
         ("Alertas vigentes", len(ev.alertas)),
         ("Criterio de obligatoriedad", FUENTE_LEGIBLE.get(ev.fuente_obligatorios, ev.fuente_obligatorios)
          + (f" — {ev.advertencia}" if ev.advertencia else "")),
+        ("Versión del catálogo de reglas", ev.version_catalogo or "no registrada"),
         ("Reporte emitido", _ahora()),
     ]
 
@@ -317,6 +320,7 @@ def expediente_xlsx(datos: DatosExpediente) -> bytes:
         ("preliminar", "Estatus preliminar", 16), ("origen", "Origen", 12), ("confianza", "Confianza", 11),
         ("reglas", "Reglas aplicadas", 40), ("hash", "SHA-256", 68), ("modelo", "Modelo", 20),
         ("lectura", "Versión de la lectura", 44), ("instrucciones", "Instrucciones al modelo", 20),
+        ("catalogo", "Catálogo de reglas", 18),
         ("fecha", "Fecha", 17), ("ratificacion", "Ratificación humana", 50), ("observaciones", "Observaciones", 70),
     ], _evidencia(datos))
 

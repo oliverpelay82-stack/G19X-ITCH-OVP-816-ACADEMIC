@@ -23,7 +23,7 @@ from fastapi import APIRouter
 
 from clients import groq_client
 from config import settings
-from pipelines import extraccion_pipeline
+from pipelines import extraccion_pipeline, cuota_diaria
 from pipelines import repositorio_texto
 
 router = APIRouter(prefix="/api/v1", tags=["Salud"])
@@ -74,6 +74,8 @@ def health_check():
             "endpoint": settings.GROQ_BASE_URL,
             "temperatura_auditoria": settings.GROQ_TEMPERATURE,
             **estado_groq,
+            # PLUS-19: tokens del día (estimación de esta instancia) y si la cuota se agotó.
+            "cuota_diaria": cuota_diaria.estado(),
         },
         "motor_ocr": {
             "proveedor": "Tesseract",

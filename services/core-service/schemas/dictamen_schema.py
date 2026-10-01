@@ -43,6 +43,12 @@ class DictamenCreate(BaseModel):
     version_instrucciones: Optional[str] = Field(
         None, max_length=40, description="P5: huella de las instrucciones al modelo"
     )
+    qr_sat: Optional[dict[str, Any]] = Field(
+        None, description="P6 (PLUS-17): lectura del QR del SAT (url, dominio_sat, rfc_qr, coincide_rfc)"
+    )
+    version_catalogo: Optional[str] = Field(
+        None, max_length=20, description="P6 (M6): versión del catálogo de reglas (cat-…)"
+    )
     usuario: str = Field("SISTEMA", min_length=1, max_length=100)
     representacion: Optional[dict[str, Any]] = Field(
         None,
@@ -93,6 +99,8 @@ class DictamenResponse(BaseModel):
     modelo_utilizado: Optional[str] = None
     version_lectura: Optional[str] = None
     version_instrucciones: Optional[str] = None
+    qr_sat: Optional[dict[str, Any]] = None
+    version_catalogo: Optional[str] = None
     representacion_legal: Optional[dict[str, Any]] = None
     hash_sha256: str
     revisado_por_humano: bool

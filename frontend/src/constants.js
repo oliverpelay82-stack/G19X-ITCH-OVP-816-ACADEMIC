@@ -105,6 +105,10 @@ export const ALERTA_META = {
   // P5 (DOC-05, Tabla 1): excepciones del procesamiento.
   DOCUMENTO_ILEGIBLE: { label: 'Ilegible' },
   PROCESAMIENTO_DIFERIDO: { label: 'Diferido' },
+  // P6: señales del archivo.
+  POSIBLE_EDICION: { label: 'Posible edición' },
+  CONTENIDO_ACTIVO: { label: 'Contenido activo' },
+  ARCHIVO_DE_OTRO_TITULAR: { label: 'Otro titular' },
 }
 
 export const FAMILIAS_REGLA = ['RIE', 'RCV', 'RSC', 'RDS']

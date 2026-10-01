@@ -95,6 +95,7 @@ const RFC_FISICA = /^[A-ZÑ&]{4}\d{6}[A-Z\d]{3}$/
 export function validarRfc(rfc, tipoPersona) {
   const valor = (rfc || '').trim().toUpperCase()
   if (!valor) return { estado: 'vacio', mensaje: '' }
+  if (RFC_GENERICOS.has(valor)) return { estado: 'valido', mensaje: 'RFC genérico del SAT.' }
 
   const esperado = tipoPersona === 'FISICA' ? 13 : 12
   if (valor.length < esperado) {
@@ -113,13 +114,43 @@ export function validarRfc(rfc, tipoPersona) {
   }
 
   const fecha = valor.slice(tipoPersona === 'FISICA' ? 4 : 3, tipoPersona === 'FISICA' ? 10 : 9)
-  const mes = Number(fecha.slice(2, 4))
-  const dia = Number(fecha.slice(4, 6))
-  if (mes < 1 || mes > 12 || dia < 1 || dia > 31) {
-    return { estado: 'invalido', mensaje: 'La fecha embebida (AAMMDD) no es válida.' }
+  if (!fechaRfcPosible(fecha)) {
+    return { estado: 'invalido', mensaje: 'La fecha embebida (AAMMDD) no existe.' }
   }
 
-  return { estado: 'valido', mensaje: 'Formato de RFC válido.' }
+  // M1: el dígito verificador del SAT. Uno que no coincide se acepta con
+  // advertencia (RFC de prueba), igual que en el servidor.
+  if (digitoRfc(valor) !== valor.at(-1)) {
+    return {
+      estado: 'advertencia',
+      mensaje: 'Formato válido, pero el dígito verificador no coincide: revisa que esté bien escrito.',
+    }
+  }
+  return { estado: 'valido', mensaje: 'RFC válido: el dígito verificador coincide.' }
+}
+
+/** El RFC se puede registrar (válido, o con la advertencia del dígito verificador). */
+export const rfcRegistrable = (check) => check.estado === 'valido' || check.estado === 'advertencia'
+
+const RFC_GENERICOS = new Set(['XAXX010101000', 'XEXX010101000'])
+const DICCIONARIO_RFC = '0123456789ABCDEFGHIJKLMN&OPQRSTUVWXYZ Ñ'
+
+/** Dígito verificador del SAT (módulo 11); la persona moral se completa con un espacio inicial. */
+function digitoRfc(rfc) {
+  const base = rfc.slice(0, -1).padStart(12, ' ')
+  const suma = [...base].reduce((total, c, i) => total + DICCIONARIO_RFC.indexOf(c) * (13 - i), 0)
+  const resto = suma % 11
+  if (resto === 0) return '0'
+  return 11 - resto === 10 ? 'A' : String(11 - resto)
+}
+
+/** La fecha AAMMDD existe en 1900 o en 2000 (así el 29/02/00 es válido). */
+function fechaRfcPosible(aammdd) {
+  const [aa, mm, dd] = [aammdd.slice(0, 2), aammdd.slice(2, 4), aammdd.slice(4, 6)].map(Number)
+  return [1900, 2000].some((siglo) => {
+    const f = new Date(Date.UTC(siglo + aa, mm - 1, dd))
+    return f.getUTCMonth() === mm - 1 && f.getUTCDate() === dd
+  })
 }
 
 /** Copia al portapapeles con respaldo para navegadores sin permiso. */

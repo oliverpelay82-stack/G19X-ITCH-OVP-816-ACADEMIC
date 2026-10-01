@@ -23,7 +23,7 @@ from openai import OpenAI, APIError, APIConnectionError, RateLimitError
 from config import settings
 # El caché de inferencias vive en la misma SQLite que el texto extraído: es la
 # única persistencia local del servicio (DOC-08).
-from pipelines import persistencia_texto, presupuesto_tokens
+from pipelines import cuota_diaria, persistencia_texto, presupuesto_tokens
 
 # Tope del sondeo de salud: /health nunca debe esperar el timeout de inferencia.
 _TIMEOUT_SONDEO_SEGUNDOS = 5
@@ -65,9 +65,13 @@ _USO_DESDE_CACHE = {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 
 
 
 def _registrar(uso: dict[str, Any] | None) -> None:
-    """T4 (PLUS-11): cada llamada real entra en la cuenta de tokens del último minuto."""
+    """
+    T4 (PLUS-11): cada llamada real entra en la cuenta de tokens del último
+    minuto; PLUS-19: y en la del día.
+    """
     if uso:
         presupuesto_tokens.presupuesto.registrar(uso.get("total_tokens"))
+        cuota_diaria.registrar(uso.get("total_tokens"))
 
 
 def uso_de(respuesta: Any) -> dict[str, Any] | None:
@@ -99,6 +103,12 @@ def _client() -> OpenAI:
 def _traducir(exc: APIError) -> GroqNoDisponibleError:
     """Convierte el error del SDK, ya agotados sus reintentos, en el error del servicio."""
     if isinstance(exc, RateLimitError):
+        if cuota_diaria.es_cuota_diaria(str(exc)):
+            # PLUS-19: la cuota del día se agotó; el ciclo diferido espera hasta que se libere.
+            cuota_diaria.registrar_agotada(str(exc))
+            return GroqNoDisponibleError(
+                "Se agotó la cuota diaria del servicio de IA; las auditorías se reintentarán cuando se libere."
+            )
         return GroqNoDisponibleError(
             f"Groq rechazó la petición por límite de uso (429) tras {settings.GROQ_MAX_RETRIES} reintentos: {exc}"
         )

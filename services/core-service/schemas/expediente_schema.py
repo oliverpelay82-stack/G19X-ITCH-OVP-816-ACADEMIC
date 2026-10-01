@@ -53,6 +53,10 @@ class EstadoDocumentoResponse(BaseModel):
     dias_para_vencer: Optional[int] = None
     anexo_de: Optional[str] = Field(None, description="Documento principal del que es anexo obligatorio (RIE-02)")
     ilegible: bool = Field(False, description="P5: su dictamen dice «Documento ilegible, se requiere recarga»")
+    senales_edicion: list[str] = Field(default_factory=list, description="P6 (PLUS-16): señales de edición que pesan para su tipo")
+    contenido_activo: list[str] = Field(default_factory=list, description="P6 (PLUS-18): contenido activo del PDF")
+    en_otros_titulares: list[str] = Field(default_factory=list, description="M5: folios de otros titulares con el mismo archivo")
+    dias_en_espera: Optional[int] = Field(None, description="PLUS-20: días que su dictamen lleva esperando ratificación")
     procesamiento_diferido: Optional[dict] = Field(
         None, description="P5: la auditoría quedó diferida porque la IA no respondió"
     )
@@ -68,6 +72,7 @@ class AlertaResponse(BaseModel):
     tipo_documento: Optional[str] = None
     regla: Optional[str] = None
     documento_id: Optional[str] = None
+    dias_en_espera: Optional[int] = Field(None, description="PLUS-20: días esperando ratificación")
 
 
 class AnexoFaltanteResponse(BaseModel):
@@ -129,6 +134,7 @@ class EvaluacionExpedienteResponse(BaseModel):
     alertas: list[AlertaResponse] = Field(default_factory=list)
     representacion: list[CotejoRepresentacionResponse] = Field(default_factory=list)
     indice_cumplimiento: Optional[IndiceCumplimientoResponse] = None
+    version_catalogo: Optional[str] = Field(None, description="M6: versión del catálogo de reglas con que se evaluó")
 
 
 class ExpedienteResponse(BaseModel):

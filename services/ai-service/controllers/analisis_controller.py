@@ -41,7 +41,7 @@ from pipelines import (
 )
 from pipelines.extraccion_pipeline import FormatoNoSoportadoError, MotorOcrNoDisponibleError, version_lectura
 from pipelines.version_instrucciones import version_instrucciones
-from pipelines import diferidos, legibilidad
+from pipelines import cuota_diaria, diferidos, legibilidad, qr_sat
 from schemas.analisis_schema import AnalisisSemanticoRequest, ChatDocumentoRequest
 
 router = APIRouter(prefix="/api/v1/ai", tags=["Nivel 4 — Análisis Semántico con IA"])
@@ -314,13 +314,18 @@ def _ms(inicio: float) -> int:
     return round((time.perf_counter() - inicio) * 1000)
 
 
-def versiones_dictamen() -> dict[str, str]:
-    """Versión de la lectura del Nivel 3 y huella de las instrucciones (P5, dictamen reproducible)."""
-    return {"version_lectura": version_lectura(), "version_instrucciones": version_instrucciones()}
+def versiones_dictamen() -> dict[str, str | None]:
+    """
+    Versión de la lectura del Nivel 3 y huella de las instrucciones (P5, dictamen
+    reproducible), más la versión del catálogo de reglas (M6).
+    """
+    return {"version_lectura": version_lectura(), "version_instrucciones": version_instrucciones(),
+            "version_catalogo": rules_client.version_catalogo()}
 
 
 def _persistir_dictamen(
-    documento_id: str, resultado: pipeline_analisis.ResultadoAnalisis, usuario: str, origen: str | None = None
+    documento_id: str, resultado: pipeline_analisis.ResultadoAnalisis, usuario: str, origen: str | None = None,
+    qr: dict | None = None,
 ) -> dict:
     """
     Guarda el dictamen en el core-service (tabla dictamenes_auditoria y
@@ -348,6 +353,7 @@ def _persistir_dictamen(
         # P5: con qué lectura e instrucciones se emitió, para reproducirlo.
         **versiones_dictamen(),
         **({"origen": origen} if origen else {}),
+        **({"qr_sat": qr} if qr else {}),
         "usuario": usuario,
     }
     try:
@@ -441,6 +447,42 @@ def _auditoria_ilegible(
     return respuesta
 
 
+def _qr_del_documento(
+    documento: repositorio_texto.TextoDocumento | None, tipo: str | None, rfc_referencia: str | None
+) -> dict | None:
+    """
+    PLUS-17: QR del SAT de una constancia, opinión 32-D o cédula. Lee el binario
+    verificado por el core; si el core no lo entrega, la auditoría sigue sin QR.
+    """
+    metadatos = (documento.metadatos or {}) if documento else {}
+    if tipo not in qr_sat.TIPOS_CON_QR or metadatos.get("mime_type", "application/pdf") != "application/pdf":
+        return None
+    try:
+        contenido = core_client.leer_binario(metadatos)
+    except (CoreNoDisponibleError, DocumentoNoEncontradoError, DocumentoAlteradoError):
+        return None
+    return qr_sat.leer(contenido, rfc_referencia)
+
+
+def _tope_revision(resultado: pipeline_analisis.ResultadoAnalisis, motivos: list[str], qr: dict | None) -> None:
+    """
+    Una señal del archivo deja la auditoría En revisión (Nivel 5: la decide un
+    analista); no cambia un No conforme. El primer motivo explica la revisión.
+    """
+    if qr and qr.get("url"):
+        resultado.recomendaciones.append(f"Validar el documento en el portal del SAT con su código QR: {qr['url']}")
+    if not motivos:
+        return
+    resultado.requiere_revision_humana = True
+    if resultado.estatus_preliminar == "CONFORME":
+        resultado.estatus_preliminar = "EN_REVISION"
+        primero, *demas = motivos
+        resultado.observaciones.append(f"Dictamen EN_REVISION: {primero[:1].lower()}{primero[1:]}")
+        resultado.observaciones.extend(demas)
+    else:
+        resultado.observaciones.extend(motivos)
+
+
 def auditar(peticion: AnalisisSemanticoRequest) -> dict:
     """
     Ejecuta el Nivel 4 sobre el documento indicado.
@@ -500,6 +542,11 @@ def auditar(peticion: AnalisisSemanticoRequest) -> dict:
 
     if nota_criterios:
         resultado.observaciones.append(nota_criterios)
+    # P6 (PLUS-16 a PLUS-18): las señales del archivo que calculó el core y el QR
+    # del SAT llevan la auditoría a revisión humana; nunca la rechazan.
+    qr = _qr_del_documento(documento, tipo_registrado, peticion.rfc_titular or resultado.rfc_detectado)
+    motivos_archivo = list(((documento.metadatos or {}).get("senales_revision") or []) if documento else [])
+    _tope_revision(resultado, motivos_archivo + qr_sat.motivos(qr), qr)
     sellos_detectados = _sellos_del_documento(documento)
     resultado.observaciones.extend(_observaciones_de_sellos(documento, sellos_detectados))
     respuesta = resultado.a_dict()
@@ -507,6 +554,7 @@ def auditar(peticion: AnalisisSemanticoRequest) -> dict:
     respuesta["sello_digital_sat"] = bool(documento and documento.traza.get("sello_digital_sat"))
     respuesta["fuente_texto"] = fuente
     respuesta["versiones"] = versiones_dictamen()
+    respuesta["qr_sat"] = qr
     respuesta["tiempos_ms"] = {"resolucion_texto": ms_texto, "inferencia": _ms(inicio)}
     if documento and documento.metadatos:
         respuesta["documento"] = {
@@ -520,7 +568,7 @@ def auditar(peticion: AnalisisSemanticoRequest) -> dict:
     # Solo el dictamen de un documento de la bóveda se persiste: un texto suelto
     # enviado por el cliente no pertenece a ningún expediente.
     if documento and peticion.documento_id:
-        respuesta["persistencia"] = _persistir_dictamen(peticion.documento_id, resultado, peticion.usuario)
+        respuesta["persistencia"] = _persistir_dictamen(peticion.documento_id, resultado, peticion.usuario, qr=qr)
         # T0 (PLUS-07): ficha de lo verificado, ligada al dictamen que el core acaba de guardar.
         dictamen_guardado = respuesta["persistencia"].get("dictamen") or {}
         if respuesta["persistencia"].get("guardado") and dictamen_guardado.get("id") and documento.sha256:
@@ -712,6 +760,9 @@ def _auditar_diferida(peticion: dict) -> None:
 
 def procesar_diferidos() -> dict[str, int]:
     """Una vuelta del ciclo en segundo plano (lo arranca main.py)."""
+    # PLUS-19: con la cuota diaria agotada, reintentar solo gastaría intentos.
+    if cuota_diaria.agotada():
+        return {"auditadas": 0, "reprogramadas": 0, "agotadas": 0, "descartadas": 0}
     return diferidos.procesar_vencidas(
         _auditar_diferida, core_client.marcar_diferido, _ReintentarDespues, (_SinReintento,)
     )

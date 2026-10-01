@@ -204,7 +204,8 @@
   color: var(--bad);
 }
 
-.field-feedback--incompleto {
+.field-feedback--incompleto,
+.field-feedback--advertencia {
   color: var(--warn);
 }
 

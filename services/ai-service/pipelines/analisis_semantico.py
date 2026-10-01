@@ -19,6 +19,7 @@ from __future__ import annotations
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from datetime import date, datetime
+from zoneinfo import ZoneInfo
 from typing import Any
 import re
 import unicodedata
@@ -355,7 +356,8 @@ def analizar(
     :param paginas: ``detalle_paginas`` del Nivel 3; cada fragmento enviado al
         modelo queda asociado a su página en la traza.
     """
-    hoy = fecha_referencia or date.today()
+    # Q-a: el día en la zona del negocio, no en la del servidor (un contenedor corre en UTC).
+    hoy = fecha_referencia or datetime.now(ZoneInfo(settings.ZONA_HORARIA)).date()
     if not texto.strip():
         raise ValueError(
             "No hay texto que analizar: ejecute primero el Nivel 3 (extracción) "

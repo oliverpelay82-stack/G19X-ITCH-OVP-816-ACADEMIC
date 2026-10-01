@@ -65,6 +65,8 @@ class InventarioObligatorio:
     fuente: str
     advertencia: str | None = None
     anexos: list[dict[str, str]] = field(default_factory=list)
+    # M6: versión del catálogo con que se calculó (cabecera X-Version-Catalogo del rules-service).
+    version_catalogo: str | None = None
 
 
 def _respaldo(tipo_expediente: str, motivo: str) -> InventarioObligatorio:
@@ -89,6 +91,7 @@ def obtener_documentos_obligatorios(tipo_expediente: str = TIPO_EXPEDIENTE_PREDE
         respuesta = requests.get(url, params={"tipo_expediente": tipo_expediente}, timeout=TIMEOUT_SEGUNDOS)
         respuesta.raise_for_status()
         registros = respuesta.json()
+        version = respuesta.headers.get("X-Version-Catalogo")
     except (requests.RequestException, ValueError) as exc:
         return _respaldo(tipo_expediente, f"El rules-service ({RULES_BASE_URL}) no respondió: {exc.__class__.__name__}.")
 
@@ -109,4 +112,4 @@ def obtener_documentos_obligatorios(tipo_expediente: str = TIPO_EXPEDIENTE_PREDE
             "El catálogo de reglas no declara ningún documento obligatorio activo (familia RIE) "
             f"para el expediente {etiqueta_expediente(tipo_expediente).lower()}.",
         )
-    return InventarioObligatorio(documentos=documentos, fuente=FUENTE_CATALOGO, anexos=anexos)
+    return InventarioObligatorio(documentos=documentos, fuente=FUENTE_CATALOGO, anexos=anexos, version_catalogo=version)

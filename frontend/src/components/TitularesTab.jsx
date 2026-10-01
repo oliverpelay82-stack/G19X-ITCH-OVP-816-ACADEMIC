@@ -25,7 +25,13 @@ import useToast from '../hooks/useToast.js'
 import useDebounce from '../hooks/useDebounce.js'
 import { createTitular } from '../services/api.js'
 import { categoriaTitular, getEstadoBadge } from '../constants.js'
-import { formatFechaCorta, iniciales, validarRfc } from '../utils/format.js'
+import { formatFechaCorta, iniciales, rfcRegistrable, validarRfc } from '../utils/format.js'
+
+/** M1: el dígito verificador del RFC no coincide (RFC de prueba o mal escrito); se aceptó con advertencia. */
+function AvisoRfc({ titular }) {
+  if (titular.rfc_verificacion !== 'DIGITO_NO_COINCIDE') return null
+  return <span className="rfc-aviso">Dígito verificador sin coincidir</span>
+}
 
 const FORM_INICIAL = { rfc: '', razon_social: '', tipo_persona: 'MORAL', categoria: 'PROVEEDOR' }
 
@@ -112,6 +118,7 @@ function TarjetaTitular({ titular, expedientes, ...acciones }) {
       <KeyValueList className="profile-grid">
         <KeyValue etiqueta="RFC">
           <CopyChip valor={titular.rfc} etiqueta="RFC" />
+          <AvisoRfc titular={titular} />
         </KeyValue>
         <KeyValue etiqueta="Categoría">
           <Tag>{categoriaTitular(titular.categoria)}</Tag>
@@ -216,7 +223,7 @@ export default function TitularesTab({
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (rfcCheck.estado !== 'valido') {
+    if (!rfcRegistrable(rfcCheck)) {
       setError('Corrige el RFC antes de continuar.')
       return
     }
@@ -381,6 +388,7 @@ export default function TitularesTab({
                         </td>
                         <td>
                           <CopyChip valor={t.rfc} etiqueta="RFC" />
+                          <AvisoRfc titular={t} />
                         </td>
                         <td>
                           <Badge>{t.tipo_persona === 'FISICA' ? 'Física' : 'Moral'}</Badge>
@@ -467,7 +475,7 @@ export default function TitularesTab({
 
             <div className="modal-footer">
               <Button onClick={cerrarModal}>Cancelar</Button>
-              <Button type="submit" variante="primary" cargando={enviando} disabled={rfcCheck.estado !== 'valido'}>
+              <Button type="submit" variante="primary" cargando={enviando} disabled={!rfcRegistrable(rfcCheck)}>
                 Registrar titular
               </Button>
             </div>

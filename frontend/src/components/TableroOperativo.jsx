@@ -11,6 +11,8 @@ const DIAS_EVOLUCION = 30
 /** Alertas que esperan una acción del analista (Nivel 5), en el orden en que conviene atenderlas. */
 const PENDIENTES = ['PENDIENTE_RATIFICACION', 'CONTENIDO_NO_LOCALIZADO', 'PENDIENTE_AUDITORIA']
 
+const diasTexto = (n) => (n === 0 ? 'desde hoy' : `${n} ${n === 1 ? 'día' : 'días'}`)
+
 function textoVencimiento(dias) {
   if (dias < 0) return `Venció hace ${Math.abs(dias)} ${Math.abs(dias) === 1 ? 'día' : 'días'}`
   if (dias === 0) return 'Vence hoy'
@@ -77,12 +79,33 @@ function PendientesAnalista({ expedientes, onAbrirExpediente }) {
     [expedientes]
   )
   const total = grupos.reduce((s, g) => s + g.total, 0)
+  // PLUS-20: cuánto llevan esperando los dictámenes por ratificar.
+  const esperas = useMemo(
+    () =>
+      expedientes
+        .flatMap((e) => e.evaluacion?.documentos || [])
+        .map((d) => d.dias_en_espera)
+        .filter((n) => n !== null && n !== undefined),
+    [expedientes]
+  )
   return (
     <Card as="article" className="report-card">
       <p className="eyebrow eyebrow--icon">
         <ClipboardCheck size={12} aria-hidden="true" />
         Pendientes del analista · {total}
       </p>
+      {esperas.length > 0 && (
+        <p className="tablero-antiguedad">
+          {esperas.length === 1 ? 'Un dictamen espera' : `${esperas.length} dictámenes esperan`} ratificación · el más
+          antiguo, <span className="tabular">{diasTexto(Math.max(...esperas))}</span>
+          {esperas.length > 1 && (
+            <>
+              ; promedio, <span className="tabular">{diasTexto(Math.round(esperas.reduce((s, n) => s + n, 0) / esperas.length))}</span>
+            </>
+          )}
+          .
+        </p>
+      )}
       {total === 0 ? (
         <p className="field-hint">Nada pendiente: todos los dictámenes están resueltos.</p>
       ) : (

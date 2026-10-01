@@ -6,6 +6,7 @@ documento: consulta las reglas Cronológicas y de Vigencia activas del catálogo
 (DOC-05), que son la fuente única de esos plazos. Así, pausar o ajustar una
 regla desde la interfaz cambia el dictamen sin tocar el código del ai-service.
 """
+import time
 from datetime import date
 from typing import Any
 
@@ -87,3 +88,29 @@ def criterios_contenido(tipo_documento: str | None) -> list[dict[str, Any]]:
         for r in reglas
         if r.get("familia_regla") in FAMILIAS_CONTENIDO and (r.get("tipo_documento") or "").upper() == tipo
     ]
+
+
+# M6 (PRD §21.6): versión del catálogo de reglas, en memoria unos segundos para
+# no consultarla en cada auditoría de un lote.
+# Una falla también se recuerda (menos tiempo): sin rules-service, cada auditoría
+# de un lote no espera de nuevo la conexión rechazada.
+_VERSION_TTL_SEGUNDOS = 60
+_VERSION_TTL_FALLA_SEGUNDOS = 15
+_version_en_memoria: tuple[float, str | None] = (float("-inf"), None)
+
+
+def version_catalogo() -> str | None:
+    """Versión del catálogo (cat-…) o None si el rules-service no responde: la auditoría no se detiene por ella."""
+    global _version_en_memoria
+    consultada, version = _version_en_memoria
+    vigencia = _VERSION_TTL_SEGUNDOS if version else _VERSION_TTL_FALLA_SEGUNDOS
+    if time.monotonic() - consultada < vigencia:
+        return version
+    try:
+        respuesta = _sesion.get(f"{settings.RULES_BASE_URL}/api/v1/reglas/version", timeout=TIMEOUT_SEGUNDOS)
+        respuesta.raise_for_status()
+        version = respuesta.json().get("version_catalogo")
+    except (requests.RequestException, ValueError):
+        version = None
+    _version_en_memoria = (time.monotonic(), version)
+    return version

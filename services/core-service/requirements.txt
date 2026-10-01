@@ -25,3 +25,5 @@ reportlab>=4.2.0
 # Nivel 1 — detección de PDF con contraseña de apertura (PLUS-02, DOC-05 Tabla 1).
 # El descifrado AES que usa pypdf se apoya en cryptography (ya declarada arriba).
 pypdf>=5.0.0
+# Q-a: base de zonas horarias para zoneinfo (Windows e imágenes slim no la traen).
+tzdata>=2024.1

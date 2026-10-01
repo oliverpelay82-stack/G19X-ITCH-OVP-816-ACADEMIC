@@ -1,0 +1,71 @@
+@startuml p6-actividad-senales-archivo
+' P6 — Señales del archivo en la carga y en la auditoría.
+' Trazabilidad: PLUS-16, PLUS-17, PLUS-18, M5; HU-50 a HU-53; NOM-151;
+' ISO/IEC 27001 A.8.7; DOC-02; RN-03; Nivel 5 (una señal nunca rechaza).
+' Implementación prevista: services/core-service/controllers/documento_controller.py,
+' motor/senales_pdf.py, motor/integridad.py (barrido), motor/cumplimiento.py;
+' services/ai-service/controllers/analisis_controller.py y pipelines/qr_sat.py
+' Actualiza F1 (carga) y F3 (auditoría).
+
+title P6 — Señales del archivo: carga y auditoría
+
+|Analista|
+start
+:Carga un PDF en el expediente;
+
+|core-service · Nivel 1|
+:Firma, tamaño, huella SHA-256,
+duplicado (PLUS-01) y contraseña (PLUS-02);
+:Lee metadatos y estructura del PDF
+(motor/senales_pdf.py);
+note right
+  Edición: productor, creación frente a
+  modificación, guardados incrementales
+  (sin firmas ni linealización).
+  Contenido activo: JavaScript, /OpenAction,
+  /Launch, /AA, archivos incrustados, XFA.
+end note
+:Custodia el archivo y guarda
+senales_pdf en el documento;
+if (¿Contenido activo?) then (sí)
+  :La respuesta de la carga advierte;
+endif
+
+|Analista|
+:Audita el documento;
+
+|ai-service · Nivel 4|
+:Dictamen preliminar del modelo
+y reglas deterministas;
+if (¿Constancia fiscal u opinión 32-D?) then (sí)
+  :Busca el QR en la primera y la última
+  página (OpenCV) — pipelines/qr_sat.py;
+  if (¿QR ajeno al SAT o con otro RFC?) then (sí)
+    :Tope En revisión con el motivo;
+  endif
+  if (¿Señales de edición?) then (sí)
+    :Tope En revisión con el motivo;
+  endif
+endif
+if (¿Contenido activo?) then (sí)
+  :Tope En revisión con el motivo;
+endif
+:Guarda el dictamen con versión de lectura,
+instrucciones y catálogo;
+
+|core-service · evaluación|
+:Alertas «Posible edición del archivo»,
+«Contenido activo en el PDF» y
+«Archivo en el expediente de otro titular»;
+
+|Analista|
+:Revisa el motivo y ratifica (Nivel 5);
+stop
+
+|core-service · Nivel 1|
+note right
+  Documentos custodiados antes de P6:
+  el barrido programado (PLUS-14) calcula
+  sus señales al leer cada binario.
+end note
+@enduml

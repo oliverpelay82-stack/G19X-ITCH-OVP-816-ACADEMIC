@@ -12,3 +12,5 @@ python-dotenv>=1.0.0
 
 # Validación y DTOs
 pydantic>=2.8.0
+# Q-a: base de zonas horarias para zoneinfo (Windows e imágenes slim no la traen).
+tzdata>=2024.1

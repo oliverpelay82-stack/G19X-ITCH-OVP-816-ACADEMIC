@@ -4,7 +4,9 @@ Equivalente a las clases DTO / Response en Spring Boot.
 """
 from datetime import datetime
 from enum import Enum
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, computed_field
+
+from motor import senales_pdf as senales
 
 
 class TipoDocumentoEnum(str, Enum):
@@ -57,5 +59,12 @@ class DocumentoResponse(BaseModel):
     # Solo en la respuesta de la carga: el PDF exige contraseña de apertura y
     # quedó custodiado como NO_CONFORME (PLUS-02).
     advertencia_nivel_1: str | None = None
+    # P6 (PLUS-16, PLUS-18): señales del PDF; nulo si aún no se calculan.
+    senales_pdf: dict | None = None
 
     model_config = ConfigDict(from_attributes=True)
+
+    @computed_field(description="P6: motivos por los que la auditoría queda en revisión humana (señales del archivo)")
+    @property
+    def senales_revision(self) -> list[str]:
+        return senales.revision(self.tipo_documento, self.senales_pdf)

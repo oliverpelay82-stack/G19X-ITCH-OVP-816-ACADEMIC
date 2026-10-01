@@ -107,8 +107,14 @@ _MIGRACIONES_POSTGRES = [
     # P5 (DOC-05, protocolo de auditoría): versión de la lectura y de las instrucciones.
     "ALTER TABLE dictamenes_auditoria ADD COLUMN IF NOT EXISTS version_lectura VARCHAR(160)",
     "ALTER TABLE dictamenes_auditoria ADD COLUMN IF NOT EXISTS version_instrucciones VARCHAR(40)",
+    # P6 (PLUS-17): lectura del QR de verificación del SAT.
+    "ALTER TABLE dictamenes_auditoria ADD COLUMN IF NOT EXISTS qr_sat JSON",
+    # P6 (M6): versión del catálogo de reglas.
+    "ALTER TABLE dictamenes_auditoria ADD COLUMN IF NOT EXISTS version_catalogo VARCHAR(20)",
     # P5 (DOC-05, Tabla 1): marca de procesamiento diferido del documento.
     "ALTER TABLE documentos ADD COLUMN IF NOT EXISTS procesamiento_diferido JSON",
+    # P6 (PLUS-16, PLUS-18): señales de edición y contenido activo del PDF.
+    "ALTER TABLE documentos ADD COLUMN IF NOT EXISTS senales_pdf JSON",
     # P3 (PLUS-04): sello encadenado de la bitácora. Agregar columnas es DDL:
     # el trigger de inmutabilidad (por fila) no lo impide y los eventos previos
     # no se reescriben. El índice único impide dos eventos con la misma secuencia.
@@ -151,6 +157,8 @@ _MIGRACIONES_POSTGRES = [
            OR NEW.representacion_legal::text IS DISTINCT FROM OLD.representacion_legal::text
            OR NEW.version_lectura IS DISTINCT FROM OLD.version_lectura
            OR NEW.version_instrucciones IS DISTINCT FROM OLD.version_instrucciones
+           OR NEW.qr_sat::text IS DISTINCT FROM OLD.qr_sat::text
+           OR NEW.version_catalogo IS DISTINCT FROM OLD.version_catalogo
            OR NEW.hash_sha256 IS DISTINCT FROM OLD.hash_sha256
            OR NEW.creado_en IS DISTINCT FROM OLD.creado_en THEN
             RAISE EXCEPTION 'dictamenes_auditoria: solo la ratificación humana puede modificar un dictamen (RN-05)';

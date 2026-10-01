@@ -25,7 +25,7 @@ from models.bitacora import EVENTO_ALERTA_INTEGRIDAD, EVENTO_VERIFICACION_INTEGR
 from models.dictamen import ORIGEN_RIE_03, DictamenAuditoria
 from models.documento import Documento
 from models.expediente import Expediente
-from motor import bitacora, cumplimiento
+from motor import bitacora, cumplimiento, senales_pdf
 
 INTEGRO = "INTEGRO"
 ALTERADO = "ALTERADO"
@@ -153,6 +153,21 @@ class ResultadoBarrido:
     duracion_ms: int
 
 
+def _calcular_senales(documento: Documento) -> int:
+    """
+    P6 (PLUS-16, PLUS-18): señales del PDF de un documento custodiado antes de
+    P6. Se leen del binario cuya huella acaba de comprobarse; un PDF que no
+    puede analizarse queda marcado para no releerlo en cada barrido.
+    """
+    try:
+        with open(documento.ruta_almacenamiento, "rb") as f:
+            calculadas = senales_pdf.analizar(f.read())
+    except OSError:
+        return 0
+    documento.senales_pdf = calculadas or {"version": senales_pdf.VERSION, "no_analizable": True}
+    return 1
+
+
 def barrer(db: Session) -> ResultadoBarrido:
     """
     Recalcula la huella de todos los documentos íntegros de la bóveda. Una
@@ -162,7 +177,7 @@ def barrer(db: Session) -> ResultadoBarrido:
     VERIFICACION_INTEGRIDAD. Solo lee los binarios: no los sirve ni llama a la IA.
     """
     inicio = time.perf_counter()
-    revisados = alterados = 0
+    revisados = alterados = senales_calculadas = 0
     ids = [i for (i,) in db.query(Documento.id).filter(Documento.estado_integridad == INTEGRO).all()]
     for documento_id in ids:
         documento = db.get(Documento, documento_id)
@@ -171,6 +186,8 @@ def barrer(db: Session) -> ResultadoBarrido:
         revisados += 1
         hash_actual = huella_actual(documento)
         if hash_actual == documento.hash_sha256:
+            if documento.senales_pdf is None and documento.mime_type == "application/pdf":
+                senales_calculadas += _calcular_senales(documento)
             continue
         motivo = MOTIVO_SIN_BINARIO if hash_actual is None else _motivo_discrepancia(hash_actual, documento.hash_sha256)
         _registrar_violacion(
@@ -183,7 +200,8 @@ def barrer(db: Session) -> ResultadoBarrido:
         db,
         EVENTO_VERIFICACION_INTEGRIDAD,
         detalle={"origen": "BARRIDO_PROGRAMADO", "documentos_revisados": revisados,
-                 "alterados": alterados, "duracion_ms": duracion_ms},
+                 "alterados": alterados, "duracion_ms": duracion_ms,
+                 **({"senales_calculadas": senales_calculadas} if senales_calculadas else {})},
     )
     db.commit()
     return ResultadoBarrido(revisados, alterados, duracion_ms)

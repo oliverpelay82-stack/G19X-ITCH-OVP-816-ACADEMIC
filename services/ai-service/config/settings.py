@@ -125,6 +125,12 @@ LEGIBILIDAD_MIN_CONFIANZA: float = float(os.getenv("LEGIBILIDAD_MIN_CONFIANZA", 
 DIFERIDOS_INTERVALO_MINUTOS: int = int(os.getenv("DIFERIDOS_INTERVALO_MINUTOS", "15"))
 DIFERIDOS_MAX_INTENTOS: int = int(os.getenv("DIFERIDOS_MAX_INTENTOS", "6"))
 
+# P6 (PLUS-19): cuota diaria del plan gratuito de Groq (medida el 30/09/2026); 0 no informa límite.
+GROQ_TOKENS_POR_DIA: int = int(os.getenv("GROQ_TOKENS_POR_DIA", "200000"))
+
+# Q-a: zona horaria del negocio para contar días (vigencias); un contenedor corre en UTC.
+ZONA_HORARIA: str = os.getenv("ZONA_HORARIA", "America/Mexico_City")
+
 # Límite de carga alineado con el Nivel 1 del core-service.
 MAX_FILE_SIZE_BYTES: int = 15 * 1024 * 1024
 

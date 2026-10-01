@@ -388,3 +388,16 @@
 .health-item--warn .health-metric {
   color: var(--warn);
 }
+
+/* PLUS-19: cuota diaria de la IA al pie del detalle de salud. */
+.health-cuota {
+  margin-top: var(--s-1);
+  padding-top: var(--s-2);
+  border-top: 1px solid var(--line);
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+}
+
+.health-cuota--warn {
+  color: var(--warn);
+}

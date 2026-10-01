@@ -19,7 +19,7 @@ from config.database import get_db
 from models.bitacora import EVENTO_INGESTA_DOCUMENTO, EVENTO_PROCESAMIENTO_DIFERIDO
 from models.documento import Documento
 from models.expediente import Expediente
-from motor import archivo_protegido, bitacora, cumplimiento, integridad
+from motor import archivo_protegido, bitacora, cumplimiento, integridad, senales_pdf
 from schemas.dictamen_schema import ProcesamientoDiferidoRequest
 from schemas.documento_schema import DocumentoResponse, TipoDocumentoEnum
 
@@ -97,6 +97,27 @@ def _folios_con_huella(db: Session, expediente_id: str, hash_sha256: str) -> lis
         .all()
     )
     return sorted(folio for (folio,) in filas)
+
+
+def _resumen_senales(senales_archivo: dict | None) -> dict:
+    """Códigos de las señales del PDF para el evento de ingesta sellado (solo si hay alguna)."""
+    if not senales_archivo:
+        return {}
+    resumen = {}
+    if senales_archivo.get("edicion"):
+        resumen["senales_edicion"] = [e["codigo"] for e in senales_archivo["edicion"]]
+    if senales_archivo.get("contenido_activo"):
+        resumen["contenido_activo"] = senales_archivo["contenido_activo"]
+    return resumen
+
+
+def _advertencia_activo(senales_archivo: dict | None) -> str | None:
+    """PLUS-18: la carga advierte el contenido activo (el archivo queda custodiado)."""
+    if not senales_archivo or not senales_archivo.get("contenido_activo"):
+        return None
+    return (f"El PDF contiene {senales_pdf.descripcion_activo(senales_archivo['contenido_activo'])}. Quedó "
+            "custodiado y su auditoría pasará a revisión humana; no lo abra en un lector con JavaScript "
+            "habilitado y solicite al emisor una versión sin contenido activo.")
 
 
 def _leer_verificado(db: Session, documento: Documento, request: Request) -> bytes:
@@ -207,6 +228,9 @@ def subir_documento(
 
     # 5.2 PLUS-02: un PDF con contraseña de apertura se custodia, pero como NO_CONFORME.
     protegido = content_type == "application/pdf" and archivo_protegido.pdf_protegido(contenido)
+    # 5.3 P6 (PLUS-16, PLUS-18): señales de edición y contenido activo. No rechazan:
+    #     el archivo se custodia igual y la auditoría queda en revisión humana.
+    senales_archivo = senales_pdf.analizar(contenido) if content_type == "application/pdf" and not protegido else None
 
     # 6. Almacenamiento en bóveda física. El nombre se reduce a su base para que
     #    un nombre con separadores de ruta no pueda escribir fuera de la bóveda.
@@ -229,6 +253,8 @@ def subir_documento(
             mime_type=content_type,
             estado_integridad=integridad.INTEGRO,
             creado_en=datetime.now(timezone.utc),
+            senales_pdf=senales_archivo or ({"version": senales_pdf.VERSION, "no_analizable": True}
+                                            if content_type == "application/pdf" else None),
         )
         db.add(nuevo_documento)
         bitacora.registrar(
@@ -244,6 +270,7 @@ def subir_documento(
                 "hash_sha256": hash_sha256,
                 "tamanio_bytes": tamanio_bytes,
                 "mime_type": content_type,
+                **_resumen_senales(senales_archivo),
             },
         )
 
@@ -262,7 +289,9 @@ def subir_documento(
 
     db.refresh(nuevo_documento)
     nuevo_documento.huella_en_otros_expedientes = _folios_con_huella(db, expediente.id, hash_sha256)
-    nuevo_documento.advertencia_nivel_1 = archivo_protegido.ADVERTENCIA if protegido else None
+    nuevo_documento.advertencia_nivel_1 = (
+        archivo_protegido.ADVERTENCIA if protegido else _advertencia_activo(senales_archivo)
+    )
     return nuevo_documento
 
 

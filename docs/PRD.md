@@ -11,7 +11,7 @@
 | Desarrollo (Scrum Master / Desarrollador) | Oliver Villanueva Pelay, residente (No. de control 21520500) |
 | Stakeholder evaluador | Edgar Loheffelmman (PluriOne) |
 | Asesor interno | Dr. Wilfrido Campos Francisco |
-| Versión del documento | 2.3 — 30 de septiembre de 2026 (2.2: P5 documentado; 2.1: revisión de requerimientos; 2.0: correcciones de la documentación; 1.9: revisión visual del frontend; 1.8: chat documental eficiente; 1.7: revisión del frontend; 1.6: índice de cumplimiento; 1.5: P3; 1.4: P2; 1.3: P1; 1.2: 28 de septiembre; 1.0: 27 de septiembre de 2026) |
+| Versión del documento | 2.4 — 30 de septiembre de 2026 (2.3: P5 implementado; 2.2: P5 documentado; 2.1: revisión de requerimientos; 2.0: correcciones de la documentación; 1.9: revisión visual del frontend; 1.8: chat documental eficiente; 1.7: revisión del frontend; 1.6: índice de cumplimiento; 1.5: P3; 1.4: P2; 1.3: P1; 1.2: 28 de septiembre; 1.0: 27 de septiembre de 2026) |
 | Estado del producto | En desarrollo: Sprints 1 y 2 implementados, Sprint 3 implementado parcialmente, Sprint 4 implementado salvo HU-31, Módulo 7 pendiente |
 | Documento hermano | [MRD.md](MRD.md) — requerimientos de mercado |
 
@@ -983,6 +983,59 @@ Cuatro brechas del análisis de brechas (sección 5) aprobadas por el residente 
 - **Umbrales de legibilidad:** los valores iniciales son conservadores (solo lo claramente ilegible) y se calibran con el Gold Standard escaneado.
 
 **Diagramas:** [casos de uso](uml/p5-casos-de-uso-integridad-reproducibilidad.puml), [barrido y ancla](uml/p5-actividad-barrido-integridad.puml) y [excepciones y reproducibilidad](uml/p5-actividad-excepciones-auditoria.puml).
+
+---
+
+### 21.6 P6 — Autenticidad del archivo, trazabilidad del catálogo y operación
+
+Nueve puntos del análisis más profundo del 30/09/2026, aprobados por el residente e implementados el mismo día. Hasta P5 el motor verifica **qué dice** un documento; P6 agrega señales sobre **si el archivo es auténtico**, con qué catálogo se dictaminó y qué tanto se está quedando atrás la revisión. Ninguna señal rechaza un documento por sí sola: lo lleva a revisión humana con el motivo explicado, igual que una confianza baja (Nivel 5).
+
+| ID | Requerimiento | Fundamento | Estado |
+|---|---|---|---|
+| — | **RFC validado en el servidor (M1).** Al registrar un titular, el core rechaza (422) un RFC con formato incorrecto, con una longitud que no corresponde al tipo de persona (12 moral, 13 física) o con una fecha AAMMDD imposible. Calcula además el dígito verificador con el algoritmo público del SAT y responde `rfc_verificacion`: `VERIFICADO`, `GENERICO` (XAXX010101000 y XEXX010101000) o `DIGITO_NO_COINCIDE`. Por decisión del residente, mientras se trabaja con RFC de prueba un dígito que no coincide se **acepta con advertencia**; `RFC_DIGITO_ESTRICTO=true` lo rechaza. Un RFC real (por ejemplo, BIM011108DJ5) se verifica completo. | DOC-02 (titular identificado por su RFC); exactitud (ISO/IEC 25010) | Implementado (`motor/rfc.py`; pruebas `test_rfc_titular`) |
+| PLUS-16 | **Señales de edición del PDF (M2).** En la carga, el core lee los metadatos del PDF: programa que lo generó, fecha de creación y de modificación, guardados incrementales (sin contar los de una firma ni la linealización). En la constancia de situación fiscal y la opinión 32-D, que el SAT emite electrónicamente, una modificación posterior a la emisión, un guardado incremental o un editor de PDF conocido son señal de retoque: la auditoría queda En revisión con el motivo y se emite la alerta «Posible edición del archivo». En los demás tipos (escaneos, actas) las señales solo se informan, porque procesar un escaneo es lo normal. | NOM-151 (integridad desde el origen); falsificación más común en la revisión de proveedores | Implementado (`motor/senales_pdf.py`; pruebas `test_senales_archivo`) |
+| PLUS-17 | **Código QR de verificación del SAT (M3).** Al auditar una constancia fiscal o una opinión 32-D, el ai-service busca el QR en la primera y la última página (detector de OpenCV, ya instalado). Si lo encuentra, guarda el enlace, comprueba que lleve a un dominio `sat.gob.mx` y coteja el RFC del enlace con el del documento y el del titular. Un QR ajeno al SAT o con otro RFC deja la auditoría En revisión; el analista recibe el enlace oficial para validarlo en el portal. **El motor no consulta al SAT**: no hay llamada automática a un servicio externo. Un QR ausente o ilegible solo se informa (un escaneo puede perderlo). | DOC-02 (32-D y constancia fiscal) | Implementado (`pipelines/qr_sat.py`; pruebas ai `test_senales_qr`) |
+| PLUS-18 | **Contenido activo en el PDF (M4).** En la carga, el core busca JavaScript, acciones de apertura o ejecución (`/OpenAction`, `/Launch`, `/AA`), archivos incrustados, medios enriquecidos y formularios XFA. El archivo se custodia igual (es la evidencia de lo que se entregó), la respuesta de la carga advierte, la auditoría queda En revisión y la alerta «Contenido activo en el PDF» (alta) recomienda pedir una versión sin contenido activo. El visor del motor no ejecuta nada: muestra páginas rasterizadas. | ISO/IEC 27001, A.8.7 (protección contra malware) | Implementado (`motor/senales_pdf.py`; tope de revisión en el ai-service) |
+| — | **El mismo archivo en expedientes de titulares distintos (M5).** Si la huella de un documento vigente aparece en el expediente de **otro titular**, la evaluación emite la alerta «Archivo presente en el expediente de otro titular» con el folio: media-alta en documentos de un solo titular (constancia, opinión, acta, poder, comprobante) y media en contratos, NDA, anexos y convenios, que dos titulares pueden compartir legítimamente (solo las cuatro severidades del DOC-05, §19). La carga se sigue admitiendo; dentro del mismo expediente PLUS-01 la sigue rechazando. | Titularidad (RN-03 y el cruce del Nivel 4); DOC-05 | Implementado (`cumplimiento._huellas_en_otros_titulares`; pruebas `test_senales_archivo`) |
+| — | **Versión del catálogo de reglas (M6).** El rules-service publica `GET /api/v1/reglas/version`: huella SHA-256 abreviada (`cat-…`) del catálogo completo (código, estado, severidad, parámetros y alcance de cada regla). Cada dictamen nuevo guarda `version_catalogo` (protegida por el trigger de RN-05, como las versiones de P5); la evaluación del expediente la informa, tomada de la cabecera `X-Version-Catalogo` del inventario que ya consulta (sin otra petición), y los reportes la imprimen. Así se sabe con qué catálogo se dictaminó cada documento aunque después se pause o cambie una regla. | Protocolo de auditoría del DOC-05; complemento del dictamen reproducible (P5) | Implementado (`motor/version_catalogo.py` del rules-service; pruebas `test_version_catalogo`, `test_rules_version_catalogo`) |
+| PLUS-19 | **Cuota diaria del proveedor de IA visible (S3).** El ai-service suma los tokens que consume por día (UTC) en su SQLite y detecta la respuesta 429 por cuota diaria, con su tiempo de espera. `GET /api/v1/health` informa `cuota_diaria` (límite `GROQ_TOKENS_POR_DIA`, 200,000; usados; restantes; agotada y hasta cuándo) y el detalle de salud de la cabecera la muestra. Con la cuota agotada, el ciclo de procesamiento diferido (P5) espera en lugar de gastar intentos. Es una **estimación**: solo cuenta lo que consume esta instancia. | RNF-02; límite real medido el 30/09/2026 (PRD §17); procesamiento diferido (P5) | Implementado (`pipelines/cuota_diaria.py`; pruebas ai `test_cuota_diaria`) |
+| PLUS-20 | **Antigüedad de lo pendiente (U1).** Cada documento En revisión sin ratificar informa `dias_en_espera` desde su dictamen. La alerta «Pendiente de ratificación» lo dice («lleva 12 días esperando»), la bandeja de alertas ordena por antigüedad dentro de la severidad y el tablero de Reportes muestra cuántos dictámenes esperan, el más antiguo y el promedio. | ISO 30301 (seguimiento de la gestión documental); indicador de operación del área de cumplimiento | Implementado (`cumplimiento._dias_en_espera`; pruebas `test_antiguedad_pendientes`) |
+| — | **Pruebas exhaustivas de fechas límite (Q-a).** Umbrales de 30, 15 y 5 días exactos, el día del vencimiento y el siguiente, caducidad desde la emisión que cruza un 29 de febrero, emisión el 29 de febrero, cambio de año y la fecha del servidor frente a UTC. Un error encontrado se corrige con su prueba. | RN-02 (vigencia recalculada); DOC-05 (RCV) | Implementado (`test_fechas_limite`, `test_rules_fechas_limite`). Error encontrado y corregido: «hoy» salía de la zona del servidor y un contenedor corre en UTC, así que desde las 18:00 de México un documento vencía un día antes; ahora se cuenta en `ZONA_HORARIA` (America/Mexico_City) |
+
+**Historias de usuario nuevas**
+
+| ID | Historia | Módulo | Prioridad | Estado |
+|---|---|---|---|---|
+| HU-49 | Como analista, quiero que el sistema rechace un RFC mal formado y me avise si su dígito verificador no coincide, para no registrar un titular equivocado. | M1 | Alta | Implementado |
+| HU-50 | Como analista, quiero saber si una constancia o una opinión del SAT fue modificada después de emitida, para no aceptar un documento retocado. | M2 | Alta | Implementado |
+| HU-51 | Como analista, quiero el enlace oficial del código QR de un documento del SAT y saber si su RFC coincide, para validarlo en el portal. | M3 | Media | Implementado |
+| HU-52 | Como responsable de seguridad, quiero que un PDF con contenido activo quede señalado, para no abrirlo en un lector que lo ejecute. | M2 | Alta | Implementado |
+| HU-53 | Como analista, quiero saber si un archivo ya está en el expediente de otro titular, para detectar una carga equivocada o un documento ajeno. | M2 | Media | Implementado |
+| HU-54 | Como auditor externo, quiero saber con qué versión del catálogo de reglas se emitió cada dictamen. | M3 | Media | Implementado |
+| HU-55 | Como administrador, quiero ver cuánta cuota diaria del proveedor de IA queda, para planear las auditorías. | Integración | Media | Implementado |
+| HU-56 | Como responsable de cumplimiento, quiero ver cuántos días lleva cada dictamen esperando ratificación, para atender primero lo más atrasado. | M5 | Alta | Implementado |
+
+**Criterios de aceptación**
+
+- Un RFC con fecha imposible o con longitud distinta a la de su tipo de persona responde 422 con el motivo en lenguaje llano. Un RFC real conocido queda `VERIFICADO`, los genéricos del SAT `GENERICO` y uno inventado se acepta con `DIGITO_NO_COINCIDE`; con `RFC_DIGITO_ESTRICTO=true` este último responde 422.
+- Una constancia fiscal guardada de nuevo con un editor (guardado incremental o fecha de modificación posterior) queda En revisión con el motivo y la alerta; la misma constancia sin tocar no genera señal. Un acta escaneada con las mismas señales solo las informa.
+- Un QR con dominio ajeno al SAT o con otro RFC deja la auditoría En revisión; sin QR, el estatus no cambia. Ninguna prueba ni flujo llama al SAT.
+- Un PDF con JavaScript se custodia, la carga advierte, la auditoría queda En revisión y aparece la alerta alta; un PDF sin contenido activo no cambia.
+- El mismo archivo en el expediente de otro titular genera la alerta con el folio; en el mismo expediente sigue el 409 de PLUS-01.
+- Cada dictamen nuevo trae `version_catalogo`; la ratificación no la modifica; pausar una regla cambia la versión publicada.
+- El detalle de salud muestra la cuota diaria; con la cuota agotada (simulada), el ciclo diferido no gasta intentos.
+- Un dictamen pendiente informa sus días en espera y la bandeja lo ordena por antigüedad.
+- Las pruebas de fechas límite cubren los casos listados. Los contratos existentes solo ganan campos opcionales; las suites del core, rules y ai-service siguen pasando.
+
+**Consecuencias previstas**
+
+- **Titulares existentes:** no se revalidan ni se bloquean; el RFC de prueba del titular actual (BIM980101XYZ) aparece con su advertencia. Cambiarlo por el real es decisión del residente.
+- **Documentos ya custodiados:** sus señales del archivo (PLUS-16 y PLUS-18) se calculan en el siguiente barrido programado (PLUS-14), que ya lee cada binario; no cambian sus dictámenes vigentes, solo agregan la alerta. La próxima auditoría aplica la revisión.
+- **Dictámenes previos:** quedan sin `version_catalogo` («no registrada»), como los de P5 sin versiones.
+- **Falsos positivos:** las señales de edición solo cambian el estatus en los tipos que el SAT emite electrónicamente; un analista que comprueba el documento lo ratifica y la alerta desaparece.
+- **Privacidad:** el QR se lee del archivo ya custodiado; el enlace solo se muestra al analista y nada sale del motor.
+
+**Diagramas:** [casos de uso](uml/p6-casos-de-uso-autenticidad.puml), [señales del archivo en la carga y la auditoría](uml/p6-actividad-senales-archivo.puml) y [catálogo, cuota y antigüedad](uml/p6-actividad-trazabilidad-operacion.puml).
 
 ---
 

@@ -312,6 +312,43 @@ function vigenciaDe(dictamen) {
 }
 
 /** Bloque delimitado de la evidencia; sin `titulo` cuando el contenido trae el suyo. */
+/**
+ * PLUS-17: lo que dice el QR del documento. El motor no consulta al SAT: el
+ * analista abre el enlace oficial y valida el documento en el portal.
+ */
+function CodigoQrSat({ qr }) {
+  if (!qr.encontrado) {
+    return <p className="cell-sub">No se encontró un código QR legible en la primera ni en la última página.</p>
+  }
+  if (!qr.dominio_sat) {
+    return (
+      <p className="qr-sat qr-sat--bad">
+        El código QR no lleva al portal del SAT{qr.dominio ? ` (${qr.dominio})` : ''}: el documento queda en revisión.
+      </p>
+    )
+  }
+  return (
+    <div className="qr-sat">
+      <p>
+        {qr.coincide_rfc === false ? (
+          <span className="qr-sat--bad">
+            El RFC del código QR (<span className="mono">{qr.rfc_qr}</span>) no coincide con el del titular.
+          </span>
+        ) : qr.coincide_rfc ? (
+          <>
+            El RFC del código QR coincide con el del titular (<span className="mono">{qr.rfc_qr}</span>).
+          </>
+        ) : (
+          'El código QR lleva al portal del SAT.'
+        )}
+      </p>
+      <a href={qr.url} target="_blank" rel="noopener noreferrer">
+        Validar en el portal del SAT
+      </a>
+    </div>
+  )
+}
+
 function Bloque({ id, titulo, etiqueta, children }) {
   return (
     <section id={id} className="ia-bloque ancla" aria-label={titulo || etiqueta}>
@@ -394,6 +431,12 @@ export function DictamenEvidencia({ dictamen, expediente, tipoRegistrado, ids })
         </KeyValueList>
       </Bloque>
 
+      {dictamen.qr_sat && (
+        <Bloque titulo="Código QR del SAT">
+          <CodigoQrSat qr={dictamen.qr_sat} />
+        </Bloque>
+      )}
+
       {haySellos && (
         <Bloque id={ids.sellos} etiqueta="Sellos">
           <SellosDetectados sellos={dictamen.sellos} selloDigital={dictamen.sello_digital_sat} />
@@ -434,6 +477,11 @@ export function DictamenTecnico({ dictamen, duracion }) {
           <span>
             Instrucciones <span className="mono">{dictamen.versiones.version_instrucciones}</span>
           </span>
+          {dictamen.versiones.version_catalogo && (
+            <span>
+              Catálogo <span className="mono">{dictamen.versiones.version_catalogo}</span>
+            </span>
+          )}
         </p>
       )}
     </div>

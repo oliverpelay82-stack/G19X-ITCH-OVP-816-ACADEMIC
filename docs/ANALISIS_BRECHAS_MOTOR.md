@@ -190,3 +190,7 @@ Revisión cruzada de los DOC-01 a DOC-08, el PRD, el MRD y el código, a petici�
 | Emisor como metadato (C10), RF-10 completo, UTC en la bitácora, cifrado en reposo y respaldos conjuntos | Después de P5, por decisión del residente. |
 | 1 · Módulo 7 | Sin cambios: fase final. |
 
+### 5.4 Autenticidad del archivo (P6)
+
+El análisis más profundo encontró que el motor verifica lo que dice un documento, pero no si el archivo es auténtico: el backend solo exigía 12 o 13 caracteres en el RFC, no se leían los metadatos ni el QR de los documentos del SAT, un PDF con JavaScript se custodiaba sin advertencia y el mismo archivo en el expediente de otro titular solo se informaba. Tampoco se registraba la versión del catálogo con que se dictaminó, la cuota diaria del proveedor se agotaba sin aviso y no se medía la antigüedad de lo pendiente. Se resolvieron en P6 (PRD §21.6); las pruebas de fechas límite encontraron además que «hoy» salía de la zona del servidor (UTC en un contenedor) y se corrigió con `ZONA_HORARIA`. Quedan después: S1 (sello de tiempo RFC 3161, requiere aceptar un servicio externo), S2 (identificador de petición), M7 (aviso de nueva auditoría al cambiar el catálogo), Q-b (extremo a extremo en CI), Q-c (OWASP ZAP) y los entregables de la residencia.
+

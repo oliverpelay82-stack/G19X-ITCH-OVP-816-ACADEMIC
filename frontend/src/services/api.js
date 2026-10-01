@@ -26,7 +26,7 @@ function mensajeDeError(detail, status) {
     return detail
       .map((e) => {
         const campo = Array.isArray(e?.loc) ? e.loc.filter((p) => p !== 'body').join('.') : ''
-        const msg = e?.msg || String(e)
+        const msg = (e?.msg || String(e)).replace(/^Value error, /, '')
         return campo ? `${campo}: ${msg}` : msg
       })
       .join('; ')
