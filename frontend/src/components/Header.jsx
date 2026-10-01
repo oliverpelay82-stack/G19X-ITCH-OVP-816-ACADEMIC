@@ -51,6 +51,8 @@ export default function Header({
   onToggleTheme,
 }) {
   const desplazado = useDesplazado()
+  // useTheme marca la raíz mientras dura la transición del tema.
+  const claseIcono = typeof document !== 'undefined' && document.documentElement.dataset.transicionTema ? 'icono-tema' : undefined
   return (
     <header className={desplazado ? 'app-header is-desplazado' : 'app-header'}>
       <div className="app-header-heading">
@@ -96,7 +98,9 @@ export default function Header({
           role="switch"
           aria-checked={!isDark}
         >
-          {isDark ? <Sun size={15} /> : <Moon size={15} />}
+          {/* La clave nueva vuelve a montar el icono y, solo durante el cambio de
+              tema (no al cargar la página), gira al entrar. */}
+          {isDark ? <Sun key="sol" size={15} className={claseIcono} /> : <Moon key="luna" size={15} className={claseIcono} />}
         </IconButton>
       </div>
     </header>

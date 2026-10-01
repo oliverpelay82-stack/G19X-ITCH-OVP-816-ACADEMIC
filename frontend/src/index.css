@@ -419,11 +419,112 @@ code {
   background: var(--bad-solid);
 }
 
-/* Cambio de tema con fundido (View Transitions); sin la API, es instantáneo. */
+/* ── Cambio de tema: revelado circular con atardecer y amanecer ──
+   View Transitions anima dos capturas de la página. La nueva se revela en
+   un círculo que nace del botón (useTheme.js, clip-path) y llega con un
+   resto de tono cálido que se apaga; la anterior, debajo, pasa por un
+   atardecer (de día a noche) o un amanecer (de noche a día) mientras el
+   círculo la cubre. Solo filtros sobre las capturas: sin colores ni
+   degradados nuevos. Sin la API o con «reducir movimiento», instantáneo. */
+::view-transition-image-pair(root) {
+  isolation: auto;
+}
+
 ::view-transition-old(root),
 ::view-transition-new(root) {
-  animation-duration: var(--dur-slow);
-  animation-timing-function: var(--ease);
+  animation-duration: calc(var(--dur-slow) * 3);
+  animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1);
+  mix-blend-mode: normal;
+}
+
+:root[data-transicion-tema]::view-transition-old(root) {
+  z-index: 1;
+}
+
+:root[data-transicion-tema]::view-transition-new(root) {
+  z-index: 2;
+}
+
+:root[data-transicion-tema='anochecer']::view-transition-old(root) {
+  animation-name: tema-atardecer;
+}
+
+:root[data-transicion-tema='anochecer']::view-transition-new(root) {
+  animation-name: tema-noche-cae;
+}
+
+:root[data-transicion-tema='amanecer']::view-transition-old(root) {
+  animation-name: tema-amanecer;
+}
+
+:root[data-transicion-tema='amanecer']::view-transition-new(root) {
+  animation-name: tema-dia-sale;
+}
+
+/* Lo que queda del día se dora y se apaga mientras la noche avanza. */
+@keyframes tema-atardecer {
+  0% {
+    filter: none;
+  }
+  45% {
+    filter: sepia(0.55) saturate(1.8) hue-rotate(-14deg) brightness(0.92);
+  }
+  100% {
+    filter: sepia(0.85) saturate(2.2) hue-rotate(-32deg) brightness(0.5);
+  }
+}
+
+/* La noche entra con el último resplandor cálido en su borde. */
+@keyframes tema-noche-cae {
+  0% {
+    filter: sepia(0.5) saturate(1.6) hue-rotate(-22deg) brightness(1.25);
+  }
+  100% {
+    filter: none;
+  }
+}
+
+/* Lo que queda de la noche se ilumina en tonos de amanecer. */
+@keyframes tema-amanecer {
+  0% {
+    filter: none;
+  }
+  45% {
+    filter: sepia(0.5) saturate(1.7) hue-rotate(-10deg) brightness(1.35);
+  }
+  100% {
+    filter: sepia(0.7) saturate(1.9) hue-rotate(-18deg) brightness(1.9);
+  }
+}
+
+/* El día sale dorado desde el botón y se aclara al cubrir la pantalla. */
+@keyframes tema-dia-sale {
+  0% {
+    filter: sepia(0.55) saturate(1.7) hue-rotate(-14deg) brightness(0.9);
+  }
+  100% {
+    filter: none;
+  }
+}
+
+/* El astro nuevo del botón sale por el horizonte: sube girando desde abajo. */
+@keyframes icono-tema-entra {
+  from {
+    opacity: 0;
+    transform: translateY(10px) rotate(-120deg) scale(0.5);
+  }
+  60% {
+    opacity: 1;
+  }
+}
+
+.icono-tema {
+  animation: icono-tema-entra calc(var(--dur-slow) * 2) var(--ease);
+}
+
+/* El botón recorta al astro mientras sale por debajo de su borde. */
+.icon-button:has(.icono-tema) {
+  overflow: hidden;
 }
 
 @media (prefers-reduced-motion: reduce) {
