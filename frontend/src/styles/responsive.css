@@ -37,12 +37,6 @@
   }
 }
 
-@media (max-width: 900px) {
-  .health-strip {
-    display: none;
-  }
-}
-
 @media (max-width: 760px) {
   :root {
     --sidebar-w: 0px;

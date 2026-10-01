@@ -29,10 +29,10 @@ import './App.css'
 const SECCIONES = {
   titulares: { titulo: 'Empresas', grupo: 'Cumplimiento', miga: 'Empresas' },
   expedientes: { titulo: 'Expedientes', grupo: 'Cumplimiento', miga: 'Expedientes' },
-  boveda: { titulo: 'Bóveda criptográfica', grupo: 'Cumplimiento', miga: 'Bóveda' },
-  alertas: { titulo: 'Alertas y recomendaciones', grupo: 'Auditoría', miga: 'Alertas' },
-  reportes: { titulo: 'Reportes de cumplimiento', grupo: 'Auditoría', miga: 'Reportes' },
-  reglas: { titulo: 'Catálogo de reglas', grupo: 'Configuración', miga: 'Reglas' },
+  boveda: { titulo: 'Bóveda', grupo: 'Cumplimiento', miga: 'Bóveda' },
+  alertas: { titulo: 'Alertas', grupo: 'Auditoría', miga: 'Alertas' },
+  reportes: { titulo: 'Reportes', grupo: 'Auditoría', miga: 'Reportes' },
+  reglas: { titulo: 'Reglas', grupo: 'Configuración', miga: 'Reglas' },
 }
 
 /** Sección a la que lleva el clic en el grupo de las migas. */
@@ -47,6 +47,13 @@ const INICIO_GRUPO = { Cumplimiento: 'expedientes', Auditoría: 'alertas', Confi
 const CON_METRICAS = new Set(['expedientes'])
 
 const INTERVALO_REFRESCO = 15000
+
+/** Nombre de cada servicio en lenguaje llano, para los avisos de caída (RNF-08). */
+const SERVICIO_LLANO = {
+  core: 'El sistema de expedientes',
+  rules: 'El catálogo de reglas',
+  ai: 'El servicio de análisis con IA',
+}
 
 /** Duración mínima del giro del botón de refresco, para que el clic se perciba. */
 const REFRESCO_MINIMO_MS = 600
@@ -93,6 +100,9 @@ export default function App() {
   const primeraCarga = useRef(true)
   const cicloEnCurso = useRef(false)
 
+  // Momento de la última carga con datos: la cabecera dice «Actualizado hace…».
+  const [actualizado, setActualizado] = useState(null)
+
   const cargarTodo = useCallback(async () => {
     const [t, e, d, r] = await Promise.allSettled([
       getTitulares(),
@@ -100,6 +110,7 @@ export default function App() {
       getDocumentos(),
       getReglas(),
     ])
+    if ([t, e, d].some((x) => x.status === 'fulfilled')) setActualizado(Date.now())
     if (t.status === 'fulfilled') setTitulares(t.value || [])
     if (e.status === 'fulfilled') setExpedientes(e.value || [])
     if (d.status === 'fulfilled') setDocumentos(d.value || [])
@@ -121,7 +132,7 @@ export default function App() {
         if (!estado.online && !caidasAvisadas.current.has(clave)) {
           caidasAvisadas.current.add(clave)
           toast.alerta(
-            `Microservicio ${clave} sin respuesta`,
+            `${SERVICIO_LLANO[clave] || 'Un servicio'} no responde`,
             'El resto del sistema sigue operando con normalidad.'
           )
         }
@@ -162,26 +173,48 @@ export default function App() {
     }
 
     ciclo()
+    // Con la pestaña oculta no se sondea; al volver se refresca de inmediato,
+    // así nunca se muestra información vieja.
     const id = setInterval(() => {
-      if (montado) ciclo()
+      if (montado && !document.hidden) ciclo()
     }, INTERVALO_REFRESCO)
+    const alVolver = () => {
+      if (montado && !document.hidden) ciclo()
+    }
+    document.addEventListener('visibilitychange', alVolver)
 
     return () => {
       montado = false
       clearInterval(id)
+      document.removeEventListener('visibilitychange', alVolver)
     }
   }, [cargarTodo, chequearSalud])
 
-  const contadores = useMemo(
-    () => ({
-      titulares: titulares.length,
-      expedientes: expedientes.length,
-      boveda: documentos.length,
-      alertas: expedientes.reduce((n, e) => n + (e.evaluacion?.alertas?.length || 0), 0),
-      reglas: reglas.length,
-    }),
-    [titulares, expedientes, documentos, reglas]
-  )
+  // En el menú solo cuenta lo que pide acción: las alertas, en tono de
+  // advertencia si alguna es crítica o alta.
+  // Atajo «/»: lleva el foco al buscador de la vista, salvo mientras se escribe o con un modal abierto.
+  useEffect(() => {
+    const alPulsar = (e) => {
+      if (e.key !== '/' || e.ctrlKey || e.metaKey || e.altKey) return
+      if (e.target.closest?.('input, textarea, select, [contenteditable="true"]') || document.querySelector('.modal')) return
+      const buscador = document.querySelector('.app-content input[type="search"]')
+      if (!buscador) return
+      e.preventDefault()
+      buscador.focus()
+    }
+    document.addEventListener('keydown', alPulsar)
+    return () => document.removeEventListener('keydown', alPulsar)
+  }, [])
+
+  const contadores = useMemo(() => {
+    const alertas = expedientes.flatMap((e) => e.evaluacion?.alertas || [])
+    return {
+      alertas: {
+        total: alertas.length,
+        tono: alertas.some((a) => a.severidad === 'CRITICA' || a.severidad === 'ALTA') ? 'warn' : undefined,
+      },
+    }
+  }, [expedientes])
 
   const seccion = SECCIONES[tabActiva]
   const migas = [
@@ -234,6 +267,7 @@ export default function App() {
           reglas={reglas}
           onRefresh={refrescar}
           refrescando={refrescando}
+          actualizado={actualizado}
           isDark={isDark}
           onToggleTheme={toggleTheme}
         />

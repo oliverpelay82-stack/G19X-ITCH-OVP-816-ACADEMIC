@@ -37,6 +37,8 @@ export default function DocumentoIaPanel({
   registroTecnico = null,
 }) {
   const [vistaPropia, setVistaPropia] = useState('resultado')
+  // Ranura de la cabecera donde la auditoría pone «Volver a auditar» (portal).
+  const [ranuraAccion, setRanuraAccion] = useState(null)
   const vista = vistaControlada ?? vistaPropia
   const setVista = onVista ?? setVistaPropia
 
@@ -47,7 +49,10 @@ export default function DocumentoIaPanel({
           <h4 className="section-title">Inteligencia documental</h4>
           <p className="section-desc">Clasificación y verificación del contenido con IA</p>
         </div>
-        <Segmented role="tablist" label="Sección del panel de IA" valor={vista} onChange={setVista} opciones={VISTAS} />
+        <div className="ai-panel-acciones">
+          <span ref={setRanuraAccion} className="ai-panel-ranura" />
+          <Segmented role="tablist" label="Sección del panel de IA" valor={vista} onChange={setVista} opciones={VISTAS} />
+        </div>
       </header>
 
       {/* Todas las secciones permanecen montadas para no perder el dictamen ni el hilo al alternar. */}
@@ -61,6 +66,7 @@ export default function DocumentoIaPanel({
           seccion={vista}
           solicitudRatificar={solicitudRatificar}
           ratificacionEnEncabezado={ratificacionEnEncabezado}
+          ranuraAccion={ranuraAccion}
           onIrSeccion={setVista}
           registroTecnico={registroTecnico}
         />

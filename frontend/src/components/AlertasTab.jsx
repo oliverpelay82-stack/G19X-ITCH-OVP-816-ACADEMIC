@@ -3,7 +3,7 @@ import { BellOff, SearchX } from 'lucide-react'
 import { SkeletonCards } from './Skeleton.jsx'
 import { AlertaItem } from './Alertas.jsx'
 import useDebounce from '../hooks/useDebounce.js'
-import { Card, EmptyState, SearchBox, Segmented, Select } from './ui/index.js'
+import { Button, Card, EmptyState, SearchBox, Segmented, Select } from './ui/index.js'
 import {
   ALERTA_META,
   getSeveridadMeta,
@@ -121,7 +121,21 @@ export default function AlertasTab({ expedientes, loading, onAbrirExpediente }) 
                 ? 'Todos los expedientes cumplen: no hay documentos faltantes, vencidos ni anexos ausentes.'
                 : 'Ajusta la búsqueda o los filtros de severidad, categoría y tipo.'
             }
-          />
+          >
+            {alertas.length > 0 && (
+              <Button
+                compacto
+                onClick={() => {
+                  setBusqueda('')
+                  setFiltroSeveridad('TODAS')
+                  setFiltroCodigo('TODAS')
+                  setFiltroTipo('TODOS')
+                }}
+              >
+                Limpiar filtros
+              </Button>
+            )}
+          </EmptyState>
         </Card>
       )}
 
@@ -138,7 +152,7 @@ export default function AlertasTab({ expedientes, loading, onAbrirExpediente }) 
               const titulo = sev ? meta.label : 'Otras'
               return (
                 <section key={sev || 'otras'} className="bandeja-grupo" aria-label={`Severidad ${titulo.toLowerCase()}`}>
-                  <h2 className="eyebrow eyebrow--icon">
+                  <h2 className="section-title section-title--icono">
                     <span className={`status-dot status-dot--${meta.tono}`} aria-hidden="true" />
                     {titulo} <span className="tabular cell-muted">· {items.length}</span>
                   </h2>

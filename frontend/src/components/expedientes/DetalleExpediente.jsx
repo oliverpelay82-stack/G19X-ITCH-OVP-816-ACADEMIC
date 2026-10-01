@@ -244,19 +244,17 @@ export function DetalleExpediente({ exp, subiendo, onSubir, iaOnline, onRefresh,
       <div className="exp-detail-main">
         <MotivosSemaforo estado={exp.estado_cumplimiento} motivos={evaluacion?.motivos} alertas={alertas} />
 
-        <p className="eyebrow">Documentos requeridos</p>
+        <h3 className="section-title">Documentos requeridos</h3>
         <Card className="table-card table-card--flat">
           <table className="data-table data-table--inner">
             <colgroup>
-              <col style={{ width: '36%' }} />
-              <col style={{ width: '12%' }} />
+              <col style={{ width: '42%' }} />
               <col />
               <col style={{ width: '132px' }} />
             </colgroup>
             <thead>
               <tr>
                 <th>Documento requerido</th>
-                <th>Severidad</th>
                 <th>Archivo vigente</th>
                 <th className="col-right">Estado</th>
               </tr>
@@ -264,7 +262,7 @@ export function DetalleExpediente({ exp, subiendo, onSubir, iaOnline, onRefresh,
             <tbody>
               {filas.length === 0 && (
                 <tr className="empty-row">
-                  <td colSpan={4} className="cell-muted">
+                  <td colSpan={3} className="cell-muted">
                     El catálogo de reglas no declara documentos obligatorios.
                   </td>
                 </tr>
@@ -281,11 +279,11 @@ export function DetalleExpediente({ exp, subiendo, onSubir, iaOnline, onRefresh,
                         <span className="identity-name identity-name--completo">{nombreTipo}</span>
                         <span className="cell-sub cell-code" title={f.regla || undefined}>
                           {f.regla ? <span className="mono">{f.regla}</span> : 'Opcional'}
+                          {sev && ` · ${sev.label}`}
                           {f.anexoDe && ` · anexo de ${TIPO_DOCUMENTO_LABEL[f.anexoDe] || f.anexoDe}`}
                         </span>
                       </span>
                     </td>
-                    <td>{sev ? <span className="cell-muted">{sev.label}</span> : <span className="cell-muted">—</span>}</td>
                     <td>
                       {f.doc ? (
                         <span className="cell-stack">

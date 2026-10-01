@@ -185,7 +185,7 @@ function InspectorDocumento({ doc, expediente, iaOnline, onRefresh, onVisor, onO
                     <ExportarReporte ruta={`/reportes/documentos/${doc.id}/custodia`} compacto />
                   </div>
                 </section>
-                <section className="ia-bloque" aria-label="Datos del archivo">
+                <section className="ia-apartado" aria-label="Datos del archivo">
                   <p className="eyebrow">Datos del archivo</p>
                   {children}
                 </section>

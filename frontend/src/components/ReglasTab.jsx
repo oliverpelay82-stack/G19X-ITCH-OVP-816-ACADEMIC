@@ -48,7 +48,7 @@ const FORM_INICIAL = {
   documento_principal: '',
 }
 
-const COLUMNAS = 6
+const COLUMNAS = 5
 
 /** Interruptor para activar o pausar una regla del catálogo. */
 function Switch({ checked, onClick, loading, label }) {
@@ -190,6 +190,14 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
     setError('')
   }
 
+  // Pausar o activar una regla cambia la evaluación de todos los expedientes: se confirma antes.
+  const [porConfirmar, setPorConfirmar] = useState(null)
+  const confirmarCambio = () => {
+    const regla = porConfirmar
+    setPorConfirmar(null)
+    handleToggle(regla)
+  }
+
   const handleToggle = async (regla) => {
     setTogglingId(regla.id)
     try {
@@ -311,11 +319,10 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
         <div className="table-scroll">
           <table className="data-table">
             <colgroup>
-              <col style={{ width: '13%' }} />
-              <col style={{ width: '31%' }} />
-              <col style={{ width: '11%' }} />
-              <col style={{ width: '20%' }} />
-              <col style={{ width: '17%' }} />
+              <col style={{ width: '14%' }} />
+              <col style={{ width: '44%' }} />
+              <col style={{ width: '12%' }} />
+              <col style={{ width: '22%' }} />
               <col style={{ width: '8%' }} />
             </colgroup>
             {/* Con todas las familias plegadas no hay columnas que titular. */}
@@ -326,7 +333,6 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
                   <th>Regla</th>
                   <th>Severidad</th>
                   <th>Alcance</th>
-                  <th>Acción</th>
                   <th className="col-right">Activa</th>
                 </tr>
               </thead>
@@ -427,15 +433,10 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
                               {r.documento_obligatorio && <Tag>Obligatorio</Tag>}
                             </div>
                           </td>
-                          <td className="cell-muted cell-action-text">
-                            <span className="cell-clamp" title={r.accion}>
-                              {r.accion}
-                            </span>
-                          </td>
                           <td className="col-right" onClick={(e) => e.stopPropagation()}>
                             <Switch
                               checked={r.activo}
-                              onClick={() => handleToggle(r)}
+                              onClick={() => setPorConfirmar(r)}
                               loading={togglingId === r.id}
                               label={`${r.activo ? 'Pausar' : 'Activar'} ${r.codigo_regla}`}
                             />
@@ -457,6 +458,26 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
           </table>
         </div>
       </Card>
+
+      {porConfirmar && (
+        <Modal
+          title={porConfirmar.activo ? 'Pausar regla' : 'Activar regla'}
+          subtitle={`${porConfirmar.codigo_regla} · ${porConfirmar.nombre_regla}`}
+          onClose={() => setPorConfirmar(null)}
+        >
+          <p className="confirmacion-texto">
+            {porConfirmar.activo
+              ? 'La regla dejará de evaluarse en todos los expedientes. El índice de cumplimiento y el semáforo pueden cambiar en la próxima evaluación.'
+              : 'La regla volverá a evaluarse en todos los expedientes. El índice de cumplimiento y el semáforo pueden cambiar en la próxima evaluación.'}
+          </p>
+          <div className="modal-footer">
+            <Button onClick={() => setPorConfirmar(null)}>Cancelar</Button>
+            <Button variante="primary" onClick={confirmarCambio}>
+              {porConfirmar.activo ? 'Pausar regla' : 'Activar regla'}
+            </Button>
+          </div>
+        </Modal>
+      )}
 
       {modalAbierto && (
         <Modal

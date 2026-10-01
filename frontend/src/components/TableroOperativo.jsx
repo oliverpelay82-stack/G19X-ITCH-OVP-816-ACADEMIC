@@ -3,7 +3,7 @@ import { ArrowUpRight, CalendarClock, ClipboardCheck, TrendingUp } from 'lucide-
 import { Card } from './ui/index.js'
 import { getBitacora } from '../services/api.js'
 import { ALERTA_META, getEstadoBadge, TIPO_DOCUMENTO_LABEL } from '../constants.js'
-import { formatFecha } from '../utils/format.js'
+import { formatFechaCorta } from '../utils/format.js'
 
 const MAX_FILAS = 6
 const DIAS_EVOLUCION = 30
@@ -178,7 +178,7 @@ function EvolucionSemaforo({ expedientes, onAbrirExpediente }) {
                         </span>
                         <span className="tablero-fila-sub mono">{codigos.get(e.expediente_id) || 'Expediente'}</span>
                       </span>
-                      <span className="tablero-fila-dato tabular">{formatFecha(e.creado_en, { day: '2-digit', month: 'short' })}</span>
+                      <span className="tablero-fila-dato tabular">{formatFechaCorta(e.creado_en)}</span>
                       <ArrowUpRight size={12} aria-hidden="true" />
                     </button>
                   </li>

@@ -63,6 +63,12 @@
   gap: var(--s-5);
 }
 
+.confirmacion-texto {
+  font-size: var(--fs-body);
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
 .modal-footer {
   display: flex;
   justify-content: flex-end;
@@ -93,11 +99,9 @@
   grid-column: 1 / -1;
 }
 
+/* Etiqueta de dato: mayúscula inicial y gris, sin versalitas. */
 .detail-item dt {
-  font-size: var(--fs-micro);
-  font-weight: 500;
-  letter-spacing: var(--tracking-caps);
-  text-transform: uppercase;
+  font-size: var(--fs-small);
   color: var(--text-muted);
 }
 

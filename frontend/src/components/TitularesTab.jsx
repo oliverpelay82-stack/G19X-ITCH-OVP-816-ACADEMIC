@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Building2, ChevronRight, FolderOpen, FolderPlus, LayoutGrid, Plus, Rows3, SearchX } from 'lucide-react'
+import { EncabezadoOrdenable } from './OrdenTabla.jsx'
+import useOrden, { RANGO_ESTADO } from '../hooks/useOrden.js'
 import {
   Badge,
   Button,
@@ -192,6 +194,20 @@ export default function TitularesTab({
     })
   }, [titulares, consulta, filtroTipo])
 
+  // Orden por columna de la tabla densa; el expediente ordena por su semáforo, de lo más grave a lo conforme.
+  const clavesOrden = useMemo(
+    () => ({
+      titular: (t) => t.razon_social,
+      rfc: (t) => t.rfc,
+      tipo: (t) => t.tipo_persona,
+      categoria: (t) => categoriaTitular(t.categoria),
+      expediente: (t) => RANGO_ESTADO[(expedientesPorTitular.get(t.id) || [])[0]?.estado_cumplimiento],
+      alta: (t) => t.creado_en,
+    }),
+    [expedientesPorTitular]
+  )
+  const { ordenada, orden, ordenar } = useOrden(filtrados, clavesOrden)
+
   const cerrarModal = () => {
     setModalAbierto(false)
     setForm(FORM_INICIAL)
@@ -237,6 +253,22 @@ export default function TitularesTab({
       titulares.length === 0
         ? 'Da de alta el primer titular para abrir su expediente de cumplimiento.'
         : 'Prueba con otro término o cambia el filtro de tipo de persona.',
+    children:
+      titulares.length === 0 ? (
+        <Button variante="primary" compacto icono={Plus} onClick={() => setModalAbierto(true)} disabled={!isOnline}>
+          Alta de empresa
+        </Button>
+      ) : (
+        <Button
+          compacto
+          onClick={() => {
+            setBusqueda('')
+            setFiltroTipo('TODOS')
+          }}
+        >
+          Limpiar búsqueda
+        </Button>
+      ),
   }
 
   return (
@@ -310,12 +342,24 @@ export default function TitularesTab({
               </colgroup>
               <thead>
                 <tr>
-                  <th>Titular</th>
-                  <th>RFC</th>
-                  <th>Tipo</th>
-                  <th>Categoría</th>
-                  <th>Expediente</th>
-                  <th className="col-right">Alta</th>
+                  <EncabezadoOrdenable columna="titular" orden={orden} onOrdenar={ordenar}>
+                    Titular
+                  </EncabezadoOrdenable>
+                  <EncabezadoOrdenable columna="rfc" orden={orden} onOrdenar={ordenar}>
+                    RFC
+                  </EncabezadoOrdenable>
+                  <EncabezadoOrdenable columna="tipo" orden={orden} onOrdenar={ordenar}>
+                    Tipo
+                  </EncabezadoOrdenable>
+                  <EncabezadoOrdenable columna="categoria" orden={orden} onOrdenar={ordenar}>
+                    Categoría
+                  </EncabezadoOrdenable>
+                  <EncabezadoOrdenable columna="expediente" orden={orden} onOrdenar={ordenar}>
+                    Expediente
+                  </EncabezadoOrdenable>
+                  <EncabezadoOrdenable columna="alta" orden={orden} onOrdenar={ordenar} inicial="desc" className="col-right">
+                    Alta
+                  </EncabezadoOrdenable>
                   <th aria-label="Acciones" />
                 </tr>
               </thead>
@@ -323,7 +367,7 @@ export default function TitularesTab({
                 {loading && <SkeletonRows rows={5} cols={COLUMNAS} />}
                 {vacio && <EmptyRow columnas={COLUMNAS} {...vacioProps} />}
                 {!loading &&
-                  filtrados.map((t) => {
+                  ordenada.map((t) => {
                     const [ultimo] = expedientesPorTitular.get(t.id) || []
                     return (
                       <tr key={t.id}>

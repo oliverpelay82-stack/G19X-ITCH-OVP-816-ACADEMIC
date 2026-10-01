@@ -124,7 +124,7 @@ export default function HistorialExpediente({ expedienteId, documentos = [] }) {
     // Al reconsultar se conservan los eventos ya mostrados, sin aviso de carga,
     // para que la lista no salte.
     <details className="exp-historial" onToggle={(e) => e.currentTarget.open && !cargando && cargar()}>
-      <summary className="eyebrow eyebrow--icon">
+      <summary className="desplegable-titulo">
         <History size={12} aria-hidden="true" />
         Historial del expediente
         {eventos && <span className="tabular cell-muted"> · {eventos.length}</span>}

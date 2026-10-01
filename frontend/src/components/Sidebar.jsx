@@ -27,8 +27,9 @@ const VERSION = 'Versión 1.0.0'
 
 /**
  * Barra lateral esbelta: isotipo en micro-squircle, navegación agrupada en
- * versales y el ítem activo como tarjeta blanca elevada. Cada entrada lleva
- * el conteo de registros de su vista en una píldora de cifras tabulares.
+ * versales y el ítem activo como tarjeta blanca elevada. Solo Alertas lleva
+ * conteo, porque es lo único que pide acción; en tono de advertencia si hay
+ * alertas críticas o altas.
  */
 export default function Sidebar({ tabActiva, onTabChange, contadores }) {
   return (
@@ -49,7 +50,7 @@ export default function Sidebar({ tabActiva, onTabChange, contadores }) {
             <p className="sidebar-label">{grupo.label}</p>
             {grupo.items.map(({ id, label, icon: Icono }) => {
               const activo = tabActiva === id
-              const total = contadores?.[id]
+              const contador = contadores?.[id]
               return (
                 <button
                   key={id}
@@ -62,7 +63,11 @@ export default function Sidebar({ tabActiva, onTabChange, contadores }) {
                     <Icono size={15} />
                   </span>
                   <span className="nav-label">{label}</span>
-                  {total !== undefined && <span className="nav-count tabular">{total}</span>}
+                  {contador?.total > 0 && (
+                    <span className={contador.tono ? `nav-count nav-count--${contador.tono} tabular` : 'nav-count tabular'}>
+                      {contador.total}
+                    </span>
+                  )}
                 </button>
               )
             })}
@@ -71,10 +76,7 @@ export default function Sidebar({ tabActiva, onTabChange, contadores }) {
       </nav>
 
       <div className="sidebar-foot">
-        <span className="version-badge">
-          <span className="status-dot status-dot--ok" aria-hidden="true" />
-          {VERSION}
-        </span>
+        <span className="version-badge">{VERSION}</span>
       </div>
     </aside>
   )

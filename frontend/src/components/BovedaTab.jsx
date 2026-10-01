@@ -1,5 +1,7 @@
 import { useCallback, useMemo, useState } from 'react'
 import { FileLock2, ScanSearch, SearchX, Upload } from 'lucide-react'
+import { EncabezadoOrdenable } from './OrdenTabla.jsx'
+import useOrden, { RANGO_ESTADO } from '../hooks/useOrden.js'
 import { Badge, Button, Card, CopyChip, EmptyRow, Field, IconButton, Modal, SearchBox, Segmented, Select, Tag } from './ui/index.js'
 import DropZone from './DropZone.jsx'
 import DetalleDocumentoModal from './DetalleDocumentoModal.jsx'
@@ -104,6 +106,19 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
     })
   }, [enAlcance, consulta, filtroTipo, mapaExpedientes])
 
+  // Orden por columna: sin elegir, el de la lista; el estado ordena de lo más grave a lo conforme.
+  const clavesOrden = useMemo(
+    () => ({
+      documento: (d) => d.nombre_archivo_original,
+      tipo: (d) => tipoCorto(d.tipo_documento),
+      expediente: (d) => mapaExpedientes[d.expediente_id]?.codigo_expediente,
+      estado: (d) => RANGO_ESTADO[estadoVigente.get(d.id)],
+      ingesta: (d) => d.creado_en,
+    }),
+    [mapaExpedientes, estadoVigente]
+  )
+  const { ordenada, orden, ordenar } = useOrden(filtrados, clavesOrden)
+
   const subir = async (archivo, tipo) => {
     setSubiendo(true)
     try {
@@ -165,12 +180,22 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
             </colgroup>
             <thead>
               <tr>
-                <th>Documento</th>
-                <th>Tipo</th>
-                <th>Expediente</th>
-                <th>Estado</th>
+                <EncabezadoOrdenable columna="documento" orden={orden} onOrdenar={ordenar}>
+                  Documento
+                </EncabezadoOrdenable>
+                <EncabezadoOrdenable columna="tipo" orden={orden} onOrdenar={ordenar}>
+                  Tipo
+                </EncabezadoOrdenable>
+                <EncabezadoOrdenable columna="expediente" orden={orden} onOrdenar={ordenar}>
+                  Expediente
+                </EncabezadoOrdenable>
+                <EncabezadoOrdenable columna="estado" orden={orden} onOrdenar={ordenar}>
+                  Estado
+                </EncabezadoOrdenable>
                 <th>SHA-256</th>
-                <th className="col-right">Ingesta</th>
+                <EncabezadoOrdenable columna="ingesta" orden={orden} onOrdenar={ordenar} inicial="desc" className="col-right">
+                  Ingesta
+                </EncabezadoOrdenable>
                 <th aria-label="Acciones" />
               </tr>
             </thead>
@@ -189,11 +214,23 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
                         ? 'No hay documentos vigentes; el histórico completo conserva las versiones sustituidas.'
                         : 'Ningún documento coincide con la búsqueda o el tipo elegido.'
                   }
-                />
+                >
+                  {documentos.length > 0 && (busqueda || filtroTipo !== 'TODOS') && (
+                    <Button
+                      compacto
+                      onClick={() => {
+                        setBusqueda('')
+                        setFiltroTipo('TODOS')
+                      }}
+                    >
+                      Limpiar búsqueda
+                    </Button>
+                  )}
+                </EmptyRow>
               )}
 
               {!loading &&
-                filtrados.map((doc) => {
+                ordenada.map((doc) => {
                   const exp = mapaExpedientes[doc.expediente_id]
                   const firma = firmaDeMime(doc.mime_type)
                   return (

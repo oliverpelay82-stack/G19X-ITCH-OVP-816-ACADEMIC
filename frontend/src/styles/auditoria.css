@@ -30,8 +30,16 @@
   gap: var(--s-4);
 }
 
-.ai-cta--solo {
-  justify-content: flex-end;
+/* Acciones de la cabecera del panel: «Volver a auditar» (ranura) y las pestañas. */
+.ai-panel-acciones {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  margin-left: auto;
+}
+
+.ai-panel-ranura:empty {
+  display: none;
 }
 
 .ai-cta-desc {
@@ -618,11 +626,9 @@
   border-left: var(--border-subtle);
 }
 
+/* Etiqueta de dato: mayúscula inicial y gris, sin versalitas. */
 .registro-grid dt {
-  font-size: var(--fs-micro);
-  font-weight: 500;
-  letter-spacing: var(--tracking-caps);
-  text-transform: uppercase;
+  font-size: var(--fs-small);
   color: var(--text-muted);
 }
 

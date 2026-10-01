@@ -317,8 +317,8 @@ def capturar_escenarios(navegador: Browser, carpeta: Path, ancho: int, alto: int
         print(f"  {prefijo}: el primer documento no tiene ratificación pendiente; se omite ese escenario")
 
     # Panel de inteligencia documental tras una auditoría y un turno de chat simulados.
-    # El botón dice «Auditar documento» o, si ya hay dictamen, «Volver a auditar».
-    pagina.locator(".modal .ai-cta button").click()
+    # Sin dictamen, «Auditar documento» en el cuerpo; con dictamen, «Volver a auditar» junto a las pestañas.
+    pagina.locator(".modal .ai-cta button, .modal .ai-panel-ranura button").first.click()
     h._esperar(pagina, 1500)
     pagina.locator(".modal").click(position={"x": 5, "y": 5})
     h._capturar_modal(pagina, carpeta / f"{prefijo}_panel_auditoria.png")

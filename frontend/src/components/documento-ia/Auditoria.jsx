@@ -1,6 +1,7 @@
 // Flujo de la auditoría repartido en secciones: resultado (auditar, veredicto, dictamen vigente
 // con su ratificación y cotejo de representación), evidencia y registro técnico.
 import { useEffect, useId, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { FileSearch, Sparkles } from 'lucide-react'
 import { Skeleton } from '../Skeleton.jsx'
 import DictamenesGuardados, { AvisoIntegridad } from '../DictamenesGuardados.jsx'
@@ -29,6 +30,7 @@ export function AuditoriaIa({
   seccion = 'resultado',
   solicitudRatificar = 0,
   ratificacionEnEncabezado = false,
+  ranuraAccion = null,
   onIrSeccion,
   registroTecnico = null,
 }) {
@@ -133,31 +135,39 @@ export function AuditoriaIa({
     }
   }
 
+  const botonAuditar = (
+    <Button
+      variante={auditado ? 'secondary' : 'primary'}
+      compacto={auditado}
+      icono={Sparkles}
+      cargando={analizando}
+      onClick={auditar}
+      disabled={!iaOnline || alterado}
+      title={alterado ? 'Documento bloqueado: el archivo cambió después de custodiarse' : iaOnline ? undefined : 'El servicio de análisis con IA no responde'}
+    >
+      {analizando ? 'Auditando…' : auditado ? 'Volver a auditar' : 'Auditar documento'}
+    </Button>
+  )
+
   return (
     <div className="ai-view">
       {/* ── Resultado ── */}
       <div className="ai-seccion" hidden={seccion !== 'resultado'}>
-        <div className={auditado ? 'ai-cta ai-cta--solo' : 'ai-cta'}>
-          {!auditado && (
+        {/* Sin dictamen, la auditoría se explica y su botón es la acción principal.
+            Con dictamen, auditar de nuevo es secundario y va junto a las pestañas
+            (ranura de la cabecera del panel): no ocupa un renglón ni compite con
+            «Ratificar dictamen». Solo en la sección Resultado, donde se ve el avance. */}
+        {auditado ? (
+          ranuraAccion && seccion === 'resultado' && createPortal(botonAuditar, ranuraAccion)
+        ) : (
+          <div className="ai-cta">
             <p className="ai-cta-desc">
               Clasifica el documento, coteja su titularidad, verifica su vigencia y localiza lo que el catálogo exige a
               su tipo. Al proveedor de IA solo viaja el texto extraído, nunca el archivo.
             </p>
-          )}
-          {/* Con un dictamen, auditar de nuevo es secundario: la acción principal del
-              modal es la del encabezado (ratificar), y no compiten dos botones negros. */}
-          <Button
-            variante={auditado ? 'secondary' : 'primary'}
-            compacto={auditado}
-            icono={Sparkles}
-            cargando={analizando}
-            onClick={auditar}
-            disabled={!iaOnline || alterado}
-            title={alterado ? 'Documento bloqueado: el archivo cambió después de custodiarse' : iaOnline ? undefined : 'El servicio de análisis con IA no responde'}
-          >
-            {analizando ? 'Auditando…' : auditado ? 'Volver a auditar' : 'Auditar documento'}
-          </Button>
-        </div>
+            {botonAuditar}
+          </div>
+        )}
 
         {!iaOnline && !dictamen && (
           <p className="field-hint">El servicio de análisis con IA no responde; la auditoría no está disponible.</p>

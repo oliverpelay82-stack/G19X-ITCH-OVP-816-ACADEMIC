@@ -149,6 +149,12 @@
   color: var(--text-muted);
 }
 
+.nav-count--warn {
+  border-color: var(--warn-border);
+  background: var(--warn-bg);
+  color: var(--warn);
+}
+
 .nav-item.is-active .nav-count {
   border-color: var(--line);
   color: var(--text-secondary);
@@ -161,14 +167,7 @@
 }
 
 .version-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  height: 24px;
   padding: 0 var(--s-2);
-  border: var(--border-default);
-  border-radius: var(--r-full);
-  background: var(--bg-surface);
   font-family: var(--font-mono);
   font-size: var(--fs-micro);
   color: var(--text-secondary);
@@ -263,6 +262,13 @@
   gap: var(--s-2);
 }
 
+.actualizado {
+  min-width: 15ch;
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+  text-align: right;
+}
+
 .header-divider {
   width: 1px;
   height: 20px;
@@ -270,35 +276,82 @@
   background: var(--line);
 }
 
-/* ── System Health Strip ───────────────────────────────────────── */
-.health-strip {
-  display: flex;
-  align-items: stretch;
-  height: 32px;
-  list-style: none;
-  margin: 0;
-  padding: 0;
+/* ── Salud del sistema ─────────────────────────────────────────
+   Un indicador en la cabecera y, al pasar el cursor o con el foco, el
+   detalle de los tres servicios en un panel (opacidad y desplazamiento). */
+.health {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  height: var(--control-md);
+  padding: 0 var(--s-3);
   border: var(--border-default);
   border-radius: var(--r-sm);
   background: var(--bg-surface);
-  box-shadow: var(--shadow-card);
-  overflow: hidden;
+  box-shadow: var(--shadow-hairline);
+  font-size: var(--fs-small);
+  white-space: nowrap;
+  cursor: default;
+  transition: border-color var(--dur) var(--ease);
+}
+
+.health:hover,
+.health:focus-visible {
+  border-color: var(--line-strong);
+  outline: none;
+}
+
+.health-resumen {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.health--bad .health-resumen {
+  color: var(--bad);
+}
+
+.health--warn .health-resumen {
+  color: var(--warn);
+}
+
+.health-detalle {
+  position: absolute;
+  top: calc(100% + var(--s-2));
+  right: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  min-width: 320px;
+  margin: 0;
+  padding: var(--s-1);
+  list-style: none;
+  border: var(--border-default);
+  border-radius: var(--r-md);
+  background: var(--bg-surface-elevated);
+  box-shadow: var(--shadow-pop);
+  opacity: 0;
+  transform: translateY(-4px);
+  pointer-events: none;
+  transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+
+.health:hover .health-detalle,
+.health:focus-within .health-detalle {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
 }
 
 .health-item {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 0 var(--s-3);
+  gap: var(--s-2);
+  padding: var(--s-2) var(--s-3);
+  border-radius: var(--r-sm);
   font-size: var(--fs-small);
   color: var(--text-secondary);
-  white-space: nowrap;
-  cursor: default;
   transition: background-color var(--dur) var(--ease);
-}
-
-.health-item + .health-item {
-  border-left: var(--border-subtle);
 }
 
 .health-item:hover {
@@ -308,6 +361,10 @@
 .health-name {
   font-weight: 500;
   color: var(--text-primary);
+}
+
+.health-port {
+  margin-right: auto;
 }
 
 .health-port,

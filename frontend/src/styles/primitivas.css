@@ -154,6 +154,29 @@
   line-height: 1.4;
 }
 
+/* Título de sección con un punto de estado delante (grupos de Alertas). */
+.section-title--icono {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+
+/* Título de una sección plegable (reglas evaluadas, historial): un nivel por
+   debajo del título de sección y sin versalitas, con su icono. */
+.desplegable-titulo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  font-size: var(--fs-body);
+  font-weight: 600;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.desplegable-titulo svg {
+  color: var(--text-muted);
+}
+
 .section-title--sm {
   font-size: var(--fs-micro);
   font-weight: 500;

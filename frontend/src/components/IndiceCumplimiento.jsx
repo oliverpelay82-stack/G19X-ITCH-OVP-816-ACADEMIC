@@ -101,7 +101,7 @@ export function ReglasEvaluadas({ indice }) {
   if (!indice?.reglas?.length) return null
   return (
     <details className="indice-detalle">
-          <summary className="eyebrow eyebrow--icon">
+          <summary className="desplegable-titulo">
             <ListChecks size={12} aria-hidden="true" />
             Reglas evaluadas para el índice
             <span className="tabular cell-muted"> · {indice.reglas.length}</span>

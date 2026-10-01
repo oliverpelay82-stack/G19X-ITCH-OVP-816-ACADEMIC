@@ -53,6 +53,7 @@ VISTAS = ["Empresas", "Expedientes", "Bóveda", "Alertas", "Reportes", "Reglas"]
 CSS_CAPTURA = """
 *, *::before, *::after { transition: none !important; animation: none !important; caret-color: transparent !important; }
 .health-metric { display: inline-block; min-width: 7ch; visibility: hidden; }
+.actualizado { visibility: hidden; }
 .modal-overlay { background: var(--bg-canvas) !important; }
 """
 

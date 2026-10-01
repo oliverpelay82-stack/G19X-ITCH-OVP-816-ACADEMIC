@@ -8,7 +8,9 @@ export function formatBytes(bytes) {
   const n = Number(bytes)
   if (!Number.isFinite(n) || n <= 0) return '0 B'
   const unidades = ['B', 'KB', 'MB', 'GB']
-  const i = Math.min(Math.floor(Math.log(n) / Math.log(1024)), unidades.length - 1)
+  let i = Math.min(Math.floor(Math.log(n) / Math.log(1024)), unidades.length - 1)
+  // «1006.9 KB» se lee peor que «1.0 MB»: desde 1000 se usa la unidad siguiente.
+  if (n / 1024 ** i >= 1000 && i < unidades.length - 1) i += 1
   const valor = n / 1024 ** i
   return `${valor.toFixed(i === 0 ? 0 : 1)} ${unidades[i]}`
 }
@@ -22,8 +24,23 @@ export function formatFecha(valor, opciones) {
 }
 
 /** Solo el día, sin la hora. */
+/**
+ * Día y mes («27 sep»), con el año solo si no es el actual («14 may 2002»).
+ * Se arma por partes: con día y mes solos, es-MX escribiría «27-sep».
+ */
+function diaMes(fecha) {
+  const conAnio = fecha.getFullYear() !== new Date().getFullYear()
+  return new Intl.DateTimeFormat('es-MX', { day: '2-digit', month: 'short', ...(conAnio && { year: 'numeric' }) })
+    .formatToParts(fecha)
+    .filter((p) => p.type !== 'literal')
+    .map((p) => p.value.replace(/\.$/, ''))
+    .join(' ')
+}
+
 export function formatFechaCorta(valor) {
-  return formatFecha(valor, { day: '2-digit', month: 'short', year: 'numeric' })
+  if (!valor) return '—'
+  const d = new Date(valor)
+  return Number.isNaN(d.getTime()) ? '—' : diaMes(d)
 }
 
 /**
@@ -34,11 +51,7 @@ export function formatFechaCorta(valor) {
 export function formatDia(valor) {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(valor || '')
   if (!m) return formatFechaCorta(valor)
-  return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])).toLocaleDateString('es-MX', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  })
+  return diaMes(new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])))
 }
 
 /** "hace 4 min", "hace 2 h"… para marcas de tiempo recientes. */

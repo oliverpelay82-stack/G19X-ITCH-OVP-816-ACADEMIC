@@ -5,7 +5,7 @@
  * exige el mismo HTML, salvo los atributos de accesibilidad que el
  * componente añade a propósito.
  */
-import { Loader2, Plus, RefreshCw, X } from 'lucide-react'
+import { Loader2, Plus, RefreshCw, Search, X } from 'lucide-react'
 import {
   Badge,
   Button,
@@ -16,6 +16,7 @@ import {
   Input,
   KeyValue,
   KeyValueList,
+  SearchBox,
   Segmented,
   Select,
   Tag,
@@ -332,5 +333,15 @@ export const CASOS = [
         ]}
       />
     ),
+  },
+  {
+    nombre: 'SearchBox con atajo «/» (barras de herramientas)',
+    actual: (
+      <label className="search-box ">
+        <Search size={14} aria-hidden="true" />
+        <input type="search" placeholder="Buscar expedientes" value="" onChange={nada} aria-label="Buscar expedientes" aria-keyshortcuts="/" />
+      </label>
+    ),
+    nuevo: <SearchBox value="" onChange={nada} placeholder="Buscar expedientes" label="Buscar expedientes" />,
   },
 ]

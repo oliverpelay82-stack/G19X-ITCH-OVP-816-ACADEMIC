@@ -322,9 +322,7 @@
 }
 
 .resumen-etiqueta {
-  font-size: var(--fs-micro);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-size: var(--fs-small);
   color: var(--text-muted);
 }
 

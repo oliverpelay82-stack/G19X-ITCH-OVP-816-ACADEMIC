@@ -19,16 +19,16 @@
   font-size: var(--fs-body);
 }
 
+/* Encabezados en mayúscula inicial y gris secundario: en tablas de seis o
+   siete columnas, las versalitas pesaban más que los datos. */
 .data-table th {
   height: 36px;
   padding: 0 var(--cell-x);
   border-bottom: var(--border-default);
   background: var(--bg-subtle);
-  font-size: var(--fs-micro);
+  font-size: var(--fs-small);
   font-weight: 500;
-  letter-spacing: var(--tracking-caps);
-  text-transform: uppercase;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   text-align: left;
   white-space: nowrap;
 }
@@ -51,8 +51,69 @@
   transition: background-color var(--dur) var(--ease);
 }
 
+/* El lienzo (#fafaf9) sobre blanco no se distinguía: el gris suave sí. */
 .data-table tbody tr:not(.group-row):not(.empty-row):not(.skeleton-row):hover {
-  background: var(--bg-canvas);
+  background: var(--bg-subtle);
+}
+
+/* ── Encabezado ordenable (OrdenTabla.jsx) ── */
+.th-orden {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.th-orden svg {
+  color: var(--text-muted);
+  opacity: 0;
+  transition: opacity var(--dur) var(--ease);
+}
+
+.th-orden:hover,
+.th-orden.is-activo {
+  color: var(--text-primary);
+}
+
+.th-orden:hover svg,
+.th-orden:focus-visible svg,
+.th-orden.is-activo svg {
+  opacity: 1;
+}
+
+.col-right .th-orden {
+  flex-direction: row-reverse;
+}
+
+/* ── Encabezados fijos en las tablas de vista completa ──
+   La tarjeta recorta sin crear un contenedor de desplazamiento (clip), así
+   el encabezado se pega bajo la cabecera de la aplicación. Las tablas
+   anidadas (detalle, modal) no lo necesitan. */
+.table-card:not(.table-card--flat) {
+  overflow: clip;
+}
+
+.table-card:not(.table-card--flat) > .table-scroll {
+  overflow-x: clip;
+}
+
+.table-card:not(.table-card--flat) > .table-scroll > .data-table:not(.data-table--inner) th {
+  position: sticky;
+  top: var(--header-h);
+  z-index: 1;
+}
+
+/* Sin ancho para la tabla, vuelve el desplazamiento horizontal (y el
+   encabezado deja de ser fijo, como antes). */
+@media (max-width: 1100px) {
+  .table-card:not(.table-card--flat) > .table-scroll {
+    overflow-x: auto;
+  }
 }
 
 /* Tabla anidada (detalle de expediente, cotejo): sin ancho mínimo. */
@@ -160,10 +221,6 @@
 .data-table--boveda .cell-mono,
 .data-table--boveda .cell-num {
   white-space: nowrap;
-}
-
-.cell-action-text {
-  font-size: var(--fs-small);
 }
 
 .identity {
@@ -292,8 +349,7 @@
 }
 
 /* Detalle de una regla: los dos textos largos (descripción y acción) a
-   medias y los tres datos cortos en tercios, sin un dato huérfano; las
-   etiquetas en versales, como los demás datos clave del sistema. */
+   medias y los tres datos cortos en tercios, sin un dato huérfano. */
 .regla-detalle-grid {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
@@ -314,11 +370,9 @@
   grid-column: span 3;
 }
 
+/* Etiqueta de dato: mayúscula inicial y gris, sin versalitas. */
 .regla-detalle-grid dt {
-  font-size: var(--fs-micro);
-  font-weight: 500;
-  letter-spacing: var(--tracking-caps);
-  text-transform: uppercase;
+  font-size: var(--fs-small);
   color: var(--text-muted);
 }
 
@@ -363,6 +417,11 @@
 
 .copy-chip .copy-ok {
   color: var(--ok);
+}
+
+/* En una celda, el valor alinea con su encabezado: se compensa el relleno del chip. */
+.data-table .copy-chip {
+  margin-left: calc((var(--s-2) + 1px) * -1);
 }
 
 .copy-chip--full {

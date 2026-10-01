@@ -10,6 +10,7 @@ import { avisarCarga } from '../utils/nivel1.js'
 import { getEstadoBadge, TIPO_EXPEDIENTE_LABEL, TIPOS_EXPEDIENTE } from '../constants.js'
 import { formatRelativo, iniciales } from '../utils/format.js'
 import { formatIndice, indiceDe } from '../utils/indice.js'
+import { RANGO_ESTADO } from '../hooks/useOrden.js'
 import { DetalleExpediente } from './expedientes/DetalleExpediente.jsx'
 import Destello from './Destello.jsx'
 
@@ -56,6 +57,7 @@ export default function ExpedientesTab({
   const [busqueda, setBusqueda] = useState('')
   const [filtroEstado, setFiltroEstado] = useState('TODOS')
   const [filtroTipo, setFiltroTipo] = useState('TODOS')
+  const [orden, setOrden] = useState('PRIORIDAD')
   const [desde, setDesde] = useState('')
   const [hasta, setHasta] = useState('')
   const [expandido, setExpandido] = useState(null)
@@ -114,6 +116,21 @@ export default function ExpedientesTab({
       return coincideEstado && coincideTipo && coincideFecha && coincideBusqueda
     })
   }, [expedientes, consulta, filtroEstado, filtroTipo, desde, hasta])
+
+  // Prioridad (por defecto): primero lo más grave del semáforo y, dentro de
+  // cada estado, el menor cumplimiento; así lo urgente nunca queda abajo.
+  const ordenados = useMemo(() => {
+    const nombre = (x) => x.titular?.razon_social || x.codigo_expediente || ''
+    const criterio = {
+      PRIORIDAD: (a, b) =>
+        (RANGO_ESTADO[a.estado_cumplimiento] ?? 9) - (RANGO_ESTADO[b.estado_cumplimiento] ?? 9) ||
+        (indiceDe(a)?.porcentaje ?? 101) - (indiceDe(b)?.porcentaje ?? 101) ||
+        nombre(a).localeCompare(nombre(b), 'es'),
+      RECIENTE: (a, b) => String(b.actualizado_en || '').localeCompare(String(a.actualizado_en || '')),
+      NOMBRE: (a, b) => nombre(a).localeCompare(nombre(b), 'es'),
+    }[orden]
+    return [...filtrados].sort(criterio)
+  }, [filtrados, orden])
 
   const hayFiltros = filtroTipo !== 'TODOS' || desde || hasta
 
@@ -232,6 +249,11 @@ export default function ExpedientesTab({
             onChange={(e) => setHasta(e.target.value)}
           />
         </div>
+        <Select etiqueta="Ordenar expedientes" value={orden} onChange={(ev) => setOrden(ev.target.value)}>
+          <option value="PRIORIDAD">Ordenar por prioridad</option>
+          <option value="RECIENTE">Más reciente primero</option>
+          <option value="NOMBRE">Por nombre</option>
+        </Select>
         {hayFiltros && (
           <Button
             compacto
@@ -258,13 +280,39 @@ export default function ExpedientesTab({
                 ? 'Apertura un expediente para empezar a custodiar la documentación de un titular.'
                 : 'Ajusta la búsqueda o los filtros de estado, tipo y fecha.'
             }
-          />
+          >
+            {expedientes.length === 0 ? (
+              <Button
+                variante="primary"
+                compacto
+                icono={Plus}
+                onClick={() => setModalAbierto(true)}
+                disabled={titulares.length === 0 || !isOnline}
+                title={titulares.length === 0 ? 'Primero registra una empresa' : undefined}
+              >
+                Aperturar expediente
+              </Button>
+            ) : (
+              <Button
+                compacto
+                onClick={() => {
+                  setBusqueda('')
+                  setFiltroEstado('TODOS')
+                  setFiltroTipo('TODOS')
+                  setDesde('')
+                  setHasta('')
+                }}
+              >
+                Limpiar filtros
+              </Button>
+            )}
+          </EmptyState>
         </Card>
       )}
 
       {!loading && filtrados.length > 0 && (
         <div className="exp-list">
-          {filtrados.map((exp) => {
+          {ordenados.map((exp) => {
             const meta = getEstadoBadge(exp.estado_cumplimiento)
             const indice = indiceDe(exp)
             const obligatorios = exp.evaluacion?.obligatorios || []

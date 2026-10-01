@@ -2,10 +2,12 @@ import { useMemo, useState } from 'react'
 import { FileBarChart2, SearchX } from 'lucide-react'
 import ExportarReporte from './ExportarReporte.jsx'
 import MetricsCards from './MetricsCards.jsx'
+import { EncabezadoOrdenable } from './OrdenTabla.jsx'
+import useOrden, { RANGO_ESTADO } from '../hooks/useOrden.js'
 import TableroOperativo from './TableroOperativo.jsx'
 import { SkeletonRows } from './Skeleton.jsx'
 import useDebounce from '../hooks/useDebounce.js'
-import { Badge, Card, EmptyRow, SearchBox, Select, Tag } from './ui/index.js'
+import { Badge, Button, Card, EmptyRow, SearchBox, Select, Tag } from './ui/index.js'
 import { formatIndice, indiceDe } from '../utils/indice.js'
 import {
   ALERTA_META,
@@ -37,7 +39,7 @@ function Seccion({ titulo, accion, children }) {
   return (
     <section className="report-seccion" aria-label={titulo}>
       <div className="report-seccion-cabecera">
-        <h2 className="eyebrow">{titulo}</h2>
+        <h2 className="section-title">{titulo}</h2>
         {accion}
       </div>
       {children}
@@ -94,6 +96,19 @@ export default function ReportesTab({
           .some((t) => t.toLowerCase().includes(q))
     )
   }, [expedientes, consulta])
+
+  // Orden por columna: el estado va de lo más grave a lo conforme; el cumplimiento, del menor al mayor.
+  const clavesOrden = useMemo(
+    () => ({
+      expediente: (e) => e.titular?.razon_social,
+      tipo: (e) => TIPO_EXPEDIENTE_LABEL[e.tipo_expediente],
+      estado: (e) => RANGO_ESTADO[e.estado_cumplimiento],
+      cumplimiento: (e) => indiceDe(e)?.porcentaje,
+      alertas: (e) => e.evaluacion?.alertas?.length || 0,
+    }),
+    []
+  )
+  const { ordenada, orden, ordenar } = useOrden(filtrados, clavesOrden)
 
   return (
     <div className="tab-panel reportes">
@@ -189,11 +204,21 @@ export default function ReportesTab({
               </colgroup>
               <thead>
                 <tr>
-                  <th>Expediente</th>
-                  <th>Tipo</th>
-                  <th>Estado</th>
-                  <th className="col-right">Cumplimiento</th>
-                  <th className="col-right">Alertas</th>
+                  <EncabezadoOrdenable columna="expediente" orden={orden} onOrdenar={ordenar}>
+                    Expediente
+                  </EncabezadoOrdenable>
+                  <EncabezadoOrdenable columna="tipo" orden={orden} onOrdenar={ordenar}>
+                    Tipo
+                  </EncabezadoOrdenable>
+                  <EncabezadoOrdenable columna="estado" orden={orden} onOrdenar={ordenar}>
+                    Estado
+                  </EncabezadoOrdenable>
+                  <EncabezadoOrdenable columna="cumplimiento" orden={orden} onOrdenar={ordenar} className="col-right">
+                    Cumplimiento
+                  </EncabezadoOrdenable>
+                  <EncabezadoOrdenable columna="alertas" orden={orden} onOrdenar={ordenar} inicial="desc" className="col-right">
+                    Alertas
+                  </EncabezadoOrdenable>
                   <th className="col-right">Dictamen de cumplimiento</th>
                 </tr>
               </thead>
@@ -205,10 +230,16 @@ export default function ReportesTab({
                     icon={expedientes.length === 0 ? FileBarChart2 : SearchX}
                     titulo={expedientes.length === 0 ? 'Aún no hay expedientes' : 'Sin coincidencias'}
                     descripcion={expedientes.length === 0 ? 'Los reportes se generan a partir de los expedientes.' : 'Ajusta la búsqueda.'}
-                  />
+                  >
+                    {expedientes.length > 0 && (
+                      <Button compacto onClick={() => setBusqueda('')}>
+                        Limpiar búsqueda
+                      </Button>
+                    )}
+                  </EmptyRow>
                 )}
                 {!loading &&
-                  filtrados.map((e) => {
+                  ordenada.map((e) => {
                     const meta = getEstadoBadge(e.estado_cumplimiento)
                     return (
                       <tr key={e.id}>
