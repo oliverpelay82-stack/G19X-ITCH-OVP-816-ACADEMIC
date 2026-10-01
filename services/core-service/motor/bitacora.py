@@ -32,6 +32,8 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from models.bitacora import EVENTO_SELLO_GENESIS, BitacoraAuditoria
+from models.sello_tiempo import SelloTiempo
+from config import observabilidad
 
 USUARIO_SISTEMA = "SISTEMA"
 HASH_INICIAL = "0" * 64
@@ -74,7 +76,7 @@ def _ahora(db: Session) -> datetime:
     return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
-def _ultimo_sellado(db: Session) -> BitacoraAuditoria | None:
+def ultimo_sellado(db: Session) -> BitacoraAuditoria | None:
     return (
         db.query(BitacoraAuditoria)
         .filter(BitacoraAuditoria.secuencia.isnot(None))
@@ -126,6 +128,14 @@ def _sellar_genesis(db: Session) -> BitacoraAuditoria:
     return _sellar(db, genesis, None)
 
 
+def _con_folio(detalle: dict[str, Any] | None) -> dict[str, Any]:
+    folio = observabilidad.actual()
+    detalle = dict(detalle or {})
+    if folio and "id_peticion" not in detalle:
+        detalle["id_peticion"] = folio
+    return detalle
+
+
 def registrar(
     db: Session,
     evento: str,
@@ -139,7 +149,7 @@ def registrar(
 ) -> BitacoraAuditoria:
     if _es_postgres(db):
         db.execute(text("SELECT pg_advisory_xact_lock(hashtext('bitacora_cadena'))"))
-    anterior = _ultimo_sellado(db) or _sellar_genesis(db)
+    anterior = ultimo_sellado(db) or _sellar_genesis(db)
     entrada = BitacoraAuditoria(
         evento=evento,
         expediente_id=expediente_id,
@@ -147,8 +157,9 @@ def registrar(
         dictamen_id=dictamen_id,
         usuario=usuario or USUARIO_SISTEMA,
         ip_origen=ip_origen,
-        # El detalle se sella tal como se leerá de la columna JSON.
-        detalle=json.loads(json.dumps(detalle or {}, default=str)),
+        # El detalle se sella tal como se leerá de la columna JSON. PLUS-21: con el
+        # folio de la petición que lo originó (los ciclos programados no lo tienen).
+        detalle=json.loads(json.dumps(_con_folio(detalle), default=str)),
     )
     return _sellar(db, entrada, anterior)
 
@@ -170,11 +181,14 @@ def verificar_cadena(db: Session) -> dict[str, Any]:
     def hallazgo(secuencia: int | None, evento_id: str | None, problema: str) -> None:
         hallazgos.append({"secuencia": secuencia, "evento_id": evento_id, "problema": problema})
 
+    sello_tiempo = _verificar_sellos_tiempo(db, {e.secuencia: e for e in sellados}, hallazgo)
+
     if not sellados:
         previos = _previos(db)
-        return {"integra": True, "sellada": False, "eventos_sellados": 0, "eventos_previos": len(previos),
+        return {"integra": not hallazgos, "sellada": False, "eventos_sellados": 0, "eventos_previos": len(previos),
                 "ultimo_hash": None, "ultima_secuencia": None, "verificado_en": _fecha(_ahora(db)),
-                "algoritmo": ALGORITMO, "total_hallazgos": 0, "hallazgos": []}
+                "algoritmo": ALGORITMO, "total_hallazgos": len(hallazgos), "hallazgos": hallazgos[:MAX_HALLAZGOS],
+                "sello_tiempo": sello_tiempo}
 
     esperado, enlace = 1, HASH_INICIAL
     for e in sellados:
@@ -218,4 +232,28 @@ def verificar_cadena(db: Session) -> dict[str, Any]:
         "algoritmo": ALGORITMO,
         "total_hallazgos": len(hallazgos),
         "hallazgos": hallazgos[:MAX_HALLAZGOS],
+        "sello_tiempo": sello_tiempo,
     }
+
+
+def _verificar_sellos_tiempo(db: Session, por_secuencia: dict[int, BitacoraAuditoria], hallazgo) -> dict[str, Any] | None:
+    """
+    P7 (PLUS-22): cada sello de tiempo debe seguir coincidiendo con el eslabón
+    que cubrió. Si la cadena se reescribió completa (con los hashes
+    recalculados), el enlace no lo delata, pero el sello de la autoridad sí.
+    Devuelve el último sello con su resultado, o None si no hay ninguno.
+    """
+    from motor import sello_tiempo  # importa este módulo: se resuelve al usarse
+
+    sellos = db.query(SelloTiempo).order_by(SelloTiempo.secuencia, SelloTiempo.creado_en).all()
+    for s in sellos:
+        e = por_secuencia.get(s.secuencia)
+        if e is None or e.hash_evento != s.hash_evento:
+            hallazgo(s.secuencia, e.id if e else s.evento_id,
+                     f"El sello de tiempo del {s.fecha_sello.isoformat(sep=' ', timespec='seconds')} UTC cubre este "
+                     "eslabón, pero su huella ya no coincide: la bitácora se reescribió después de esa fecha.")
+    if not sellos:
+        return None
+    ultimo = sellos[-1]
+    e = por_secuencia.get(ultimo.secuencia)
+    return sello_tiempo.resumen(ultimo, coincide=e is not None and e.hash_evento == ultimo.hash_evento)

@@ -11,7 +11,7 @@
 | Desarrollo (Scrum Master / Desarrollador) | Oliver Villanueva Pelay, residente (No. de control 21520500) |
 | Stakeholder evaluador | Edgar Loheffelmman (PluriOne) |
 | Asesor interno | Dr. Wilfrido Campos Francisco |
-| Versión del documento | 2.4 — 30 de septiembre de 2026 (2.3: P5 implementado; 2.2: P5 documentado; 2.1: revisión de requerimientos; 2.0: correcciones de la documentación; 1.9: revisión visual del frontend; 1.8: chat documental eficiente; 1.7: revisión del frontend; 1.6: índice de cumplimiento; 1.5: P3; 1.4: P2; 1.3: P1; 1.2: 28 de septiembre; 1.0: 27 de septiembre de 2026) |
+| Versión del documento | 2.6 — 1 de octubre de 2026 (2.5: P7 documentado; 2.4: P6; 2.3: P5 implementado; 2.2: P5 documentado; 2.1: revisión de requerimientos; 2.0: correcciones de la documentación; 1.9: revisión visual del frontend; 1.8: chat documental eficiente; 1.7: revisión del frontend; 1.6: índice de cumplimiento; 1.5: P3; 1.4: P2; 1.3: P1; 1.2: 28 de septiembre; 1.0: 27 de septiembre de 2026) |
 | Estado del producto | En desarrollo: Sprints 1 y 2 implementados, Sprint 3 implementado parcialmente, Sprint 4 implementado salvo HU-31, Módulo 7 pendiente |
 | Documento hermano | [MRD.md](MRD.md) — requerimientos de mercado |
 
@@ -1036,6 +1036,48 @@ Nueve puntos del análisis más profundo del 30/09/2026, aprobados por el reside
 - **Privacidad:** el QR se lee del archivo ya custodiado; el enlace solo se muestra al analista y nada sale del motor.
 
 **Diagramas:** [casos de uso](uml/p6-casos-de-uso-autenticidad.puml), [señales del archivo en la carga y la auditoría](uml/p6-actividad-senales-archivo.puml) y [catálogo, cuota y antigüedad](uml/p6-actividad-trazabilidad-operacion.puml).
+
+---
+
+### 21.7 P7 — Operación trazable, fecha cierta y aseguramiento de la calidad
+
+Cinco puntos que quedaban después de P6, decididos por el residente el 30/09/2026 con un criterio para todos: **el sistema lo levantarán agentes de PluriOne con documentos y datos ficticios, además de reales, así que cada función debe servir con ambos.** Lo que depende de un servicio externo es opcional y su falla nunca detiene el motor.
+
+| ID | Requerimiento | Fundamento | Estado |
+|---|---|---|---|
+| PLUS-21 | **Identificador de petición entre servicios (S2).** Cada petición lleva la cabecera `X-Request-ID` (`id_peticion`): el frontend genera una por llamada; cada servicio acepta la recibida (hasta 64 caracteres alfanuméricos y guiones) o crea una, la devuelve en la respuesta y la propaga al llamar a los otros dos. Cada servicio escribe un registro estructurado por petición (servicio, `id_peticion`, método, ruta, estado y duración). Los eventos de la bitácora registrados durante una petición llevan su `id_peticion`, y un error no controlado la devuelve; el aviso de error de la interfaz la muestra como «Folio de seguimiento». Así una auditoría puede seguirse de punta a punta: interfaz, ai-service, core, rules y bitácora. | ISO/IEC 27001, A.8.15 (registro de eventos); RNF-05 (trazabilidad); operación | Implementado (`config/observabilidad.py` en cada servicio; pruebas `test_folio_seguimiento` en core y ai) |
+| PLUS-22 | **Sello de tiempo de un tercero sobre la bitácora (S1).** Si `SELLO_TIEMPO_URL` apunta a una autoridad de sellado RFC 3161, el core pide una vez al día (en la reevaluación programada) y a demanda un sello sobre el `hash_evento` del último eslabón de la cadena: **solo viaja esa huella**, ningún dato. El sello (token DER, autoridad, fecha cierta y número de serie) se guarda en la tabla `sellos_tiempo`, de solo inserción, y deja el evento SELLO_TIEMPO en la bitácora; la ficha de custodia y los reportes imprimen el último. Prueba que la bitácora existía en esa fecha aunque alguien con acceso a la base intente reescribirla, y cualquiera puede verificarlo con `openssl ts -verify`. **Apagado por omisión** (`SELLO_TIEMPO_URL` vacío): un entorno de pruebas o una red que bloquee el servicio no se ven afectados, y una falla solo se registra y se reintenta en el siguiente ciclo. No sustituye la constancia de conservación de un Prestador de Servicios de Certificación acreditado (NOM-151) y así se declara. Si el último eslabón ya es un SELLO_TIEMPO no se pide otro, y la verificación de la cadena reporta un hallazgo si la huella que cubrió un sello ya no está en la cadena (la bitácora se reescribió después de esa fecha). Endpoints: `POST /bitacora/sello-tiempo` (a demanda; 409 si está apagado, 502 si la autoridad falla), `GET /bitacora/sellos-tiempo` y `GET /bitacora/sellos-tiempo/{id}/token`. | NOM-151-SCFI-2016 (fecha cierta); P3 y PLUS-15 (cadena sellada y ancla externa) | Implementado (`motor/sello_tiempo.py`, tabla `sellos_tiempo`; pruebas `test_sello_tiempo` con una autoridad simulada). Comprobado el 01/10/2026 con una huella aleatoria contra DigiCert, Sectigo y FreeTSA: el motor leyó los tres sellos y `openssl ts -verify -token_in` validó los de DigiCert y Sectigo con el almacén de confianza público (FreeTSA exige su propio certificado raíz) |
+| — | **Aviso de nueva auditoría al cambiar el catálogo (M7).** El rules-service publica, además de la versión del catálogo (M6), la de las reglas que aplican a cada tipo de documento (las de ese tipo y las generales de vigencia y contenido). Cada dictamen nuevo guarda la de su tipo (`version_reglas_tipo`, protegida por el trigger de RN-05). Si después cambian esas reglas (se agrega, pausa o edita una), la evaluación emite la alerta «Requiere nueva auditoría» (media): el dictamen no verificó las reglas vigentes. El aviso dice que se agregó, pausó o editó una regla de ese tipo; cuál cambió se consulta en el catálogo, porque el core solo conoce las versiones. Un cambio en las reglas de otro tipo no la emite, y los dictámenes previos a P7 (sin versión) tampoco. La alerta desaparece al auditar de nuevo. | Protocolo de auditoría del DOC-05 (dictamen con las reglas vigentes); M6 | Implementado (`version_catalogo.por_tipo`; pruebas `test_version_catalogo`, `test_rules_version_catalogo`) |
+| — | **Pruebas de extremo a extremo en CI (Q-b).** `scripts/e2e_api.py` recorre por HTTP real el flujo completo: alta de un titular con RFC real y otro con RFC ficticio, expediente, carga de PDF (y su repetición, 409), dictamen del Nivel 4 simulado (sin Groq, con la vigencia calculada por el rules-service), ratificación (y su segundo intento, 409), alertas, índice, reportes PDF y Excel, ficha de custodia, verificación de la cadena y el seguimiento de la carga por su `id_peticion` en la bitácora y en el registro de los dos servicios. Corre en un trabajo propio del CI y localmente con el mismo comando. **Ajuste respecto del plan:** el script levanta su propio core y rules-service (puertos 8101 y 8102) sobre la base `plurione_compliance_e2e`, recreada en cada corrida, y una bóveda temporal, en lugar de usar los servicios en marcha: la bitácora y los dictámenes son inmutables, así que cada corrida dejaría para siempre titulares de prueba en `plurione_compliance`. `--core-url` y `--rules-url` permiten correrlo contra un entorno de aceptación. | ISO/IEC 25010 (adecuación funcional); Ficha 045, actividad 6 | Implementado (trabajo `e2e` del CI; local: código 0 en 4 s; con `RFC_DIGITO_ESTRICTO=true` falla, como debe, en el RFC ficticio) |
+| — | **Prueba de seguridad del API (Q-c).** OWASP ZAP en modo de análisis de API sobre el OpenAPI del core, del rules-service y del ai-service, en un trabajo del CI y una corrida local registrada en `docs/resultados_validacion/`. Los hallazgos altos hacen fallar el trabajo; los que se encuentren se corrigen (por ejemplo, cabeceras de seguridad en las respuestas) o se justifican por escrito. El Módulo 7 (autenticación) sigue congelado, así que ZAP lo informará y quedará justificado. **Como se implementó:** `scripts/zap_api.py` levanta los tres servicios sobre `plurione_compliance_zap`, sin clave de Groq (el escaneo activo enviaría miles de peticiones de ataque a la base real y a la bitácora inmutable). ZAP no marcó la falta de autenticación (el escaneo de API no tiene un contexto de sesión), así que se declara por escrito junto con el CORS abierto. | Ficha 045, actividad 6 (pruebas de seguridad); ISO/IEC 27001 | Implementado ([informe](resultados_validacion/seguridad_zap.md); trabajo `zap` del CI). Línea base: 0 altos, 0 medios, 8 bajos. Corregidos: dos errores 500 (carácter nulo hacia PostgreSQL en el core; desbordamiento de la espera de reintentos en el ai-service) y las cabeceras `X-Content-Type-Options`, `Cross-Origin-Resource-Policy` y `Cache-Control`. Pasada final: 0 altos, 0 medios y 1 bajo justificado (503 previsto sin proveedor de IA) |
+
+**Historias de usuario nuevas**
+
+| ID | Historia | Módulo | Prioridad | Estado |
+|---|---|---|---|---|
+| HU-57 | Como administrador, quiero seguir una petición que falló por los tres servicios con un solo folio, para diagnosticarla sin adivinar. | Integración | Alta | Implementado |
+| HU-58 | Como auditor externo, quiero un sello de tiempo de un tercero sobre la bitácora, para comprobar que existía en esa fecha. | M6 | Media | Implementado |
+| HU-59 | Como analista, quiero saber qué documentos deben auditarse de nuevo porque cambiaron sus reglas. | M3 | Alta | Implementado |
+| HU-60 | Como responsable del proyecto, quiero que cada cambio pase por una prueba del flujo completo antes de integrarse. | QA | Alta | Implementado |
+| HU-61 | Como responsable de seguridad, quiero un análisis automático de vulnerabilidades del API con sus hallazgos atendidos. | QA | Alta | Implementado |
+
+**Criterios de aceptación**
+
+- Una petición con `X-Request-ID` lo recibe de vuelta; sin ella, la respuesta trae uno nuevo. El ai-service lo propaga al core y al rules-service, el evento de bitácora de la acción lo lleva y el registro de cada servicio tiene una línea con él. Un error 500 lo devuelve y la interfaz lo muestra.
+- Con `SELLO_TIEMPO_URL` vacío no se hace ninguna llamada externa. Con una autoridad simulada, el sello se guarda, cubre el último `hash_evento`, la tabla no admite cambios y el evento SELLO_TIEMPO queda en la bitácora; una autoridad caída no detiene la reevaluación.
+- Agregar o pausar una regla de un tipo emite «Requiere nueva auditoría» en sus documentos auditados antes, no en los de otro tipo; auditar de nuevo la retira.
+- `scripts/e2e_api.py` termina con código 0 localmente y en el CI, con un RFC real y uno ficticio, sin escribir en `plurione_compliance`.
+- El análisis de ZAP no deja hallazgos altos sin corregir o justificar.
+- Los contratos solo ganan campos y cabeceras opcionales; las suites siguen pasando.
+
+**Consecuencias previstas**
+
+- **Datos y entornos ficticios:** nada de P7 distingue entre datos reales y de prueba; el sello de tiempo, la única integración externa, está apagado por omisión.
+- **Bitácora:** los eventos nuevos llevan `id_peticion` en su detalle; los anteriores no se tocan (RN-04).
+- **Dictámenes previos:** sin `version_reglas_tipo`, no generan el aviso de nueva auditoría; la siguiente auditoría lo establece.
+- **Registro:** los servicios escriben una línea JSON por petición en su salida estándar, que el despliegue de PluriOne puede recolectar.
+
+**Diagramas:** [casos de uso](uml/p7-casos-de-uso-operacion-calidad.puml), [seguimiento de una petición y sello de tiempo](uml/p7-actividad-peticion-sello.puml) y [aviso de nueva auditoría](uml/p7-actividad-nueva-auditoria.puml).
 
 ---
 

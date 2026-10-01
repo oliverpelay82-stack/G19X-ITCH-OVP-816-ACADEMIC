@@ -166,3 +166,11 @@ def test_sin_rules_service_la_version_queda_vacia_y_se_recuerda_la_falla(monkeyp
     monkeypatch.setattr(rules_client._sesion, "get", caido)
     assert rules_client.version_catalogo() is None and rules_client.version_catalogo() is None
     assert len(llamadas) == 1, "La segunda auditoría no espera otra conexión rechazada"
+
+
+def test_el_dictamen_lleva_la_version_de_las_reglas_del_tipo(entorno, monkeypatch):
+    """M7 (HU-59): la versión de las reglas del tipo registrado viaja con el dictamen."""
+    pedidas = []
+    monkeypatch.setattr(rules_client, "version_reglas_tipo", lambda tipo: pedidas.append(tipo) or "tip-0123456789ab")
+    _auditar()
+    assert pedidas == ["CSF_SAT"] and entorno["dictamenes"][-1]["version_reglas_tipo"] == "tip-0123456789ab"

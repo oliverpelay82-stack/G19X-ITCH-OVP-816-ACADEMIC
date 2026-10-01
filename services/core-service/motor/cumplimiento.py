@@ -51,7 +51,7 @@ from clients import rules_client
 from config import zona_horaria
 from config.catalogo import etiqueta_documento
 from models.bitacora import EVENTO_EVALUACION_REGLAS
-from models.dictamen import ORIGEN_NIVEL_1, ORIGEN_NIVEL_3_ILEGIBLE, DictamenAuditoria
+from models.dictamen import ORIGEN_NIVEL_1, ORIGEN_NIVEL_3_ILEGIBLE, ORIGEN_NIVEL_4, DictamenAuditoria
 from models.documento import Documento
 from models.expediente import Expediente
 from motor import bitacora, senales_pdf
@@ -107,6 +107,7 @@ ALERTA_DIFERIDO = "PROCESAMIENTO_DIFERIDO"
 ALERTA_POSIBLE_EDICION = "POSIBLE_EDICION"
 ALERTA_CONTENIDO_ACTIVO = "CONTENIDO_ACTIVO"
 ALERTA_OTRO_TITULAR = "ARCHIVO_DE_OTRO_TITULAR"
+ALERTA_NUEVA_AUDITORIA = "REQUIERE_NUEVA_AUDITORIA"
 # M5: documentos que dos titulares pueden compartir legítimamente (las partes de un contrato).
 TIPOS_BILATERALES = frozenset({"CONTRATO_SERVICIOS", "ACUERDO_CONFIDENCIALIDAD", "ANEXO_CONTRATO",
                                "CONVENIO_MODIFICATORIO"})
@@ -146,6 +147,8 @@ class EstadoDocumento:
     en_otros_titulares: list[str] = field(default_factory=list)
     # PLUS-20: días que su dictamen En revisión lleva esperando ratificación.
     dias_en_espera: int | None = None
+    # M7: las reglas de su tipo cambiaron después de su auditoría.
+    requiere_nueva_auditoria: bool = False
 
 
 @dataclass
@@ -298,6 +301,18 @@ def _severidad_por_anticipacion(dias: int) -> str | None:
     return severidad
 
 
+def _reglas_cambiaron(dictamen: DictamenAuditoria | None, inventario, tipo: str) -> bool:
+    """
+    M7: el dictamen del Nivel 4 se emitió con otras reglas de su tipo de las que
+    hoy publica el catálogo. Un dictamen previo a P7 (sin versión) o una
+    evaluación con el respaldo del DOC-02 (sin versiones) no avisan.
+    """
+    if dictamen is None or not dictamen.version_reglas_tipo or dictamen.origen != ORIGEN_NIVEL_4:
+        return False
+    actual = inventario.version_de_tipo(tipo) if hasattr(inventario, "version_de_tipo") else None
+    return bool(actual) and actual != dictamen.version_reglas_tipo
+
+
 def _dias_en_espera(dictamen: DictamenAuditoria | None, hoy: date) -> int | None:
     """
     PLUS-20: días desde que se emitió un dictamen que aún espera ratificación.
@@ -398,6 +413,7 @@ def evaluar(
                 contenido_activo=list((doc.senales_pdf or {}).get("contenido_activo") or []),
                 en_otros_titulares=otros_titulares.get(doc.hash_sha256, []),
                 dias_en_espera=_dias_en_espera(dictamen, hoy) if estado == EN_REVISION else None,
+                requiere_nueva_auditoria=_reglas_cambiaron(dictamen, inventario, tipo),
             )
         )
 
@@ -727,6 +743,19 @@ def _alertas(
                 tipo_documento=e.tipo_documento, regla="RIE-03", documento_id=e.documento_id,
             ))
             continue
+
+        # M7: auditado con otras reglas de su tipo (se agregó, pausó o editó una).
+        if e.requiere_nueva_auditoria:
+            alertas.append(Alerta(
+                codigo=ALERTA_NUEVA_AUDITORIA,
+                severidad="MEDIA",
+                titulo=f"Requiere nueva auditoría: {nombre}",
+                detalle=(f"Las reglas que aplican a {nombre} cambiaron después de auditar "
+                         f"«{e.nombre_archivo_original}» (se agregó, pausó o editó una): su dictamen no verificó las "
+                         "reglas vigentes."),
+                recomendacion="Auditar de nuevo el documento para dictaminarlo con las reglas vigentes.",
+                tipo_documento=e.tipo_documento, documento_id=e.documento_id,
+            ))
 
         # M5: casi siempre una carga equivocada o un documento ajeno; en un contrato,
         # las dos partes pueden custodiar el mismo archivo.

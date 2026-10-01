@@ -9,7 +9,7 @@
 | Línea de negocio | Portafolio de soluciones LegalTech de PluriOne |
 | Patrocinador de negocio | Lic. Juan Méndez Herrera, Director Comercial (asesor empresarial y Product Owner) |
 | Elaborado por | Oliver Villanueva Pelay, residente — Instituto Tecnológico de Chilpancingo |
-| Versión del documento | 2.1 — 30 de septiembre de 2026 (2.0: P5; 1.9: revisión de requerimientos; 1.8: correcciones de la documentación; 1.7: 30 de septiembre; 1.6: 29 de septiembre; 1.5: índice de cumplimiento; 1.4: P3; 1.3: P2; 1.2: P1; 1.1: 28 de septiembre; 1.0: 27 de septiembre de 2026) |
+| Versión del documento | 2.3 — 1 de octubre de 2026 (2.2: P7 documentado; 2.1: P6; 2.0: P5; 1.9: revisión de requerimientos; 1.8: correcciones de la documentación; 1.7: 30 de septiembre; 1.6: 29 de septiembre; 1.5: índice de cumplimiento; 1.4: P3; 1.3: P2; 1.2: P1; 1.1: 28 de septiembre; 1.0: 27 de septiembre de 2026) |
 | Documento hermano | [PRD.md](PRD.md) — requerimientos del producto |
 
 > **Fuentes.** Este MRD se construye exclusivamente con el anteproyecto de residencia, los entregables DOC-01 a DOC-08 ([ESPECIFICACIONES_DOC01_A_DOC08.txt](ESPECIFICACIONES_DOC01_A_DOC08.txt)) y el DOCUMENTO GENERAL («DG»). La información de mercado que esas fuentes no contienen —tamaño de mercado, precio o modelo comercial— no se estima: se declara en la [sección 13](#13-información-de-mercado-no-documentada) como pendiente de definir con PluriOne.
@@ -275,6 +275,7 @@ Cada requisito de mercado (MR) expresa **qué necesita el mercado**; el PRD defi
 | MR-22 | Consultar un documento en lenguaje natural y obtener al instante los datos ya verificados, con su cita, sin depender de la cuota del proveedor de IA. | DOC-05 (cita textual de la evidencia); RF-13, HU-20; ISO/IEC 25010 (eficiencia de desempeño). Extensión PLUS (PRD §21.4) | Importante |
 | MR-23 | Detectar la alteración de un archivo aunque nadie lo abra, reproducir con qué lectura e instrucciones se emitió cada dictamen y no perder una auditoría si la IA falla. | DOC-05 (protocolo de auditoría y Tabla 1); RIE-03; ISO 30301; NOM-151. Extensión PLUS (PRD §21.5) | Importante |
 | MR-24 | Advertir si un archivo no es auténtico o no corresponde al titular (RFC mal formado, documento del SAT retocado, QR ajeno, contenido activo, archivo de otro titular), saber con qué catálogo se dictaminó y cuánto lleva esperando cada revisión. | DOC-02; DOC-05 (protocolo de auditoría); ISO/IEC 27001 A.8.7; NOM-151; ISO 30301. Extensión PLUS (PRD §21.6) | Importante |
+| MR-25 | Seguir cualquier operación de punta a punta con un folio, contar con fecha cierta de un tercero sobre la bitácora, saber qué debe auditarse de nuevo cuando cambian las reglas y comprobar cada cambio con pruebas del flujo completo y de seguridad. | ISO/IEC 27001 (A.8.15); NOM-151; DOC-05 (protocolo de auditoría); Ficha 045 (actividad 6). Extensión PLUS (PRD §21.7) | Importante |
 
 ---
 
@@ -380,3 +381,4 @@ Derivados de los objetivos y umbrales documentados [Anteproyecto; DG Caps. IV, V
 | MR-22 Consulta inmediata del documento con evidencia | PLUS-07 a PLUS-11, HU-42, HU-43 | Implementado (PRD §21.4; diagrama en `docs/uml/`) |
 | MR-23 Integridad permanente y dictamen reproducible | PLUS-14, PLUS-15, HU-33, HU-44 a HU-48; RIE-03; protocolo y Tabla 1 del DOC-05 | Implementado (PRD §21.5; diagramas en `docs/uml/`) |
 | MR-24 Autenticidad del archivo, catálogo y antigüedad | M1, M5, M6, PLUS-16 a PLUS-20, Q-a, HU-49 a HU-56; DOC-02; DOC-05 | Implementado (PRD §21.6; diagramas en `docs/uml/`) |
+| MR-25 Operación trazable, fecha cierta y calidad | PLUS-21, PLUS-22, M7, Q-b, Q-c, HU-57 a HU-61 | Implementado (PRD §21.7; diagramas en `docs/uml/`; seguridad en `resultados_validacion/seguridad_zap.md`) |

@@ -12,6 +12,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from config import observabilidad
 from config.database import engine, init_db
 from controllers.regla_controller import router as regla_router
 from controllers.health_controller import router as health_router
@@ -47,12 +48,47 @@ app = FastAPI(
 async def errores_no_controlados(request: Request, call_next):
     try:
         return await call_next(request)
+    except ValueError as exc:
+        # Q-c (OWASP ZAP): PostgreSQL no admite el carácter nulo en un texto. Llegaba
+        # desde un filtro (?expediente_id=%00) o un campo del cuerpo y respondía 500.
+        if "NUL (0x00)" not in str(exc):
+            traceback.print_exc()
+            return _error_interno()
+        return JSONResponse(
+            status_code=422,
+            content={"detail": "La petición contiene un carácter nulo (0x00), que no se admite en los datos.",
+                     "id_peticion": observabilidad.actual()},
+        )
     except Exception:
         traceback.print_exc()  # el detalle queda en el registro del servidor
-        return JSONResponse(
-            status_code=500,
-            content={"detail": "Error interno del rules-service; el detalle quedó en el registro del servidor."},
-        )
+        return _error_interno()
+
+
+def _error_interno() -> JSONResponse:
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Error interno del rules-service; el detalle quedó en el registro del servidor.",
+                 "id_peticion": observabilidad.actual()},
+    )
+
+
+# PLUS-21: folio de seguimiento (X-Request-ID) y una línea de registro por petición.
+# Va por fuera del manejo de errores, para que un 500 también lleve su folio, y
+# por dentro de CORS, que lo expone al navegador.
+app.middleware("http")(observabilidad.middleware)
+
+
+# Q-c (OWASP ZAP): cabeceras de seguridad en toda respuesta, por dentro de CORS.
+# CORP same-origin no afecta las llamadas fetch de la interfaz (usan CORS); un
+# recurso hecho para incrustarse desde otro origen declara el suyo.
+@app.middleware("http")
+async def cabeceras_seguridad(request: Request, call_next):
+    respuesta = await call_next(request)
+    respuesta.headers.setdefault("X-Content-Type-Options", "nosniff")
+    respuesta.headers.setdefault("Cross-Origin-Resource-Policy", "same-origin")
+    # Datos de cumplimiento: ningún intermediario los guarda, salvo que la ruta indique otra cosa.
+    respuesta.headers.setdefault("Cache-Control", "no-store")
+    return respuesta
 
 
 # Permitir llamadas CORS desde el frontend
@@ -62,6 +98,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["X-Request-ID"],
 )
 
 app.include_router(health_router)

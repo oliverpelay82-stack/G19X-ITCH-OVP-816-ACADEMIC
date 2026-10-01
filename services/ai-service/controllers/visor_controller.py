@@ -57,7 +57,12 @@ def pagina(documento_id: str, numero: int, ancho: int = Query(1000, ge=100, le=4
     except _ERRORES as exc:
         raise _traducir(exc) from exc
     # El binario es inmutable (NOM-151): la misma página no cambia mientras el documento exista.
-    return Response(content=imagen, media_type="image/jpeg", headers={"Cache-Control": "private, max-age=3600"})
+    return Response(content=imagen, media_type="image/jpeg", headers={
+        "Cache-Control": "private, max-age=3600",
+        # El visor la muestra con <img> desde la interfaz, que puede servirse en otro sitio
+        # (otro puerto u otro sitio): same-origin la bloquearía (Q-c).
+        "Cross-Origin-Resource-Policy": "cross-origin",
+    })
 
 
 @router.post("/{documento_id}/localizar", summary="Ubicar una cita literal en las páginas del documento")

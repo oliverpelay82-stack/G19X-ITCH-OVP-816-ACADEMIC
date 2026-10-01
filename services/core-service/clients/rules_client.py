@@ -12,12 +12,14 @@ qué criterio se evaluó.
 """
 from __future__ import annotations
 
+import json
 import logging
 import os
 from dataclasses import dataclass, field
 
 import requests
 
+from config import observabilidad
 from config.catalogo import TIPO_EXPEDIENTE_PREDETERMINADO, etiqueta_expediente
 
 logger = logging.getLogger("core-service.rules_client")
@@ -67,6 +69,11 @@ class InventarioObligatorio:
     anexos: list[dict[str, str]] = field(default_factory=list)
     # M6: versión del catálogo con que se calculó (cabecera X-Version-Catalogo del rules-service).
     version_catalogo: str | None = None
+    # M7: versión de las reglas de cada tipo de documento («*»: tipos sin reglas propias).
+    versiones_por_tipo: dict[str, str] = field(default_factory=dict)
+
+    def version_de_tipo(self, tipo: str) -> str | None:
+        return self.versiones_por_tipo.get(tipo.upper(), self.versiones_por_tipo.get("*"))
 
 
 def _respaldo(tipo_expediente: str, motivo: str) -> InventarioObligatorio:
@@ -83,15 +90,26 @@ def _respaldo(tipo_expediente: str, motivo: str) -> InventarioObligatorio:
     )
 
 
+def _versiones_por_tipo(cabecera: str | None) -> dict[str, str]:
+    """M7: la cabecera X-Version-Reglas-Tipo; vacía o ilegible, sin aviso de nueva auditoría."""
+    try:
+        valor = json.loads(cabecera) if cabecera else {}
+    except ValueError:
+        return {}
+    return {str(k).upper() if k != "*" else "*": str(v) for k, v in valor.items()} if isinstance(valor, dict) else {}
+
+
 def obtener_documentos_obligatorios(tipo_expediente: str = TIPO_EXPEDIENTE_PREDETERMINADO) -> InventarioObligatorio:
     """Consulta el inventario obligatorio de un tipo de expediente, con respaldo controlado."""
     tipo_expediente = (tipo_expediente or TIPO_EXPEDIENTE_PREDETERMINADO).upper()
     url = f"{RULES_BASE_URL}/api/v1/reglas/documentos-obligatorios"
     try:
-        respuesta = requests.get(url, params={"tipo_expediente": tipo_expediente}, timeout=TIMEOUT_SEGUNDOS)
+        respuesta = requests.get(url, params={"tipo_expediente": tipo_expediente}, timeout=TIMEOUT_SEGUNDOS,
+                                 headers=observabilidad.cabeceras())
         respuesta.raise_for_status()
         registros = respuesta.json()
         version = respuesta.headers.get("X-Version-Catalogo")
+        versiones_por_tipo = _versiones_por_tipo(respuesta.headers.get("X-Version-Reglas-Tipo"))
     except (requests.RequestException, ValueError) as exc:
         return _respaldo(tipo_expediente, f"El rules-service ({RULES_BASE_URL}) no respondió: {exc.__class__.__name__}.")
 
@@ -112,4 +130,5 @@ def obtener_documentos_obligatorios(tipo_expediente: str = TIPO_EXPEDIENTE_PREDE
             "El catálogo de reglas no declara ningún documento obligatorio activo (familia RIE) "
             f"para el expediente {etiqueta_expediente(tipo_expediente).lower()}.",
         )
-    return InventarioObligatorio(documentos=documentos, fuente=FUENTE_CATALOGO, anexos=anexos, version_catalogo=version)
+    return InventarioObligatorio(documentos=documentos, fuente=FUENTE_CATALOGO, anexos=anexos, version_catalogo=version,
+                                 versiones_por_tipo=versiones_por_tipo)

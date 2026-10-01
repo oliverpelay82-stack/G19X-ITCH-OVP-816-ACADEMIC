@@ -111,6 +111,8 @@ _MIGRACIONES_POSTGRES = [
     "ALTER TABLE dictamenes_auditoria ADD COLUMN IF NOT EXISTS qr_sat JSON",
     # P6 (M6): versión del catálogo de reglas.
     "ALTER TABLE dictamenes_auditoria ADD COLUMN IF NOT EXISTS version_catalogo VARCHAR(20)",
+    # P7 (M7): versión de las reglas del tipo de documento.
+    "ALTER TABLE dictamenes_auditoria ADD COLUMN IF NOT EXISTS version_reglas_tipo VARCHAR(20)",
     # P5 (DOC-05, Tabla 1): marca de procesamiento diferido del documento.
     "ALTER TABLE documentos ADD COLUMN IF NOT EXISTS procesamiento_diferido JSON",
     # P6 (PLUS-16, PLUS-18): señales de edición y contenido activo del PDF.
@@ -134,6 +136,19 @@ _MIGRACIONES_POSTGRES = [
     CREATE OR REPLACE TRIGGER trg_bitacora_inmutable
         BEFORE UPDATE OR DELETE ON bitacora_auditoria
         FOR EACH ROW EXECUTE FUNCTION bitacora_inmutable()
+    """,
+    # P7 (PLUS-22): los sellos de tiempo de la bitácora solo admiten inserciones.
+    """
+    CREATE OR REPLACE FUNCTION sello_tiempo_inmutable() RETURNS trigger AS $$
+    BEGIN
+        RAISE EXCEPTION 'sellos_tiempo es inmutable: operación % no permitida (PLUS-22)', TG_OP;
+    END;
+    $$ LANGUAGE plpgsql
+    """,
+    """
+    CREATE OR REPLACE TRIGGER trg_sello_tiempo_inmutable
+        BEFORE UPDATE OR DELETE ON sellos_tiempo
+        FOR EACH ROW EXECUTE FUNCTION sello_tiempo_inmutable()
     """,
     # RN-04 y RN-05: un dictamen no se borra, y su contenido original solo
     # admite una modificación: la ratificación humana, una única vez.
@@ -159,6 +174,7 @@ _MIGRACIONES_POSTGRES = [
            OR NEW.version_instrucciones IS DISTINCT FROM OLD.version_instrucciones
            OR NEW.qr_sat::text IS DISTINCT FROM OLD.qr_sat::text
            OR NEW.version_catalogo IS DISTINCT FROM OLD.version_catalogo
+           OR NEW.version_reglas_tipo IS DISTINCT FROM OLD.version_reglas_tipo
            OR NEW.hash_sha256 IS DISTINCT FROM OLD.hash_sha256
            OR NEW.creado_en IS DISTINCT FROM OLD.creado_en THEN
             RAISE EXCEPTION 'dictamenes_auditoria: solo la ratificación humana puede modificar un dictamen (RN-05)';

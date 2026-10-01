@@ -21,6 +21,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from config import observabilidad
 from config import settings
 from pipelines import diferidos, extraccion_pipeline
 from controllers import analisis_controller
@@ -95,8 +96,28 @@ async def errores_no_controlados(request: Request, call_next):
         traceback.print_exc()  # el detalle queda en el registro del servidor
         return JSONResponse(
             status_code=500,
-            content={"detail": "Error interno del ai-service; el detalle quedó en el registro del servidor."},
+            content={"detail": "Error interno del ai-service; el detalle quedó en el registro del servidor.",
+                     "id_peticion": observabilidad.actual()},
         )
+
+
+# PLUS-21: folio de seguimiento (X-Request-ID) y una línea de registro por petición.
+# Va por fuera del manejo de errores, para que un 500 también lleve su folio, y
+# por dentro de CORS, que lo expone al navegador.
+app.middleware("http")(observabilidad.middleware)
+
+
+# Q-c (OWASP ZAP): cabeceras de seguridad en toda respuesta, por dentro de CORS.
+# CORP same-origin no afecta las llamadas fetch de la interfaz (usan CORS); un
+# recurso hecho para incrustarse desde otro origen declara el suyo.
+@app.middleware("http")
+async def cabeceras_seguridad(request: Request, call_next):
+    respuesta = await call_next(request)
+    respuesta.headers.setdefault("X-Content-Type-Options", "nosniff")
+    respuesta.headers.setdefault("Cross-Origin-Resource-Policy", "same-origin")
+    # Datos de cumplimiento: ningún intermediario los guarda, salvo que la ruta indique otra cosa.
+    respuesta.headers.setdefault("Cache-Control", "no-store")
+    return respuesta
 
 
 # Permitir llamadas CORS desde el frontend
@@ -106,6 +127,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["X-Request-ID"],
 )
 
 app.include_router(health_router)

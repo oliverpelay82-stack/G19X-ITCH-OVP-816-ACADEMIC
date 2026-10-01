@@ -33,3 +33,6 @@ services/ai-service/data/
 
 # Capturas de la regresión visual (scripts/regresion_visual.py): dependen de la BD local.
 frontend/.regresion-visual/
+
+# Salida de consola de OWASP ZAP (Q-c): se conservan los informes JSON y HTML.
+docs/resultados_validacion/zap/*.log

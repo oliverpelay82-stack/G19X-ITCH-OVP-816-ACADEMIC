@@ -57,6 +57,7 @@ class EstadoDocumentoResponse(BaseModel):
     contenido_activo: list[str] = Field(default_factory=list, description="P6 (PLUS-18): contenido activo del PDF")
     en_otros_titulares: list[str] = Field(default_factory=list, description="M5: folios de otros titulares con el mismo archivo")
     dias_en_espera: Optional[int] = Field(None, description="PLUS-20: días que su dictamen lleva esperando ratificación")
+    requiere_nueva_auditoria: bool = Field(False, description="M7: las reglas de su tipo cambiaron después de su auditoría")
     procesamiento_diferido: Optional[dict] = Field(
         None, description="P5: la auditoría quedó diferida porque la IA no respondió"
     )

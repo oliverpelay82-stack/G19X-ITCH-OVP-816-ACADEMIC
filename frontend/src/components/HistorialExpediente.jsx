@@ -144,6 +144,8 @@ export default function HistorialExpediente({ expedienteId, documentos = [] }) {
           {cadena.integra
             ? `Cadena de custodia íntegra · ${cadena.eventos_sellados} ${cadena.eventos_sellados === 1 ? 'evento sellado' : 'eventos sellados'}`
             : `Cadena de custodia comprometida · ${cadena.total_hallazgos} ${cadena.total_hallazgos === 1 ? 'hallazgo' : 'hallazgos'}: consulte la verificación de la bitácora`}
+          {/* PLUS-22: sello de tiempo de un tercero, solo si está configurado. */}
+          {cadena.sello_tiempo?.coincide && ` · sello de tiempo de un tercero del ${formatFecha(cadena.sello_tiempo.fecha_sello)}`}
         </p>
       )}
       {eventos && eventos.length === 0 && <p className="field-hint">Sin eventos registrados.</p>}

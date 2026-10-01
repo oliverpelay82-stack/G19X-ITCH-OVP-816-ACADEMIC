@@ -35,12 +35,23 @@ function mensajeDeError(detail, status) {
 }
 
 class ApiError extends Error {
-  constructor(message, status, detail) {
-    super(message)
+  constructor(message, status, detail, folio = null) {
+    // PLUS-21: un error del servidor lleva su folio de seguimiento para el soporte.
+    super(folio && status >= 500 ? `${message} (Folio de seguimiento: ${folio})` : message)
     this.name = 'ApiError'
     this.status = status
     this.detail = detail
+    this.folio = folio
   }
+}
+
+/**
+ * PLUS-21: folio de seguimiento de cada llamada (X-Request-ID). getRandomValues
+ * funciona también fuera de un contexto seguro (la intranet por IP, sin HTTPS),
+ * donde randomUUID no existe.
+ */
+function nuevoFolio() {
+  return Array.from(crypto.getRandomValues(new Uint8Array(8)), (b) => b.toString(16).padStart(2, '0')).join('')
 }
 
 /**
@@ -61,7 +72,8 @@ async function request(baseUrl, path, { method = 'GET', body, isFormData = false
     if (query) url += `?${query}`
   }
 
-  const options = { method, headers: {} }
+  const folio = nuevoFolio()
+  const options = { method, headers: { 'X-Request-ID': folio } }
   if (tiempoLimite) options.signal = AbortSignal.timeout(tiempoLimite)
 
   if (body !== undefined) {
@@ -87,7 +99,8 @@ async function request(baseUrl, path, { method = 'GET', body, isFormData = false
   const payload = contentType.includes('application/json') ? await response.json().catch(() => null) : null
 
   if (!response.ok) {
-    throw new ApiError(mensajeDeError(payload?.detail, response.status), response.status, payload?.detail)
+    const recibido = response.headers.get('X-Request-ID') || payload?.id_peticion || folio
+    throw new ApiError(mensajeDeError(payload?.detail, response.status), response.status, payload?.detail, recibido)
   }
 
   return payload
@@ -135,14 +148,16 @@ export async function descargarReporte(ruta, params) {
     Object.entries(params || {}).filter(([, v]) => v !== undefined && v !== null && v !== '')
   ).toString()
   let response
+  const folio = nuevoFolio()
   try {
-    response = await fetch(`${CORE_BASE_URL}${ruta}${query ? `?${query}` : ''}`)
+    response = await fetch(`${CORE_BASE_URL}${ruta}${query ? `?${query}` : ''}`, { headers: { 'X-Request-ID': folio } })
   } catch {
     throw new ApiError(`No fue posible conectar con ${CORE_BASE_URL} (¿el microservicio está corriendo?).`, 0, null)
   }
   if (!response.ok) {
     const payload = await response.json().catch(() => null)
-    throw new ApiError(mensajeDeError(payload?.detail, response.status), response.status, payload?.detail)
+    throw new ApiError(mensajeDeError(payload?.detail, response.status), response.status, payload?.detail,
+      response.headers.get('X-Request-ID') || folio)
   }
   const disposicion = response.headers.get('content-disposition') || ''
   const nombre = /filename="([^"]+)"/.exec(disposicion)?.[1] || `reporte.${params?.formato || 'pdf'}`

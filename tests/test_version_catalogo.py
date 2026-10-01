@@ -36,9 +36,10 @@ bd_pruebas.verificar_aislamiento(engine)
 init_db()
 VERSION = "cat-0123456789ab"
 _obtener_real = rules_client.obtener_documentos_obligatorios
+VERSIONES_TIPO = {"*": "tip-general00000", "CSF_SAT": "tip-csf000000001"}
 rules_client.obtener_documentos_obligatorios = lambda *_: rules_client.InventarioObligatorio(
     documentos={"CSF_SAT": {"codigo_regla": "RIE-01", "severidad": "CRITICA"}},
-    fuente=rules_client.FUENTE_CATALOGO, version_catalogo=VERSION,
+    fuente=rules_client.FUENTE_CATALOGO, version_catalogo=VERSION, versiones_por_tipo=dict(VERSIONES_TIPO),
 )
 client = TestClient(app)
 
@@ -112,3 +113,43 @@ def test_el_excel_muestra_la_version():
     assert fila["Catálogo de reglas"] == VERSION
     valores = {c.value for hoja in libro.worksheets for fila in hoja.iter_rows() for c in fila}
     assert "Versión del catálogo de reglas" in valores
+
+
+# ── M7: aviso de nueva auditoría ──────────────────────────────────────
+
+
+def _alertas_nueva_auditoria(doc: dict) -> list[dict]:
+    evaluacion = client.get(f"/api/v1/expedientes/{doc['expediente_id']}").json()["evaluacion"]
+    return [a for a in evaluacion["alertas"] if a["codigo"] == "REQUIERE_NUEVA_AUDITORIA"]
+
+
+def test_con_las_mismas_reglas_no_hay_aviso():
+    doc = _documento("VCT050505AAA")
+    _dictaminar(doc, version_reglas_tipo=VERSIONES_TIPO["CSF_SAT"])
+    assert not _alertas_nueva_auditoria(doc)
+
+
+def test_si_cambiaron_las_reglas_del_tipo_se_pide_nueva_auditoria():
+    doc = _documento("VCT060606AAA")
+    _dictaminar(doc, version_reglas_tipo="tip-anterior0000")
+    [alerta] = _alertas_nueva_auditoria(doc)
+    assert alerta["severidad"] == "MEDIA" and "cambiaron después de auditar" in alerta["detalle"]
+    evaluacion = client.get(f"/api/v1/expedientes/{doc['expediente_id']}").json()["evaluacion"]
+    assert any(d["requiere_nueva_auditoria"] for d in evaluacion["documentos"])
+
+    _dictaminar(doc, version_reglas_tipo=VERSIONES_TIPO["CSF_SAT"])   # se audita de nuevo
+    assert not _alertas_nueva_auditoria(doc)
+
+
+def test_un_dictamen_previo_sin_version_no_avisa():
+    doc = _documento("VCT070707AAA")
+    _dictaminar(doc)
+    assert not _alertas_nueva_auditoria(doc)
+
+
+def test_la_cabecera_por_tipo_se_interpreta_y_tolera_basura():
+    assert rules_client._versiones_por_tipo('{"*":"tip-a","csf_sat":"tip-b"}') == {"*": "tip-a", "CSF_SAT": "tip-b"}
+    assert rules_client._versiones_por_tipo("no es json") == {} and rules_client._versiones_por_tipo(None) == {}
+    inventario = rules_client.InventarioObligatorio(documentos={}, fuente="x", versiones_por_tipo={"*": "tip-a"})
+    assert inventario.version_de_tipo("PODER_NOTARIAL") == "tip-a"
+

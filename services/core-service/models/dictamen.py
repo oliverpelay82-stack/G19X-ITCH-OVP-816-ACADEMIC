@@ -69,6 +69,8 @@ class DictamenAuditoria(Base):
     qr_sat = Column(JSON, nullable=True)
     # P6 (M6): versión del catálogo de reglas con que se emitió (cat-…).
     version_catalogo = Column(String(20), nullable=True)
+    # P7 (M7): versión de las reglas del tipo de documento con que se emitió (tip-…).
+    version_reglas_tipo = Column(String(20), nullable=True)
 
     # Huella del archivo al momento de la evaluación (protocolo DOC-05 §5.6).
     hash_sha256 = Column(String(64), nullable=False)

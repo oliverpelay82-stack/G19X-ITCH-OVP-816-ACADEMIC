@@ -171,3 +171,5 @@ def test_un_documento_que_ya_no_existe_se_descarta(entorno):
 def test_la_espera_crece_hasta_un_dia():
     assert [diferidos.espera(n) for n in (1, 2, 3)] == [timedelta(minutes=15), timedelta(minutes=30), timedelta(hours=1)]
     assert diferidos.espera(20) == timedelta(hours=24)
+    # Q-c: muchos fallos seguidos (auditorías manuales con Groq caído) no desbordan la duración.
+    assert diferidos.espera(40) == diferidos.espera(10_000) == timedelta(hours=24)

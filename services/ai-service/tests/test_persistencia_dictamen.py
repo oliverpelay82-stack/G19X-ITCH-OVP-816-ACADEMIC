@@ -142,7 +142,7 @@ def main_pruebas(mp: pytest.MonkeyPatch) -> int:
     print("\n[5] Cliente del core-service")
     # La sesión HTTP es compartida por el proceso: la simulación se deshace al salir del bloque.
     with pytest.MonkeyPatch.context() as local:
-        local.setattr(core_client._sesion, "get", lambda url, timeout: SimpleNamespace(
+        local.setattr(core_client._sesion, "get", lambda url, timeout, **_: SimpleNamespace(
             status_code=409, ok=False, text="", json=lambda: {"detail": "[RIE-03] huella distinta"}))
         try:
             core_client.verificar_integridad(DOC_ID)

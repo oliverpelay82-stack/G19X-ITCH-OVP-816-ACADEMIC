@@ -24,6 +24,9 @@ Estos diagramas complementan los del DOCUMENTO GENERAL (Cap. IV, Figuras 1–6, 
 | P6 — Autenticidad del archivo, catálogo y operación | [p6-casos-de-uso-autenticidad.puml](p6-casos-de-uso-autenticidad.puml) | Casos de uso | F1, F3 y Reportes | §21.6 M1, M5, M6, PLUS-16 a PLUS-20; HU-49 a HU-56 | MR-24 |
 | P6 — Autenticidad del archivo, catálogo y operación | [p6-actividad-senales-archivo.puml](p6-actividad-senales-archivo.puml) | Actividades | Actualiza F1 y F3 | PLUS-16 a PLUS-18, M5; NOM-151, ISO/IEC 27001 A.8.7, DOC-02 | MR-24 |
 | P6 — Autenticidad del archivo, catálogo y operación | [p6-actividad-trazabilidad-operacion.puml](p6-actividad-trazabilidad-operacion.puml) | Actividades | F3, salud y Reportes | M6, PLUS-19, PLUS-20; protocolo del DOC-05, RNF-02 | MR-24 |
+| P7 — Operación trazable, fecha cierta y calidad | [p7-casos-de-uso-operacion-calidad.puml](p7-casos-de-uso-operacion-calidad.puml) | Casos de uso | Operación, F3 y CI | §21.7 PLUS-21, PLUS-22, M7, Q-b, Q-c; HU-57 a HU-61 | MR-25 |
+| P7 — Operación trazable, fecha cierta y calidad | [p7-actividad-peticion-sello.puml](p7-actividad-peticion-sello.puml) | Actividades | Todas las peticiones y reevaluación programada | PLUS-21, PLUS-22; ISO/IEC 27001 A.8.15, NOM-151 | MR-25 |
+| P7 — Operación trazable, fecha cierta y calidad | [p7-actividad-nueva-auditoria.puml](p7-actividad-nueva-auditoria.puml) | Actividades | Actualiza F3 | M7; protocolo del DOC-05 | MR-25 |
 | QA — Validación cuantitativa (Fase 5, no PLUS) | [qa-actividad-evaluacion.puml](qa-actividad-evaluacion.puml) | Actividades | — | §15; RNF-01 a RNF-03; [VALIDACION_CUANTITATIVA.md](../VALIDACION_CUANTITATIVA.md) | — |
 
 ## Generar las imágenes

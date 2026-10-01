@@ -31,6 +31,8 @@ EVENTO_SELLO_GENESIS = "SELLO_GENESIS"
 EVENTO_VERIFICACION_INTEGRIDAD = "VERIFICACION_INTEGRIDAD"
 # P5 (DOC-05, Tabla 1): la IA no respondió y la auditoría quedó en la cola de reintentos.
 EVENTO_PROCESAMIENTO_DIFERIDO = "PROCESAMIENTO_DIFERIDO"
+# P7 (PLUS-22): una autoridad RFC 3161 selló en el tiempo un eslabón de la cadena.
+EVENTO_SELLO_TIEMPO = "SELLO_TIEMPO"
 
 
 class BitacoraAuditoria(Base):

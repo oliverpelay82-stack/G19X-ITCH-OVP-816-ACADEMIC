@@ -1,0 +1,49 @@
+@startuml p7-actividad-peticion-sello
+' P7 — Seguimiento de una petición (PLUS-21) y sello de tiempo (PLUS-22).
+' Trazabilidad: HU-57, HU-58; ISO/IEC 27001 A.8.15; NOM-151; RNF-05.
+' Implementación prevista: middleware de id_peticion en cada main.py, clientes
+' entre servicios, motor/bitacora.registrar, motor/sello_tiempo.py,
+' motor/reevaluacion_programada.py; frontend/src/services/api.js.
+
+title P7 — Folio de seguimiento y sello de tiempo
+
+|Frontend|
+start
+:Genera X-Request-ID por llamada;
+|ai-service|
+:Acepta el folio o crea uno;
+:Registro JSON: servicio, folio,
+ruta, estado, duración;
+:Llama al core y al rules-service
+con el mismo folio;
+|core-service|
+:Registra el evento en la bitácora
+con id_peticion en el detalle;
+:Devuelve X-Request-ID;
+|Frontend|
+if (¿Error?) then (sí)
+  :Muestra «Folio de seguimiento»;
+endif
+stop
+
+|Reloj (reevaluación diaria)|
+start
+|core-service|
+if (¿SELLO_TIEMPO_URL configurada?) then (no)
+  :Nada sale del motor;
+  stop
+else (sí)
+  :Toma el hash_evento del último eslabón;
+  |Autoridad RFC 3161|
+  :Firma la huella con fecha cierta;
+  |core-service|
+  if (¿Respondió con un sello válido\nque cubre esa huella?) then (sí)
+    :Guarda el token en sellos_tiempo
+    (solo inserción) y registra SELLO_TIEMPO;
+  else (no)
+    :Registra la falla en el log;
+    reintenta en el siguiente ciclo;
+  endif
+endif
+stop
+@enduml

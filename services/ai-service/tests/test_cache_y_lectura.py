@@ -212,7 +212,7 @@ def prueba_metricas_y_limites(mp: pytest.MonkeyPatch) -> None:
     verificar(r.status_code == 200, "20 turnos se aceptan", f"HTTP {r.status_code}")
 
     peticiones = []
-    mp.setattr(core_client._sesion, "get", lambda url, timeout: peticiones.append(timeout) or SimpleNamespace(
+    mp.setattr(core_client._sesion, "get", lambda url, timeout, **_: peticiones.append(timeout) or SimpleNamespace(
         status_code=200, ok=True, text="", content=b"%PDF-1.4"))
     # obtener_metadatos sigue simulado por la sección [4]; leer_binario llega a la sesión.
     core_client.leer_binario({"id": DOC_ID})

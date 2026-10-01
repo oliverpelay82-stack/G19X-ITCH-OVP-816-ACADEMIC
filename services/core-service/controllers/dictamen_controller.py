@@ -169,6 +169,7 @@ def registrar_dictamen(dto: DictamenCreate, request: Request, db: Session = Depe
         version_instrucciones=dto.version_instrucciones,
         qr_sat=dto.qr_sat,
         version_catalogo=dto.version_catalogo,
+        version_reglas_tipo=dto.version_reglas_tipo,
         representacion_legal=_representacion(dto.representacion),
         hash_sha256=documento.hash_sha256,
     )
@@ -196,6 +197,7 @@ def registrar_dictamen(dto: DictamenCreate, request: Request, db: Session = Depe
             "version_lectura": dto.version_lectura,
             "version_instrucciones": dto.version_instrucciones,
             "version_catalogo": dto.version_catalogo,
+            "version_reglas_tipo": dto.version_reglas_tipo,
             **({"qr_sat": {k: dto.qr_sat.get(k) for k in ("encontrado", "dominio_sat", "rfc_qr", "coincide_rfc")}}
                if dto.qr_sat else {}),
             "hash_sha256": documento.hash_sha256,

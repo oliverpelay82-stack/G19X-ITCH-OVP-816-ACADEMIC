@@ -109,6 +109,7 @@ export const ALERTA_META = {
   POSIBLE_EDICION: { label: 'Posible edición' },
   CONTENIDO_ACTIVO: { label: 'Contenido activo' },
   ARCHIVO_DE_OTRO_TITULAR: { label: 'Otro titular' },
+  REQUIERE_NUEVA_AUDITORIA: { label: 'Nueva auditoría' },
 }
 
 export const FAMILIAS_REGLA = ['RIE', 'RCV', 'RSC', 'RDS']

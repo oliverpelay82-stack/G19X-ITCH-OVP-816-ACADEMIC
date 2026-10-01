@@ -12,7 +12,7 @@ from typing import Any
 
 import requests
 
-from config import settings
+from config import observabilidad, settings
 
 # Sesión HTTP del proceso: reutiliza las conexiones TCP (keep-alive) hacia el
 # rules-service. Sin estado propio, puede compartirse entre hilos.
@@ -41,7 +41,8 @@ def evaluar_vigencia(
     }
     try:
         respuesta = _sesion.post(
-            f"{settings.RULES_BASE_URL}/api/v1/reglas/evaluar-vigencia", json=cuerpo, timeout=TIMEOUT_SEGUNDOS
+            f"{settings.RULES_BASE_URL}/api/v1/reglas/evaluar-vigencia", json=cuerpo, timeout=TIMEOUT_SEGUNDOS,
+            headers=observabilidad.cabeceras(),
         )
         respuesta.raise_for_status()
         return respuesta.json()
@@ -67,7 +68,8 @@ def criterios_contenido(tipo_documento: str | None) -> list[dict[str, Any]]:
         return []
     try:
         respuesta = _sesion.get(
-            f"{settings.RULES_BASE_URL}/api/v1/reglas", params={"activo": "true"}, timeout=TIMEOUT_SEGUNDOS
+            f"{settings.RULES_BASE_URL}/api/v1/reglas", params={"activo": "true"}, timeout=TIMEOUT_SEGUNDOS,
+            headers=observabilidad.cabeceras(),
         )
         respuesta.raise_for_status()
         reglas = respuesta.json()
@@ -99,6 +101,23 @@ _VERSION_TTL_FALLA_SEGUNDOS = 15
 _version_en_memoria: tuple[float, str | None] = (float("-inf"), None)
 
 
+def version_reglas_tipo(tipo_documento: str | None) -> str | None:
+    """
+    M7 (PRD §21.7): versión de las reglas que deciden el dictamen de este tipo.
+    Se pide con cada auditoría (cambia al editar una regla); sin rules-service,
+    None: el dictamen queda sin ella y simplemente no generará el aviso.
+    """
+    if not tipo_documento:
+        return None
+    try:
+        respuesta = _sesion.get(f"{settings.RULES_BASE_URL}/api/v1/reglas/version", timeout=TIMEOUT_SEGUNDOS,
+                                params={"tipo_documento": tipo_documento}, headers=observabilidad.cabeceras())
+        respuesta.raise_for_status()
+        return respuesta.json().get("version_reglas_tipo")
+    except (requests.RequestException, ValueError):
+        return None
+
+
 def version_catalogo() -> str | None:
     """Versión del catálogo (cat-…) o None si el rules-service no responde: la auditoría no se detiene por ella."""
     global _version_en_memoria
@@ -107,7 +126,8 @@ def version_catalogo() -> str | None:
     if time.monotonic() - consultada < vigencia:
         return version
     try:
-        respuesta = _sesion.get(f"{settings.RULES_BASE_URL}/api/v1/reglas/version", timeout=TIMEOUT_SEGUNDOS)
+        respuesta = _sesion.get(f"{settings.RULES_BASE_URL}/api/v1/reglas/version", timeout=TIMEOUT_SEGUNDOS,
+                                headers=observabilidad.cabeceras())
         respuesta.raise_for_status()
         version = respuesta.json().get("version_catalogo")
     except (requests.RequestException, ValueError):

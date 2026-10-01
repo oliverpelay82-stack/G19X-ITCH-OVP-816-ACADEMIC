@@ -45,7 +45,9 @@ Microservicios FastAPI desacoplados en `services/`, orquestados con Docker Compo
 - `core-service` y `rules-service` definen cada uno un módulo `config.database` con el mismo nombre: **no se importan en el mismo proceso**. Los scripts usan subprocesos por servicio y las pruebas aíslan módulos con `tests/servicios.py:activar`.
 - Bóveda física en `storage_vault/` (`STORAGE_VAULT_PATH` en Docker). El ai-service lee los binarios solo a través del core (`/documentos/{id}/contenido`, verificado por RIE-03) y persiste cada dictamen con `POST /api/v1/dictamenes`.
 - SQLite del ai-service, indexada por SHA-256: `extracciones` y `palabras_ocr` (columna `version` = `version_lectura()`), `inferencias` (respuestas del modelo a temperatura 0.0; las del chat llevan el prefijo `chat:`) y `fichas_documento` (lo verificado en la última auditoría, ligado a su `dictamen_id`).
-- **Estabilidad:** los clientes entre servicios usan `requests` síncrono con timeouts y excepciones traducidas (no migrar a async). Los contratos de API solo admiten campos opcionales nuevos; `GET /api/v1/health` lo consume `SystemHealth.jsx`. Cada `main.py` registra el middleware `errores_no_controlados` antes de CORS. Los `.env` nunca se versionan.
+- **Folio de seguimiento (PLUS-21):** cada servicio registra `observabilidad.middleware` (acepta o crea `X-Request-ID`, lo devuelve y escribe una línea JSON por petición); los clientes entre servicios envían `headers=observabilidad.cabeceras()` y la bitácora guarda `id_peticion` en el detalle.
+- **Sello de tiempo (PLUS-22):** `motor/sello_tiempo.py` pide a una autoridad RFC 3161 el sello del `hash_evento` del último eslabón (solo viaja la huella), en cada reevaluación programada y con `POST /api/v1/bitacora/sello-tiempo`. Apagado por omisión (`SELLO_TIEMPO_URL` vacía: ninguna llamada externa); una falla nunca detiene la reevaluación. Tabla `sellos_tiempo` de solo inserción; `verificar_cadena` reporta un sello que ya no coincide con su eslabón.
+- **Estabilidad:** los clientes entre servicios usan `requests` síncrono con timeouts y excepciones traducidas (no migrar a async). Los contratos de API solo admiten campos opcionales nuevos; `GET /api/v1/health` lo consume `SystemHealth.jsx`. Cada `main.py` registra el middleware `errores_no_controlados` antes de CORS (un carácter nulo en los datos responde 422) y `cabeceras_seguridad` (`nosniff`, CORP `same-origin`, `Cache-Control: no-store` salvo que la ruta defina la suya; Q-c). Los `.env` nunca se versionan.
 - Proveedor de inferencia: Groq Cloud, `qwen/qwen3.8-27b` (cambio respecto de Azure documentado en PRD §19). Al modelo solo viaja el texto extraído, nunca el documento. Plan gratuito: **8,000 tokens por minuto y 200,000 por día**.
 
 ---
@@ -127,7 +129,9 @@ Bandas del DOC-08 §6.2: ≥ 0.85 CONFORME; de 0.70 a 0.84 y por debajo de 0.70,
 - **ai-service:** `cd services/ai-service && pytest tests/` (offline; con el servicio en marcha, agregar `--deselect tests/test_niveles_3_4.py::test_niveles_3_4` para no consumir tokens). `tests/conftest.py` da a cada prueba una SQLite temporal. `test_niveles_3_4.py` requiere el servicio en vivo y consume tokens de Groq (se omite si el servicio no está).
 - **Frontend:** `npm run lint`, `npm run test:ui` (equivalencia de marcado) y `npm run build`.
 - **Regresión visual** (servicios y `npm run dev` en marcha; Chrome): `python scripts/regresion_visual.py capturar base` antes del cambio, `capturar actual` después y `comparar`. Un cambio sin efecto visual da 0 capturas distintas (160 capturas). Unos cientos de píxeles en letras sueltas de una sola combinación de tamaño y tema son ruido de suavizado del navegador: se descartan repitiendo solo esa combinación (`TAMANOS` y `TEMAS` del módulo) y comparando contra la base. Comportamiento: `scripts/prueba_sondeo_colgado.py` y `scripts/prueba_carga_fallida.py`.
-- **CI** (`.github/workflows/ci.yml`): PostgreSQL 17 con `setup_postgres.py`, pytest de los tres servicios, y lint, `test:ui` y build del frontend.
+- **Extremo a extremo (Q-b):** `python scripts/e2e_api.py` levanta core y rules en los puertos 8101 y 8102 sobre `plurione_compliance_e2e` (recreada en cada corrida) y recorre el flujo completo por HTTP con un RFC real y uno ficticio; código 0 si todo pasa.
+- **Seguridad (Q-c):** `python scripts/zap_api.py` (Docker) corre OWASP ZAP sobre el OpenAPI de los tres servicios, levantados sobre `plurione_compliance_zap` y sin clave de Groq; un hallazgo alto sin justificar da código 1. Informe en `docs/resultados_validacion/seguridad_zap.md`.
+- **CI** (`.github/workflows/ci.yml`): PostgreSQL 17 con `setup_postgres.py`, pytest de los tres servicios, los trabajos `e2e` y `zap`, y lint, `test:ui` y build del frontend.
 - **Validación cuantitativa** (`services/ai-service/evaluacion/`, `docs/VALIDACION_CUANTITATIVA.md`):
   - Gold Standard de 42 casos ficticios, más un contrato de 20 páginas, congelado por SHA-256 (`*.sha256`, `.gitattributes -text`). Un cambio de la anotación exige un commit propio.
   - `python -m evaluacion.medir_chat --etiqueta <nombre> [--bateria corta|extensa] [--modo grabar]`. En modo reproducir (el predeterminado) no consume tokens y aborta si falta una huella del casete; en modo grabar llama a Groq solo por lo que falte. Las baterías corren sin el presupuesto de T4; lo mide `python -m evaluacion.escenario_contencion`.
@@ -140,6 +144,7 @@ Bandas del DOC-08 §6.2: ≥ 0.85 CONFORME; de 0.70 a 0.84 y por debajo de 0.70,
 | Representación (P2) y custodia (P3) | `test_representacion_legal`, `test_cadena_custodia`; ai: `test_representacion` |
 | Autenticidad y operación (P6) | `test_rfc_titular`, `test_senales_archivo`, `test_version_catalogo`, `test_rules_version_catalogo`, `test_antiguedad_pendientes`, `test_fechas_limite`, `test_rules_fechas_limite`; ai: `test_senales_qr`, `test_cuota_diaria` |
 | Integridad permanente y excepciones (P5) | `test_integridad_permanente`, `test_dictamen_reproducible`, `test_excepciones_doc05`; ai: `test_excepciones_doc05` |
+| Operación trazable (P7) | `test_folio_seguimiento`, `test_sello_tiempo`, `test_version_catalogo`; ai: `test_folio_seguimiento` |
 | Esquemas, errores y rules | `test_esquema_bd`, `test_esquema_rules`, `test_errores_core`, `test_errores_rules`, `test_rules_service`; ai: `test_errores_no_controlados` |
 | Nivel 3 (ai) | `test_iluminacion`, `test_sellos`, `test_visor_documento`, `test_optimizaciones`, `test_cache_y_lectura` |
 | Nivel 4 (ai) | `test_contenido_titularidad`, `test_vigencia_dictamen`, `test_opinion_cumplimiento`, `test_persistencia_dictamen` |
@@ -173,6 +178,7 @@ Bandas del DOC-08 §6.2: ≥ 0.85 CONFORME; de 0.70 a 0.84 y por debajo de 0.70,
 | `ZONA_HORARIA` | `America/Mexico_City` | Día de referencia de las vigencias y de la antigüedad (Q-a); requiere `tzdata` |
 | `RFC_DIGITO_ESTRICTO` (core) | `false` | M1: con `true`, un RFC cuyo dígito verificador no coincide se rechaza (hoy se acepta con advertencia) |
 | `BARRIDO_INTEGRIDAD` (core) | `true` | Barrido de integridad de la bóveda en cada reevaluación (PLUS-14) |
+| `SELLO_TIEMPO_URL` / `SELLO_TIEMPO_TIMEOUT` (core) | vacía / `10` | Autoridad RFC 3161 del sello de tiempo de la bitácora (PLUS-22); vacía la apaga |
 | `LEGIBILIDAD_MIN_CARACTERES` / `LEGIBILIDAD_MIN_CONFIANZA` | `50` / `0.40` | Umbral de «Documento ilegible» (P5) |
 | `DIFERIDOS_INTERVALO_MINUTOS` / `DIFERIDOS_MAX_INTENTOS` | `15` / `6` | Ciclo de procesamiento diferido (P5); `0` lo desactiva |
 | `AUTO_SEED` (rules) / `DB_ECHO` (core, rules) | `true` / `false` | Precarga idempotente del catálogo / imprimir SQL |

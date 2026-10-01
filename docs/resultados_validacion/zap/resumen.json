@@ -1,0 +1,65 @@
+[
+  {
+    "servicio": "core-service",
+    "pluginid": "100000",
+    "nombre": "A Client Error response code was returned by the server",
+    "riesgo": 0,
+    "confianza": "3",
+    "instancias": 85,
+    "ejemplo": "http://host.docker.internal:8201"
+  },
+  {
+    "servicio": "core-service",
+    "pluginid": "10049",
+    "nombre": "Non-Storable Content",
+    "riesgo": 0,
+    "confianza": "2",
+    "instancias": 5,
+    "ejemplo": "http://host.docker.internal:8201/api/v1/expedientes/expediente_id"
+  },
+  {
+    "servicio": "rules-service",
+    "pluginid": "100000",
+    "nombre": "A Client Error response code was returned by the server",
+    "riesgo": 0,
+    "confianza": "3",
+    "instancias": 30,
+    "ejemplo": "http://host.docker.internal:8202"
+  },
+  {
+    "servicio": "rules-service",
+    "pluginid": "10049",
+    "nombre": "Non-Storable Content",
+    "riesgo": 0,
+    "confianza": "2",
+    "instancias": 5,
+    "ejemplo": "http://host.docker.internal:8202/api/v1/health"
+  },
+  {
+    "servicio": "ai-service",
+    "pluginid": "100000",
+    "nombre": "A Server Error response code was returned by the server",
+    "riesgo": 1,
+    "confianza": "3",
+    "instancias": 2,
+    "ejemplo": "http://host.docker.internal:8203/api/v1/ai/analisis-semantico"
+  },
+  {
+    "servicio": "ai-service",
+    "pluginid": "100000",
+    "nombre": "A Client Error response code was returned by the server",
+    "riesgo": 0,
+    "confianza": "3",
+    "instancias": 21,
+    "ejemplo": "http://host.docker.internal:8203"
+  },
+  {
+    "servicio": "ai-service",
+    "pluginid": "10049",
+    "nombre": "Non-Storable Content",
+    "riesgo": 0,
+    "confianza": "2",
+    "instancias": 5,
+    "ejemplo": "http://host.docker.internal:8203/api/v1/ai/configuracion-ocr"
+  }
+]

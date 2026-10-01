@@ -16,7 +16,7 @@ from typing import Any
 
 import requests
 
-from config import settings
+from config import observabilidad, settings
 
 # Sesión HTTP del proceso: reutiliza las conexiones TCP (keep-alive) hacia el
 # core-service en lugar de abrir una por petición. Sin estado propio (no hay
@@ -49,7 +49,8 @@ def _detalle(respuesta: requests.Response) -> str:
 def _get(ruta: str, timeout: int = 15) -> requests.Response:
     url = f"{settings.CORE_BASE_URL}/api/v1{ruta}"
     try:
-        respuesta = _sesion.get(url, timeout=(TIMEOUT_CONEXION_SEGUNDOS, timeout))
+        respuesta = _sesion.get(url, timeout=(TIMEOUT_CONEXION_SEGUNDOS, timeout),
+                                headers=observabilidad.cabeceras())
     except requests.RequestException as exc:
         raise CoreNoDisponibleError(f"No fue posible consultar el core-service en {settings.CORE_BASE_URL}: {exc}") from exc
     if respuesta.status_code == 404:
@@ -80,7 +81,8 @@ def registrar_dictamen(dictamen: dict[str, Any]) -> dict[str, Any]:
     """Persiste el dictamen del Nivel 4 en el core-service y devuelve el registro creado."""
     url = f"{settings.CORE_BASE_URL}/api/v1/dictamenes"
     try:
-        respuesta = _sesion.post(url, json=dictamen, timeout=(TIMEOUT_CONEXION_SEGUNDOS, 15))
+        respuesta = _sesion.post(url, json=dictamen, timeout=(TIMEOUT_CONEXION_SEGUNDOS, 15),
+                                 headers=observabilidad.cabeceras())
     except requests.RequestException as exc:
         raise CoreNoDisponibleError(f"No fue posible registrar el dictamen en {settings.CORE_BASE_URL}: {exc}") from exc
     if respuesta.status_code == 409:
@@ -102,6 +104,7 @@ def ultimo_dictamen(documento_id: str) -> dict[str, Any] | None:
             f"{settings.CORE_BASE_URL}/api/v1/dictamenes",
             params={"documento_id": documento_id, "limite": 1},
             timeout=(TIMEOUT_CONEXION_SEGUNDOS, 10),
+            headers=observabilidad.cabeceras(),
         )
         respuesta.raise_for_status()
         dictamenes = respuesta.json()
@@ -120,6 +123,7 @@ def marcar_diferido(documento_id: str, aviso: dict[str, Any]) -> bool:
         respuesta = _sesion.post(
             f"{settings.CORE_BASE_URL}/api/v1/documentos/{documento_id}/procesamiento-diferido",
             json=aviso, timeout=(TIMEOUT_CONEXION_SEGUNDOS, 10),
+            headers=observabilidad.cabeceras(),
         )
         return respuesta.ok
     except requests.RequestException:

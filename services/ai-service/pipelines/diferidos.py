@@ -73,8 +73,13 @@ def _ahora() -> datetime:
 
 
 def espera(intentos: int) -> timedelta:
-    """15 min tras el primer fallo; el doble en cada uno, sin pasar de 24 h."""
-    return min(ESPERA_INICIAL * (2 ** max(intentos - 1, 0)), ESPERA_MAXIMA)
+    """
+    15 min tras el primer fallo; el doble en cada uno, sin pasar de 24 h. El
+    exponente se acota antes de multiplicar: cada auditoría manual que falla
+    suma un intento, y con unos 30 la duración desbordaba timedelta (error 500
+    hallado por OWASP ZAP, Q-c).
+    """
+    return min(ESPERA_INICIAL * (2 ** min(max(intentos - 1, 0), 10)), ESPERA_MAXIMA)
 
 
 def _conexion():

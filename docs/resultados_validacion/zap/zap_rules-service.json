@@ -1,0 +1,491 @@
+{
+	"@programName": "ZAP",
+	"@version": "2.17.0",
+	"@generated": "Thu, 1 Oct 2026 15:41:31",
+	"created": "2026-10-01T15:41:31.873014902Z",
+	"insights":[
+		{
+			"level": "Low",
+			"reason": "Warning",
+			"site": "",
+			"key": "insight.log.error",
+			"description": "ZAP errors logged - see the zap.log file for details",
+			"statistic": "4"
+		},
+		{
+			"level": "Low",
+			"reason": "Warning",
+			"site": "",
+			"key": "insight.log.warn",
+			"description": "ZAP warnings logged - see the zap.log file for details",
+			"statistic": "4"
+		},
+		{
+			"level": "Low",
+			"reason": "Exceeded High",
+			"site": "http://host.docker.internal:8202",
+			"key": "insight.code.4xx",
+			"description": "Percentage of responses with status code 4xx",
+			"statistic": "89"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "http://host.docker.internal:8202",
+			"key": "insight.code.2xx",
+			"description": "Percentage of responses with status code 2xx",
+			"statistic": "10"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "http://host.docker.internal:8202",
+			"key": "insight.endpoint.ctype.application/json",
+			"description": "Percentage of endpoints with content type application/json",
+			"statistic": "100"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "http://host.docker.internal:8202",
+			"key": "insight.endpoint.method.GET",
+			"description": "Percentage of endpoints with method GET",
+			"statistic": "58"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "http://host.docker.internal:8202",
+			"key": "insight.endpoint.method.PATCH",
+			"description": "Percentage of endpoints with method PATCH",
+			"statistic": "9"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "http://host.docker.internal:8202",
+			"key": "insight.endpoint.method.POST",
+			"description": "Percentage of endpoints with method POST",
+			"statistic": "32"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "http://host.docker.internal:8202",
+			"key": "insight.endpoint.total",
+			"description": "Count of total endpoints",
+			"statistic": "31"
+		},
+		{
+			"level": "Info",
+			"reason": "Informational",
+			"site": "http://host.docker.internal:8202",
+			"key": "insight.response.slow",
+			"description": "Percentage of slow responses",
+			"statistic": "1"
+		}
+	],
+	"site":[ 
+		{
+			"@name": "http://host.docker.internal:8202",
+			"@host": "host.docker.internal",
+			"@port": "8202",
+			"@ssl": "false",
+			"alerts": [ 
+				{
+					"pluginid": "100000",
+					"alertRef": "100000-1",
+					"alert": "A Client Error response code was returned by the server",
+					"name": "A Client Error response code was returned by the server",
+					"riskcode": "0",
+					"confidence": "3",
+					"riskdesc": "Informational (High)",
+					"desc": "<p>A response code of 404 was returned by the server.</p><p>This may indicate that the application is failing to handle unexpected input correctly.</p><p>Raised by the 'Alert on HTTP Response Code Error' script</p>",
+					"instances":[ 
+						{
+							"id": "9",
+							"uri": "http://host.docker.internal:8202",
+							"nodeName": "http:\/\/host.docker.internal:8202",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "1890",
+							"uri": "http://host.docker.internal:8202/",
+							"nodeName": "http:\/\/host.docker.internal:8202\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "4",
+							"uri": "http://host.docker.internal:8202/826875478556522781",
+							"nodeName": "http:\/\/host.docker.internal:8202\/826875478556522781",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "10",
+							"uri": "http://host.docker.internal:8202/api",
+							"nodeName": "http:\/\/host.docker.internal:8202\/api",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "1896",
+							"uri": "http://host.docker.internal:8202/api/",
+							"nodeName": "http:\/\/host.docker.internal:8202\/api\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "5",
+							"uri": "http://host.docker.internal:8202/api/8853705376241842811",
+							"nodeName": "http:\/\/host.docker.internal:8202\/api\/8853705376241842811",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "19",
+							"uri": "http://host.docker.internal:8202/api/v1",
+							"nodeName": "http:\/\/host.docker.internal:8202\/api\/v1",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "1897",
+							"uri": "http://host.docker.internal:8202/api/v1/",
+							"nodeName": "http:\/\/host.docker.internal:8202\/api\/v1\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "6",
+							"uri": "http://host.docker.internal:8202/api/v1/7324422927098100069",
+							"nodeName": "http:\/\/host.docker.internal:8202\/api\/v1\/7324422927098100069",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "0",
+							"uri": "http://host.docker.internal:8202/api/v1/reglas?familia_regla=&activo=&tipo_expediente=",
+							"nodeName": "http:\/\/host.docker.internal:8202\/api\/v1\/reglas (activo,familia_regla,tipo_expediente)",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "422",
+							"otherinfo": ""
+						},
+						{
+							"id": "7",
+							"uri": "http://host.docker.internal:8202/api/v1/reglas/1187004311938004781",
+							"nodeName": "http:\/\/host.docker.internal:8202\/api\/v1\/reglas\/1187004311938004781",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "2161",
+							"uri": "http://host.docker.internal:8202/api/v1/reglas/actuator/health",
+							"nodeName": "http:\/\/host.docker.internal:8202\/api\/v1\/reglas\/actuator\/health",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "26",
+							"uri": "http://host.docker.internal:8202/api/v1/reglas/documentos-obligatorios?tipo_expediente=http%3A%2F%2Fwww.google.com%2F",
+							"nodeName": "http:\/\/host.docker.internal:8202\/api\/v1\/reglas\/documentos-obligatorios (tipo_expediente)",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "422",
+							"otherinfo": ""
+						},
+						{
+							"id": "2",
+							"uri": "http://host.docker.internal:8202/api/v1/reglas/regla_id",
+							"nodeName": "http:\/\/host.docker.internal:8202\/api\/v1\/reglas\/regla_id",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "1899",
+							"uri": "http://host.docker.internal:8202/api/v1/reglas/regla_id/",
+							"nodeName": "http:\/\/host.docker.internal:8202\/api\/v1\/reglas\/regla_id\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "8",
+							"uri": "http://host.docker.internal:8202/api/v1/reglas/regla_id/942668755903123613",
+							"nodeName": "http:\/\/host.docker.internal:8202\/api\/v1\/reglas\/regla_id\/942668755903123613",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "1892",
+							"uri": "http://host.docker.internal:8202/api/v1/reglas/regla_id/activo",
+							"nodeName": "http:\/\/host.docker.internal:8202\/api\/v1\/reglas\/regla_id\/activo",
+							"method": "PATCH",
+							"param": "",
+							"attack": "",
+							"evidence": "422",
+							"otherinfo": ""
+						},
+						{
+							"id": "3",
+							"uri": "http://host.docker.internal:8202/api/v1/reglas/regla_id/activo?activo=true",
+							"nodeName": "http:\/\/host.docker.internal:8202\/api\/v1\/reglas\/regla_id\/activo (activo)",
+							"method": "PATCH",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "11",
+							"uri": "http://host.docker.internal:8202/api/v1/reglas/regla_id/activo?activo=http%3A%2F%2Fwww.google.com%2F",
+							"nodeName": "http:\/\/host.docker.internal:8202\/api\/v1\/reglas\/regla_id\/activo (activo)",
+							"method": "PATCH",
+							"param": "",
+							"attack": "",
+							"evidence": "422",
+							"otherinfo": ""
+						},
+						{
+							"id": "1894",
+							"uri": "http://host.docker.internal:8202/api/v1/reglas/regla_id/activo/",
+							"nodeName": "http:\/\/host.docker.internal:8202\/api\/v1\/reglas\/regla_id\/activo\/",
+							"method": "PATCH",
+							"param": "",
+							"attack": "",
+							"evidence": "422",
+							"otherinfo": ""
+						},
+						{
+							"id": "1",
+							"uri": "http://host.docker.internal:8202/api/v1/reglas",
+							"nodeName": "http:\/\/host.docker.internal:8202\/api\/v1\/reglas ()({codigo_regla,nombre_regla,familia_regla,descripcion,severidad,accion,tipo_documento,documento_obligatorio,dias_maximos_vigencia,activo,tipo_expediente,documento_principal})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "422",
+							"otherinfo": ""
+						},
+						{
+							"id": "1893",
+							"uri": "http://host.docker.internal:8202/api/v1/reglas/",
+							"nodeName": "http:\/\/host.docker.internal:8202\/api\/v1\/reglas\/ ()({codigo_regla,nombre_regla,familia_regla,descripcion,severidad,accion,tipo_documento,documento_obligatorio,dias_maximos_vigencia,activo,tipo_expediente,documento_principal})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "422",
+							"otherinfo": ""
+						},
+						{
+							"id": "66",
+							"uri": "http://host.docker.internal:8202/api/v1/reglas/evaluar-vigencia",
+							"nodeName": "http:\/\/host.docker.internal:8202\/api\/v1\/reglas\/evaluar-vigencia ()({tipo_documento,fecha_emision,fecha_vencimiento,fecha_referencia})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "422",
+							"otherinfo": ""
+						},
+						{
+							"id": "1395",
+							"uri": "http://host.docker.internal:8202/computeMetadata/v1/",
+							"nodeName": "http:\/\/host.docker.internal:8202\/computeMetadata\/v1\/ ()({tipo_documento,fecha_emision,fecha_vencimiento,fecha_referencia})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "1392",
+							"uri": "http://host.docker.internal:8202/latest/meta-data/",
+							"nodeName": "http:\/\/host.docker.internal:8202\/latest\/meta-data\/ ()({tipo_documento,fecha_emision,fecha_vencimiento,fecha_referencia})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "1420",
+							"uri": "http://host.docker.internal:8202/metadata/instance",
+							"nodeName": "http:\/\/host.docker.internal:8202\/metadata\/instance ()({tipo_documento,fecha_emision,fecha_vencimiento,fecha_referencia})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "1424",
+							"uri": "http://host.docker.internal:8202/metadata/v1",
+							"nodeName": "http:\/\/host.docker.internal:8202\/metadata\/v1 ()({tipo_documento,fecha_emision,fecha_vencimiento,fecha_referencia})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "1401",
+							"uri": "http://host.docker.internal:8202/opc/v1/instance/",
+							"nodeName": "http:\/\/host.docker.internal:8202\/opc\/v1\/instance\/ ()({tipo_documento,fecha_emision,fecha_vencimiento,fecha_referencia})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "1405",
+							"uri": "http://host.docker.internal:8202/opc/v2/instance/",
+							"nodeName": "http:\/\/host.docker.internal:8202\/opc\/v2\/instance\/ ()({tipo_documento,fecha_emision,fecha_vencimiento,fecha_referencia})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "1426",
+							"uri": "http://host.docker.internal:8202/openstack/latest/meta_data.json",
+							"nodeName": "http:\/\/host.docker.internal:8202\/openstack\/latest\/meta_data.json ()({tipo_documento,fecha_emision,fecha_vencimiento,fecha_referencia})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						}
+					],
+					"count": "30",
+					"systemic": false,
+					"solution": "",
+					"otherinfo": "",
+					"reference": "",
+					"cweid": "388",
+					"wascid": "20",
+					"sourceid": "25"
+				},
+				{
+					"pluginid": "10049",
+					"alertRef": "10049-1",
+					"alert": "Non-Storable Content",
+					"name": "Non-Storable Content",
+					"riskcode": "0",
+					"confidence": "2",
+					"riskdesc": "Informational (Medium)",
+					"desc": "<p>The response contents are not storable by caching components such as proxy servers. If the response does not contain sensitive, personal or user-specific information, it may benefit from being stored and cached, to improve performance.</p>",
+					"instances":[ 
+						{
+							"id": "14",
+							"uri": "http://host.docker.internal:8202/api/v1/health",
+							"nodeName": "http:\/\/host.docker.internal:8202\/api\/v1\/health",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "no-store",
+							"otherinfo": ""
+						},
+						{
+							"id": "17",
+							"uri": "http://host.docker.internal:8202/api/v1/reglas?familia_regla=&activo=&tipo_expediente=",
+							"nodeName": "http:\/\/host.docker.internal:8202\/api\/v1\/reglas (activo,familia_regla,tipo_expediente)",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "no-store",
+							"otherinfo": ""
+						},
+						{
+							"id": "18",
+							"uri": "http://host.docker.internal:8202/api/v1/reglas/documentos-obligatorios?tipo_expediente=",
+							"nodeName": "http:\/\/host.docker.internal:8202\/api\/v1\/reglas\/documentos-obligatorios (tipo_expediente)",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "no-store",
+							"otherinfo": ""
+						},
+						{
+							"id": "16",
+							"uri": "http://host.docker.internal:8202/api/v1/reglas",
+							"nodeName": "http:\/\/host.docker.internal:8202\/api\/v1\/reglas ()({codigo_regla,nombre_regla,familia_regla,descripcion,severidad,accion,tipo_documento,documento_obligatorio,dias_maximos_vigencia,activo,tipo_expediente,documento_principal})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "no-store",
+							"otherinfo": ""
+						},
+						{
+							"id": "15",
+							"uri": "http://host.docker.internal:8202/api/v1/reglas/evaluar-vigencia",
+							"nodeName": "http:\/\/host.docker.internal:8202\/api\/v1\/reglas\/evaluar-vigencia ()({tipo_documento,fecha_emision,fecha_vencimiento,fecha_referencia})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "no-store",
+							"otherinfo": ""
+						}
+					],
+					"count": "5",
+					"systemic": true,
+					"solution": "<p>The content may be marked as storable by ensuring that the following conditions are satisfied:</p><p>The request method must be understood by the cache and defined as being cacheable (\"GET\", \"HEAD\", and \"POST\" are currently defined as cacheable)</p><p>The response status code must be understood by the cache (one of the 1XX, 2XX, 3XX, 4XX, or 5XX response classes are generally understood)</p><p>The \"no-store\" cache directive must not appear in the request or response header fields</p><p>For caching by \"shared\" caches such as \"proxy\" caches, the \"private\" response directive must not appear in the response</p><p>For caching by \"shared\" caches such as \"proxy\" caches, the \"Authorization\" header field must not appear in the request, unless the response explicitly allows it (using one of the \"must-revalidate\", \"public\", or \"s-maxage\" Cache-Control response directives)</p><p>In addition to the conditions above, at least one of the following conditions must also be satisfied by the response:</p><p>It must contain an \"Expires\" header field</p><p>It must contain a \"max-age\" response directive</p><p>For \"shared\" caches such as \"proxy\" caches, it must contain a \"s-maxage\" response directive</p><p>It must contain a \"Cache Control Extension\" that allows it to be cached</p><p>It must have a status code that is defined as cacheable by default (200, 203, 204, 206, 300, 301, 404, 405, 410, 414, 501).</p>",
+					"otherinfo": "",
+					"reference": "<p>https://datatracker.ietf.org/doc/html/rfc7234</p><p>https://datatracker.ietf.org/doc/html/rfc7231</p><p>https://www.w3.org/Protocols/rfc2616/rfc2616-sec13.html</p>",
+					"cweid": "524",
+					"wascid": "13",
+					"sourceid": "3"
+				}
+			]
+		}
+	],
+	"sequences":[
+	]
+
+}

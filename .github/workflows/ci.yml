@@ -5,6 +5,9 @@
 #              rules-service (BD de pruebas plurione_compliance_test) y del
 #              ai-service (offline: Groq, core y rules se simulan; la suite de
 #              los Niveles 3 y 4 se omite porque requiere el servicio en vivo).
+#   e2e      — flujo completo por HTTP real (scripts/e2e_api.py, P7 Q-b) con
+#              un RFC real y uno ficticio, sobre plurione_compliance_e2e.
+#   zap      — OWASP ZAP sobre el API de los tres servicios (P7 Q-c).
 #   frontend — lint (oxlint), equivalencia de marcado del sistema de diseño
 #              (npm run test:ui) y build de producción de la interfaz React 19.
 name: CI
@@ -67,6 +70,98 @@ jobs:
       - name: Pruebas offline del ai-service
         working-directory: services/ai-service
         run: pytest tests/ -v
+
+  # P7 (Q-b): flujo completo por HTTP real. scripts/e2e_api.py levanta el
+  # core-service y el rules-service sobre su propia base (plurione_compliance_e2e)
+  # y simula el Nivel 4, así que no necesita Groq ni Tesseract.
+  e2e:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DB_DIALECT: postgresql
+      DB_HOST: 127.0.0.1
+      DB_PORT: "5432"
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      PYTHONIOENCODING: utf-8
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: services/*/requirements.txt
+
+      - name: Dependencias del core-service y del rules-service
+        run: pip install -r services/core-service/requirements.txt -r services/rules-service/requirements.txt
+
+      - name: Flujo de extremo a extremo (RFC real y ficticio)
+        run: python scripts/e2e_api.py
+
+  # P7 (Q-c): OWASP ZAP en modo API sobre el OpenAPI de los tres servicios,
+  # levantados sobre plurione_compliance_zap y sin clave de Groq. Un hallazgo
+  # alto sin justificar hace fallar el trabajo; los informes quedan como artefacto.
+  zap:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DB_DIALECT: postgresql
+      DB_HOST: 127.0.0.1
+      DB_PORT: "5432"
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      TESSERACT_CMD: /usr/bin/tesseract
+      TESSDATA_PREFIX: /usr/share/tesseract-ocr/5/tessdata
+      PYTHONIOENCODING: utf-8
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: services/*/requirements.txt
+
+      - name: Tesseract OCR (el ai-service lo verifica al arrancar)
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends tesseract-ocr tesseract-ocr-spa
+
+      - name: Dependencias de los tres servicios
+        run: |
+          pip install -r services/core-service/requirements.txt \
+                      -r services/rules-service/requirements.txt \
+                      -r services/ai-service/requirements.txt
+
+      - name: OWASP ZAP sobre el API (sin hallazgos altos sin justificar)
+        run: python scripts/zap_api.py --minutos 10 --salida zap-informes
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: informes-zap
+          path: zap-informes/
 
   frontend:
     runs-on: ubuntu-latest

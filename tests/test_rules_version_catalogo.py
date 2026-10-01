@@ -52,3 +52,39 @@ def test_el_endpoint_y_la_cabecera_coinciden():
 
     inventario = client.get("/api/v1/reglas/documentos-obligatorios", params={"tipo_expediente": "CORPORATIVO"})
     assert inventario.headers["X-Version-Catalogo"] == datos["version_catalogo"]
+
+
+# ── M7: versión de las reglas de cada tipo de documento ───────────────
+
+
+def _contenido(codigo: str, tipo: str, **cambios) -> SimpleNamespace:
+    return _regla(codigo, familia_regla="RSC", tipo_documento=tipo, tipo_expediente=None, **cambios)
+
+
+def test_la_version_de_un_tipo_solo_cambia_con_sus_reglas():
+    general = _regla("RCV-01", familia_regla="RCV", tipo_documento=None, tipo_expediente=None, dias_maximos_vigencia=30)
+    csf, acta = _contenido("RSC-CSF", "CSF_SAT"), _contenido("RSC-ACTA", "ACTA_CONSTITUTIVA")
+    obligatoria = _regla("RIE-01-CSF")
+    base = version_catalogo.por_tipo([general, csf, acta, obligatoria])
+
+    pausada = version_catalogo.por_tipo([general, _contenido("RSC-CSF", "CSF_SAT", activo=False), acta, obligatoria])
+    assert pausada["CSF_SAT"] != base["CSF_SAT"] and pausada["ACTA_CONSTITUTIVA"] == base["ACTA_CONSTITUTIVA"]
+
+    sin_rie = version_catalogo.por_tipo([general, csf, acta])
+    assert sin_rie["ACTA_CONSTITUTIVA"] == base["ACTA_CONSTITUTIVA"], "La obligatoriedad (RIE) no decide el dictamen"
+
+    otra_general = version_catalogo.por_tipo([_regla("RCV-01", familia_regla="RCV", tipo_documento=None,
+                                                     tipo_expediente=None, dias_maximos_vigencia=45),
+                                              csf, acta, obligatoria])
+    assert all(otra_general[t] != base[t] for t in base), "Una regla general de vigencia cambia todos"
+    assert version_catalogo.de_tipo([general, csf], "PODER_NOTARIAL") == version_catalogo.por_tipo([general, csf])["*"]
+
+
+def test_el_endpoint_publica_la_version_del_tipo():
+    import json
+
+    datos = client.get("/api/v1/reglas/version", params={"tipo_documento": "CSF_SAT"}).json()
+    assert datos["version_reglas_tipo"].startswith("tip-")
+    inventario = client.get("/api/v1/reglas/documentos-obligatorios", params={"tipo_expediente": "CORPORATIVO"})
+    mapa = json.loads(inventario.headers["X-Version-Reglas-Tipo"])
+    assert mapa.get("CSF_SAT", mapa["*"]) == datos["version_reglas_tipo"]

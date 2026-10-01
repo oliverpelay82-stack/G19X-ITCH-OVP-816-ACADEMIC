@@ -1,0 +1,43 @@
+@startuml p7-casos-de-uso-operacion-calidad
+' P7 — Operación trazable, fecha cierta y aseguramiento de la calidad.
+' Trazabilidad: PLUS-21 (HU-57; ISO/IEC 27001 A.8.15), PLUS-22 (HU-58; NOM-151),
+' M7 (HU-59; protocolo del DOC-05), Q-b (HU-60) y Q-c (HU-61; Ficha 045, act. 6).
+' Implementación prevista: middleware id_peticion en los tres servicios;
+' services/core-service/motor/sello_tiempo.py; rules-service (versión por tipo);
+' scripts/e2e_api.py; .github/workflows/ci.yml (e2e y OWASP ZAP).
+
+title P7 — Operación trazable, fecha cierta y calidad
+
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Administrador" as Admin
+actor "Auditor externo" as Auditor
+actor "Analista de cumplimiento" as Analista
+actor "Reloj del sistema" as Reloj
+actor "Integración continua" as CI
+actor "Autoridad de sellado\nRFC 3161 (opcional)" as TSA
+
+rectangle "Motor de validación" {
+  usecase "Seguir una petición por su folio\n(PLUS-21)" as UC1
+  usecase "Sellar en el tiempo el último\neslabón de la bitácora (PLUS-22)" as UC2
+  usecase "Verificar el sello con openssl" as UC3
+  usecase "Ver «Requiere nueva auditoría»\n(M7)" as UC4
+  usecase "Probar el flujo completo\n(Q-b)" as UC5
+  usecase "Analizar la seguridad del API\n(Q-c, OWASP ZAP)" as UC6
+}
+
+Admin --> UC1
+Reloj --> UC2
+UC2 --> TSA : solo la huella
+Auditor --> UC3
+Analista --> UC4
+CI --> UC5
+CI --> UC6
+
+note right of UC2
+  Apagado por omisión (SELLO_TIEMPO_URL
+  vacío): pruebas con datos ficticios o una
+  red que lo bloquee no se ven afectadas.
+end note
+@enduml

@@ -2,6 +2,7 @@
 Controlador de Reglas de Validación.
 Equivalente a @RestController @RequestMapping("/api/v1/reglas") en Spring Boot.
 """
+import json
 from dataclasses import asdict
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
@@ -73,8 +74,12 @@ def listar_documentos_obligatorios(
                    f"Valores válidos: {', '.join(obligatorios.TIPOS_EXPEDIENTE)}.",
         )
     reglas = db.query(Regla).filter(Regla.familia_regla == "RIE", Regla.activo.is_(True)).all()
-    # M6: el core recibe la versión del catálogo con el inventario, sin otra consulta.
-    response.headers[version_catalogo.CABECERA] = version_catalogo.calcular(db.query(Regla).all())
+    # M6 y M7: el core recibe con el inventario la versión del catálogo y la de las
+    # reglas de cada tipo de documento, sin otra consulta.
+    todas = db.query(Regla).all()
+    response.headers[version_catalogo.CABECERA] = version_catalogo.calcular(todas)
+    response.headers[version_catalogo.CABECERA_POR_TIPO] = json.dumps(
+        version_catalogo.por_tipo(todas), separators=(",", ":"))
     return [asdict(d) for d in obligatorios.documentos_obligatorios(reglas, tipo_expediente)]
 
 
@@ -161,17 +166,24 @@ def listar_reglas(
     "/version",
     summary="Versión del catálogo de reglas (huella de todas las reglas, activas y pausadas)",
 )
-def version_del_catalogo(db: Session = Depends(get_db)):
+def version_del_catalogo(
+    tipo_documento: Optional[str] = Query(None, description="M7: también la versión de las reglas de ese tipo"),
+    db: Session = Depends(get_db),
+):
     """
     M6 (PRD §21.6): cada dictamen guarda esta versión para saber con qué
-    catálogo se emitió aunque después se pause o cambie una regla.
+    catálogo se emitió aunque después se pause o cambie una regla. M7 (§21.7):
+    con ``tipo_documento``, también la de las reglas que deciden su dictamen.
     """
     reglas = db.query(Regla).all()
-    return {
+    respuesta = {
         "version_catalogo": version_catalogo.calcular(reglas),
         "reglas": len(reglas),
         "reglas_activas": sum(1 for r in reglas if r.activo),
     }
+    if tipo_documento:
+        respuesta["version_reglas_tipo"] = version_catalogo.de_tipo(reglas, tipo_documento)
+    return respuesta
 
 
 @router.get(

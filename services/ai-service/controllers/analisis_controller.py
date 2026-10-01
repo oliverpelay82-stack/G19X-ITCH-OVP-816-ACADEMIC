@@ -325,7 +325,7 @@ def versiones_dictamen() -> dict[str, str | None]:
 
 def _persistir_dictamen(
     documento_id: str, resultado: pipeline_analisis.ResultadoAnalisis, usuario: str, origen: str | None = None,
-    qr: dict | None = None,
+    qr: dict | None = None, version_reglas_tipo: str | None = None,
 ) -> dict:
     """
     Guarda el dictamen en el core-service (tabla dictamenes_auditoria y
@@ -354,6 +354,8 @@ def _persistir_dictamen(
         **versiones_dictamen(),
         **({"origen": origen} if origen else {}),
         **({"qr_sat": qr} if qr else {}),
+        # M7: versión de las reglas de su tipo, para avisar si después cambian.
+        "version_reglas_tipo": version_reglas_tipo,
         "usuario": usuario,
     }
     try:
@@ -568,7 +570,10 @@ def auditar(peticion: AnalisisSemanticoRequest) -> dict:
     # Solo el dictamen de un documento de la bóveda se persiste: un texto suelto
     # enviado por el cliente no pertenece a ningún expediente.
     if documento and peticion.documento_id:
-        respuesta["persistencia"] = _persistir_dictamen(peticion.documento_id, resultado, peticion.usuario, qr=qr)
+        respuesta["persistencia"] = _persistir_dictamen(
+            peticion.documento_id, resultado, peticion.usuario, qr=qr,
+            version_reglas_tipo=rules_client.version_reglas_tipo(tipo_registrado),
+        )
         # T0 (PLUS-07): ficha de lo verificado, ligada al dictamen que el core acaba de guardar.
         dictamen_guardado = respuesta["persistencia"].get("dictamen") or {}
         if respuesta["persistencia"].get("guardado") and dictamen_guardado.get("id") and documento.sha256:

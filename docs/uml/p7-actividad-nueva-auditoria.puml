@@ -1,0 +1,34 @@
+@startuml p7-actividad-nueva-auditoria
+' P7 — Aviso de nueva auditoría al cambiar el catálogo (M7).
+' Trazabilidad: HU-59; protocolo de auditoría del DOC-05; M6 (versión del catálogo).
+' Implementación prevista: services/rules-service/motor/version_catalogo.py,
+' services/ai-service/controllers/analisis_controller.py,
+' services/core-service/motor/cumplimiento.py y models/dictamen.py.
+
+title P7 — Requiere nueva auditoría
+
+|ai-service|
+start
+:Audita un documento de tipo T;
+:Pide la versión de las reglas de T;
+|rules-service|
+:Huella de las reglas de T y de las
+generales (vigencia y contenido);
+|core-service|
+:Guarda el dictamen con version_reglas_tipo;
+|Administrador|
+:Agrega, pausa o edita una regla de T;
+|core-service|
+:Evaluación del expediente: versión
+actual de las reglas de cada tipo
+(cabecera del inventario);
+if (¿El dictamen tiene versión\ny es distinta de la actual?) then (sí)
+  :Alerta «Requiere nueva auditoría» (media);
+else (no)
+  :Sin aviso (otro tipo, o dictamen previo a P7);
+endif
+|Analista|
+:Audita de nuevo: el dictamen
+nuevo lleva la versión actual;
+stop
+@enduml
