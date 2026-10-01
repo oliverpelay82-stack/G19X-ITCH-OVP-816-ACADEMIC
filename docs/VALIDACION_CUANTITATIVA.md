@@ -5,7 +5,7 @@
 | Propósito | Demostrar con métricas reproducibles la exactitud de la IA (ISO/IEC 25010, Adecuación funcional › Exactitud) y el rendimiento del sistema (ISO/IEC 25010, Eficiencia de desempeño) frente a RNF-01, RNF-02 y RNF-03, y medir la eficiencia del chat documental antes y después de su optimización (PRD §21.4, P4) |
 | Fase del cronograma | Fase 5 · QA (DOC-07, semanas 13 y 14: «pruebas de precisión de IA»; riesgo «baja precisión en la detección de cláusulas», 13 h de pruebas de precisión) |
 | Fuentes | DOC-01 H12 y H15; DOC-03 (ISO/IEC 25010: «Gold Standard con precisión, exhaustividad y F1»); DOC-04 RNF-01 a RNF-03; DOC-05 (RSC-01, RSC-02, bandas del Nivel 5); DOC-08 §6.2; [PRD.md](PRD.md) §11, §15 y §21.4 |
-| Estado | Diseño aprobado el 30/09/2026, junto con la configuración del OCR (§5) y la optimización del chat (§6). Medición base del chat y pasos T3, T4 y T0 de P4 ejecutados (§10.1); precisión y rendimiento pendientes |
+| Estado | Diseño aprobado el 30/09/2026, junto con la configuración del OCR (§5) y la optimización del chat (§6). Medición base del chat y los cinco pasos de P4 (T3, T4, T0, T2 y T1) medidos con Groq (§10.1, 01/10/2026); precisión y rendimiento pendientes |
 | Restricciones | Sin cambios de arquitectura ni de contratos de API; sin tocar el Módulo 7; ningún dato real de terceros en el repositorio; la suite de precisión corre sin consumir tokens una vez grabada |
 
 ---
@@ -435,11 +435,41 @@ Con la lectura 3.3 y sin cambiar la búsqueda, la batería del contrato de 20 p�
 
 **Hallazgo del entorno de medición.** En modo grabar, la llamada real a Groq alimentaba el presupuesto de T4 y acotaba el turno siguiente del chat (en una corrida descartada, «¿hasta cuándo está vigente el contrato?» recibió 1,921 caracteres y el modelo respondió que la fecha no aparecía). Las mediciones de las baterías corren ahora sin presupuesto; solo el escenario de contención lo activa. Del mismo caso salió otra corrección: el estado del sistema decía «vencimiento no declarado» cuando la auditoría no lo extraía; ahora dice «no extraído por el motor».
 
-#### T2 y T1 — implementados; medición con Groq pendiente
+#### T2 y T1 — medición con Groq (01/10/2026)
 
 - **T2 (PLUS-09):** las preguntas puntuales reciben un contexto enfocado (3,000 caracteres en hasta 3 tramos, reordenados por cobertura de términos y por coincidencia en encabezados distintivos, y recortados al tramo relevante), el estado breve y el historial acotado; el chat tiene su propio tope de respuesta (600 tokens). Sin modelo, sobre el texto del contrato de 20 páginas: las seis preguntas puntuales de la batería extensa reciben su respuesta en 1,130 a 2,842 caracteres contra 6,442 de la selección general (`tests/test_contexto_enfocado.py`). No se compactaron las instrucciones de sistema.
 - **T1 (PLUS-08):** cláusulas nombradas y montos se responden con el renglón literal y su página, sin modelo. Verificado sobre los textos del Gold Standard: 8 pasajes literales con el dato correcto (monto mensual, contraprestación, capital social, prima total, suma asegurada de una cobertura, precio de un servicio, cláusulas de confidencialidad y de subcontratación) y 5 casos que van al modelo (suma asegurada con tres coberturas, pregunta interpretativa, seguimiento de un solo término, pregunta sin monto ni cláusula, anexo sin tema) (`tests/test_pasajes.py`).
 - **Interfaz:** la meta de cada respuesta del chat dice su procedencia («análisis con IA», «datos del dictamen», «texto del documento», «respuesta ya consultada»). Regresión visual: 158 de 158 capturas iguales y un escenario nuevo con una respuesta sin modelo.
+
+Medición con Groq real en ambas baterías, con la cuota del 01/10/2026 y la lectura 3.3 del Nivel 3 (`n3-3.3`), que cubre también la batería corta pendiente del 30/09/2026. Las auditorías usan la lectura nueva: las 6 de la batería corta se grabaron de nuevo (19,283 tokens) y la del contrato de 20 páginas ya estaba grabada desde el 30/09/2026 (7,097). La reproducción desde el casete da las mismas respuestas, tokens y exactitud sin llamar a Groq. Detalle en [`chat_t2t1.json`](resultados_validacion/chat_t2t1.json) y [`chat_t2t1_extensa.json`](resultados_validacion/chat_t2t1_extensa.json).
+
+| Batería | Sin modelo (T0 + T1) | Tokens/turno | Tokens/turno con modelo | Turnos/min | p50 | p95 | Exactitud | Citas verificadas |
+|---|---|---|---|---|---|---|---|---|
+| Documentos breves — base | 0/38 | 1,581 | 1,581 | 5.06 | 732 ms | 4,843 ms | 95 % (83–99 %) | 39/39 |
+| Documentos breves — T0 | 15/38 | 959 | 1,585 | 8.34 | 515 ms | 2,028 ms | 97 % (87–100 %) | 42/42 |
+| Documentos breves — T2 + T1 | **18/38** (16 + 2) | **646** | **1,228** | **12.38** | **428 ms** | **1,434 ms** | **97 % (87–100 %)** | 44/44 |
+| Contrato de 20 páginas — base | 0/8 | 3,006 | 3,006 | 2.66 | 1,116 ms | 1,706 ms | 88 % (53–98 %) | 12/12 |
+| Contrato de 20 páginas — lectura 3.3 | 3/8 | 1,844 | 2,951 | 4.34 | 907 ms | 4,220 ms | 100 % (68–100 %) | 10/10 |
+| Contrato de 20 páginas — T2 + T1 | **4/8** (3 + 1) | **863** | **1,727** | **9.27** | **240 ms** | **2,103 ms** | **100 % (68–100 %)** | 9/9 |
+
+- **Tokens:** contra la base, el turno promedio baja un **59 %** en los documentos breves (1,581 → 646) y un **71 %** en el contrato de 20 páginas (3,006 → 863). La cuota del plan gratuito pasa de 5.1 a 12.4 turnos por minuto en documentos breves y de 2.7 a 9.3 en el documento largo.
+- **T2 es el que más ahorra en el documento largo:** las preguntas puntuales que llegan al modelo reciben de 2,359 a 2,584 caracteres de contexto, contra 6,349 a 6,486 antes; el turno con modelo baja de 2,951 a 1,727 tokens. La pregunta general («¿Hasta cuándo está vigente el contrato?») conserva el contexto amplio (6,428 caracteres), como está diseñado.
+- **T1 respondió 3 turnos con el renglón literal y su página, sin modelo:** el monto mensual del contrato de 20 páginas (página 17), la contraprestación del contrato breve y el capital social del acta escaneada. Los tres son correctos.
+- **La mesa de ayuda sigue resuelta con el contexto acotado:** «15 minutos», con su cita, en 2,584 caracteres de contexto. La causa era el OCR (lectura 3.3); T2 no la empeora.
+- **Exactitud 37/38 en los documentos breves.** El único fallo es el falso negativo del calificador que ya estaba en la base: «¿El apoderado puede vender inmuebles?» se respondió «No… el poder se limita a pleitos y cobranzas y actos de administración… sin facultades especiales para enajenar bienes», sin la palabra esperada «dominio». El criterio se congeló antes de ejecutar y no se ajusta a posteriori. El otro falso negativo de la base («¿Cuándo vence?» de la constancia) ya se responde con la fecha desde T0.
+- **Ninguna cita quedó sin verificar** (44/44 y 9/9). En la repetición sin acentos ni signos, las 38 preguntas sueltas se respondieron desde el caché, con 0 tokens.
+- **La latencia de la cola mejora**, aunque sigue dependiendo de Groq: el p95 de los documentos breves baja de 4.8 s a 1.4 s; el del contrato de 20 páginas (2.1 s) lo fija la única pregunta general, que sigue con contexto amplio.
+- **Pendiente de P4:** la compactación de las instrucciones de sistema (parte de PLUS-09) no se hizo; cambia el comportamiento del modelo y no se justifica con estas cifras.
+
+#### Resumen de P4
+
+| Paso | Qué cambia para el analista | Evidencia |
+|---|---|---|
+| T3 (PLUS-10) | Una pregunta ya respondida sobre el mismo documento y estado: ≈ 25 ms y cero tokens | 38/38 repeticiones desde el caché |
+| T4 (PLUS-11) | Tras una auditoría de 20 páginas, la espera del chat baja un 44 % | 68.3 s → 38.5 s en 3 preguntas |
+| T0 (PLUS-07) | Preguntas factuales y sugeridas: ≈ 20 ms, cero tokens, con cita del documento | 16/38 y 3/8 turnos |
+| T1 (PLUS-08) | Montos y cláusulas nombradas: el renglón literal con su página, ≈ 30 ms | 2/38 y 1/8 turnos, 3/3 correctos |
+| T2 (PLUS-09) | Preguntas puntuales con un contexto de ≈ 2,500 caracteres en lugar de ≈ 6,400 | −71 % de tokens por turno en el documento largo; exactitud 100 % |
 
 ### 10.2 Precisión y 10.3 Rendimiento
 

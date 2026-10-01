@@ -1,5 +1,17 @@
 {
  "entradas": {
+  "00f2705634beee0b49e9d965aed422f93b8796d9699c0a8311ea29d041ab769e": {
+   "grabado_en": "2026-10-01T20:50:44+00:00",
+   "latencia_ms": 1613,
+   "respuesta": "**No aparece fecha de vencimiento en el texto disponible**, ya que el documento establece que se otorga «por tiempo indefinido».\n\nEl sistema confirma esta ausencia mediante la regla RCV-01, marcada como **NO_APLICA** porque «El documento no declara fecha de vencimiento». Por lo tanto, no hay una fecha límite explícita de caducidad en el contenido analizado.",
+   "tipo": "texto",
+   "uso": {
+    "completion_tokens": 86,
+    "desde_cache": false,
+    "prompt_tokens": 1181,
+    "total_tokens": 1267
+   }
+  },
   "06f02d6ab6b4a2709ffe278bf3379779c9eeafa6e8970f87e7ac4d84db717e20": {
    "grabado_en": "2026-09-30T19:24:58+00:00",
    "latencia_ms": 756,
@@ -96,6 +108,18 @@
     "total_tokens": 1577
    }
   },
+  "122f0be8c709d09d8b58bf3c190a809d79b76b68d875b8f0258bce17cd949861": {
+   "grabado_en": "2026-10-01T20:50:38+00:00",
+   "latencia_ms": 681,
+   "respuesta": "El folio mercantil de inscripción es **48213\"1**.\n\nEste dato se encuentra en la sección de la nota de inscripción, donde se indica textualmente: «El primer testimonio de esta escritura quedó inscrito en el Registro Público de Comercio de Chihuahua bajo el Folio Mercantil Electrónico número 48213\"1, el 4 de junio de 2018».",
+   "tipo": "texto",
+   "uso": {
+    "completion_tokens": 89,
+    "desde_cache": false,
+    "prompt_tokens": 1227,
+    "total_tokens": 1316
+   }
+  },
   "133561537b02781a1cc070c10f616d4bdcc0efe4903121a4e71c488bbe71e1c7": {
    "grabado_en": "2026-09-30T20:25:39+00:00",
    "latencia_ms": 451,
@@ -189,6 +213,30 @@
     "total_tokens": 2003
    }
   },
+  "18637e2f6407d120bfaae59259c1981aa3c0a49ec34867e6a0e804a4c7c9439b": {
+   "grabado_en": "2026-10-01T20:49:39+00:00",
+   "latencia_ms": 1892,
+   "respuesta": "La cláusula de penalización establece que, en caso de incumplimiento, **EL PRESTADOR** pagará a **EL CLIENTE** una pena convencional equivalente al **diez por ciento del monto mensual de la contraprestación por cada mes de incumplimiento**.\n\nEsto se sustenta en la cita literal: «En caso de incumplimiento de las obligaciones a su cargo, EL PRESTADOR pagará a EL CLIENTE una pena convencional equivalente al diez por ciento del monto mensual de la contraprestación por cada mes de incumplimiento».",
+   "tipo": "texto",
+   "uso": {
+    "completion_tokens": 117,
+    "desde_cache": false,
+    "prompt_tokens": 1289,
+    "total_tokens": 1406
+   }
+  },
+  "1ae8f7d75a4f21af668d7ee4604930b68b12a7f11965d8a0ed97583c12957509": {
+   "grabado_en": "2026-10-01T20:51:39+00:00",
+   "latencia_ms": 677,
+   "respuesta": "**No**, el apoderado no puede vender inmuebles, ya que el documento otorga un **PODER GENERAL** limitado a **pleitos y cobranzas** y **actos de administración**, sin incluir facultades especiales para enajenar bienes.\n\nEl texto especifica: «El apoderado podrá ejercer el poder general para pleitos y cobranzas y para actos de administración, en los términos de los dos primeros párrafos del artículo 2554 del Código Civil Federal». La venta de inmuebles requiere una cláusula especial de facultades que no aparece en el contenido disponible.",
+   "tipo": "texto",
+   "uso": {
+    "completion_tokens": 127,
+    "desde_cache": false,
+    "prompt_tokens": 866,
+    "total_tokens": 993
+   }
+  },
   "1b6a8bf18a6746186f8ea969cc5b9e766d76b4841713d051b0b0d8365fe1ba8e": {
    "grabado_en": "2026-09-30T19:06:17+00:00",
    "latencia_ms": 518,
@@ -235,6 +283,18 @@
     "desde_cache": false,
     "prompt_tokens": 1830,
     "total_tokens": 1953
+   }
+  },
+  "31804e6bbe2b586bcaa6b7844c6ea0991041805822aa8a2fb868e9de205bb13a": {
+   "grabado_en": "2026-10-01T20:50:44+00:00",
+   "latencia_ms": 691,
+   "respuesta": "El poder tiene el número de escritura **20,117**.\n\nEsto se sustenta en la cita literal: «ESCRITURA PÚBLICA NÚMERO 20,117».",
+   "tipo": "texto",
+   "uso": {
+    "completion_tokens": 45,
+    "desde_cache": false,
+    "prompt_tokens": 862,
+    "total_tokens": 907
    }
   },
   "33c643c4642c41ab2bcbce8c22fb6051612da8c3b63552135f3bc6ddf75c477e": {
@@ -304,6 +364,30 @@
     "desde_cache": false,
     "prompt_tokens": 1091,
     "total_tokens": 1379
+   }
+  },
+  "3d32e2e5ffce613f6baf3d1a9d10465f824c410a25d233448347ad36cf6801a9": {
+   "grabado_en": "2026-10-01T20:52:46+00:00",
+   "latencia_ms": 588,
+   "respuesta": "El comisario es **Ana Sofía Beltrán Ruelas**.\n\nEl documento lo establece en la cláusula transitoria: «TERCERA. Se designa como Comisario a Ana Sofía Beltrán Ruelas».",
+   "tipo": "texto",
+   "uso": {
+    "completion_tokens": 50,
+    "desde_cache": false,
+    "prompt_tokens": 1404,
+    "total_tokens": 1454
+   }
+  },
+  "3d77751d89ca137069d70fb1f56bafa3b338663bfd801dd1584c456aa30ebfa2": {
+   "grabado_en": "2026-10-01T20:54:30+00:00",
+   "latencia_ms": 2303,
+   "respuesta": "El contrato está vigente del **2 de marzo de 2026 al 1 de marzo de 2027**, con posibilidad de renovación por periodos iguales mediante convenio escrito.\n\nEsto se sustenta en la cláusula sexta: «El presente contrato estará vigente del 2 de marzo de 2026 al 1 de marzo de 2027 y podrá renovarse por periodos iguales mediante convenio por escrito firmado con treinta días de anticipación».",
+   "tipo": "texto",
+   "uso": {
+    "completion_tokens": 99,
+    "desde_cache": false,
+    "prompt_tokens": 2850,
+    "total_tokens": 2949
    }
   },
   "43a3a6766a195facd851bc1586a0d4c013b696592fe499aa75de6fbef8001eca": {
@@ -438,6 +522,18 @@
     "total_tokens": 3048
    }
   },
+  "4c6a864212f82f38f2cc5ffe28f2deb4cc8e1b6052787ee8cfeeca7e3ce04da3": {
+   "grabado_en": "2026-10-01T20:50:41+00:00",
+   "latencia_ms": 1325,
+   "respuesta": "**No aparece en el texto disponible** que la apoderada tenga facultades para firmar contratos, ya que su poder se limita a «pleitos y cobranzas y actos de administración».\n\nEl documento establece en la cláusula transitoria segunda: «Se otorga a María Elena Ruiz Soto poder general para pleitos y cobranzas y actos de administración, para que represente a la sociedad ante toda clase de autoridades». Dado que «actos de administración» no incluye explícitamente la celebración de contratos (que suelen considerarse actos de dominio o requieren mención específica), no se puede confirmar esa facultad con la información proporcionada.",
+   "tipo": "texto",
+   "uso": {
+    "completion_tokens": 134,
+    "desde_cache": false,
+    "prompt_tokens": 1230,
+    "total_tokens": 1364
+   }
+  },
   "4ce138fac42c32cd56bd09b915d7c08e00cc46232e3df22b64acd693f6a4639a": {
    "grabado_en": "2026-09-30T20:21:39+00:00",
    "latencia_ms": 631,
@@ -484,6 +580,18 @@
     "desde_cache": false,
     "prompt_tokens": 1074,
     "total_tokens": 1138
+   }
+  },
+  "57edc76fa7091ad2908ddb9ecd6da131e656df2bb61cae9eeb988f865aa2fa2e": {
+   "grabado_en": "2026-10-01T20:51:45+00:00",
+   "latencia_ms": 1009,
+   "respuesta": "El prestador del servicio es **SERVICIOS INTEGRALES DEL NORTE S.A. DE C.V.**, representada por **Jorge Alberto Treviño Garza**.\n\nEsto se sustenta en el texto: «SERVICIOS INTEGRALES DEL NORTE S.A. DE C.V., con RFC SIN150302KL7, en lo sucesivo EL PRESTADOR, representada por Jorge Alberto Treviño Garza».",
+   "tipo": "texto",
+   "uso": {
+    "completion_tokens": 96,
+    "desde_cache": false,
+    "prompt_tokens": 1288,
+    "total_tokens": 1384
    }
   },
   "5bfa2eb841853b280f74d23e9555fff6c675fd4ace265ede616444b1d64e4d69": {
@@ -565,6 +673,18 @@
     "desde_cache": false,
     "prompt_tokens": 1183,
     "total_tokens": 1254
+   }
+  },
+  "64586f3928a031e9a765ac0bafe1a9aa78bb42a0a22a7040543cf390f1222ce4": {
+   "grabado_en": "2026-10-01T20:51:42+00:00",
+   "latencia_ms": 371,
+   "respuesta": "La opinión se emite con base en el **artículo 32-D del Código Fiscal de la Federación**.\n\nEl documento lo indica literalmente: «conforme al artículo 32-D del Código Fiscal de la Federación, se informa que:».",
+   "tipo": "texto",
+   "uso": {
+    "completion_tokens": 53,
+    "desde_cache": false,
+    "prompt_tokens": 789,
+    "total_tokens": 842
    }
   },
   "64eb9612a97b043988863df0135d6d922c7ee17e78dbe8ec0cf1cc591c86cb80": {
@@ -741,6 +861,30 @@
     "total_tokens": 3555
    }
   },
+  "7f92e3c06a5cb76612f005f88dee600125e211f9f8358a6a467c25de1812e9b3": {
+   "grabado_en": "2026-10-01T20:52:40+00:00",
+   "latencia_ms": 668,
+   "respuesta": "Los cargos indicados en el documento son **Apoderada legal** para María Elena Ruiz Soto y **Representante legal** para Jorge Alberto Treviño Garza.\n\nEsto se sustenta en las firmas: «María Elena Ruiz Soto, Apoderada legal» y «Jorge Alberto Treviño Garza, Representante legal».",
+   "tipo": "texto",
+   "uso": {
+    "completion_tokens": 73,
+    "desde_cache": false,
+    "prompt_tokens": 1519,
+    "total_tokens": 1592
+   }
+  },
+  "82a0a905106abf10f1b707211bf81c6e9f993f4d30c8a08ed79f86dddbec1af8": {
+   "grabado_en": "2026-10-01T20:54:31+00:00",
+   "latencia_ms": 392,
+   "respuesta": "El tiempo de respuesta para un incidente de prioridad crítica es de **15 minutos**.\n\nEsto se sustenta en el texto: «Prioridad Crítica: tiempo de respuesta de 15 minutos; tiempo de solución de 4 horas».",
+   "tipo": "texto",
+   "uso": {
+    "completion_tokens": 50,
+    "desde_cache": false,
+    "prompt_tokens": 1207,
+    "total_tokens": 1257
+   }
+  },
   "85f2789a7a0faa8cc7da758457374964d630981021df68ddf31497c46f07ae22": {
    "grabado_en": "2026-09-30T20:24:36+00:00",
    "latencia_ms": 1297,
@@ -883,6 +1027,18 @@
     "total_tokens": 1980
    }
   },
+  "a1233a6cb49f22df03def6599386c7f426e9d033f208ef4cef65c0fceffba18c": {
+   "grabado_en": "2026-10-01T20:51:40+00:00",
+   "latencia_ms": 491,
+   "respuesta": "**No aparece en el texto disponible.** El documento proporcionado es una Constancia de Situación Fiscal que contiene datos de identificación, domicilio y regímenes, pero no incluye información bancaria.\n\nTe sugiero revisar el **estado de cuenta bancario** o la **constancia de cuenta bancaria** del contribuyente, ya que la CLABE es un dato específico de la relación financiera con la institución bancaria y no forma parte de los elementos estándar de una CSF.",
+   "tipo": "texto",
+   "uso": {
+    "completion_tokens": 95,
+    "desde_cache": false,
+    "prompt_tokens": 859,
+    "total_tokens": 954
+   }
+  },
   "a14442c04b785619e8f02a1bffc342d5c7243fa2142b9a905733cd889fac0cba": {
    "grabado_en": "2026-09-30T20:22:35+00:00",
    "latencia_ms": 1006,
@@ -976,6 +1132,18 @@
     "total_tokens": 2212
    }
   },
+  "ac263b6442b0e57cfbae4ff0a39091aff187686ce26a2c1b246cc7f4d61a5a0b": {
+   "grabado_en": "2026-10-01T20:49:42+00:00",
+   "latencia_ms": 1181,
+   "respuesta": "El RFC del prestador es **SIN150302KL7**.\n\nEste dato se encuentra explícitamente en el encabezado del documento, donde se identifica a la parte contratante: «SERVICIOS INTEGRALES DEL NORTE S.A. DE C.V., con RFC SIN150302KL7, en lo sucesivo EL PRESTADOR».",
+   "tipo": "texto",
+   "uso": {
+    "completion_tokens": 81,
+    "desde_cache": false,
+    "prompt_tokens": 1227,
+    "total_tokens": 1308
+   }
+  },
   "ad17142e3570393f2f654fb797fcede4dbd3f3bde5d5b570393d369592912394": {
    "grabado_en": "2026-09-30T19:55:09+00:00",
    "latencia_ms": 2706,
@@ -1022,6 +1190,18 @@
     "desde_cache": false,
     "prompt_tokens": 2116,
     "total_tokens": 2191
+   }
+  },
+  "b2646a422ab709d32cfa05ce2fe25cae57a3d749e858878eb9009c0ff19a92e3": {
+   "grabado_en": "2026-10-01T20:49:40+00:00",
+   "latencia_ms": 567,
+   "respuesta": "**Sí**, el cliente puede terminar el contrato anticipadamente mediante **aviso por escrito con treinta días naturales de anticipación**, sin responsabilidad para ninguna de las partes.\n\nEsto se sustenta en la cláusula TERCERA, que establece: «Cualquiera de las partes podrá darlo por terminado anticipadamente mediante aviso por escrito con treinta días naturales de anticipación, sin responsabilidad para ninguna de ellas».",
+   "tipo": "texto",
+   "uso": {
+    "completion_tokens": 85,
+    "desde_cache": false,
+    "prompt_tokens": 1291,
+    "total_tokens": 1376
    }
   },
   "b2f0abe3d9a411829487afc0b4477edc4dcf2a188efe26cb9c303ea9ee192887": {
@@ -1150,6 +1330,18 @@
     "total_tokens": 1099
    }
   },
+  "bd3279d9d86e973496f40f4af8661d9d367418e41edaad5acc4c7a6b1594d43e": {
+   "grabado_en": "2026-10-01T20:52:43+00:00",
+   "latencia_ms": 431,
+   "respuesta": "Cada socio tiene **250 acciones**.\n\nEl documento especifica: «Héctor Daniel Quiroga Salas: 250 acciones. Laura Patricia Ibarra Montes: 250 acciones».",
+   "tipo": "texto",
+   "uso": {
+    "completion_tokens": 47,
+    "desde_cache": false,
+    "prompt_tokens": 1336,
+    "total_tokens": 1383
+   }
+  },
   "c1b244c7c6735d99742c3b9f1b0beb5413933f343b905f22c339234e20f08209": {
    "grabado_en": "2026-09-30T19:23:56+00:00",
    "latencia_ms": 531,
@@ -1198,6 +1390,18 @@
     "total_tokens": 1632
    }
   },
+  "c64b624ba1d1dba3221397f17e982281b6c3df913fa3938167a54bee45410da4": {
+   "grabado_en": "2026-10-01T20:55:30+00:00",
+   "latencia_ms": 1565,
+   "respuesta": "**No**, el prestador no puede subcontratar total ni parcialmente los servicios sin la **autorización previa y por escrito** del cliente.\n\nEl documento lo establece explícitamente en la cláusula DÉCIMA SÉPTIMA: «EL PRESTADOR no podrá subcontratar total ni parcialmente los servicios sin la autorización previa y por escrito de EL CLIENTE».",
+   "tipo": "texto",
+   "uso": {
+    "completion_tokens": 77,
+    "desde_cache": false,
+    "prompt_tokens": 1264,
+    "total_tokens": 1341
+   }
+  },
   "c69b42aaede130f0efe0d68a12677da967e3ed7a8edaa06ccac65a81d2fcf9c0": {
    "grabado_en": "2026-09-30T19:00:14+00:00",
    "latencia_ms": 514,
@@ -1208,6 +1412,18 @@
     "desde_cache": false,
     "prompt_tokens": 1883,
     "total_tokens": 1988
+   }
+  },
+  "c7ec99ff66d4cced54ec59f978221237c690cd90acea9acc5d97dcddb969f7aa": {
+   "grabado_en": "2026-10-01T20:49:40+00:00",
+   "latencia_ms": 484,
+   "respuesta": "**No aparece en el texto disponible** ninguna cláusula que establezca una pena convencional por incumplimiento.\n\nEl documento contiene cláusulas sobre objeto, contraprestación, vigencia, confidencialidad y jurisdicción, pero no incluye una cláusula de penalidad. Se recomienda revisar si existe un anexo adicional o una adenda que no esté incluida en los fragmentos proporcionados.",
+   "tipo": "texto",
+   "uso": {
+    "completion_tokens": 81,
+    "desde_cache": false,
+    "prompt_tokens": 1230,
+    "total_tokens": 1311
    }
   },
   "c7f81472a32f8626af8b66ea24fb9a6d408c475afe409047ce5236d2895cf252": {
@@ -1278,6 +1494,30 @@
     "total_tokens": 1127
    }
   },
+  "da071892f8ea05edda0c3f869ac0d733e401197d50185d8007877f3b864b3383": {
+   "grabado_en": "2026-10-01T20:51:43+00:00",
+   "latencia_ms": 700,
+   "respuesta": "**Sí, el documento se considera VIGENTE** según las reglas del sistema, ya que tiene **12 días naturales** de antigüedad, dentro del máximo permitido de 30 días.\n\nEl motor indica: «RCV-04 : VIGENTE. El documento tiene 12 días naturales de antigüedad, dentro del máximo de 30 días (le quedan 18)». No aparece en el texto una fecha de vencimiento explícita («RCV-01 : NO_APLICA. El documento no declara fecha de vencimiento»), por lo que la vigencia se rige por la antigüedad relativa a la fecha de emisión (**18/09/2026**).",
+   "tipo": "texto",
+   "uso": {
+    "completion_tokens": 153,
+    "desde_cache": false,
+    "prompt_tokens": 1054,
+    "total_tokens": 1207
+   }
+  },
+  "da6c278ee534aee3d92fcdeec9e601709cb17a8cd6437b42108719e99cf91194": {
+   "grabado_en": "2026-10-01T20:54:31+00:00",
+   "latencia_ms": 578,
+   "respuesta": "Si la disponibilidad de los servidores baja del **99.5 %**, se aplica una deductiva del **5 %** si el valor queda **hasta 99.0 %**, o del **10 %** si es **menor a 99.0 %**.\n\nEl documento lo establece literalmente: «Disponibilidad de los servidores menor a 99.5 % y hasta 99.0 %: cinco por ciento» y «Disponibilidad de los servidores menor a 99.0 %: diez por ciento».",
+   "tipo": "texto",
+   "uso": {
+    "completion_tokens": 114,
+    "desde_cache": false,
+    "prompt_tokens": 1245,
+    "total_tokens": 1359
+   }
+  },
   "db43d8d60bab9a8c1d0a97d15c21329cea5496c55c2782e9cc860c590b8ab32c": {
    "grabado_en": "2026-09-30T20:18:24+00:00",
    "latencia_ms": 1014,
@@ -1336,6 +1576,18 @@
     "desde_cache": false,
     "prompt_tokens": 1175,
     "total_tokens": 1255
+   }
+  },
+  "e2e404ecb17d7958cf224f921f95c66ee58814b47a32a3fe46a842da7f53e45f": {
+   "grabado_en": "2026-10-01T20:53:40+00:00",
+   "latencia_ms": 513,
+   "respuesta": "El domicilio de la sociedad es **Chihuahua, Chihuahua**.\n\nEl documento lo indica en el Artículo Cuarto: «El domicilio de la sociedad será la ciudad de Chihuahua, Chihuahua».",
+   "tipo": "texto",
+   "uso": {
+    "completion_tokens": 44,
+    "desde_cache": false,
+    "prompt_tokens": 1364,
+    "total_tokens": 1408
    }
   },
   "e95fc4f793a7790a6c77a15fcdd480d15de1a85e286269f7d1b081439e1716d9": {
@@ -1481,6 +1733,18 @@
     "total_tokens": 2510
    }
   },
+  "f7b1cb85f0eb96e114cdb14f09bd5bb60ad0b4f6b8e3589737ddc412cd9385a6": {
+   "grabado_en": "2026-10-01T20:51:40+00:00",
+   "latencia_ms": 381,
+   "respuesta": "El folio de la opinión es **26NA4471902**.\n\nEste dato se encuentra explícitamente en el documento: «Folio: 26NA4471902».",
+   "tipo": "texto",
+   "uso": {
+    "completion_tokens": 48,
+    "desde_cache": false,
+    "prompt_tokens": 787,
+    "total_tokens": 835
+   }
+  },
   "f81ee69a5ee5ef7a4b179e0e038f132fc49af13ef3be0121d0f50a325238abaf": {
    "grabado_en": "2026-09-30T20:21:33+00:00",
    "latencia_ms": 926,
@@ -1493,6 +1757,18 @@
     "total_tokens": 1552
    }
   },
+  "fd5dd3439a5732e74e6a8d38971174340325959677f653454c5f66f9c4d0446d": {
+   "grabado_en": "2026-10-01T20:50:42+00:00",
+   "latencia_ms": 985,
+   "respuesta": "El poder se otorgó ante el **Lic. Ernesto Valdivia Cortés**, identificado como **Notario Público número 27** del Distrito Judicial Morelos.\n\nEl documento lo confirma literalmente: «ante mí, Lic. Ernesto Valdivia Cortés, Notario Público número 27 de este Distrito Judicial Morelos».",
+   "tipo": "texto",
+   "uso": {
+    "completion_tokens": 71,
+    "desde_cache": false,
+    "prompt_tokens": 866,
+    "total_tokens": 937
+   }
+  },
   "fdd114deacbb9e904fd8884de706b403f1680cffae459216083700b361b74801": {
    "grabado_en": "2026-09-30T20:16:21+00:00",
    "latencia_ms": 817,
@@ -1503,6 +1779,18 @@
     "desde_cache": false,
     "prompt_tokens": 1721,
     "total_tokens": 1891
+   }
+  },
+  "ffbca261604bd0fdccb6a1058f8dde5432c3b89aadd69dadf4d7b64316fb8aa5": {
+   "grabado_en": "2026-10-01T20:52:41+00:00",
+   "latencia_ms": 469,
+   "respuesta": "Los socios son **Héctor Daniel Quiroga Salas** y **Laura Patricia Ibarra Montes**.\n\nEl documento indica: «comparecen los señores Héctor Daniel Quiroga Salas y Laura Patricia Ibarra Montes» y detalla la suscripción de acciones: «Héctor Daniel Quiroga Salas: 250 acciones. Laura Patricia Ibarra Montes: 250 acciones».",
+   "tipo": "texto",
+   "uso": {
+    "completion_tokens": 90,
+    "desde_cache": false,
+    "prompt_tokens": 1224,
+    "total_tokens": 1314
    }
   }
  },
