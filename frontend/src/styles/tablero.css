@@ -1,4 +1,4 @@
-/* Tablero operativo (RF-22): vencimientos, pendientes y evolución */
+/* Listas de Reportes (RF-22): hallazgos por categoría y últimos cambios del semáforo */
 .tablero-lista {
   display: flex;
   flex-direction: column;
@@ -60,42 +60,9 @@
   border-top: var(--border-subtle);
 }
 
-.tablero-grupo-titulo {
-  font-size: var(--fs-small);
-  color: var(--text-primary);
-}
-
 .tablero-chips {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
 }
 
-.tablero-cifras {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--s-2);
-}
-
-.tablero-cifra {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: var(--s-2);
-  border: var(--border-subtle);
-  border-radius: var(--r-sm);
-}
-
-.tablero-cifra-valor {
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.tablero-cifra-etiqueta {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: var(--fs-micro);
-  color: var(--text-muted);
-}

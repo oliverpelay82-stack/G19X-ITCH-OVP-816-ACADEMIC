@@ -70,40 +70,6 @@
   color: var(--text-muted);
 }
 
-/* Semáforo de expedientes: punto y conteo con su etiqueta, sin cápsula,
-   para que quepa en el ancho de una tarjeta. */
-.metric-estados {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0 var(--s-3);
-  font-size: var(--fs-micro);
-  line-height: 1.5;
-}
-
-.metric-estado {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  white-space: nowrap;
-  color: var(--text-secondary);
-}
-
-.metric-estado strong {
-  font-weight: 600;
-}
-
-.metric-estado--ok strong {
-  color: var(--ok);
-}
-
-.metric-estado--warn strong {
-  color: var(--warn);
-}
-
-.metric-estado--bad strong {
-  color: var(--bad);
-}
-
 .metric-bar {
   display: block;
   height: 3px;

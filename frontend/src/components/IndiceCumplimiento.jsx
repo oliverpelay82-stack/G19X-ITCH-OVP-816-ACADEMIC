@@ -81,15 +81,16 @@ export default function IndiceCumplimiento({ indice, presentes, obligatorios }) 
       </p>
       {indice.bloqueado && (
         <div className="notice notice--bad indice-bloqueo">
-          <p className="indice-bloqueo-titulo">
-            <Lock size={12} strokeWidth={1.75} aria-hidden="true" /> Bloqueado por una regla crítica: el semáforo es
-            No conforme sin importar el porcentaje.
+          {/* Qué bloquea y qué hacer ya está en los motivos del semáforo: aquí solo se dice que bloquea. */}
+          <p className="indice-bloqueo-titulo" title={indice.bloqueos.join(' ')}>
+            <Lock size={12} strokeWidth={1.75} aria-hidden="true" />
+            <span>
+              {indice.bloqueos.length === 1
+                ? 'Bloqueado por una regla crítica'
+                : `Bloqueado por ${indice.bloqueos.length} reglas críticas`}
+              : el semáforo es No conforme sin importar el porcentaje. El detalle está en los motivos.
+            </span>
           </p>
-          <ul>
-            {indice.bloqueos.map((b) => (
-              <li key={b}>{b}</li>
-            ))}
-          </ul>
         </div>
       )}
     </section>

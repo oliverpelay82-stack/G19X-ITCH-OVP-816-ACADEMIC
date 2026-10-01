@@ -3,6 +3,7 @@ import { Building2 } from 'lucide-react'
 import { IconoBoveda, IconoExpediente, IconoSemaforo } from './IconosMotor.jsx'
 import { Skeleton } from './Skeleton.jsx'
 import { Card } from './ui/index.js'
+import { TIPOS_EXPEDIENTE } from '../constants.js'
 import { formatIndice, promedioIndice } from '../utils/indice.js'
 import { reducirMovimiento } from '../utils/movimiento.js'
 
@@ -62,11 +63,11 @@ export default function MetricsCards({ titulares, expedientes, documentos, loadi
     return {
       morales,
       fisicas: titulares.length - morales,
-      semaforo: [
-        { id: 'ok', label: ['conforme', 'conformes'], n: contar(expedientes, (e) => e.estado_cumplimiento === 'CONFORME') },
-        { id: 'warn', label: ['en revisión', 'en revisión'], n: contar(expedientes, (e) => e.estado_cumplimiento === 'EN_REVISION') },
-        { id: 'bad', label: ['no conforme', 'no conformes'], n: contar(expedientes, (e) => e.estado_cumplimiento === 'NO_CONFORME') },
-      ],
+      // El semáforo ya está en los filtros de Expedientes y en la gráfica de Reportes: aquí, el reparto por tipo.
+      porTipo: TIPOS_EXPEDIENTE.map((t) => ({
+        label: t.label.toLowerCase(),
+        n: contar(expedientes, (e) => e.tipo_expediente === t.value),
+      })).filter((t) => t.n > 0),
       bytes,
       completitud,
       indice: promedioIndice(expedientes),
@@ -94,14 +95,8 @@ export default function MetricsCards({ titulares, expedientes, documentos, loadi
       label: 'Expedientes',
       valor: <Cifra valor={expedientes.length} />,
       pie: (
-        <span className="metric-estados" aria-label="Semáforo de expedientes">
-          {datos.semaforo.map((s) => (
-            <span key={s.id} className={`metric-estado metric-estado--${s.id}`}>
-              <span className={`status-dot status-dot--${s.id}`} aria-hidden="true" />
-              <strong className="tabular">{s.n}</strong>
-              {s.label[s.n === 1 ? 0 : 1]}
-            </span>
-          ))}
+        <span className="metric-foot">
+          {datos.porTipo.length ? datos.porTipo.map((t) => `${t.n} ${t.label}`).join(' · ') : 'Sin expedientes'}
         </span>
       ),
     },

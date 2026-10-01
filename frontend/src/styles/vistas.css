@@ -312,6 +312,11 @@
   top: calc(var(--header-h) + var(--s-4));
 }
 
+/* Un bloque cuyo contenido no aplica (p. ej. nada que auditar) no deja una tarjeta vacía. */
+.exp-lateral-bloque:empty {
+  display: none;
+}
+
 .exp-lateral-bloque {
   display: flex;
   flex-direction: column;

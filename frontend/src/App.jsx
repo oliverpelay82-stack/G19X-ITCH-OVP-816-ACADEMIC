@@ -5,6 +5,7 @@ import MetricsCards from './components/MetricsCards.jsx'
 import ExpedientesTab from './components/ExpedientesTab.jsx'
 import { SkeletonRows } from './components/Skeleton.jsx'
 import PaletaComandos from './components/PaletaComandos.jsx'
+import ErrorVista from './components/ErrorVista.jsx'
 import useToast from './hooks/useToast.js'
 import useTheme from './hooks/useTheme.js'
 import useRuta from './hooks/useRuta.js'
@@ -320,6 +321,7 @@ export default function App() {
           )}
 
           <div className="tab-region" key={tabActiva}>
+            <ErrorVista key={tabActiva}>
             <Suspense fallback={<CargandoVista />}>
             {tabActiva === 'titulares' && (
               <TitularesTab
@@ -381,6 +383,7 @@ export default function App() {
               />
             )}
             </Suspense>
+            </ErrorVista>
           </div>
         </main>
         {paletaAbierta && (

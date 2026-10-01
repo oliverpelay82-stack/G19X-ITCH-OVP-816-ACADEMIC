@@ -153,14 +153,9 @@
   gap: 6px;
 }
 
-.indice-bloqueo ul {
-  margin: var(--s-1) 0 0;
-  padding-left: var(--s-5);
-}
-
 .indice-bloqueo-titulo {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   gap: 6px;
   font-weight: 600;
 }
@@ -579,4 +574,12 @@
   margin: 0 0 var(--s-2);
   font-size: var(--fs-small);
   color: var(--text-muted);
+}
+
+/* Resumen de la bandeja; con un solo expediente lo nombra aquí con su acceso. */
+.bandeja-resumen {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2) var(--s-3);
 }

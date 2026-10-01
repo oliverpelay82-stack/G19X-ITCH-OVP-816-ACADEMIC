@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react'
-import { BellOff, SearchX } from 'lucide-react'
+import { ArrowUpRight, BellOff, SearchX } from 'lucide-react'
 import { SkeletonCards } from './Skeleton.jsx'
 import { AlertaItem } from './Alertas.jsx'
+import FolioExpediente from './FolioExpediente.jsx'
 import useDebounce from '../hooks/useDebounce.js'
 import { Button, Card, EmptyState, SearchBox, Segmented, Select } from './ui/index.js'
 import {
@@ -77,6 +78,7 @@ export default function AlertasTab({ expedientes, loading, onAbrirExpediente }) 
     })
   }, [alertas, consulta, filtroSeveridad, filtroCodigo, filtroTipo])
   const nExpedientes = new Set(filtradas.map((a) => a.expediente.id)).size
+  const unico = nExpedientes === 1 ? filtradas[0].expediente : null
   // Grupos de la más grave a la menos grave; una severidad fuera del catálogo va al final.
   const grupos = SEVERIDADES.map((s) => ({ sev: s, items: filtradas.filter((a) => a.severidad === s) }))
     .concat([{ sev: null, items: filtradas.filter((a) => !SEVERIDADES.includes(a.severidad)) }])
@@ -142,11 +144,23 @@ export default function AlertasTab({ expedientes, loading, onAbrirExpediente }) 
 
       {!loading && filtradas.length > 0 && (
         <>
-          <p className="field-hint">
-            {filtradas.length} {filtradas.length === 1 ? 'alerta' : 'alertas'} en {nExpedientes}{' '}
-            {nExpedientes === 1 ? 'expediente' : 'expedientes'}, de la más grave a la menos grave.
-            {filtroTipo !== 'TODOS' && ` Tipo: ${TIPO_EXPEDIENTE_LABEL[filtroTipo]}.`}
-          </p>
+          <div className="bandeja-resumen">
+            <p className="field-hint">
+              {filtradas.length} {filtradas.length === 1 ? 'alerta' : 'alertas'} en {nExpedientes}{' '}
+              {nExpedientes === 1 ? 'expediente' : 'expedientes'}, de la más grave a la menos grave.
+              {filtroTipo !== 'TODOS' && ` Tipo: ${TIPO_EXPEDIENTE_LABEL[filtroTipo]}.`}
+            </p>
+            {/* Todas del mismo expediente: se nombra una vez aquí en lugar de en cada alerta. */}
+            {unico && (
+              <>
+                <FolioExpediente expediente={unico.completo} className="mono cell-muted" />
+                <span className="field-hint">{unico.razon_social}</span>
+                <Button compacto icono={ArrowUpRight} onClick={() => onAbrirExpediente?.(unico.id)}>
+                  Abrir expediente
+                </Button>
+              </>
+            )}
+          </div>
           <div className="bandeja-grupos">
             {grupos.map(({ sev, items }) => {
               const meta = getSeveridadMeta(sev)
@@ -162,7 +176,7 @@ export default function AlertasTab({ expedientes, loading, onAbrirExpediente }) 
                       <AlertaItem
                         key={`${a.expediente.id}-${a.codigo}-${a.tipo_documento}-${i}`}
                         alerta={a}
-                        expediente={a.expediente}
+                        expediente={unico ? undefined : a.expediente}
                         onAbrirExpediente={onAbrirExpediente}
                       />
                     ))}

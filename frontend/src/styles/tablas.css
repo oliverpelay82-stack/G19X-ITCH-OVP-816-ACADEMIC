@@ -439,6 +439,12 @@
 /* Progreso */
 /* Columna de la fila del expediente: índice de cumplimiento (C6) y, debajo,
    los documentos obligatorios presentes. */
+/* Desplegado, el índice está en el bloque lateral del detalle: la fila no lo repite
+   (se oculta sin moverla, para que el resto de la fila no salte). */
+.exp-card.is-open .exp-indice {
+  visibility: hidden;
+}
+
 .exp-indice {
   display: flex;
   flex-direction: column;

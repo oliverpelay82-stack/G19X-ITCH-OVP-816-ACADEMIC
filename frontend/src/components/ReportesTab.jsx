@@ -4,7 +4,7 @@ import ExportarReporte from './ExportarReporte.jsx'
 import MetricsCards from './MetricsCards.jsx'
 import { EncabezadoOrdenable } from './OrdenTabla.jsx'
 import useOrden, { RANGO_ESTADO } from '../hooks/useOrden.js'
-import TableroOperativo from './TableroOperativo.jsx'
+import HallazgosCategoria from './HallazgosCategoria.jsx'
 import { SkeletonRows } from './Skeleton.jsx'
 import useDebounce from '../hooks/useDebounce.js'
 import { Badge, Button, Card, EmptyRow, SearchBox, Select, Tag } from './ui/index.js'
@@ -13,24 +13,10 @@ import CambiosSemaforo from './graficas/CambiosSemaforo.jsx'
 import HallazgosPorArea from './graficas/HallazgosPorArea.jsx'
 import Vencimientos from './graficas/Vencimientos.jsx'
 import { formatIndice, indiceDe } from '../utils/indice.js'
-import { ALERTA_META, getEstadoBadge, TIPO_EXPEDIENTE_LABEL, TIPOS_EXPEDIENTE } from '../constants.js'
+import { getEstadoBadge, TIPO_EXPEDIENTE_LABEL, TIPOS_EXPEDIENTE } from '../constants.js'
 import FolioExpediente from './FolioExpediente.jsx'
 
 const COLUMNAS = 6
-
-/** Barra horizontal con su etiqueta y cifra (hallazgos por categoría). */
-function Barra({ label, n, total }) {
-  const pct = total ? Math.round((n / total) * 100) : 0
-  return (
-    <li className="dist-row">
-      <span className="dist-label">{label}</span>
-      <span className="dist-track" aria-hidden="true">
-        <span className="dist-fill" style={{ width: `${pct}%` }} />
-      </span>
-      <span className="dist-value tabular">{n}</span>
-    </li>
-  )
-}
 
 /** Sección de la página con su título y, opcionalmente, una acción a la derecha. */
 function Seccion({ titulo, accion, children }) {
@@ -47,7 +33,7 @@ function Seccion({ titulo, accion, children }) {
 
 /**
  * Reportes y panel de cumplimiento (Módulo 6): exportación del reporte global
- * arriba, métricas, hallazgos (RF-22), seguimiento del analista y el dictamen
+ * arriba, métricas, hallazgos por área y por categoría (RF-22), vencimientos y tendencia, y el dictamen
  * de cada expediente en PDF y Excel (RF-23, RF-24; HU-26, HU-28, HU-29).
  */
 export default function ReportesTab({
@@ -62,12 +48,7 @@ export default function ReportesTab({
   const [busqueda, setBusqueda] = useState('')
   const consulta = useDebounce(busqueda, 220)
 
-  const ind = useMemo(() => {
-    const alertas = expedientes.flatMap((e) => e.evaluacion?.alertas || [])
-    const porCodigo = new Map()
-    for (const a of alertas) porCodigo.set(a.codigo, (porCodigo.get(a.codigo) || 0) + 1)
-    return { alertas, porCodigo: [...porCodigo.entries()].sort((a, b) => b[1] - a[1]) }
-  }, [expedientes])
+  const totalAlertas = useMemo(() => expedientes.reduce((n, e) => n + (e.evaluacion?.alertas?.length || 0), 0), [expedientes])
 
   const filtrados = useMemo(() => {
     const q = consulta.trim().toLowerCase()
@@ -120,31 +101,19 @@ export default function ReportesTab({
       {/* Fase A del plan visual: el semáforo, los hallazgos por área y severidad
           (RF-22) y, debajo, lo que vence y la tendencia. La categoría sigue como
           lista: son clases sin orden, más de las que un color distingue. */}
-      <Seccion titulo={`Hallazgos · ${ind.alertas.length}`}>
+      <Seccion titulo={`Hallazgos · ${totalAlertas}`}>
         <div className="report-grid">
           <AnilloSemaforo expedientes={expedientes} />
           <HallazgosPorArea expedientes={expedientes} />
-          <Card as="article" className="report-card">
-            <p className="eyebrow">Por categoría</p>
-            <ul className="dist-list">
-              {ind.porCodigo.length === 0 && <li className="field-hint">Sin hallazgos vigentes.</li>}
-              {ind.porCodigo.map(([c, n]) => (
-                <Barra key={c} label={ALERTA_META[c]?.label || c} n={n} total={ind.alertas.length} />
-              ))}
-            </ul>
-          </Card>
+          <HallazgosCategoria expedientes={expedientes} onAbrirExpediente={onAbrirExpediente} />
         </div>
       </Seccion>
 
       <Seccion titulo="Vencimientos y tendencia">
         <div className="report-grid report-grid--dos">
           <Vencimientos expedientes={expedientes} onAbrirExpediente={onAbrirExpediente} />
-          <CambiosSemaforo />
+          <CambiosSemaforo expedientes={expedientes} onAbrirExpediente={onAbrirExpediente} />
         </div>
-      </Seccion>
-
-      <Seccion titulo="Seguimiento del analista">
-        <TableroOperativo expedientes={expedientes} onAbrirExpediente={onAbrirExpediente} />
       </Seccion>
 
       <Seccion

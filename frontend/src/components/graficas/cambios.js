@@ -17,6 +17,16 @@ export const diaCorto = (clave) => {
   return new Date(a, m - 1, d).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' }).replace('.', '')
 }
 
+/**
+ * El evento cambió de verdad el semáforo: dos estados válidos y distintos, y no
+ * es la apertura del expediente. La gráfica y la lista de últimos cambios usan
+ * esta misma regla, para que nunca se contradigan.
+ */
+export function esCambioDeTendencia(evento) {
+  const { estado_anterior: antes, estado_nuevo: despues, causa } = evento.detalle || {}
+  return !SIN_TENDENCIA.has(causa) && antes in RANGO && despues in RANGO && antes !== despues
+}
+
 /** Cambios de semáforo por día: hacia mejor arriba, hacia peor abajo (RN-02, bitácora RF-27). */
 export function agruparCambios(eventos, hoy = new Date()) {
   const dias = []
@@ -27,8 +37,8 @@ export function agruparCambios(eventos, hoy = new Date()) {
   }
   const porDia = new Map(dias.map((d) => [d.dia, d]))
   for (const e of eventos) {
-    const { estado_anterior: antes, estado_nuevo: despues, causa } = e.detalle || {}
-    if (SIN_TENDENCIA.has(causa) || !(antes in RANGO) || !(despues in RANGO) || antes === despues) continue
+    if (!esCambioDeTendencia(e)) continue
+    const { estado_anterior: antes, estado_nuevo: despues } = e.detalle
     const fila = porDia.get(String(e.creado_en).slice(0, 10))
     if (!fila) continue
     if (RANGO[despues] > RANGO[antes]) fila.mejoras += 1
