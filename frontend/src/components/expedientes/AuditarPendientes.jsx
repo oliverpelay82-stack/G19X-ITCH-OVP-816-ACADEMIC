@@ -47,7 +47,7 @@ export function AuditarPendientes({ exp, iaOnline, onTerminado }) {
         marcar(d.id, { estado: 'hecho', dictamen: r?.estatus_preliminar })
       } catch (err) {
         fallidos += 1
-        marcar(d.id, { estado: 'error', detalle: err?.message || 'Error del ai-service' })
+        marcar(d.id, { estado: 'error', detalle: err?.message || 'Error del servicio de análisis con IA' })
       }
     }
     let despues = null
@@ -120,7 +120,7 @@ export function AuditarPendientes({ exp, iaOnline, onTerminado }) {
           icono={Sparkles}
           onClick={auditar}
           disabled={enCurso || !iaOnline}
-          title={iaOnline ? undefined : 'El ai-service (:8003) no responde'}
+          title={iaOnline ? undefined : 'El servicio de análisis con IA no responde'}
         >
           Auditar pendientes
         </Button>

@@ -50,6 +50,22 @@
   white-space: pre-wrap;
 }
 
+/* Pie de la respuesta: lectura parcial y procedencia en un solo renglón. */
+.bubble-pie {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2);
+}
+
+.bubble-pie > .badge-row {
+  display: contents;
+}
+
+.bubble-pie .inference-meta {
+  align-self: center;
+}
+
 .bubble--error {
   align-self: flex-start;
   border: 1px solid var(--bad-border);
@@ -137,7 +153,7 @@
 .typing {
   display: inline-flex;
   flex-direction: row;
-  gap: 4px;
+  gap: var(--s-1);
   padding: var(--s-3);
 }
 

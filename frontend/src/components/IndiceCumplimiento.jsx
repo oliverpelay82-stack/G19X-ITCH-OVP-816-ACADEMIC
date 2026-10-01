@@ -1,4 +1,4 @@
-import { Lock } from 'lucide-react'
+import { ListChecks, Lock } from 'lucide-react'
 import { Badge } from './ui/index.js'
 import { TIPO_DOCUMENTO_LABEL } from '../constants.js'
 import { formatIndice } from '../utils/indice.js'
@@ -101,7 +101,11 @@ export function ReglasEvaluadas({ indice }) {
   if (!indice?.reglas?.length) return null
   return (
     <details className="indice-detalle">
-          <summary className="eyebrow">Reglas evaluadas para el índice · {indice.reglas.length}</summary>
+          <summary className="eyebrow eyebrow--icon">
+            <ListChecks size={12} aria-hidden="true" />
+            Reglas evaluadas para el índice
+            <span className="tabular cell-muted"> · {indice.reglas.length}</span>
+          </summary>
           <p className="field-hint">
             Cada regla vale lo mismo. Lo pendiente cuenta hasta que se audita o se ratifica; al auditar un documento
             pendiente se suman sus reglas de contenido, así que el índice puede bajar.

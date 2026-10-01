@@ -25,7 +25,7 @@ function tonoServicio(estado) {
   return 'ok'
 }
 
-/** "qwen/qwen3.8-27b" → "qwen3.8-27b": el proveedor ya lo dice la etiqueta. */
+/** "qwen/qwen3.8-27b" → "qwen3.8-27b"; el proveedor va en el tooltip (RNF-08: no en la etiqueta). */
 const modeloCorto = (modelo) => (modelo ? modelo.split('/').pop() : null)
 
 /** Detalle del tooltip: lo que antes ocupaba el panel del motor de IA. */

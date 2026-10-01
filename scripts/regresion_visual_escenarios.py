@@ -20,14 +20,20 @@ Nada de lo que se hace aquí escribe en la base ni consume Groq:
 - La verificación de la cadena y el cotejo de representación se responden
   con datos fijos (CADENA_*, _cotejo): la base local puede no tener eventos
   sellados ni contratos auditados, y el conteo de sellos crece entre corridas.
+- Como en una auditoría real, el dictamen simulado se presenta como el que
+  quedó guardado: lleva el id del dictamen vigente del documento (solo se lee
+  de la base), y el panel lo reconoce como el mismo que acaba de obtener.
 - performance.now se fija para que las duraciones del stepper y del chat
   sean deterministas.
 """
 import json
 from pathlib import Path
+from urllib.request import urlopen
 
 from PIL import Image
 from playwright.sync_api import Browser, Page
+
+CORE_URL = "http://127.0.0.1:8001"
 
 PREPARAR = {
     "extraccion_nivel_3": {"metodo_extraccion": "OCR", "total_paginas": 14, "paginas_omitidas_ocr": 0},
@@ -233,6 +239,20 @@ def _responder(datos: dict):
     return lambda ruta: ruta.fulfill(status=200, content_type="application/json", body=json.dumps(datos))
 
 
+def _auditoria_guardada(ruta) -> None:
+    """DICTAMEN con el id del dictamen vigente del documento en `persistencia`, sin escribir en la base."""
+    datos = dict(DICTAMEN)
+    documento_id = (ruta.request.post_data_json or {}).get("documento_id")
+    try:
+        with urlopen(f"{CORE_URL}/api/v1/dictamenes?documento_id={documento_id}", timeout=5) as respuesta:
+            dictamenes = json.load(respuesta)
+        if dictamenes:
+            datos["persistencia"] = {"guardado": True, "dictamen": {"id": dictamenes[0]["id"]}}
+    except (OSError, ValueError, KeyError):
+        pass
+    ruta.fulfill(status=200, content_type="application/json", body=json.dumps(datos))
+
+
 def _archivos_ingesta(carpeta: Path) -> tuple[Path, Path]:
     """Un PDF mínimo con firma válida y un archivo sin firma reconocida (Nivel 1, en el navegador)."""
     carpeta.mkdir(parents=True, exist_ok=True)
@@ -252,7 +272,7 @@ def capturar_escenarios(navegador: Browser, carpeta: Path, ancho: int, alto: int
     pagina: Page = navegador.new_page(viewport={"width": ancho, "height": alto})
     pagina.add_init_script("performance.now = () => 1000")
     pagina.route("**/api/v1/ai/documentos/*/preparar", _responder(PREPARAR))
-    pagina.route("**/api/v1/ai/analisis-semantico", _responder(DICTAMEN))
+    pagina.route("**/api/v1/ai/analisis-semantico", _auditoria_guardada)
     pagina.route("**/api/v1/ai/chat-documento", _responder(CHAT))
     cadena = {"respuesta": CADENA_INTEGRA}
     pagina.route("**/api/v1/bitacora/verificar-cadena", lambda ruta: _responder(cadena["respuesta"])(ruta))
@@ -279,7 +299,8 @@ def capturar_escenarios(navegador: Browser, carpeta: Path, ancho: int, alto: int
     # Ratificación humana (Nivel 5), sin enviarla: vacía, inválida y válida.
     pagina.locator("table tbody tr").first.locator("button").last.click()
     h._esperar(pagina, 2000)
-    resolver = pagina.locator("button", has_text="Resolver revisión humana")
+    # Se abre desde el encabezado de veredicto del modal, el único acceso a la ratificación.
+    resolver = pagina.locator(".doc-veredicto button", has_text="Ratificar dictamen")
     if resolver.count():
         resolver.click()
         pagina.wait_for_timeout(300)
@@ -296,7 +317,8 @@ def capturar_escenarios(navegador: Browser, carpeta: Path, ancho: int, alto: int
         print(f"  {prefijo}: el primer documento no tiene ratificación pendiente; se omite ese escenario")
 
     # Panel de inteligencia documental tras una auditoría y un turno de chat simulados.
-    pagina.locator("button", has_text="Auditar documento").click()
+    # El botón dice «Auditar documento» o, si ya hay dictamen, «Volver a auditar».
+    pagina.locator(".modal .ai-cta button").click()
     h._esperar(pagina, 1500)
     pagina.locator(".modal").click(position={"x": 5, "y": 5})
     h._capturar_modal(pagina, carpeta / f"{prefijo}_panel_auditoria.png")
@@ -463,7 +485,7 @@ def _escenarios_representacion(navegador: Browser, carpeta: Path, ancho: int, al
         estado["cotejo"] = cotejo
         pagina.locator("table tbody tr").first.locator("button").last.click()
         h._esperar(pagina, 2000)
-        bloque = pagina.locator(".modal .ia-bloque", has_text="Representación legal")
+        bloque = pagina.locator(".modal .ia-apartado", has_text="Representación legal")
         _capturar_elemento(pagina, bloque, carpeta / f"{prefijo}_cotejo_{cotejo.lower()}.png")
         h._cerrar_modal(pagina)
     pagina.close()

@@ -259,8 +259,8 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
         <Card>
           <EmptyState
             icon={ServerOff}
-            titulo="Microservicio de reglas (:8002) fuera de línea"
-            descripcion="El rules-service no responde: no es posible consultar, evaluar ni modificar el catálogo normativo. Empresas, Expedientes y Bóveda siguen operando gracias a la arquitectura de microservicios desacoplados."
+            titulo="Catálogo de reglas fuera de línea"
+            descripcion="El servicio del catálogo no responde: no es posible consultar, evaluar ni modificar las reglas. Empresas, Expedientes y Bóveda siguen operando."
           />
         </Card>
       </div>
@@ -318,16 +318,19 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
               <col style={{ width: '17%' }} />
               <col style={{ width: '8%' }} />
             </colgroup>
-            <thead>
-              <tr>
-                <th>Código</th>
-                <th>Regla</th>
-                <th>Severidad</th>
-                <th>Alcance</th>
-                <th>Acción</th>
-                <th className="col-right">Activa</th>
-              </tr>
-            </thead>
+            {/* Con todas las familias plegadas no hay columnas que titular. */}
+            {(loading || porFamilia.some((g) => familiaAbierta(g.familia))) && (
+              <thead>
+                <tr>
+                  <th>Código</th>
+                  <th>Regla</th>
+                  <th>Severidad</th>
+                  <th>Alcance</th>
+                  <th>Acción</th>
+                  <th className="col-right">Activa</th>
+                </tr>
+              </thead>
+            )}
             <tbody>
               {loading && <SkeletonRows rows={6} cols={COLUMNAS} />}
 

@@ -213,14 +213,24 @@ export default function ExpedientesTab({
             </option>
           ))}
         </Select>
-        <label className="date-inline">
-          <span>Apertura desde</span>
-          <input type="date" value={desde} max={hasta || undefined} onChange={(e) => setDesde(e.target.value)} />
-        </label>
-        <label className="date-inline">
-          <span>hasta</span>
-          <input type="date" value={hasta} min={desde || undefined} onChange={(e) => setHasta(e.target.value)} />
-        </label>
+        <div className="date-range" role="group" aria-label="Fecha de apertura">
+          <span>Apertura</span>
+          <input
+            type="date"
+            aria-label="Apertura desde"
+            value={desde}
+            max={hasta || undefined}
+            onChange={(e) => setDesde(e.target.value)}
+          />
+          <span aria-hidden="true">–</span>
+          <input
+            type="date"
+            aria-label="Apertura hasta"
+            value={hasta}
+            min={desde || undefined}
+            onChange={(e) => setHasta(e.target.value)}
+          />
+        </div>
         {hayFiltros && (
           <Button
             compacto
@@ -385,7 +395,7 @@ export default function ExpedientesTab({
               />
             </Field>
 
-            <p className="field-hint">El folio del expediente lo genera el core-service (:8001) al momento del alta.</p>
+            <p className="field-hint">El folio del expediente se genera automáticamente al crearlo.</p>
 
             {error && <p className="form-error">{error}</p>}
 

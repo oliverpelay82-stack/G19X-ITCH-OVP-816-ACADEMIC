@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ArrowUpRight, CalendarCheck, CalendarClock, ClipboardCheck, TrendingUp } from 'lucide-react'
-import { Card, EmptyState } from './ui/index.js'
+import { ArrowUpRight, CalendarClock, ClipboardCheck, TrendingUp } from 'lucide-react'
+import { Card } from './ui/index.js'
 import { getBitacora } from '../services/api.js'
 import { ALERTA_META, getEstadoBadge, TIPO_DOCUMENTO_LABEL } from '../constants.js'
 import { formatFecha } from '../utils/format.js'
@@ -37,12 +37,7 @@ function ProximosVencimientos({ expedientes, onAbrirExpediente }) {
         Vencimientos · {lista.length}
       </p>
       {lista.length === 0 ? (
-        <EmptyState
-          className="empty-state--tarjeta"
-          icon={CalendarCheck}
-          titulo="Sin vencimientos"
-          descripcion="Ningún documento vencido ni próximo a vencer."
-        />
+        <p className="field-hint">Ningún documento vencido ni próximo a vencer.</p>
       ) : (
         <ul className="tablero-lista">
           {lista.slice(0, MAX_FILAS).map((d) => {
@@ -89,12 +84,7 @@ function PendientesAnalista({ expedientes, onAbrirExpediente }) {
         Pendientes del analista · {total}
       </p>
       {total === 0 ? (
-        <EmptyState
-          className="empty-state--tarjeta"
-          icon={ClipboardCheck}
-          titulo="Nada pendiente"
-          descripcion="Todos los dictámenes están resueltos."
-        />
+        <p className="field-hint">Nada pendiente: todos los dictámenes están resueltos.</p>
       ) : (
         <ul className="tablero-lista">
           {grupos
@@ -203,16 +193,17 @@ function EvolucionSemaforo({ expedientes, onAbrirExpediente }) {
 }
 
 /**
- * Segunda fila del tablero (RF-22, HU-26): lo que requiere atención. Todo se
- * calcula con las mismas evaluaciones que muestra el semáforo, salvo la
- * evolución, que viene de la bitácora. Cada fila abre su expediente.
+ * Seguimiento del analista (RF-22, HU-26): primero lo que espera su acción,
+ * después la evolución del semáforo y los vencimientos. Todo se calcula con
+ * las mismas evaluaciones que muestra el semáforo, salvo la evolución, que
+ * viene de la bitácora. Cada fila abre su expediente.
  */
 export default function TableroOperativo({ expedientes, onAbrirExpediente }) {
   return (
-    <section className="report-grid" aria-label="Atención requerida">
-      <ProximosVencimientos expedientes={expedientes} onAbrirExpediente={onAbrirExpediente} />
+    <div className="report-grid">
       <PendientesAnalista expedientes={expedientes} onAbrirExpediente={onAbrirExpediente} />
       <EvolucionSemaforo expedientes={expedientes} onAbrirExpediente={onAbrirExpediente} />
-    </section>
+      <ProximosVencimientos expedientes={expedientes} onAbrirExpediente={onAbrirExpediente} />
+    </div>
   )
 }

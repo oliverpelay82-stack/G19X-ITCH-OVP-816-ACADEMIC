@@ -171,6 +171,7 @@ function InspectorDocumento({ doc, expediente, iaOnline, onRefresh, onVisor, onO
             vista={vista}
             onVista={setVista}
             solicitudRatificar={solicitudRatificar}
+            ratificacionEnEncabezado={Boolean(estado?.ratificable)}
             registroTecnico={
               <>
                 <section className="ia-bloque" aria-label="Ficha de custodia">

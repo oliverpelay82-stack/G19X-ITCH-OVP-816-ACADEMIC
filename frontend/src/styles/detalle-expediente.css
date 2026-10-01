@@ -49,31 +49,31 @@
   color: var(--text-muted);
 }
 
-/* Alertas agrupadas por severidad */
-.alerta-grupos {
+/* Desplegables al pie del detalle (reglas evaluadas e historial): el mismo
+   encabezado y un filete entre ellos. */
+.exp-desplegables {
   display: flex;
   flex-direction: column;
-  gap: var(--s-2);
 }
 
-.alerta-grupo > summary {
-  display: flex;
-  align-items: center;
-  gap: var(--s-2);
-  padding: var(--s-1) 0;
-  cursor: pointer;
-  list-style-position: inside;
+.exp-desplegables > details {
+  padding: var(--s-3) 0;
+  border-top: var(--border-subtle);
 }
 
-.alerta-grupo > .alerta-lista {
-  margin-top: var(--s-2);
+.exp-desplegables > details:last-child {
+  padding-bottom: 0;
+}
+
+.exp-tabla-nota {
+  margin-top: calc(var(--s-2) - var(--s-4));
 }
 
 /* Auditar pendientes: avance por documento y resultado consolidado (HU-32) */
 .auditoria-pasos {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--s-1);
   width: 100%;
   font-size: var(--fs-small);
 }
@@ -122,12 +122,15 @@
 }
 
 /* Historial del expediente (HU-30) */
-.exp-historial > summary {
+.exp-historial > summary,
+.indice-detalle > summary {
   cursor: pointer;
   list-style-position: inside;
 }
 
-.historial {
+/* Acotada al historial del expediente: el del dictamen vigente (modal del
+   documento) usa la misma clase sin el filete lateral. */
+.exp-historial .historial {
   display: flex;
   flex-direction: column;
   margin-top: var(--s-3);

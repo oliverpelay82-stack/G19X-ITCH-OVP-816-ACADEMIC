@@ -7,11 +7,14 @@
   border-top: var(--border-default);
 }
 
+/* Con el visor abierto la columna se estrecha: las pestañas bajan de renglón
+   antes que partir el subtítulo. */
 .ai-panel-head {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: var(--s-4);
+  gap: var(--s-3) var(--s-4);
 }
 
 .ai-view {
@@ -25,6 +28,10 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--s-4);
+}
+
+.ai-cta--solo {
+  justify-content: flex-end;
 }
 
 .ai-cta-desc {
@@ -468,7 +475,7 @@
 .inference-meta {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--s-1);
   align-self: flex-start;
   padding: 2px 7px;
   border: var(--border-subtle);
@@ -514,11 +521,48 @@
   gap: var(--s-3);
 }
 
+/* Apartado de la sección Resultado (dictamen vigente, representación legal):
+   el título y su tarjeta, sin otra tarjeta alrededor. */
+.ia-apartado {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+
 .dictamenes-guardados {
   display: flex;
   flex-direction: column;
   gap: var(--s-3);
   animation: fade-in var(--dur) var(--ease);
+}
+
+/* Dictamen vigente resumido: es el que acaba de mostrar el resultado. */
+.dictamen-linea {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2) var(--s-4);
+  padding: var(--s-2) var(--cell-x);
+  border: var(--border-default);
+  border-radius: var(--r-md);
+  background: var(--bg-surface);
+}
+
+.dictamen-linea-texto {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  font-size: var(--fs-small);
+  color: var(--text-secondary);
+}
+
+.dictamen-linea-texto svg {
+  color: var(--text-muted);
+}
+
+.dictamen-linea .historial[open] {
+  flex-basis: 100%;
 }
 
 .registro-card {
@@ -540,7 +584,7 @@
   align-items: center;
   flex-wrap: wrap;
   gap: var(--s-2);
-  padding: 10px var(--cell-x);
+  padding: var(--cell-y) var(--cell-x);
 }
 
 .registro-origen {
@@ -567,7 +611,7 @@
   flex-direction: column;
   gap: 2px;
   min-width: 0;
-  padding: 10px var(--cell-x);
+  padding: var(--cell-y) var(--cell-x);
 }
 
 .registro-grid > div + div {
@@ -601,7 +645,7 @@
   flex-wrap: wrap;
   gap: var(--s-1) var(--s-4);
   list-style: none;
-  padding: 10px var(--cell-x);
+  padding: var(--cell-y) var(--cell-x);
 }
 
 .registro-reglas li {
@@ -614,7 +658,7 @@
 }
 
 .registro-cita {
-  padding: 10px var(--cell-x) 10px calc(var(--cell-x) + 2px);
+  padding: var(--cell-y) var(--cell-x) var(--cell-y) calc(var(--cell-x) + 2px);
   box-shadow: inset 2px 0 0 var(--line-strong);
 }
 
@@ -635,7 +679,7 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--s-3);
-  padding: 10px var(--cell-x);
+  padding: var(--cell-y) var(--cell-x);
   background: var(--warn-bg);
 }
 
@@ -658,7 +702,7 @@
 }
 
 .registro-nota {
-  padding: 10px var(--cell-x);
+  padding: var(--cell-y) var(--cell-x);
   border-top: var(--border-subtle);
   font-size: var(--fs-small);
   line-height: 1.55;

@@ -42,8 +42,9 @@ const INICIO_GRUPO = { Cumplimiento: 'expedientes', Auditoría: 'alertas', Confi
  * Las tarjetas de métricas solo acompañan a las vistas de seguimiento. En
  * Empresas, Bóveda, Alertas y Reglas ocupaban la primera sexta parte de la
  * pantalla a 1366 × 768 sin aportar a la tarea (revisión del frontend, Lote 3).
+ * Reportes las monta él mismo, bajo la barra del reporte global.
  */
-const CON_METRICAS = new Set(['expedientes', 'reportes'])
+const CON_METRICAS = new Set(['expedientes'])
 
 const INTERVALO_REFRESCO = 15000
 
@@ -275,6 +276,8 @@ export default function App() {
             {tabActiva === 'reportes' && (
               <ReportesTab
                 expedientes={expedientes}
+                titulares={titulares}
+                documentos={documentos}
                 loading={loading}
                 isOnline={health.core.online}
                 onAbrirExpediente={abrirExpediente}

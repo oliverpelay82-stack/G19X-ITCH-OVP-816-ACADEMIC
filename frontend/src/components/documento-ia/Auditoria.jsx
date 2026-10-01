@@ -28,6 +28,7 @@ export function AuditoriaIa({
   onOcupado,
   seccion = 'resultado',
   solicitudRatificar = 0,
+  ratificacionEnEncabezado = false,
   onIrSeccion,
   registroTecnico = null,
 }) {
@@ -48,6 +49,10 @@ export function AuditoriaIa({
   const [duracion, setDuracion] = useState(null)
   const rfcTitular = expediente?.titular?.rfc || null
   const analizando = Boolean(etapas) && Object.values(etapas).some((e) => e.estado === 'activo')
+  // La explicación de qué hace la auditoría solo se lee antes de la primera: con un
+  // dictamen (de esta sesión o ya guardado) el botón queda solo.
+  const estadoEnExpediente = expediente?.evaluacion?.documentos?.find((d) => d.documento_id === doc.id)?.estado
+  const auditado = Boolean(dictamen) || Boolean(estadoEnExpediente && estadoEnExpediente !== 'SIN_DICTAMEN')
 
   // El modal bloquea el cambio de documento mientras la auditoría está en curso.
   useEffect(() => {
@@ -110,12 +115,12 @@ export function AuditoriaIa({
       // El éxito ya se ve en el stepper y en el veredicto; un aviso flotante lo
       // repetía y tapaba el visor. Solo se avisa lo que no se ve en pantalla.
       if (resultado?.persistencia?.guardado === false) {
-        toast.alerta('Dictamen no guardado', `El core-service no lo registró: ${resultado.persistencia.detalle}`)
+        toast.alerta('Dictamen no guardado', `El sistema no lo registró: ${resultado.persistencia.detalle}`)
       }
       setRecarga((n) => n + 1)
       onCambio?.()
     } catch (err) {
-      marcar(fallarEnCascada(actual, err?.message || 'Error del ai-service'))
+      marcar(fallarEnCascada(actual, err?.message || 'Error del servicio de análisis con IA'))
       if (err?.status === 409) {
         // RIE-03: el core-service bloqueó el documento y emitió su dictamen.
         setAlterado(true)
@@ -132,20 +137,25 @@ export function AuditoriaIa({
     <div className="ai-view">
       {/* ── Resultado ── */}
       <div className="ai-seccion" hidden={seccion !== 'resultado'}>
-        <div className="ai-cta">
-          <p className="ai-cta-desc">
-            Clasifica el documento, coteja su titularidad, verifica su vigencia y localiza lo que el catálogo exige a
-            su tipo. Al proveedor de IA solo viaja el texto extraído, nunca el archivo.
-          </p>
+        <div className={auditado ? 'ai-cta ai-cta--solo' : 'ai-cta'}>
+          {!auditado && (
+            <p className="ai-cta-desc">
+              Clasifica el documento, coteja su titularidad, verifica su vigencia y localiza lo que el catálogo exige a
+              su tipo. Al proveedor de IA solo viaja el texto extraído, nunca el archivo.
+            </p>
+          )}
+          {/* Con un dictamen, auditar de nuevo es secundario: la acción principal del
+              modal es la del encabezado (ratificar), y no compiten dos botones negros. */}
           <Button
-            variante={dictamen ? 'secondary' : 'primary'}
+            variante={auditado ? 'secondary' : 'primary'}
+            compacto={auditado}
             icono={Sparkles}
             cargando={analizando}
             onClick={auditar}
             disabled={!iaOnline || alterado}
             title={alterado ? 'Documento bloqueado: el archivo cambió después de custodiarse' : iaOnline ? undefined : 'El servicio de análisis con IA no responde'}
           >
-            {analizando ? 'Auditando…' : dictamen ? 'Volver a auditar' : 'Auditar documento'}
+            {analizando ? 'Auditando…' : auditado ? 'Volver a auditar' : 'Auditar documento'}
           </Button>
         </div>
 
@@ -168,11 +178,13 @@ export function AuditoriaIa({
 
         {!analizando && dictamen && <DictamenResultado dictamen={dictamen} ids={ids} onIrEvidencia={irEvidencia} />}
 
-        <section className="ia-bloque" aria-label="Dictamen vigente">
+        <section className="ia-apartado" aria-label="Dictamen vigente">
           <p className="eyebrow">Dictamen vigente</p>
           <DictamenesGuardados
             doc={doc}
             recarga={recarga}
+            dictamenSesionId={dictamen?.persistencia?.dictamen?.id}
+            ratificacionEnEncabezado={ratificacionEnEncabezado}
             solicitudRatificar={solicitudRatificar}
             onCambio={() => {
               setRatificaciones((n) => n + 1)

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { History, ShieldAlert, UserCheck } from 'lucide-react'
+import { History, Save, ShieldAlert, UserCheck } from 'lucide-react'
 import { Skeleton } from './Skeleton.jsx'
 import { Badge, Button, Field, Input, KeyValue, KeyValueList, Segmented } from './ui/index.js'
 import useToast from '../hooks/useToast.js'
@@ -175,7 +175,11 @@ function FormularioRatificacion({ dictamen, onRatificado, onCancelar }) {
   )
 }
 
-/** Dictamen vigente del documento: estatus, datos clave, reglas aplicadas y ratificación. */
+/**
+ * Dictamen vigente del documento: estatus, datos clave, reglas aplicadas y
+ * ratificación. Sin `onRatificar` (el encabezado del modal ya ofrece
+ * «Ratificar dictamen») el aviso de pendiente queda como texto.
+ */
 function DictamenVigente({ dictamen, puedeRatificar, onRatificar }) {
   const ratificado = dictamen.revisado_por_humano
   return (
@@ -232,9 +236,11 @@ function DictamenVigente({ dictamen, puedeRatificar, onRatificar }) {
             <span className="status-dot status-dot--warn" aria-hidden="true" />
             Pendiente de ratificación: el motor no puede cerrar este dictamen sin un analista.
           </p>
-          <Button compacto icono={UserCheck} onClick={onRatificar}>
-            Resolver revisión humana
-          </Button>
+          {onRatificar && (
+            <Button compacto icono={UserCheck} onClick={onRatificar}>
+              Resolver revisión humana
+            </Button>
+          )}
         </div>
       )}
     </article>
@@ -242,16 +248,25 @@ function DictamenVigente({ dictamen, puedeRatificar, onRatificar }) {
 }
 
 /**
- * Dictámenes persistidos del documento (core-service): el vigente, el acceso a
- * la ratificación humana cuando está EN_REVISION y el historial completo.
- * `recarga` es un contador: el padre lo incrementa tras cada auditoría.
+ * Dictámenes persistidos del documento (core-service): el vigente, la
+ * ratificación humana cuando está EN_REVISION y el historial completo.
+ * `recarga` es un contador que el padre incrementa tras cada auditoría;
+ * `solicitudRatificar`, otro que incrementa el botón «Ratificar dictamen» del
+ * encabezado del modal y abre el formulario si el dictamen lo admite.
+ *
+ * `dictamenSesionId` es el dictamen que guardó la auditoría recién hecha: si es
+ * el vigente y no se ha ratificado, el resultado de la auditoría ya lo muestra
+ * completo y aquí queda en una línea (fecha e historial). Un dictamen anterior
+ * distinto, o uno ya ratificado, se muestra completo.
  */
-/**
- * Dictamen vigente del documento, su ratificación y el historial.
- * `solicitudRatificar` es un contador: cada incremento (el botón «Ratificar
- * dictamen» del encabezado del modal) abre el formulario si el dictamen lo admite.
- */
-export default function DictamenesGuardados({ doc, recarga = 0, onCambio, solicitudRatificar = 0 }) {
+export default function DictamenesGuardados({
+  doc,
+  recarga = 0,
+  onCambio,
+  solicitudRatificar = 0,
+  dictamenSesionId = null,
+  ratificacionEnEncabezado = false,
+}) {
   const [dictamenes, setDictamenes] = useState(null)
   const [error, setError] = useState('')
   const [ratificando, setRatificando] = useState(false)
@@ -313,36 +328,66 @@ export default function DictamenesGuardados({ doc, recarga = 0, onCambio, solici
     onCambio?.()
   }
 
+  // Resumido solo si nada se pierde: la ratificación sigue a mano en el encabezado.
+  const resumido =
+    dictamenSesionId != null &&
+    vigente.id === dictamenSesionId &&
+    !vigente.revisado_por_humano &&
+    (!puedeRatificar || ratificacionEnEncabezado)
+
+  const historial = anteriores.length > 0 && (
+    <details className="historial">
+      <summary>
+        <History size={12} strokeWidth={1.75} aria-hidden="true" />
+        Historial · {anteriores.length} {anteriores.length === 1 ? 'dictamen anterior' : 'dictámenes anteriores'}
+      </summary>
+      <ul>
+        {anteriores.map((d) => (
+          <li key={d.id} className="historial-item">
+            <EstatusBadge estatus={d.estatus} />
+            <span className="cell-muted">
+              {ORIGEN[d.origen] || `Confianza ${pct(d.nivel_confianza)}`}
+              {d.revisado_por_humano && ` · ratificado por ${d.revisado_por}`}
+            </span>
+            <span className="cell-muted historial-fecha">
+              <Momento valor={d.creado_en} />
+            </span>
+          </li>
+        ))}
+      </ul>
+    </details>
+  )
+
+  if (resumido) {
+    return (
+      <section className="dictamenes-guardados" aria-label="Dictámenes guardados">
+        <div className="dictamen-linea">
+          <p className="dictamen-linea-texto">
+            <Save size={13} strokeWidth={1.75} aria-hidden="true" />
+            Es el resultado de esta auditoría, guardado <Momento valor={vigente.creado_en} />
+          </p>
+          {historial}
+        </div>
+        {ratificando && (
+          <FormularioRatificacion dictamen={vigente} onRatificado={alRatificar} onCancelar={() => setRatificando(false)} />
+        )}
+      </section>
+    )
+  }
+
   return (
     <section className="dictamenes-guardados" aria-label="Dictámenes guardados">
-      <DictamenVigente dictamen={vigente} puedeRatificar={puedeRatificar && !ratificando} onRatificar={() => setRatificando(true)} />
+      <DictamenVigente
+        dictamen={vigente}
+        puedeRatificar={puedeRatificar && !ratificando}
+        onRatificar={ratificacionEnEncabezado ? null : () => setRatificando(true)}
+      />
 
       {ratificando && (
         <FormularioRatificacion dictamen={vigente} onRatificado={alRatificar} onCancelar={() => setRatificando(false)} />
       )}
 
-      {anteriores.length > 0 && (
-        <details className="historial">
-          <summary>
-            <History size={12} strokeWidth={1.75} aria-hidden="true" />
-            Historial · {anteriores.length} {anteriores.length === 1 ? 'dictamen anterior' : 'dictámenes anteriores'}
-          </summary>
-          <ul>
-            {anteriores.map((d) => (
-              <li key={d.id} className="historial-item">
-                <EstatusBadge estatus={d.estatus} />
-                <span className="cell-muted">
-                  {ORIGEN[d.origen] || `Confianza ${pct(d.nivel_confianza)}`}
-                  {d.revisado_por_humano && ` · ratificado por ${d.revisado_por}`}
-                </span>
-                <span className="cell-muted historial-fecha">
-                  <Momento valor={d.creado_en} />
-                </span>
-              </li>
-            ))}
-          </ul>
-        </details>
-      )}
+      {historial}
     </section>
   )
 }

@@ -141,7 +141,7 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
           className="toolbar-action"
           onClick={() => setIngestaAbierta(true)}
           disabled={!isOnline || expedientes.length === 0}
-          title={!isOnline ? 'El core-service (:8001) no responde' : undefined}
+          title={!isOnline ? 'El sistema de expedientes no responde' : undefined}
         >
           Custodiar documento
         </Button>
@@ -155,11 +155,11 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
         <div className="table-scroll">
           <table className="data-table data-table--boveda">
             <colgroup>
-              <col style={{ width: '31%' }} />
+              <col style={{ width: '29%' }} />
               <col style={{ width: '10%' }} />
-              <col style={{ width: '17%' }} />
+              <col style={{ width: '16%' }} />
               <col style={{ width: '13%' }} />
-              <col style={{ width: '15%' }} />
+              <col style={{ width: '18%' }} />
               <col style={{ width: '10%' }} />
               <col style={{ width: 52 }} />
             </colgroup>
@@ -272,7 +272,7 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
             subiendo={subiendo}
             listoExtra={Boolean(expedienteId)}
             deshabilitado={!isOnline}
-            motivoDeshabilitado="El core-service (:8001) no responde"
+            motivoDeshabilitado="El sistema de expedientes no responde"
           >
             <Field etiqueta="Expediente destino">
               <Select value={expedienteId} onChange={(e) => setExpedienteId(e.target.value)} required>

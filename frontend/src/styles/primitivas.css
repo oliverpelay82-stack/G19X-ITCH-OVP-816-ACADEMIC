@@ -254,15 +254,14 @@
   color: var(--neutral);
 }
 
-/* Semáforo grande de las tarjetas de expediente. */
+/* Semáforo grande de las tarjetas de expediente y del modal del documento:
+   mayúscula inicial, como el resto de las etiquetas de estado. */
 .badge--lg {
   height: 28px;
   padding: 0 var(--s-3);
   gap: var(--s-2);
-  font-size: var(--fs-micro);
+  font-size: var(--fs-small);
   font-weight: 600;
-  letter-spacing: var(--tracking-caps);
-  text-transform: uppercase;
 }
 
 .badge--lg .status-dot {

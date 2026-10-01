@@ -77,7 +77,7 @@ export default function MetricsCards({ titulares, expedientes, documentos, loadi
       icon: Gauge,
       label: 'Cumplimiento',
       valor: formatIndice(datos.indice),
-      pie: <span className="metric-foot">{`Documentos obligatorios: ${datos.completitud.toFixed(0)}% presentes`}</span>,
+      pie: <span className="metric-foot">{`Obligatorios presentes: ${datos.completitud.toFixed(0)}%`}</span>,
       progreso: datos.indice ?? 0,
       titulo: 'Promedio del índice de cumplimiento de los expedientes: reglas cumplidas entre reglas aplicables',
     },

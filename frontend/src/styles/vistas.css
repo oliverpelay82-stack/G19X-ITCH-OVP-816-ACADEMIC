@@ -60,7 +60,7 @@
 .profile-grid > div {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--s-1);
   min-width: 0;
   padding: var(--s-3) var(--s-4);
 }
@@ -234,6 +234,12 @@
   background: var(--bg-surface);
 }
 
+/* Las acciones de la columna lateral, a la izquierda y a su ancho natural. */
+.exp-lateral-bloque > .btn,
+.exp-lateral-bloque .exp-auditar > .btn {
+  align-self: flex-start;
+}
+
 .exp-lateral-bloque .indice {
   padding: 0;
   border: 0;
@@ -251,22 +257,59 @@
 
 .exp-motivo {
   display: grid;
-  grid-template-columns: 8px minmax(0, 1fr) auto;
-  align-items: center;
+  grid-template-columns: 8px minmax(0, 1fr);
+  align-items: baseline;
   gap: var(--s-3);
-  padding: var(--s-2) 0;
+  padding: var(--s-3) 0;
   border-top: var(--border-subtle);
   font-size: var(--fs-small);
 }
 
-.exp-motivo:first-child {
-  border-top: 0;
+.exp-motivo > .status-dot {
+  align-self: start;
+  margin-top: 6px;
 }
 
-.exp-motivo-doc {
+.exp-motivo-cuerpo {
   display: flex;
   flex-direction: column;
   min-width: 0;
+}
+
+.exp-motivo-cuerpo .alerta-mas {
+  margin-top: var(--s-1);
+}
+
+/* El estado va junto al nombre del documento, no al otro extremo de la fila. */
+.exp-motivo-linea {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 var(--s-2);
+}
+
+.exp-motivo-accion {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-2);
+  max-width: 75ch;
+  margin-top: var(--s-2);
+  line-height: 1.5;
+  color: var(--text-primary);
+}
+
+.exp-motivo-accion svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--text-muted);
+}
+
+.exp-motivo .alerta-detalle {
+  max-width: 75ch;
+}
+
+.exp-motivo:first-child {
+  border-top: 0;
 }
 
 .exp-motivo-nombre {
@@ -282,10 +325,14 @@
 
 .exp-motivo-causa {
   color: var(--text-secondary);
-  text-align: right;
+}
+
+.exp-motivo-linea .exp-motivo-nombre + .exp-motivo-causa::before {
+  content: '·';
+  margin-right: var(--s-2);
+  color: var(--text-tertiary);
 }
 
 .exp-motivo-causa--sola {
-  grid-column: 2 / -1;
-  text-align: left;
+  color: var(--text-primary);
 }

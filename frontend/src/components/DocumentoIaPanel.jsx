@@ -19,6 +19,8 @@ const VISTAS = [
  *
  * La sección puede controlarla el modal (`vista` y `onVista`: el encabezado
  * lleva a Resultado al pedir la ratificación); si no, el panel la guarda.
+ * `ratificacionEnEncabezado` indica que el encabezado del modal ya ofrece
+ * «Ratificar dictamen»: el dictamen vigente no repite el botón.
  * El padre debe montarlo con `key={doc.id}` para que el dictamen y el hilo
  * se reinicien al cambiar de documento.
  */
@@ -31,6 +33,7 @@ export default function DocumentoIaPanel({
   vista: vistaControlada,
   onVista,
   solicitudRatificar = 0,
+  ratificacionEnEncabezado = false,
   registroTecnico = null,
 }) {
   const [vistaPropia, setVistaPropia] = useState('resultado')
@@ -57,6 +60,7 @@ export default function DocumentoIaPanel({
           onOcupado={onOcupado}
           seccion={vista}
           solicitudRatificar={solicitudRatificar}
+          ratificacionEnEncabezado={ratificacionEnEncabezado}
           onIrSeccion={setVista}
           registroTecnico={registroTecnico}
         />

@@ -57,6 +57,12 @@
   gap: var(--s-3);
 }
 
+/* En el modal la acción va a la derecha, como en los demás formularios; en la
+   columna lateral del expediente (compacta) ocupa el ancho de la tarjeta. */
+.dropzone-wrap:not(.dropzone-wrap--compact) .dropzone-controls > .btn {
+  align-self: flex-end;
+}
+
 .analysis {
   display: flex;
   flex-direction: column;

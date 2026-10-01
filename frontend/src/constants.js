@@ -137,7 +137,7 @@ export const getSeveridadMeta = (severidad) =>
 export const SERVICIOS = [
   { key: 'core', nombre: 'Core Service', etiqueta: 'Core', puerto: 8001, alcance: 'Titulares · Expedientes · Bóveda' },
   { key: 'rules', nombre: 'Rules Service', etiqueta: 'Rules', puerto: 8002, alcance: 'Catálogo de reglas y vigencias' },
-  { key: 'ai', nombre: 'AI Service', etiqueta: 'AI Groq', puerto: 8003, alcance: 'Extracción y análisis semántico' },
+  { key: 'ai', nombre: 'AI Service', etiqueta: 'IA', puerto: 8003, alcance: 'Extracción y análisis semántico' },
 ]
 
 /**
@@ -148,10 +148,10 @@ export const SERVICIOS = [
 export const ESTADO_BADGE = {
   CONFORME: { tono: 'ok', label: 'Conforme' },
   APROBADO: { tono: 'ok', label: 'Aprobado' },
-  EN_REVISION: { tono: 'warn', label: 'En Revisión' },
-  REQUIERE_REVISION_HUMANA: { tono: 'warn', label: 'Revisión Humana' },
+  EN_REVISION: { tono: 'warn', label: 'En revisión' },
+  REQUIERE_REVISION_HUMANA: { tono: 'warn', label: 'Revisión humana' },
   PENDIENTE: { tono: 'warn', label: 'Pendiente' },
-  NO_CONFORME: { tono: 'bad', label: 'No Conforme' },
+  NO_CONFORME: { tono: 'bad', label: 'No conforme' },
   RECHAZADO: { tono: 'bad', label: 'Rechazado' },
   BLOQUEADO: { tono: 'bad', label: 'Bloqueado' },
 }

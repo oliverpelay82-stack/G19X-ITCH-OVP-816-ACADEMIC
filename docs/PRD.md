@@ -11,7 +11,7 @@
 | Desarrollo (Scrum Master / Desarrollador) | Oliver Villanueva Pelay, residente (No. de control 21520500) |
 | Stakeholder evaluador | Edgar Loheffelmman (PluriOne) |
 | Asesor interno | Dr. Wilfrido Campos Francisco |
-| Versión del documento | 1.8 — 30 de septiembre de 2026 (1.7: revisión del frontend; 1.6: índice de cumplimiento; 1.5: P3; 1.4: P2; 1.3: P1; 1.2: 28 de septiembre; 1.0: 27 de septiembre de 2026) |
+| Versión del documento | 1.9 — 30 de septiembre de 2026 (1.8: chat documental eficiente; 1.7: revisión del frontend; 1.6: índice de cumplimiento; 1.5: P3; 1.4: P2; 1.3: P1; 1.2: 28 de septiembre; 1.0: 27 de septiembre de 2026) |
 | Estado del producto | En desarrollo: Sprints 1 y 2 implementados, Sprint 3 implementado parcialmente, Sprint 4 implementado salvo HU-31, Módulo 7 pendiente |
 | Documento hermano | [MRD.md](MRD.md) — requerimientos de mercado |
 
@@ -541,9 +541,10 @@ Integridad garantizada por la base, además de la API:
 
 - **Diseño «White & Warm»:** blanco como base, neutros cálidos y color reservado a los estados de auditoría (Conforme, En revisión, No conforme), siempre acompañado de su etiqueta.
 - **Navegación:** Cumplimiento (Empresas, Expedientes, Bóveda), Auditoría (Alertas, Reportes) y Configuración (Reglas). La sección y el expediente desplegado viven en la URL (`#/expedientes/<folio>`): recargar conserva la vista y un enlace lleva directo a un expediente. La pantalla de inicio es Expedientes.
-- **Expedientes:** tarjeta con tipo, semáforo, índice de cumplimiento y documentos obligatorios presentes; el detalle va de por qué a qué hacer: índice con las reglas evaluadas, motivos del semáforo, recomendaciones, documentos exigidos con su estado y vigencia, historial, carga y exportación del dictamen.
+- **Expedientes:** tarjeta con tipo, semáforo, índice de cumplimiento y documentos obligatorios presentes; el detalle va de por qué a qué hacer: cada motivo del semáforo lleva debajo la recomendación de su alerta, después los documentos exigidos con su estado y vigencia, las reglas evaluadas para el índice y el historial; a la derecha, el índice, la carga y la exportación del dictamen.
 - **Bóveda y catálogo de reglas:** la Bóveda muestra por defecto solo los documentos vigentes, con el estado de su dictamen, y el histórico completo a un clic; el catálogo se pliega por familia y muestra el detalle completo de cada regla.
-- **Panel de Inteligencia Documental:** abre con el encabezado de veredicto (estado del documento y las acciones de ratificar y ver el documento) y se organiza en Resultado, Evidencia, Registro técnico y Chat; auditoría en tres etapas visibles (lectura, análisis, reglas de vigencia) con cancelación en cascada, dictamen con medidor de confianza, tabla de cotejo, registro de auditoría con ratificación y chat documental con citas.
+- **Panel de Inteligencia Documental:** abre con el encabezado de veredicto (estado del documento y las acciones de ratificar y ver el documento) y se organiza en Resultado, Evidencia, Registro técnico y Chat; auditoría en tres etapas visibles (lectura, análisis, reglas de vigencia) con cancelación en cascada, dictamen con medidor de confianza, tabla de cotejo, registro de auditoría con ratificación y chat documental con citas. La ratificación se abre desde el encabezado de veredicto, y el dictamen vigente que coincide con la auditoría recién hecha se resume en una línea con su historial.
+- **Etiquetas de estado:** mayúscula inicial en todas las pantallas («En revisión», «No conforme»).
 - **System Health Strip:** estado, puerto y latencia de los tres microservicios en la cabecera.
 
 ### 13.1 Revisión del frontend (29/09/2026)
@@ -559,6 +560,7 @@ Revisión completa de la interfaz después de P1 a P3, en lotes aprobados por el
 | 4 | Refactor sin cambio visual (hojas de estilo por contexto y componentes divididos; 0 capturas distintas y el CSS del build idéntico) y catálogo de reglas plegable por familia. | RNF-07; mantenibilidad (ISO/IEC 25010) |
 | 5 | Documentación: CLAUDE.md, este PRD y el MRD. | — |
 | Refinamiento | Contenido centrado con ancho máximo; Bóveda con solo los vigentes por defecto; detalle del expediente con columna lateral fija, motivos en filas y alertas compactas; modal del documento con encabezado de veredicto y secciones (Resultado, Evidencia, Registro técnico, Chat) en bloques delimitados. | RNF-07, RNF-08 |
+| Proporciones (30/09/2026) | Sin cambiar paleta ni tokens, en siete tandas con regresión visual entre cada una: etiquetas de estado con mayúscula inicial y espaciados con tokens; modal del documento sin estados repetidos, un solo acceso a la ratificación y sin tarjetas anidadas; detalle del expediente con cada motivo y su qué hacer (los documentos ya no se listan tres veces), tabla con el código de regla bajo el nombre y filtro de fechas como un solo control; huella de la Bóveda en un renglón; bandeja de Alertas agrupada por severidad, con el expediente en una columna propia y renglones de unos 100 caracteres; Reportes en cuatro secciones con título (reporte global arriba, métricas, hallazgos, seguimiento del analista y dictamen por expediente), sin la tarjeta «Expedientes conformes», que repetía la métrica «Expedientes»; Reglas sin encabezados vacíos. | RF-18, RF-21, RN-05, RNF-07, RNF-08 |
 
 ---
 

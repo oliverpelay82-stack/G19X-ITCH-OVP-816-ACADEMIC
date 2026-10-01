@@ -1,10 +1,9 @@
-// Detalle desplegado del expediente: índice, motivos, qué hacer, documentos, historial, carga y exportación.
+// Detalle desplegado del expediente: índice, motivos con su qué hacer, documentos, historial, carga y exportación.
 import { useState } from 'react'
-import { Maximize2, Plus } from 'lucide-react'
+import { Lightbulb, Maximize2, Plus } from 'lucide-react'
 import { Badge, Button, Card } from '../ui/index.js'
 import DropZone from '../DropZone.jsx'
 import ExportarReporte from '../ExportarReporte.jsx'
-import { ListaAlertasAgrupadas } from '../Alertas.jsx'
 import HistorialExpediente from '../HistorialExpediente.jsx'
 import IndiceCumplimiento, { ReglasEvaluadas } from '../IndiceCumplimiento.jsx'
 import {
@@ -85,9 +84,72 @@ function tonoMotivo(causa) {
   return 'ok'
 }
 
-function MotivosSemaforo({ estado, motivos = [] }) {
-  if (!motivos.length) return null
+/** Documento al que se refiere una alerta: el core lo nombra tras los dos puntos del título («Dictamen no conforme: Acta de Asamblea»). */
+const documentoDeAlerta = (alerta) => (alerta.titulo || '').split(': ').slice(1).join(': ')
+
+/**
+ * Reparte las alertas entre los motivos: las de un documento van con el motivo
+ * de ese documento; las de los motivos generales («Faltan documentos
+ * obligatorios: A, B», «… requiere su anexo «C»») con el motivo que nombra su
+ * documento. Las que no encuentran motivo quedan aparte, para no perder ninguna
+ * recomendación.
+ */
+function repartirAlertas(motivos, alertas) {
+  const pendientes = [...alertas]
+  const tomar = (prueba) => {
+    const propias = pendientes.filter(prueba)
+    for (const a of propias) pendientes.splice(pendientes.indexOf(a), 1)
+    return propias
+  }
+  const filas = motivos.map((m) => ({ motivo: m, ...partesMotivo(m) }))
+  for (const f of filas) {
+    f.alertas = f.documento ? tomar((a) => documentoDeAlerta(a) === f.documento) : []
+  }
+  for (const f of filas.filter((x) => !x.documento)) {
+    f.alertas = tomar((a) => documentoDeAlerta(a) && f.causa.includes(documentoDeAlerta(a)))
+  }
+  return { filas, sueltas: pendientes }
+}
+
+/** Qué hacer bajo un motivo: cada recomendación una vez y, plegado, el detalle con su severidad. */
+function QueHacer({ alertas }) {
+  if (!alertas.length) return null
+  const recomendaciones = [...new Set(alertas.map((a) => a.recomendacion).filter(Boolean))]
+  const detalles = alertas.filter((a) => a.detalle)
+  return (
+    <>
+      {recomendaciones.map((r) => (
+        <p key={r} className="exp-motivo-accion">
+          <Lightbulb size={13} aria-hidden="true" />
+          <span>
+            <span className="sr-only">Qué hacer: </span>
+            {r}
+          </span>
+        </p>
+      ))}
+      {detalles.length > 0 && (
+        <details className="alerta-mas">
+          <summary>Ver detalle</summary>
+          {detalles.map((a) => (
+            <p key={`${a.codigo}-${a.titulo}`} className="alerta-detalle">
+              Severidad {getSeveridadMeta(a.severidad).label.toLowerCase()} · {a.detalle}
+            </p>
+          ))}
+        </details>
+      )}
+    </>
+  )
+}
+
+/**
+ * Por qué el expediente tiene su estado y, bajo cada motivo, qué hacer: los
+ * motivos del semáforo y las alertas del mismo documento en una sola fila, en
+ * lugar de listar los documentos dos veces.
+ */
+function MotivosSemaforo({ estado, motivos = [], alertas = [] }) {
+  if (!motivos.length && !alertas.length) return null
   const meta = getEstadoBadge(estado)
+  const { filas, sueltas } = repartirAlertas(motivos, alertas)
   return (
     <section className="exp-motivos" aria-label={TITULO_MOTIVOS[estado] || 'Motivos del semáforo'}>
       <p className="exp-motivos-titulo">
@@ -96,25 +158,40 @@ function MotivosSemaforo({ estado, motivos = [] }) {
         <span className="tabular cell-muted"> · {motivos.length}</span>
       </p>
       <ul className="exp-motivos-lista">
-        {motivos.map((m) => {
-          const { documento, archivo, causa } = partesMotivo(m)
-          return (
-            <li key={m} className="exp-motivo">
-              <span className={`status-dot status-dot--${tonoMotivo(causa)}`} aria-hidden="true" />
-              {documento ? (
-                <span className="exp-motivo-doc">
-                  <span className="exp-motivo-nombre">{documento}</span>
-                  <span className="cell-sub exp-motivo-archivo" title={archivo}>
-                    {archivo}
+        {filas.map((f) => (
+          <li key={f.motivo} className="exp-motivo">
+            <span className={`status-dot status-dot--${tonoMotivo(f.causa)}`} aria-hidden="true" />
+            <div className="exp-motivo-cuerpo">
+              {f.documento ? (
+                <>
+                  <p className="exp-motivo-linea">
+                    <span className="exp-motivo-nombre">{f.documento}</span>
+                    <span className="exp-motivo-causa">{f.causa.replace(/\.$/, '')}</span>
+                  </p>
+                  <span className="cell-sub exp-motivo-archivo" title={f.archivo}>
+                    {f.archivo}
                   </span>
-                </span>
-              ) : null}
-              <span className={documento ? 'exp-motivo-causa' : 'exp-motivo-causa exp-motivo-causa--sola'}>
-                {causa.replace(/\.$/, '')}
-              </span>
-            </li>
-          )
-        })}
+                </>
+              ) : (
+                <p className="exp-motivo-linea">
+                  <span className="exp-motivo-causa exp-motivo-causa--sola">{f.causa.replace(/\.$/, '')}</span>
+                </p>
+              )}
+              <QueHacer alertas={f.alertas} />
+            </div>
+          </li>
+        ))}
+        {sueltas.map((a) => (
+          <li key={`${a.codigo}-${a.titulo}`} className="exp-motivo">
+            <span className={`status-dot status-dot--${getSeveridadMeta(a.severidad).tono}`} aria-hidden="true" />
+            <div className="exp-motivo-cuerpo">
+              <p className="exp-motivo-linea">
+                <span className="exp-motivo-nombre">{a.titulo}</span>
+              </p>
+              <QueHacer alertas={[a]} />
+            </div>
+          </li>
+        ))}
       </ul>
     </section>
   )
@@ -149,7 +226,7 @@ function CustodiarDocumento({ faltantes, subiendo, tipos, onArchivo }) {
   )
 }
 
-/** Detalle desplegado: índice, motivos, qué hacer, documentos requeridos, historial, carga y exportación. */
+/** Detalle desplegado: índice, motivos con su qué hacer, documentos requeridos, historial, carga y exportación. */
 export function DetalleExpediente({ exp, subiendo, onSubir, iaOnline, onRefresh, documentos, onAbrirDocumento }) {
   const evaluacion = exp.evaluacion
   const filas = filasDetalle(evaluacion)
@@ -165,25 +242,13 @@ export function DetalleExpediente({ exp, subiendo, onSubir, iaOnline, onRefresh,
   return (
     <div className="exp-detail">
       <div className="exp-detail-main">
-        <MotivosSemaforo estado={exp.estado_cumplimiento} motivos={evaluacion?.motivos} />
-
-        {/* Qué hacer, justo debajo de por qué: la recomendación a la vista y el
-            detalle plegado, para no repetir los motivos del semáforo. */}
-        {alertas.length > 0 && (
-          <section className="exp-alertas" aria-label="Qué hacer">
-            <p className="eyebrow">
-              Qué hacer <span className="tabular cell-muted">· {alertas.length} {alertas.length === 1 ? 'recomendación' : 'recomendaciones'}</span>
-            </p>
-            <ListaAlertasAgrupadas alertas={alertas} compacto />
-          </section>
-        )}
+        <MotivosSemaforo estado={exp.estado_cumplimiento} motivos={evaluacion?.motivos} alertas={alertas} />
 
         <p className="eyebrow">Documentos requeridos</p>
         <Card className="table-card table-card--flat">
           <table className="data-table data-table--inner">
             <colgroup>
-              <col style={{ width: '30%' }} />
-              <col style={{ width: '16%' }} />
+              <col style={{ width: '36%' }} />
               <col style={{ width: '12%' }} />
               <col />
               <col style={{ width: '132px' }} />
@@ -191,7 +256,6 @@ export function DetalleExpediente({ exp, subiendo, onSubir, iaOnline, onRefresh,
             <thead>
               <tr>
                 <th>Documento requerido</th>
-                <th>Regla</th>
                 <th>Severidad</th>
                 <th>Archivo vigente</th>
                 <th className="col-right">Estado</th>
@@ -200,7 +264,7 @@ export function DetalleExpediente({ exp, subiendo, onSubir, iaOnline, onRefresh,
             <tbody>
               {filas.length === 0 && (
                 <tr className="empty-row">
-                  <td colSpan={5} className="cell-muted">
+                  <td colSpan={4} className="cell-muted">
                     El catálogo de reglas no declara documentos obligatorios.
                   </td>
                 </tr>
@@ -215,13 +279,11 @@ export function DetalleExpediente({ exp, subiendo, onSubir, iaOnline, onRefresh,
                     <td>
                       <span className="cell-stack">
                         <span className="identity-name identity-name--completo">{nombreTipo}</span>
-                        {f.anexoDe && (
-                          <span className="cell-sub">Anexo de {TIPO_DOCUMENTO_LABEL[f.anexoDe] || f.anexoDe}</span>
-                        )}
+                        <span className="cell-sub cell-code" title={f.regla || undefined}>
+                          {f.regla ? <span className="mono">{f.regla}</span> : 'Opcional'}
+                          {f.anexoDe && ` · anexo de ${TIPO_DOCUMENTO_LABEL[f.anexoDe] || f.anexoDe}`}
+                        </span>
                       </span>
-                    </td>
-                    <td className="mono cell-mono cell-code" title={f.regla || undefined}>
-                      {f.regla || <span className="cell-muted">Opcional</span>}
                     </td>
                     <td>{sev ? <span className="cell-muted">{sev.label}</span> : <span className="cell-muted">—</span>}</td>
                     <td>
@@ -262,17 +324,18 @@ export function DetalleExpediente({ exp, subiendo, onSubir, iaOnline, onRefresh,
           </table>
         </Card>
 
-        <ReglasEvaluadas indice={evaluacion?.indice_cumplimiento} />
-
-        {evaluacion?.advertencia && <p className="notice notice--warn">{evaluacion.advertencia}</p>}
         {evaluacion?.sustituidos > 0 && (
-          <p className="field-hint">
+          <p className="field-hint exp-tabla-nota">
             {evaluacion.sustituidos} {evaluacion.sustituidos === 1 ? 'archivo sustituido' : 'archivos sustituidos'} por uno
             más reciente del mismo tipo; su historial se conserva en la bitácora.
           </p>
         )}
+        {evaluacion?.advertencia && <p className="notice notice--warn">{evaluacion.advertencia}</p>}
 
-        <HistorialExpediente expedienteId={exp.id} documentos={todos} />
+        <div className="exp-desplegables">
+          <ReglasEvaluadas indice={evaluacion?.indice_cumplimiento} />
+          <HistorialExpediente expedienteId={exp.id} documentos={todos} />
+        </div>
       </div>
 
       {/* Columna lateral fija al desplazarse: el tablero del expediente

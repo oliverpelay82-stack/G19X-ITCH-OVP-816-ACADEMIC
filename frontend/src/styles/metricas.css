@@ -5,9 +5,10 @@
   gap: var(--s-3);
 }
 
+/* Icono y texto alineados arriba: el icono acompaña a la etiqueta. */
 .metric-card {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--s-3);
   min-height: 75px;
   padding: var(--s-3) var(--s-4);

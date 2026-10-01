@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { FileBarChart2, SearchX } from 'lucide-react'
 import ExportarReporte from './ExportarReporte.jsx'
+import MetricsCards from './MetricsCards.jsx'
 import TableroOperativo from './TableroOperativo.jsx'
 import { SkeletonRows } from './Skeleton.jsx'
 import useDebounce from '../hooks/useDebounce.js'
@@ -31,28 +32,41 @@ function Barra({ label, n, total, tono = 'neutral', elemento: Elemento = 'li' })
   )
 }
 
+/** Sección de la página con su título y, opcionalmente, una acción a la derecha. */
+function Seccion({ titulo, accion, children }) {
+  return (
+    <section className="report-seccion" aria-label={titulo}>
+      <div className="report-seccion-cabecera">
+        <h2 className="eyebrow">{titulo}</h2>
+        {accion}
+      </div>
+      {children}
+    </section>
+  )
+}
+
 /**
- * Reportes y panel de cumplimiento (Módulo 6): indicadores globales (RF-22),
- * exportación del reporte global y del dictamen de cada expediente en PDF y
- * Excel (RF-23, RF-24; HU-26, HU-28, HU-29).
+ * Reportes y panel de cumplimiento (Módulo 6): exportación del reporte global
+ * arriba, métricas, hallazgos (RF-22), seguimiento del analista y el dictamen
+ * de cada expediente en PDF y Excel (RF-23, RF-24; HU-26, HU-28, HU-29).
  */
-export default function ReportesTab({ expedientes, loading, isOnline = true, onAbrirExpediente }) {
+export default function ReportesTab({
+  expedientes,
+  titulares = [],
+  documentos = [],
+  loading,
+  isOnline = true,
+  onAbrirExpediente,
+}) {
   const [tipoGlobal, setTipoGlobal] = useState('')
   const [busqueda, setBusqueda] = useState('')
   const consulta = useDebounce(busqueda, 220)
 
   const ind = useMemo(() => {
-    const cuenta = (estado) => expedientes.filter((e) => e.estado_cumplimiento === estado).length
     const alertas = expedientes.flatMap((e) => e.evaluacion?.alertas || [])
     const porCodigo = new Map()
     for (const a of alertas) porCodigo.set(a.codigo, (porCodigo.get(a.codigo) || 0) + 1)
-    const total = expedientes.length
     return {
-      total,
-      conformes: cuenta('CONFORME'),
-      revision: cuenta('EN_REVISION'),
-      noConformes: cuenta('NO_CONFORME'),
-      global: total ? (cuenta('CONFORME') / total) * 100 : 0,
       alertas,
       porSeveridad: SEVERIDADES.map((s) => [s, alertas.filter((a) => a.severidad === s).length]),
       porCodigo: [...porCodigo.entries()].sort((a, b) => b[1] - a[1]),
@@ -82,7 +96,7 @@ export default function ReportesTab({ expedientes, loading, isOnline = true, onA
   }, [expedientes, consulta])
 
   return (
-    <div className="tab-panel">
+    <div className="tab-panel reportes">
       {/* El reporte global es una acción de toda la pestaña: va en la barra, como
           la acción principal de las demás vistas, y no dentro de una tarjeta. */}
       <div className="toolbar">
@@ -103,136 +117,138 @@ export default function ReportesTab({ expedientes, loading, isOnline = true, onA
         </div>
       </div>
 
-      <section className="report-grid" aria-label="Indicadores de cumplimiento">
-        <Card as="article" className="report-card">
-          <p className="eyebrow">Expedientes conformes</p>
-          <p className="report-kpi tabular">{loading ? '—' : `${ind.global.toFixed(1)}%`}</p>
-          <p className="field-hint">
-            {ind.conformes} de {ind.total} expedientes conformes al 100 %.
-          </p>
-          <ul className="dist-list">
-            <Barra label="Conformes" n={ind.conformes} total={ind.total} tono="ok" />
-            <Barra label="En revisión" n={ind.revision} total={ind.total} tono="warn" />
-            <Barra label="No conformes" n={ind.noConformes} total={ind.total} tono="bad" />
-          </ul>
-        </Card>
+      <MetricsCards titulares={titulares} expedientes={expedientes} documentos={documentos} loading={loading} />
 
-        <Card as="article" className="report-card">
-          <p className="eyebrow">Alertas por severidad · {ind.alertas.length}</p>
-          <ul className="dist-list">
-            {ind.porSeveridad.map(([s, n]) => (
-              <Barra key={s} label={getSeveridadMeta(s).label} n={n} total={ind.alertas.length} tono={getSeveridadMeta(s).tono} />
-            ))}
-          </ul>
-          <p className="eyebrow report-sub">Hallazgos por categoría</p>
-          <ul className="dist-list">
-            {ind.porCodigo.length === 0 && <li className="field-hint">Sin hallazgos vigentes.</li>}
-            {ind.porCodigo.map(([c, n]) => (
-              <Barra key={c} label={ALERTA_META[c]?.label || c} n={n} total={ind.alertas.length} />
-            ))}
-          </ul>
-        </Card>
+      {/* Una tarjeta por tema: la severidad y la categoría ya no comparten tarjeta. */}
+      <Seccion titulo={`Hallazgos · ${ind.alertas.length}`}>
+        <div className="report-grid">
+          <Card as="article" className="report-card">
+            <p className="eyebrow">Por severidad</p>
+            <ul className="dist-list">
+              {ind.porSeveridad.map(([s, n]) => (
+                <Barra key={s} label={getSeveridadMeta(s).label} n={n} total={ind.alertas.length} tono={getSeveridadMeta(s).tono} />
+              ))}
+            </ul>
+          </Card>
 
-        <Card as="article" className="report-card">
-          <p className="eyebrow">Hallazgos por área · {ind.alertas.length}</p>
-          <ul className="dist-list">
-            {ind.porArea.map((a) => (
-              <li key={a.tipo} className="area-fila">
-                <Barra
-                  elemento="div"
-                  label={TIPO_EXPEDIENTE_LABEL[a.tipo]}
-                  n={a.hallazgos}
-                  total={ind.alertas.length}
-                  tono={a.graves ? 'bad' : a.hallazgos ? 'warn' : 'ok'}
-                />
-                <span className="area-sub">
-                  {a.expedientes} {a.expedientes === 1 ? 'expediente' : 'expedientes'}
-                  {a.graves > 0 && ` · ${a.graves} ${a.graves === 1 ? 'crítica o alta' : 'críticas o altas'}`}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </Card>
-      </section>
+          <Card as="article" className="report-card">
+            <p className="eyebrow">Por categoría</p>
+            <ul className="dist-list">
+              {ind.porCodigo.length === 0 && <li className="field-hint">Sin hallazgos vigentes.</li>}
+              {ind.porCodigo.map(([c, n]) => (
+                <Barra key={c} label={ALERTA_META[c]?.label || c} n={n} total={ind.alertas.length} />
+              ))}
+            </ul>
+          </Card>
 
-      <TableroOperativo expedientes={expedientes} onAbrirExpediente={onAbrirExpediente} />
-
-      <div className="toolbar">
-        <SearchBox value={busqueda} onChange={setBusqueda} placeholder="Folio, nombre, empresa o RFC…" label="Buscar expediente" />
-      </div>
-
-      <Card className="table-card">
-        <div className="table-scroll">
-          <table className="data-table">
-            <colgroup>
-              <col style={{ width: '28%' }} />
-              <col style={{ width: '11%' }} />
-              <col style={{ width: '14%' }} />
-              <col style={{ width: '17%' }} />
-              <col style={{ width: '8%' }} />
-              <col style={{ width: '22%' }} />
-            </colgroup>
-            <thead>
-              <tr>
-                <th>Expediente</th>
-                <th>Tipo</th>
-                <th>Estado</th>
-                <th className="col-right">Cumplimiento</th>
-                <th className="col-right">Alertas</th>
-                <th className="col-right">Dictamen de cumplimiento</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading && <SkeletonRows rows={4} cols={COLUMNAS} />}
-              {!loading && filtrados.length === 0 && (
-                <EmptyRow
-                  columnas={COLUMNAS}
-                  icon={expedientes.length === 0 ? FileBarChart2 : SearchX}
-                  titulo={expedientes.length === 0 ? 'Aún no hay expedientes' : 'Sin coincidencias'}
-                  descripcion={expedientes.length === 0 ? 'Los reportes se generan a partir de los expedientes.' : 'Ajusta la búsqueda.'}
-                />
-              )}
-              {!loading &&
-                filtrados.map((e) => {
-                  const meta = getEstadoBadge(e.estado_cumplimiento)
-                  return (
-                    <tr key={e.id}>
-                      <td>
-                        <span className="cell-stack">
-                          <span className="identity-name">{e.titular?.razon_social || 'Titular no disponible'}</span>
-                          <span className="cell-sub mono">
-                            {e.codigo_expediente}
-                            {e.nombre ? ` · ${e.nombre}` : ''}
-                          </span>
-                        </span>
-                      </td>
-                      <td>
-                        <Tag tipo>{TIPO_EXPEDIENTE_LABEL[e.tipo_expediente] || e.tipo_expediente}</Tag>
-                      </td>
-                      <td>
-                        <Badge tono={meta.tono} punto>
-                          {meta.label}
-                        </Badge>
-                      </td>
-                      <td className="col-right">
-                        <span className="cell-stack">
-                          <span className="tabular">{formatIndice(indiceDe(e)?.porcentaje)}</span>
-                          <span className="cell-sub tabular">
-                            {Number(e.porcentaje_completitud || 0).toFixed(0)}% obligatorios
-                          </span>
-                        </span>
-                      </td>
-                      <td className="col-right tabular">{e.evaluacion?.alertas?.length || 0}</td>
-                      <td className="col-right">
-                        <ExportarReporte ruta={`/reportes/expedientes/${e.id}`} compacto disabled={!isOnline} />
-                      </td>
-                    </tr>
-                  )
-                })}
-            </tbody>
-          </table>
+          <Card as="article" className="report-card">
+            <p className="eyebrow">Por área</p>
+            <ul className="dist-list">
+              {ind.porArea.map((a) => (
+                <li key={a.tipo} className="area-fila">
+                  <Barra
+                    elemento="div"
+                    label={TIPO_EXPEDIENTE_LABEL[a.tipo]}
+                    n={a.hallazgos}
+                    total={ind.alertas.length}
+                    tono={a.graves ? 'bad' : a.hallazgos ? 'warn' : 'ok'}
+                  />
+                  <span className="area-sub">
+                    {a.expedientes} {a.expedientes === 1 ? 'expediente' : 'expedientes'}
+                    {a.graves > 0 && ` · ${a.graves} ${a.graves === 1 ? 'crítica o alta' : 'críticas o altas'}`}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </Card>
         </div>
-      </Card>
+      </Seccion>
+
+      <Seccion titulo="Seguimiento del analista">
+        <TableroOperativo expedientes={expedientes} onAbrirExpediente={onAbrirExpediente} />
+      </Seccion>
+
+      <Seccion
+        titulo="Dictamen por expediente"
+        accion={
+          <div className="toolbar-buscador">
+            <SearchBox value={busqueda} onChange={setBusqueda} placeholder="Folio, nombre, empresa o RFC…" label="Buscar expediente" />
+          </div>
+        }
+      >
+        <Card className="table-card">
+          <div className="table-scroll">
+            <table className="data-table">
+              <colgroup>
+                <col style={{ width: '28%' }} />
+                <col style={{ width: '11%' }} />
+                <col style={{ width: '14%' }} />
+                <col style={{ width: '17%' }} />
+                <col style={{ width: '8%' }} />
+                <col style={{ width: '22%' }} />
+              </colgroup>
+              <thead>
+                <tr>
+                  <th>Expediente</th>
+                  <th>Tipo</th>
+                  <th>Estado</th>
+                  <th className="col-right">Cumplimiento</th>
+                  <th className="col-right">Alertas</th>
+                  <th className="col-right">Dictamen de cumplimiento</th>
+                </tr>
+              </thead>
+              <tbody>
+                {loading && <SkeletonRows rows={4} cols={COLUMNAS} />}
+                {!loading && filtrados.length === 0 && (
+                  <EmptyRow
+                    columnas={COLUMNAS}
+                    icon={expedientes.length === 0 ? FileBarChart2 : SearchX}
+                    titulo={expedientes.length === 0 ? 'Aún no hay expedientes' : 'Sin coincidencias'}
+                    descripcion={expedientes.length === 0 ? 'Los reportes se generan a partir de los expedientes.' : 'Ajusta la búsqueda.'}
+                  />
+                )}
+                {!loading &&
+                  filtrados.map((e) => {
+                    const meta = getEstadoBadge(e.estado_cumplimiento)
+                    return (
+                      <tr key={e.id}>
+                        <td>
+                          <span className="cell-stack">
+                            <span className="identity-name">{e.titular?.razon_social || 'Titular no disponible'}</span>
+                            <span className="cell-sub mono">
+                              {e.codigo_expediente}
+                              {e.nombre ? ` · ${e.nombre}` : ''}
+                            </span>
+                          </span>
+                        </td>
+                        <td>
+                          <Tag tipo>{TIPO_EXPEDIENTE_LABEL[e.tipo_expediente] || e.tipo_expediente}</Tag>
+                        </td>
+                        <td>
+                          <Badge tono={meta.tono} punto>
+                            {meta.label}
+                          </Badge>
+                        </td>
+                        <td className="col-right">
+                          <span className="cell-stack">
+                            <span className="tabular">{formatIndice(indiceDe(e)?.porcentaje)}</span>
+                            <span className="cell-sub tabular">
+                              {Number(e.porcentaje_completitud || 0).toFixed(0)}% obligatorios
+                            </span>
+                          </span>
+                        </td>
+                        <td className="col-right tabular">{e.evaluacion?.alertas?.length || 0}</td>
+                        <td className="col-right">
+                          <ExportarReporte ruta={`/reportes/expedientes/${e.id}`} compacto disabled={!isOnline} />
+                        </td>
+                      </tr>
+                    )
+                  })}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      </Seccion>
     </div>
   )
 }

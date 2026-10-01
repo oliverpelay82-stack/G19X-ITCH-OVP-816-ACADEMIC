@@ -111,7 +111,7 @@ function TarjetaTitular({ titular, expedientes, ...acciones }) {
         <KeyValue etiqueta="RFC">
           <CopyChip valor={titular.rfc} etiqueta="RFC" />
         </KeyValue>
-        <KeyValue etiqueta="Categoría regulatoria">
+        <KeyValue etiqueta="Categoría">
           <Tag>{categoriaTitular(titular.categoria)}</Tag>
         </KeyValue>
       </KeyValueList>
@@ -270,7 +270,7 @@ export default function TitularesTab({
           className="toolbar-action"
           onClick={() => setModalAbierto(true)}
           disabled={!isOnline}
-          title={!isOnline ? 'El core-service (:8001) no responde' : undefined}
+          title={!isOnline ? 'El sistema de expedientes no responde' : undefined}
         >
           Alta de empresa
         </Button>
@@ -347,7 +347,7 @@ export default function TitularesTab({
                         <td>
                           <EstadoExpediente expediente={ultimo} />
                         </td>
-                        <td className="col-right cell-muted tabular">{formatFechaCorta(t.creado_en)}</td>
+                        <td className="col-right cell-num tabular">{formatFechaCorta(t.creado_en)}</td>
                         <td className="col-action">
                           <AccionExpediente
                             titular={t}

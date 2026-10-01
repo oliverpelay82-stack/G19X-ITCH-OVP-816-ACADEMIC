@@ -76,6 +76,10 @@ export default function AlertasTab({ expedientes, loading, onAbrirExpediente }) 
     })
   }, [alertas, consulta, filtroSeveridad, filtroCodigo, filtroTipo])
   const nExpedientes = new Set(filtradas.map((a) => a.expediente.id)).size
+  // Grupos de la más grave a la menos grave; una severidad fuera del catálogo va al final.
+  const grupos = SEVERIDADES.map((s) => ({ sev: s, items: filtradas.filter((a) => a.severidad === s) }))
+    .concat([{ sev: null, items: filtradas.filter((a) => !SEVERIDADES.includes(a.severidad)) }])
+    .filter((g) => g.items.length)
 
   return (
     <div className="tab-panel">
@@ -128,16 +132,30 @@ export default function AlertasTab({ expedientes, loading, onAbrirExpediente }) 
             {nExpedientes === 1 ? 'expediente' : 'expedientes'}, de la más grave a la menos grave.
             {filtroTipo !== 'TODOS' && ` Tipo: ${TIPO_EXPEDIENTE_LABEL[filtroTipo]}.`}
           </p>
-          <ul className="alerta-lista alerta-lista--bandeja">
-            {filtradas.map((a, i) => (
-              <AlertaItem
-                key={`${a.expediente.id}-${a.codigo}-${a.tipo_documento}-${i}`}
-                alerta={a}
-                expediente={a.expediente}
-                onAbrirExpediente={onAbrirExpediente}
-              />
-            ))}
-          </ul>
+          <div className="bandeja-grupos">
+            {grupos.map(({ sev, items }) => {
+              const meta = getSeveridadMeta(sev)
+              const titulo = sev ? meta.label : 'Otras'
+              return (
+                <section key={sev || 'otras'} className="bandeja-grupo" aria-label={`Severidad ${titulo.toLowerCase()}`}>
+                  <h2 className="eyebrow eyebrow--icon">
+                    <span className={`status-dot status-dot--${meta.tono}`} aria-hidden="true" />
+                    {titulo} <span className="tabular cell-muted">· {items.length}</span>
+                  </h2>
+                  <ul className="alerta-lista alerta-lista--bandeja">
+                    {items.map((a, i) => (
+                      <AlertaItem
+                        key={`${a.expediente.id}-${a.codigo}-${a.tipo_documento}-${i}`}
+                        alerta={a}
+                        expediente={a.expediente}
+                        onAbrirExpediente={onAbrirExpediente}
+                      />
+                    ))}
+                  </ul>
+                </section>
+              )
+            })}
+          </div>
         </>
       )}
     </div>

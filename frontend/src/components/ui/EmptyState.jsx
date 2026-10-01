@@ -2,7 +2,7 @@ import { cx } from './clases.js'
 
 /**
  * Estado vacío con icono, título y una línea de ayuda. `className` añade una
- * variante de contexto (p. ej. `empty-state--tarjeta`, centrado en una tarjeta).
+ * variante de contexto.
  */
 export function EmptyState({ icon: Icono, titulo, descripcion, className, children }) {
   return (

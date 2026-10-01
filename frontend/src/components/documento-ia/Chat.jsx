@@ -133,7 +133,7 @@ export function ChatDocumento({ doc, iaOnline }) {
       avisarFallo(toast, err, 'No se pudo consultar el documento')
       setMensajes((prev) => [
         ...prev,
-        { id: crypto.randomUUID(), rol: 'asistente', contenido: err?.message || 'Error del ai-service.', error: true },
+        { id: crypto.randomUUID(), rol: 'asistente', contenido: err?.message || 'Error del servicio de análisis con IA.', error: true },
       ])
     } finally {
       setPensando(false)
@@ -178,8 +178,10 @@ export function ChatDocumento({ doc, iaOnline }) {
               {!m.error && (
                 <>
                   <Citas contexto={m.contexto} />
-                  <EstadoLectura lectura={m.lectura} contexto={m.contexto} />
-                  <MetaInferencia modelo={m.modelo} duracion={m.duracion} origen={m.origen} />
+                  <div className="bubble-pie">
+                    <EstadoLectura lectura={m.lectura} contexto={m.contexto} />
+                    <MetaInferencia modelo={m.modelo} duracion={m.duracion} origen={m.origen} />
+                  </div>
                 </>
               )}
             </div>
@@ -209,7 +211,7 @@ export function ChatDocumento({ doc, iaOnline }) {
           value={borrador}
           onChange={(e) => setBorrador(e.target.value)}
           onKeyDown={alTeclear}
-          placeholder={iaOnline ? 'Escribe una pregunta sobre el documento…' : 'El ai-service (:8003) no responde'}
+          placeholder={iaOnline ? 'Escribe una pregunta sobre el documento…' : 'El servicio de análisis con IA no responde'}
           disabled={!iaOnline}
           aria-label="Pregunta sobre el documento"
         />

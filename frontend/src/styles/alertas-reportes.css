@@ -6,18 +6,41 @@
 
 /* La etiqueta del rango de fechas va en un solo renglón, a la altura de sus
    campos (a 1366 px se partía en «Apertura / desde»). */
-.date-inline {
+/* Rango de fechas como un solo control, a la altura de los demás filtros. */
+.date-range {
   display: inline-flex;
   align-items: center;
-  gap: var(--s-2);
+  gap: var(--s-1);
+  height: var(--control-md);
+  padding: 0 var(--s-1) 0 var(--s-3);
+  border: var(--border-default);
+  border-radius: var(--r-sm);
+  background: var(--bg-surface);
   font-size: var(--fs-small);
   color: var(--text-muted);
   white-space: nowrap;
 }
 
-.date-inline input {
+.date-range:hover {
+  border-color: var(--line-strong);
+}
+
+.date-range:focus-within {
+  border-color: var(--line-strong);
+  box-shadow: var(--focus-ring);
+}
+
+/* El borde y el foco son del grupo, no de cada campo (la regla global de
+   los campos lleva tres :not, de ahí la especificidad). */
+.date-range > input:not([type='checkbox']):not([type='file']):not([type='search']),
+.date-range > input:not([type='checkbox']):not([type='file']):not([type='search']):hover,
+.date-range > input:not([type='checkbox']):not([type='file']):not([type='search']):focus {
   width: auto;
-  min-width: 140px;
+  height: calc(var(--control-md) - 2px);
+  padding: 0 var(--s-2);
+  border: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .cell-warn {
@@ -170,7 +193,7 @@
 .exp-motivos-titulo {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--s-2);
   font-size: var(--fs-small);
   font-weight: 600;
   color: var(--text-primary);
@@ -264,12 +287,6 @@
 }
 
 /* Alertas con recomendación (RF-18, RF-21). */
-.exp-alertas {
-  display: flex;
-  flex-direction: column;
-  gap: var(--s-2);
-}
-
 .alerta-lista {
   display: flex;
   flex-direction: column;
@@ -280,9 +297,8 @@
 .alerta {
   position: relative;
   display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: var(--s-3) var(--s-3) var(--s-3) var(--s-4);
+  gap: var(--s-6);
+  padding: var(--s-5) var(--s-5) var(--s-5) var(--s-6);
   border: var(--border-default);
   border-radius: var(--r-sm);
   background: var(--bg-surface);
@@ -306,9 +322,74 @@
   background: var(--warn-solid);
 }
 
+/* Bandeja: grupos por severidad con 32 px entre ellos, más aire entre
+   tarjetas que dentro de ellas y renglones de lectura cómoda (unos 100
+   caracteres); el expediente ocupa una columna propia a la derecha. */
+.bandeja-grupos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-8);
+}
+
+.bandeja-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+
+.alerta-lista--bandeja {
+  gap: var(--s-3);
+}
+
+.alerta-cuerpo {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--s-2);
+  min-width: 0;
+}
+
+.alerta-expediente {
+  display: flex;
+  flex: 0 0 240px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--s-1);
+  min-width: 0;
+  padding-left: var(--s-5);
+  border-left: var(--border-subtle);
+}
+
+.alerta-expediente-folio {
+  font-size: var(--fs-micro);
+  color: var(--text-secondary);
+}
+
+.alerta-expediente-nombre {
+  max-width: 100%;
+  font-size: var(--fs-small);
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.alerta-expediente .btn {
+  margin-top: var(--s-2);
+}
+
 .alerta-lista--bandeja .alerta {
   box-shadow: var(--shadow-card);
   animation: rise-in var(--dur-slow) var(--ease);
+}
+
+.alerta-lista--bandeja .alerta-detalle {
+  max-width: 100ch;
+}
+
+.alerta-lista--bandeja .alerta-recomendacion {
+  align-self: flex-start;
+  max-width: 100ch;
 }
 
 .alerta-head {
@@ -326,37 +407,9 @@
   font-size: var(--fs-micro);
 }
 
-.alerta-exp {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin-left: auto;
-  max-width: 55%;
-  padding: 2px var(--s-2);
-  border-radius: var(--r-xs);
-  font-size: var(--fs-small);
-  color: var(--text-secondary);
-  transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease);
-}
-
-.alerta-exp:hover {
-  background: var(--bg-subtle);
-  color: var(--text-primary);
-}
-
-.alerta-exp .mono {
-  font-size: var(--fs-micro);
-}
-
-.alerta-exp-nombre {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .alerta-titulo {
   font-size: var(--fs-body);
-  font-weight: 500;
+  font-weight: 600;
   color: var(--text-primary);
 }
 
@@ -364,31 +417,6 @@
   font-size: var(--fs-small);
   line-height: 1.5;
   color: var(--text-secondary);
-}
-
-/* Alerta compacta (detalle del expediente): título y categoría en una
-   línea, la recomendación sin caja y el detalle plegado. */
-.alerta--compacta {
-  gap: 2px;
-  padding: var(--s-2) var(--s-3) var(--s-2) var(--s-4);
-}
-
-.alerta-compacta-cabecera {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--s-3);
-}
-
-.alerta-compacta-cabecera .tag {
-  flex-shrink: 0;
-  height: 20px;
-}
-
-.alerta--compacta .alerta-recomendacion--plana {
-  margin-top: 0;
-  padding: 0;
-  background: none;
 }
 
 .alerta-mas summary {
@@ -421,29 +449,38 @@
   color: var(--icon);
 }
 
-/* Reportes: indicadores globales (RF-22) y distribución en barras. */
+/* Reportes: indicadores globales (RF-22) en secciones con título: 32 px
+   entre secciones (12 del panel más 20 propios), 16 entre tarjetas y 20 de
+   relleno, para que cada bloque se lea por separado. */
+.reportes > .report-seccion {
+  margin-top: var(--s-5);
+}
+
+.report-seccion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+
+.report-seccion-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+  min-height: var(--control-md);
+}
+
 .report-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--s-3);
+  gap: var(--s-4);
 }
 
 .report-card {
   display: flex;
   flex-direction: column;
-  gap: var(--s-2);
-  padding: var(--s-4);
-}
-
-.report-kpi {
-  font-size: var(--fs-display);
-  font-weight: 600;
-  line-height: 1.1;
-  color: var(--text-primary);
-}
-
-.report-sub {
-  margin-top: var(--s-2);
+  gap: var(--s-3);
+  padding: var(--s-5);
 }
 
 /* Barra del reporte global: la nota a la izquierda y el filtro con la
@@ -466,7 +503,7 @@
 .dist-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--cell-y);
   list-style: none;
 }
 
@@ -527,9 +564,19 @@
   .type-options {
     grid-template-columns: minmax(0, 1fr);
   }
+}
 
-  .alerta-exp {
-    margin-left: 0;
-    max-width: 100%;
+/* Sin ancho para dos columnas, el expediente baja bajo el texto de la alerta. */
+@media (max-width: 900px) {
+  .alerta {
+    flex-direction: column;
+    gap: var(--s-3);
+  }
+
+  .alerta-expediente {
+    flex-basis: auto;
+    padding: var(--s-3) 0 0;
+    border-top: var(--border-subtle);
+    border-left: 0;
   }
 }

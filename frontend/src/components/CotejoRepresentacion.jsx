@@ -66,7 +66,7 @@ export default function CotejoRepresentacion({ doc, recarga = 0 }) {
   const apoderados = coincidencia ? [coincidencia] : cotejo?.apoderados || []
 
   return (
-    <div className="ia-bloque">
+    <div className="ia-apartado">
       <h5 className="section-title section-title--sm">Representación legal</h5>
       {error && <p className="field-hint">No se pudo consultar el cotejo: {error}</p>}
       {!error && !cotejo && <p className="field-hint">Este documento no es el contrato vigente de su tipo en el expediente.</p>}

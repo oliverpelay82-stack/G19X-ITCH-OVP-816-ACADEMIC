@@ -142,6 +142,7 @@
 .cell-num {
   font-size: var(--fs-small);
   color: var(--text-secondary);
+  white-space: nowrap;
 }
 
 /* Bóveda, histórico completo: las versiones sustituidas se atenúan para que
@@ -290,11 +291,41 @@
   white-space: normal;
 }
 
+/* Detalle de una regla: los dos textos largos (descripción y acción) a
+   medias y los tres datos cortos en tercios, sin un dato huérfano; las
+   etiquetas en versales, como los demás datos clave del sistema. */
 .regla-detalle-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--s-3) var(--s-6);
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: var(--s-4) var(--s-6);
+  margin: 0;
   font-size: var(--fs-small);
+}
+
+.regla-detalle-grid > div {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+  grid-column: span 2;
+  min-width: 0;
+}
+
+.regla-detalle-grid > div:nth-child(-n + 2) {
+  grid-column: span 3;
+}
+
+.regla-detalle-grid dt {
+  font-size: var(--fs-micro);
+  font-weight: 500;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.regla-detalle-grid dd {
+  margin: 0;
+  line-height: 1.5;
+  color: var(--text-primary);
 }
 
 /* Chip de copiado (hash SHA-256, RFC) */
@@ -313,8 +344,10 @@
     color var(--dur) var(--ease);
 }
 
+/* La huella abreviada nunca se parte en dos renglones. */
 .copy-chip .mono {
   font-size: var(--fs-micro);
+  white-space: nowrap;
 }
 
 .copy-chip:hover {
@@ -356,7 +389,7 @@
 .exp-indice-valor {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--s-1);
   font-weight: 600;
   color: var(--text-primary);
 }
@@ -377,12 +410,6 @@
 
 /* Dentro de una tarjeta que la fila estira: el estado vacío ocupa el alto
    libre y se centra, en lugar de dejar un renglón suelto sobre un hueco. */
-.empty-state--tarjeta {
-  flex: 1;
-  justify-content: center;
-  padding: var(--s-4) var(--s-2);
-}
-
 .empty-icon {
   margin-bottom: var(--s-2);
 }
