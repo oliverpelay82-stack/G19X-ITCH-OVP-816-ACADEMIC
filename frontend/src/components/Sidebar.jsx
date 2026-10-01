@@ -1,12 +1,14 @@
-import { BellRing, Building2, FileBarChart2, FolderKanban, Scale, ShieldCheck, Vault } from 'lucide-react'
+import { BellRing, Building2, FileBarChart2 } from 'lucide-react'
+import { IconoBoveda, IconoExpediente, IconoReglas } from './IconosMotor.jsx'
+import LogoMotor from './LogoMotor.jsx'
 
 const GRUPOS = [
   {
     label: 'Cumplimiento',
     items: [
       { id: 'titulares', label: 'Empresas', icon: Building2 },
-      { id: 'expedientes', label: 'Expedientes', icon: FolderKanban },
-      { id: 'boveda', label: 'Bóveda', icon: Vault },
+      { id: 'expedientes', label: 'Expedientes', icon: IconoExpediente },
+      { id: 'boveda', label: 'Bóveda', icon: IconoBoveda },
     ],
   },
   {
@@ -18,7 +20,7 @@ const GRUPOS = [
   },
   {
     label: 'Configuración',
-    items: [{ id: 'reglas', label: 'Reglas', icon: Scale }],
+    items: [{ id: 'reglas', label: 'Reglas', icon: IconoReglas }],
   },
 ]
 
@@ -36,7 +38,7 @@ export default function Sidebar({ tabActiva, onTabChange, contadores }) {
     <aside className="sidebar">
       <div className="sidebar-brand">
         <span className="squircle squircle--lg squircle--brand" aria-hidden="true">
-          <ShieldCheck size={16} />
+          <LogoMotor size={16} />
         </span>
         <div className="brand-text">
           <span className="brand-name">PluriOne</span>

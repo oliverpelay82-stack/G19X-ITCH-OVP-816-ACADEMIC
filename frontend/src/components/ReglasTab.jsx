@@ -1,5 +1,6 @@
 import { Fragment, useMemo, useState } from 'react'
-import { ChevronRight, Loader2, Plus, Scale, SearchX, ServerOff } from 'lucide-react'
+import { ChevronRight, Loader2, Plus, SearchX, ServerOff } from 'lucide-react'
+import { IconoReglas } from './IconosMotor.jsx'
 import {
   Badge,
   Button,
@@ -353,7 +354,7 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
               {!loading && filtradas.length === 0 && (
                 <EmptyRow
                   columnas={COLUMNAS}
-                  icon={reglas.length === 0 ? Scale : SearchX}
+                  icon={reglas.length === 0 ? IconoReglas : SearchX}
                   titulo={reglas.length === 0 ? 'El catálogo está vacío' : 'Sin coincidencias'}
                   descripcion={
                     reglas.length === 0

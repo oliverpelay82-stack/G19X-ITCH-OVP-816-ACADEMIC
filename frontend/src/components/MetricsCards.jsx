@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Building2, FolderKanban, Gauge, Vault } from 'lucide-react'
+import { Building2 } from 'lucide-react'
+import { IconoBoveda, IconoExpediente, IconoSemaforo } from './IconosMotor.jsx'
 import { Skeleton } from './Skeleton.jsx'
 import { Card } from './ui/index.js'
 import { formatIndice, promedioIndice } from '../utils/indice.js'
@@ -89,7 +90,7 @@ export default function MetricsCards({ titulares, expedientes, documentos, loadi
     },
     {
       id: 'expedientes',
-      icon: FolderKanban,
+      icon: IconoExpediente,
       label: 'Expedientes',
       valor: <Cifra valor={expedientes.length} />,
       pie: (
@@ -106,7 +107,7 @@ export default function MetricsCards({ titulares, expedientes, documentos, loadi
     },
     {
       id: 'boveda',
-      icon: Vault,
+      icon: IconoBoveda,
       label: 'Bóveda',
       valor: <Cifra valor={documentos.length} />,
       pie: <span className="metric-foot">{`${enMB(datos.bytes)} bajo custodia`}</span>,
@@ -115,7 +116,7 @@ export default function MetricsCards({ titulares, expedientes, documentos, loadi
       // Índice de cumplimiento del DOC-05 (C6). La completitud (documentos
       // obligatorios presentes) va aparte, con su nombre: no es cumplimiento.
       id: 'cumplimiento',
-      icon: Gauge,
+      icon: IconoSemaforo,
       label: 'Cumplimiento',
       valor: <Cifra valor={datos.indice} formato={formatIndice} />,
       pie: <span className="metric-foot">{`Obligatorios presentes: ${datos.completitud.toFixed(0)}%`}</span>,

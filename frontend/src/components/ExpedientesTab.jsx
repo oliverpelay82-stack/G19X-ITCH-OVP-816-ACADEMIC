@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { ChevronDown, FolderKanban, Lock, Plus, SearchX } from 'lucide-react'
+import { ChevronDown, Lock, Plus, SearchX } from 'lucide-react'
+import { IconoExpediente } from './IconosMotor.jsx'
 import { Badge, Button, Card, EmptyState, Field, Input, Modal, SearchBox, Segmented, Select, Tag } from './ui/index.js'
 import { SkeletonCards } from './Skeleton.jsx'
 import useToast from '../hooks/useToast.js'
@@ -273,7 +274,7 @@ export default function ExpedientesTab({
       {!loading && filtrados.length === 0 && (
         <Card>
           <EmptyState
-            icon={expedientes.length === 0 ? FolderKanban : SearchX}
+            icon={expedientes.length === 0 ? IconoExpediente : SearchX}
             titulo={expedientes.length === 0 ? 'Aún no hay expedientes aperturados' : 'Sin resultados'}
             descripcion={
               expedientes.length === 0
