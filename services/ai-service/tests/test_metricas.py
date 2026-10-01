@@ -99,3 +99,18 @@ def test_bootstrap_es_reproducible_y_contiene_el_f1_observado():
     b = m.bootstrap_f1(casos, repeticiones=300)
     assert a == b
     assert a[0] <= observado <= a[1]
+
+
+def test_distancia_de_edicion_contra_valores_conocidos():
+    assert m.distancia_edicion("kitten", "sitting") == 3      # k→s, e→i, +g
+    assert m.distancia_edicion("", "abc") == 3
+    assert m.distancia_edicion("RFC", "RFC") == 0
+    assert m.distancia_edicion("abc", "ab") == m.distancia_edicion("ab", "abc") == 1
+
+
+def test_cer_ignora_la_maquetacion_y_cuenta_sobre_la_referencia():
+    # 1 error (0→O) en 10 caracteres de referencia; el doble espacio y el salto final no cuentan.
+    assert m.cer("RFC PLU180", "RFC  PLU18O\n") == pytest.approx(0.1)
+    assert m.cer("ab\ncd", "ab cd") == 0.0
+    assert m.cer("", "algo") is None
+    assert m.cer("ab", "abxyz") == pytest.approx(1.5)   # el texto inventado también cuenta

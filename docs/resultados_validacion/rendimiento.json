@@ -1,0 +1,179 @@
+{
+ "ejecutado_en": "2026-10-01T21:28:09+00:00",
+ "equipo": {
+  "sistema": "Windows-11-10.0.26300-SP0",
+  "procesador": "AMD64 Family 23 Model 24 Stepping 1, AuthenticAMD",
+  "nucleos_logicos": 8,
+  "python": "3.12.10",
+  "ram_gb": 5.9
+ },
+ "base": "plurione_compliance_bench",
+ "servicios": "locales (uvicorn, un proceso por servicio)",
+ "duracion_s": 87.4,
+ "rnf_01": {
+  "consulta": {
+   "3": {
+    "n": 100,
+    "p50_ms": 47.5,
+    "p95_ms": 65.6,
+    "p99_ms": 73.1,
+    "max_ms": 131.9,
+    "media_ms": 45.1
+   },
+   "8": {
+    "n": 100,
+    "p50_ms": 30.0,
+    "p95_ms": 54.2,
+    "p99_ms": 62.0,
+    "max_ms": 72.3,
+    "media_ms": 35.0
+   },
+   "15": {
+    "n": 100,
+    "p50_ms": 51.2,
+    "p95_ms": 72.5,
+    "p99_ms": 80.4,
+    "max_ms": 86.4,
+    "media_ms": 47.0
+   }
+  },
+  "consulta_con_ocr": {
+   "3": {
+    "n": 100,
+    "p50_ms": 34.8,
+    "p95_ms": 54.6,
+    "p99_ms": 64.3,
+    "max_ms": 101.8,
+    "media_ms": 39.3
+   },
+   "8": {
+    "n": 100,
+    "p50_ms": 35.9,
+    "p95_ms": 56.4,
+    "p99_ms": 75.1,
+    "max_ms": 124.0,
+    "media_ms": 40.5
+   },
+   "15": {
+    "n": 100,
+    "p50_ms": 37.8,
+    "p95_ms": 58.5,
+    "p99_ms": 75.8,
+    "max_ms": 86.9,
+    "media_ms": 40.1
+   }
+  },
+  "en_proceso": {
+   "3": {
+    "n": 100,
+    "p50_ms": 29.2,
+    "p95_ms": 47.8,
+    "p99_ms": 53.7,
+    "max_ms": 53.8,
+    "media_ms": 29.4
+   },
+   "8": {
+    "n": 100,
+    "p50_ms": 31.5,
+    "p95_ms": 53.8,
+    "p99_ms": 56.5,
+    "max_ms": 66.2,
+    "media_ms": 33.3
+   },
+   "15": {
+    "n": 100,
+    "p50_ms": 32.9,
+    "p95_ms": 55.6,
+    "p99_ms": 57.2,
+    "max_ms": 59.3,
+    "media_ms": 33.6
+   }
+  },
+  "listado_30": {
+   "n": 30,
+   "p50_ms": 201.9,
+   "p95_ms": 245.1,
+   "p99_ms": 280.1,
+   "max_ms": 290.7,
+   "media_ms": 204.1
+  },
+  "cumple": true
+ },
+ "rnf_03": {
+  "health": {
+   "secuencial": {
+    "n": 50,
+    "p50_ms": 3.5,
+    "p95_ms": 5.0,
+    "p99_ms": 6.0,
+    "max_ms": 6.3,
+    "media_ms": 3.7
+   },
+   "simultaneo": {
+    "n": 50,
+    "p50_ms": 269.2,
+    "p95_ms": 315.8,
+    "p99_ms": 317.4,
+    "max_ms": 318.0,
+    "media_ms": 273.6
+   },
+   "degradacion_p95": 63.16,
+   "respuestas_5xx": 0,
+   "sin_respuesta": 0,
+   "respuestas_esperadas": 50
+  },
+  "consulta": {
+   "secuencial": {
+    "n": 50,
+    "p50_ms": 48.8,
+    "p95_ms": 64.2,
+    "p99_ms": 92.3,
+    "max_ms": 118.7,
+    "media_ms": 50.2
+   },
+   "simultaneo": {
+    "n": 50,
+    "p50_ms": 831.2,
+    "p95_ms": 1070.0,
+    "p99_ms": 1075.4,
+    "max_ms": 1077.9,
+    "media_ms": 849.4
+   },
+   "degradacion_p95": 16.67,
+   "respuestas_5xx": 0,
+   "sin_respuesta": 0,
+   "respuestas_esperadas": 50
+  },
+  "cargas": {
+   "secuencial": {
+    "n": 50,
+    "p50_ms": 80.1,
+    "p95_ms": 98.2,
+    "p99_ms": 99.5,
+    "max_ms": 100.4,
+    "media_ms": 82.3
+   },
+   "simultaneo": {
+    "n": 50,
+    "p50_ms": 1541.9,
+    "p95_ms": 2199.9,
+    "p99_ms": 2294.4,
+    "max_ms": 2305.2,
+    "media_ms": 1540.3
+   },
+   "degradacion_p95": 22.4,
+   "respuestas_5xx": 0,
+   "sin_respuesta": 0,
+   "respuestas_esperadas": 50
+  },
+  "transacciones": {
+   "cargas_aceptadas": 100,
+   "documentos_creados": 100,
+   "eventos_ingesta": 100,
+   "cadena_integra": true,
+   "cadena_sellada": true,
+   "eventos_sellados": 499
+  },
+  "cumple": true
+ }
+}

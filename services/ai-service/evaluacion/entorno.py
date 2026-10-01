@@ -91,16 +91,29 @@ class _Presupuesto:
 class Casete:
     """Respuestas de Groq por huella de la petición exacta."""
 
-    def __init__(self, ruta: str, modo: str, registrar_presupuesto: bool = False):
+    def __init__(self, ruta: str, modo: str, registrar_presupuesto: bool = False,
+                 respaldos: tuple[str, ...] = (), limitar_tokens: bool = True):
         if modo not in (GRABAR, REPRODUCIR):
             raise ValueError(f"Modo desconocido: {modo}")
         self.ruta, self.modo = ruta, modo
         self.entradas: dict[str, dict[str, Any]] = {}
+        self._respaldo: dict[str, dict[str, Any]] = {}
         if os.path.exists(ruta):
             with open(ruta, encoding="utf-8") as f:
                 self.entradas = json.load(f)["entradas"]
+        # Casetes de otras corridas que se consultan sin modificarlos: una petición
+        # idéntica (la misma huella) ya grabada no vuelve a gastar tokens. Al usarse,
+        # la entrada se copia a este casete, que así se reproduce por sí solo.
+        for respaldo in respaldos:
+            if os.path.exists(respaldo):
+                with open(respaldo, encoding="utf-8") as f:
+                    for clave, entrada in json.load(f)["entradas"].items():
+                        self._respaldo.setdefault(clave, entrada)
         self._candado = threading.Lock()
-        self._presupuesto = _Presupuesto(TOKENS_POR_MINUTO)
+        # El presupuesto del grabador hace esperar una llamada que no cabe en el minuto: sirve
+        # para grabar sin errores 429, pero esa espera no existe en el servicio. Un benchmark
+        # de latencia (RNF-02) lo desactiva y espacia sus corridas para no competir por la cuota.
+        self._presupuesto = _Presupuesto(TOKENS_POR_MINUTO if limitar_tokens else 10**9)
         self.consultas: list[dict[str, Any]] = []   # uso de cada llamada de la corrida, en orden
         # Escenario de contención (T4): las llamadas reales entran en el presupuesto de
         # tokens del servicio, como lo haría groq_client, que aquí está sustituido.
@@ -119,6 +132,8 @@ class Casete:
         comienzo = time.perf_counter()
         with self._candado:
             entrada = self.entradas.get(clave)
+            if entrada is None and clave in self._respaldo:
+                entrada = self.entradas[clave] = self._respaldo[clave]
         if entrada is None:
             if self.modo == REPRODUCIR:
                 with self._candado:
@@ -182,6 +197,7 @@ class CoreSimulado:
     def __init__(self, casos: list[dict[str, Any]]):
         self.casos = {c["id"]: c for c in casos}
         self.dictamenes: dict[str, dict[str, Any]] = {}
+        self.diferidos: list[dict[str, Any]] = []
 
     def _caso(self, documento_id: str) -> dict[str, Any]:
         if documento_id not in self.casos:
@@ -241,6 +257,11 @@ class CoreSimulado:
     def ultimo_dictamen(self, documento_id: str) -> dict[str, Any] | None:
         return self.dictamenes.get(documento_id)
 
+    def marcar_diferido(self, documento_id: str, aviso: dict[str, Any]) -> bool:
+        """Si Groq falla, el controlador avisa al core: aquí se registra y nunca llega al core real."""
+        self.diferidos.append({"documento_id": documento_id, **aviso})
+        return True
+
 
 class ReglasSimuladas:
     """Criterios RSC de la instantánea del catálogo y vigencia RCV con el motor puro del rules-service."""
@@ -285,8 +306,9 @@ class Entorno:
     """
 
     def __init__(self, casos: list[dict[str, Any]], ruta_casete: str, modo: str = REPRODUCIR,
-                 registrar_presupuesto: bool = False):
-        self.casete = Casete(ruta_casete, modo, registrar_presupuesto)
+                 registrar_presupuesto: bool = False, respaldos: tuple[str, ...] = (),
+                 limitar_tokens: bool = True):
+        self.casete = Casete(ruta_casete, modo, registrar_presupuesto, respaldos, limitar_tokens)
         self.core = CoreSimulado(casos)
         self.reglas = ReglasSimuladas()
         self._parche = pytest.MonkeyPatch()
@@ -304,7 +326,7 @@ class Entorno:
             mp.setattr(settings, "GROQ_TOKENS_POR_MINUTO", 0)
         mp.setattr(repositorio_texto, "cache_texto", CacheExtracciones(settings.CACHE_MAX_DOCUMENTOS))
         for nombre in ("obtener_metadatos", "verificar_integridad", "leer_binario", "registrar_dictamen",
-                       "ultimo_dictamen"):
+                       "ultimo_dictamen", "marcar_diferido"):
             mp.setattr(core_client, nombre, getattr(self.core, nombre))
         mp.setattr(rules_client, "criterios_contenido", self.reglas.criterios_contenido)
         mp.setattr(rules_client, "evaluar_vigencia", self.reglas.evaluar_vigencia)

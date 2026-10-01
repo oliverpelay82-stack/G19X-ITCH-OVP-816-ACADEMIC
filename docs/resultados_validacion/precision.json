@@ -1,0 +1,7542 @@
+{
+ "etiqueta": "precision",
+ "modo": "reproducir",
+ "ejecutado_en": "2026-10-01T21:24:07+00:00",
+ "entorno": {
+  "modelo": "qwen/qwen3.8-27b",
+  "version_lectura": "n3-3.3|tesseract-5.4.0.20240606|spa|300dpi|sin-sellos",
+  "ocr_workers": 8,
+  "gold_standard_sha256": "89789fa9864623ff57bc7eb697334663b5a6858453309ea270ac79088421abe5",
+  "casete": "precision.json",
+  "fecha_referencia": "2026-09-30",
+  "python": "3.12.10",
+  "sistema": "Windows-11-10.0.26300-SP0",
+  "procesador": "AMD64 Family 23 Model 24 Stepping 1, AuthenticAMD"
+ },
+ "tokens_totales": 126019,
+ "total": {
+  "casos": 42,
+  "entidades": {
+   "por_campo": {
+    "tipo_documento": {
+     "vp": 42,
+     "fp": 0,
+     "fn": 0,
+     "vn": 0,
+     "precision": 1.0,
+     "exhaustividad": 1.0,
+     "f1": 1.0,
+     "f1_ic95": [
+      1.0,
+      1.0
+     ],
+     "alucinacion": {
+      "exitos": 0,
+      "total": 0,
+      "valor": null,
+      "ic95": null
+     }
+    },
+    "rfc": {
+     "vp": 30,
+     "fp": 1,
+     "fn": 1,
+     "vn": 11,
+     "precision": 0.967741935483871,
+     "exhaustividad": 0.967741935483871,
+     "f1": 0.967741935483871,
+     "f1_ic95": [
+      0.8965063520871144,
+      1.0
+     ],
+     "alucinacion": {
+      "exitos": 0,
+      "total": 11,
+      "valor": 0.0,
+      "ic95": [
+       2.7755575615628914e-17,
+       0.2588400172488141
+      ]
+     }
+    },
+    "razon_social": {
+     "vp": 42,
+     "fp": 0,
+     "fn": 0,
+     "vn": 0,
+     "precision": 1.0,
+     "exhaustividad": 1.0,
+     "f1": 1.0,
+     "f1_ic95": [
+      1.0,
+      1.0
+     ],
+     "alucinacion": {
+      "exitos": 0,
+      "total": 0,
+      "valor": null,
+      "ic95": null
+     }
+    },
+    "fecha_emision": {
+     "vp": 41,
+     "fp": 0,
+     "fn": 1,
+     "vn": 0,
+     "precision": 1.0,
+     "exhaustividad": 0.9761904761904762,
+     "f1": 0.9879518072289156,
+     "f1_ic95": [
+      0.9626388888888889,
+      1.0
+     ],
+     "alucinacion": {
+      "exitos": 0,
+      "total": 0,
+      "valor": null,
+      "ic95": null
+     }
+    },
+    "fecha_vencimiento": {
+     "vp": 16,
+     "fp": 0,
+     "fn": 0,
+     "vn": 26,
+     "precision": 1.0,
+     "exhaustividad": 1.0,
+     "f1": 1.0,
+     "f1_ic95": [
+      1.0,
+      1.0
+     ],
+     "alucinacion": {
+      "exitos": 0,
+      "total": 26,
+      "valor": 0.0,
+      "ic95": [
+       0.0,
+       0.12873304380462175
+      ]
+     }
+    }
+   },
+   "micro": {
+    "vp": 171,
+    "fp": 1,
+    "fn": 2,
+    "vn": 37,
+    "precision": 0.9941860465116279,
+    "exhaustividad": 0.9884393063583815,
+    "f1": 0.991304347826087,
+    "f1_ic95": [
+     0.9766047471620226,
+     1.0
+    ]
+   },
+   "f1_macro": 0.9911,
+   "alucinacion": {
+    "exitos": 0,
+    "total": 37,
+    "valor": 0.0,
+    "ic95": [
+     0.0,
+     0.09406095745514377
+    ]
+   },
+   "documentos_con_todos_los_campos": {
+    "exitos": 40,
+    "total": 42,
+    "valor": 0.9524,
+    "ic95": [
+     0.8420986468452026,
+     0.9868427513607937
+    ]
+   }
+  },
+  "elementos": {
+   "pares": 101,
+   "omision": {
+    "vp": 12,
+    "fp": 0,
+    "fn": 2,
+    "vn": 87,
+    "precision": 1.0,
+    "exhaustividad": 0.8571428571428571,
+    "f1": 0.923076923076923,
+    "f1_ic95": [
+     0.782608695652174,
+     1.0
+    ]
+   },
+   "presente": {
+    "vp": 87,
+    "fp": 2,
+    "fn": 0,
+    "vn": 12,
+    "precision": 0.9775280898876404,
+    "exhaustividad": 1.0,
+    "f1": 0.9886363636363636,
+    "f1_ic95": [
+     0.9718289965783401,
+     1.0
+    ]
+   },
+   "abstenciones": 0,
+   "no_evaluadas": 0,
+   "citas_ancladas": {
+    "exitos": 89,
+    "total": 89,
+    "valor": 1.0,
+    "ic95": [
+     0.9586219970358116,
+     1.0
+    ]
+   },
+   "falsas_conformidades": [
+    "GS-CONT-05:RSC-01-CONT-OBJ",
+    "GS-NDA-02:RSC-01-NDA-NODIV"
+   ],
+   "omisiones_indebidas": [],
+   "por_regla": {
+    "RSC-01-CONT-CONF": {
+     "pares": 10,
+     "aciertos": 10
+    },
+    "RSC-01-CONT-FIRM": {
+     "pares": 10,
+     "aciertos": 10
+    },
+    "RSC-01-CONT-OBJ": {
+     "pares": 10,
+     "aciertos": 9
+    },
+    "RSC-01-CONT-PEN": {
+     "pares": 10,
+     "aciertos": 10
+    },
+    "RSC-01-CONT-VIG": {
+     "pares": 10,
+     "aciertos": 10
+    },
+    "RSC-01-NDA-NODIV": {
+     "pares": 4,
+     "aciertos": 3
+    },
+    "RSC-01-NDA-PART": {
+     "pares": 4,
+     "aciertos": 4
+    },
+    "RSC-01-NDA-VIG": {
+     "pares": 4,
+     "aciertos": 4
+    },
+    "RSC-ACTA-ADMON": {
+     "pares": 6,
+     "aciertos": 6
+    },
+    "RSC-ACTA-ESCR": {
+     "pares": 6,
+     "aciertos": 6
+    },
+    "RSC-ACTA-RPC": {
+     "pares": 6,
+     "aciertos": 6
+    },
+    "RSC-LIC-GIRO": {
+     "pares": 1,
+     "aciertos": 1
+    },
+    "RSC-OPIN-SENT": {
+     "pares": 5,
+     "aciertos": 5
+    },
+    "RSC-PODER-FAC": {
+     "pares": 4,
+     "aciertos": 4
+    },
+    "RSC-PODER-NOT": {
+     "pares": 4,
+     "aciertos": 4
+    },
+    "RSC-PODER-PART": {
+     "pares": 4,
+     "aciertos": 4
+    },
+    "RSC-POL-COB": {
+     "pares": 3,
+     "aciertos": 3
+    }
+   }
+  },
+  "personas": {
+   "nombres": {
+    "vp": 46,
+    "fp": 0,
+    "fn": 0,
+    "vn": 0,
+    "precision": 1.0,
+    "exhaustividad": 1.0,
+    "f1": 1.0,
+    "f1_ic95": [
+     1.0,
+     1.0
+    ]
+   },
+   "cargo": {
+    "exitos": 41,
+    "total": 46,
+    "valor": 0.8913,
+    "ic95": [
+     0.7696189698736853,
+     0.9526692391725731
+    ]
+   }
+  },
+  "decisiones": {
+   "matriz": {
+    "CONFORME": {
+     "CONFORME": 16,
+     "EN_REVISION": 0,
+     "NO_CONFORME": 0
+    },
+    "EN_REVISION": {
+     "CONFORME": 0,
+     "EN_REVISION": 18,
+     "NO_CONFORME": 0
+    },
+    "NO_CONFORME": {
+     "CONFORME": 0,
+     "EN_REVISION": 0,
+     "NO_CONFORME": 8
+    }
+   },
+   "exactitud": {
+    "exitos": 42,
+    "total": 42,
+    "valor": 1.0,
+    "ic95": [
+     0.9161983874908382,
+     1.0
+    ]
+   },
+   "f1_macro": 1.0,
+   "kappa": 1.0,
+   "falsa_conformidad": {
+    "exitos": 0,
+    "total": 26,
+    "valor": 0.0,
+    "ic95": [
+     0.0,
+     0.12873304380462175
+    ]
+   },
+   "rechazo_indebido": {
+    "exitos": 0,
+    "total": 34,
+    "valor": 0.0,
+    "ic95": [
+     0.0,
+     0.10151790621961015
+    ]
+   },
+   "revision_humana_por_estatus_esperado": {
+    "CONFORME": {
+     "exitos": 0,
+     "total": 16,
+     "valor": 0.0,
+     "ic95": [
+      0.0,
+      0.19361341827271994
+     ]
+    },
+    "EN_REVISION": {
+     "exitos": 18,
+     "total": 18,
+     "valor": 1.0,
+     "ic95": [
+      0.8241154494176252,
+      1.0
+     ]
+    },
+    "NO_CONFORME": {
+     "exitos": 0,
+     "total": 8,
+     "valor": 0.0,
+     "ic95": [
+      0.0,
+      0.3244156195108769
+     ]
+    }
+   },
+   "derivacion_a_revision": {
+    "exitos": 18,
+    "total": 42,
+    "valor": 0.4286,
+    "ic95": [
+     0.2911742951914822,
+     0.5779402208812553
+    ]
+   },
+   "calibracion": {
+    "≥ 0.85": {
+     "exitos": 42,
+     "total": 42,
+     "valor": 1.0,
+     "ic95": [
+      0.9161983874908382,
+      1.0
+     ]
+    },
+    "0.70–0.84": {
+     "exitos": 0,
+     "total": 0,
+     "valor": null,
+     "ic95": null
+    },
+    "< 0.70": {
+     "exitos": 0,
+     "total": 0,
+     "valor": null,
+     "ic95": null
+    }
+   },
+   "discrepancias": []
+  },
+  "ocr": {
+   "escaneos": 12,
+   "cer_mediana": 0.0024000000000000002,
+   "cer_maximo": 0.0096,
+   "por_caso": {
+    "GS-CSF-01-ESC": 0.0047,
+    "GS-CSF-03-ESC": 0.0069,
+    "GS-OPIN-01-ESC": 0.0037,
+    "GS-DOM-01-ESC": 0.0,
+    "GS-ACTA-01-ESC": 0.0051,
+    "GS-ACTA-03-ESC": 0.0046,
+    "GS-PODER-01-ESC": 0.0096,
+    "GS-CONT-01-ESC": 0.0011,
+    "GS-CONT-03-ESC": 0.0008,
+    "GS-CONT-07-ESC": 0.0011,
+    "GS-NDA-01-ESC": 0.0,
+    "GS-POL-01-ESC": 0.0
+   }
+  }
+ },
+ "por_rendicion": {
+  "VECTORIAL": {
+   "casos": 30,
+   "entidades": {
+    "por_campo": {
+     "tipo_documento": {
+      "vp": 30,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0,
+      "f1_ic95": [
+       1.0,
+       1.0
+      ],
+      "alucinacion": {
+       "exitos": 0,
+       "total": 0,
+       "valor": null,
+       "ic95": null
+      }
+     },
+     "rfc": {
+      "vp": 22,
+      "fp": 0,
+      "fn": 0,
+      "vn": 8,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0,
+      "f1_ic95": [
+       1.0,
+       1.0
+      ],
+      "alucinacion": {
+       "exitos": 0,
+       "total": 8,
+       "valor": 0.0,
+       "ic95": [
+        0.0,
+        0.3244156195108769
+       ]
+      }
+     },
+     "razon_social": {
+      "vp": 30,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0,
+      "f1_ic95": [
+       1.0,
+       1.0
+      ],
+      "alucinacion": {
+       "exitos": 0,
+       "total": 0,
+       "valor": null,
+       "ic95": null
+      }
+     },
+     "fecha_emision": {
+      "vp": 29,
+      "fp": 0,
+      "fn": 1,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 0.9666666666666667,
+      "f1": 0.983050847457627,
+      "f1_ic95": [
+       0.9473684210526316,
+       1.0
+      ],
+      "alucinacion": {
+       "exitos": 0,
+       "total": 0,
+       "valor": null,
+       "ic95": null
+      }
+     },
+     "fecha_vencimiento": {
+      "vp": 11,
+      "fp": 0,
+      "fn": 0,
+      "vn": 19,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0,
+      "f1_ic95": [
+       1.0,
+       1.0
+      ],
+      "alucinacion": {
+       "exitos": 0,
+       "total": 19,
+       "valor": 0.0,
+       "ic95": [
+        0.0,
+        0.16818436536845052
+       ]
+      }
+     }
+    },
+    "micro": {
+     "vp": 122,
+     "fp": 0,
+     "fn": 1,
+     "vn": 27,
+     "precision": 1.0,
+     "exhaustividad": 0.991869918699187,
+     "f1": 0.9959183673469388,
+     "f1_ic95": [
+      0.9874450505799481,
+      1.0
+     ]
+    },
+    "f1_macro": 0.9966,
+    "alucinacion": {
+     "exitos": 0,
+     "total": 27,
+     "valor": 0.0,
+     "ic95": [
+      6.938893903907228e-18,
+      0.12455903714463581
+     ]
+    },
+    "documentos_con_todos_los_campos": {
+     "exitos": 29,
+     "total": 30,
+     "valor": 0.9667,
+     "ic95": [
+      0.8332924860304112,
+      0.9940915620051425
+     ]
+    }
+   },
+   "elementos": {
+    "pares": 72,
+    "omision": {
+     "vp": 11,
+     "fp": 0,
+     "fn": 2,
+     "vn": 59,
+     "precision": 1.0,
+     "exhaustividad": 0.8461538461538461,
+     "f1": 0.9166666666666666,
+     "f1_ic95": [
+      0.761904761904762,
+      1.0
+     ]
+    },
+    "presente": {
+     "vp": 59,
+     "fp": 2,
+     "fn": 0,
+     "vn": 11,
+     "precision": 0.9672131147540983,
+     "exhaustividad": 1.0,
+     "f1": 0.9833333333333333,
+     "f1_ic95": [
+      0.957946656923639,
+      1.0
+     ]
+    },
+    "abstenciones": 0,
+    "no_evaluadas": 0,
+    "citas_ancladas": {
+     "exitos": 61,
+     "total": 61,
+     "valor": 1.0,
+     "ic95": [
+      0.9407540837980555,
+      1.0
+     ]
+    },
+    "falsas_conformidades": [
+     "GS-CONT-05:RSC-01-CONT-OBJ",
+     "GS-NDA-02:RSC-01-NDA-NODIV"
+    ],
+    "omisiones_indebidas": [],
+    "por_regla": {
+     "RSC-01-CONT-CONF": {
+      "pares": 7,
+      "aciertos": 7
+     },
+     "RSC-01-CONT-FIRM": {
+      "pares": 7,
+      "aciertos": 7
+     },
+     "RSC-01-CONT-OBJ": {
+      "pares": 7,
+      "aciertos": 6
+     },
+     "RSC-01-CONT-PEN": {
+      "pares": 7,
+      "aciertos": 7
+     },
+     "RSC-01-CONT-VIG": {
+      "pares": 7,
+      "aciertos": 7
+     },
+     "RSC-01-NDA-NODIV": {
+      "pares": 3,
+      "aciertos": 2
+     },
+     "RSC-01-NDA-PART": {
+      "pares": 3,
+      "aciertos": 3
+     },
+     "RSC-01-NDA-VIG": {
+      "pares": 3,
+      "aciertos": 3
+     },
+     "RSC-ACTA-ADMON": {
+      "pares": 4,
+      "aciertos": 4
+     },
+     "RSC-ACTA-ESCR": {
+      "pares": 4,
+      "aciertos": 4
+     },
+     "RSC-ACTA-RPC": {
+      "pares": 4,
+      "aciertos": 4
+     },
+     "RSC-LIC-GIRO": {
+      "pares": 1,
+      "aciertos": 1
+     },
+     "RSC-OPIN-SENT": {
+      "pares": 4,
+      "aciertos": 4
+     },
+     "RSC-PODER-FAC": {
+      "pares": 3,
+      "aciertos": 3
+     },
+     "RSC-PODER-NOT": {
+      "pares": 3,
+      "aciertos": 3
+     },
+     "RSC-PODER-PART": {
+      "pares": 3,
+      "aciertos": 3
+     },
+     "RSC-POL-COB": {
+      "pares": 2,
+      "aciertos": 2
+     }
+    }
+   },
+   "personas": {
+    "nombres": {
+     "vp": 32,
+     "fp": 0,
+     "fn": 0,
+     "vn": 0,
+     "precision": 1.0,
+     "exhaustividad": 1.0,
+     "f1": 1.0,
+     "f1_ic95": [
+      1.0,
+      1.0
+     ]
+    },
+    "cargo": {
+     "exitos": 29,
+     "total": 32,
+     "valor": 0.9062,
+     "ic95": [
+      0.7578150066422116,
+      0.9675990373736805
+     ]
+    }
+   },
+   "decisiones": {
+    "matriz": {
+     "CONFORME": {
+      "CONFORME": 9,
+      "EN_REVISION": 0,
+      "NO_CONFORME": 0
+     },
+     "EN_REVISION": {
+      "CONFORME": 0,
+      "EN_REVISION": 14,
+      "NO_CONFORME": 0
+     },
+     "NO_CONFORME": {
+      "CONFORME": 0,
+      "EN_REVISION": 0,
+      "NO_CONFORME": 7
+     }
+    },
+    "exactitud": {
+     "exitos": 30,
+     "total": 30,
+     "valor": 1.0,
+     "ic95": [
+      0.8864829086095221,
+      1.0
+     ]
+    },
+    "f1_macro": 1.0,
+    "kappa": 1.0,
+    "falsa_conformidad": {
+     "exitos": 0,
+     "total": 21,
+     "valor": 0.0,
+     "ic95": [
+      0.0,
+      0.15464382326420195
+     ]
+    },
+    "rechazo_indebido": {
+     "exitos": 0,
+     "total": 23,
+     "valor": 0.0,
+     "ic95": [
+      0.0,
+      0.14312112541726274
+     ]
+    },
+    "revision_humana_por_estatus_esperado": {
+     "CONFORME": {
+      "exitos": 0,
+      "total": 9,
+      "valor": 0.0,
+      "ic95": [
+       0.0,
+       0.2991527535509594
+      ]
+     },
+     "EN_REVISION": {
+      "exitos": 14,
+      "total": 14,
+      "valor": 1.0,
+      "ic95": [
+       0.7846829880728186,
+       1.0
+      ]
+     },
+     "NO_CONFORME": {
+      "exitos": 0,
+      "total": 7,
+      "valor": 0.0,
+      "ic95": [
+       0.0,
+       0.35433884297520657
+      ]
+     }
+    },
+    "derivacion_a_revision": {
+     "exitos": 14,
+     "total": 30,
+     "valor": 0.4667,
+     "ic95": [
+      0.30232127224128236,
+      0.6385798671847496
+     ]
+    },
+    "calibracion": {
+     "≥ 0.85": {
+      "exitos": 30,
+      "total": 30,
+      "valor": 1.0,
+      "ic95": [
+       0.8864829086095221,
+       1.0
+      ]
+     },
+     "0.70–0.84": {
+      "exitos": 0,
+      "total": 0,
+      "valor": null,
+      "ic95": null
+     },
+     "< 0.70": {
+      "exitos": 0,
+      "total": 0,
+      "valor": null,
+      "ic95": null
+     }
+    },
+    "discrepancias": []
+   },
+   "ocr": {
+    "escaneos": 0,
+    "cer_mediana": null,
+    "cer_maximo": null,
+    "por_caso": {}
+   }
+  },
+  "ESCANEADO": {
+   "casos": 12,
+   "entidades": {
+    "por_campo": {
+     "tipo_documento": {
+      "vp": 12,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0,
+      "f1_ic95": [
+       1.0,
+       1.0
+      ],
+      "alucinacion": {
+       "exitos": 0,
+       "total": 0,
+       "valor": null,
+       "ic95": null
+      }
+     },
+     "rfc": {
+      "vp": 8,
+      "fp": 1,
+      "fn": 1,
+      "vn": 3,
+      "precision": 0.8888888888888888,
+      "exhaustividad": 0.8888888888888888,
+      "f1": 0.8888888888888888,
+      "f1_ic95": [
+       0.6360795454545455,
+       1.0
+      ],
+      "alucinacion": {
+       "exitos": 0,
+       "total": 3,
+       "valor": 0.0,
+       "ic95": [
+        0.0,
+        0.5615060804490177
+       ]
+      }
+     },
+     "razon_social": {
+      "vp": 12,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0,
+      "f1_ic95": [
+       1.0,
+       1.0
+      ],
+      "alucinacion": {
+       "exitos": 0,
+       "total": 0,
+       "valor": null,
+       "ic95": null
+      }
+     },
+     "fecha_emision": {
+      "vp": 12,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0,
+      "f1_ic95": [
+       1.0,
+       1.0
+      ],
+      "alucinacion": {
+       "exitos": 0,
+       "total": 0,
+       "valor": null,
+       "ic95": null
+      }
+     },
+     "fecha_vencimiento": {
+      "vp": 5,
+      "fp": 0,
+      "fn": 0,
+      "vn": 7,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0,
+      "f1_ic95": [
+       1.0,
+       1.0
+      ],
+      "alucinacion": {
+       "exitos": 0,
+       "total": 7,
+       "valor": 0.0,
+       "ic95": [
+        0.0,
+        0.35433884297520657
+       ]
+      }
+     }
+    },
+    "micro": {
+     "vp": 49,
+     "fp": 1,
+     "fn": 1,
+     "vn": 10,
+     "precision": 0.98,
+     "exhaustividad": 0.98,
+     "f1": 0.98,
+     "f1_ic95": [
+      0.9361355226641999,
+      1.0
+     ]
+    },
+    "f1_macro": 0.9778,
+    "alucinacion": {
+     "exitos": 0,
+     "total": 10,
+     "valor": 0.0,
+     "ic95": [
+      0.0,
+      0.2775401687666166
+     ]
+    },
+    "documentos_con_todos_los_campos": {
+     "exitos": 11,
+     "total": 12,
+     "valor": 0.9167,
+     "ic95": [
+      0.6461140782014047,
+      0.9851352905492264
+     ]
+    }
+   },
+   "elementos": {
+    "pares": 29,
+    "omision": {
+     "vp": 1,
+     "fp": 0,
+     "fn": 0,
+     "vn": 28,
+     "precision": 1.0,
+     "exhaustividad": 1.0,
+     "f1": 1.0,
+     "f1_ic95": [
+      1.0,
+      1.0
+     ]
+    },
+    "presente": {
+     "vp": 28,
+     "fp": 0,
+     "fn": 0,
+     "vn": 1,
+     "precision": 1.0,
+     "exhaustividad": 1.0,
+     "f1": 1.0,
+     "f1_ic95": [
+      1.0,
+      1.0
+     ]
+    },
+    "abstenciones": 0,
+    "no_evaluadas": 0,
+    "citas_ancladas": {
+     "exitos": 28,
+     "total": 28,
+     "valor": 1.0,
+     "ic95": [
+      0.8793527963418923,
+      1.0
+     ]
+    },
+    "falsas_conformidades": [],
+    "omisiones_indebidas": [],
+    "por_regla": {
+     "RSC-01-CONT-CONF": {
+      "pares": 3,
+      "aciertos": 3
+     },
+     "RSC-01-CONT-FIRM": {
+      "pares": 3,
+      "aciertos": 3
+     },
+     "RSC-01-CONT-OBJ": {
+      "pares": 3,
+      "aciertos": 3
+     },
+     "RSC-01-CONT-PEN": {
+      "pares": 3,
+      "aciertos": 3
+     },
+     "RSC-01-CONT-VIG": {
+      "pares": 3,
+      "aciertos": 3
+     },
+     "RSC-01-NDA-NODIV": {
+      "pares": 1,
+      "aciertos": 1
+     },
+     "RSC-01-NDA-PART": {
+      "pares": 1,
+      "aciertos": 1
+     },
+     "RSC-01-NDA-VIG": {
+      "pares": 1,
+      "aciertos": 1
+     },
+     "RSC-ACTA-ADMON": {
+      "pares": 2,
+      "aciertos": 2
+     },
+     "RSC-ACTA-ESCR": {
+      "pares": 2,
+      "aciertos": 2
+     },
+     "RSC-ACTA-RPC": {
+      "pares": 2,
+      "aciertos": 2
+     },
+     "RSC-OPIN-SENT": {
+      "pares": 1,
+      "aciertos": 1
+     },
+     "RSC-PODER-FAC": {
+      "pares": 1,
+      "aciertos": 1
+     },
+     "RSC-PODER-NOT": {
+      "pares": 1,
+      "aciertos": 1
+     },
+     "RSC-PODER-PART": {
+      "pares": 1,
+      "aciertos": 1
+     },
+     "RSC-POL-COB": {
+      "pares": 1,
+      "aciertos": 1
+     }
+    }
+   },
+   "personas": {
+    "nombres": {
+     "vp": 14,
+     "fp": 0,
+     "fn": 0,
+     "vn": 0,
+     "precision": 1.0,
+     "exhaustividad": 1.0,
+     "f1": 1.0,
+     "f1_ic95": [
+      1.0,
+      1.0
+     ]
+    },
+    "cargo": {
+     "exitos": 12,
+     "total": 14,
+     "valor": 0.8571,
+     "ic95": [
+      0.600580922361363,
+      0.9599069262620787
+     ]
+    }
+   },
+   "decisiones": {
+    "matriz": {
+     "CONFORME": {
+      "CONFORME": 7,
+      "EN_REVISION": 0,
+      "NO_CONFORME": 0
+     },
+     "EN_REVISION": {
+      "CONFORME": 0,
+      "EN_REVISION": 4,
+      "NO_CONFORME": 0
+     },
+     "NO_CONFORME": {
+      "CONFORME": 0,
+      "EN_REVISION": 0,
+      "NO_CONFORME": 1
+     }
+    },
+    "exactitud": {
+     "exitos": 12,
+     "total": 12,
+     "valor": 1.0,
+     "ic95": [
+      0.7574992425007574,
+      1.0
+     ]
+    },
+    "f1_macro": 1.0,
+    "kappa": 1.0,
+    "falsa_conformidad": {
+     "exitos": 0,
+     "total": 5,
+     "valor": 0.0,
+     "ic95": [
+      0.0,
+      0.43449149475208104
+     ]
+    },
+    "rechazo_indebido": {
+     "exitos": 0,
+     "total": 11,
+     "valor": 0.0,
+     "ic95": [
+      2.7755575615628914e-17,
+      0.2588400172488141
+     ]
+    },
+    "revision_humana_por_estatus_esperado": {
+     "CONFORME": {
+      "exitos": 0,
+      "total": 7,
+      "valor": 0.0,
+      "ic95": [
+       0.0,
+       0.35433884297520657
+      ]
+     },
+     "EN_REVISION": {
+      "exitos": 4,
+      "total": 4,
+      "valor": 1.0,
+      "ic95": [
+       0.5100999795960008,
+       1.0
+      ]
+     },
+     "NO_CONFORME": {
+      "exitos": 0,
+      "total": 1,
+      "valor": 0.0,
+      "ic95": [
+       0.0,
+       0.7934567085261071
+      ]
+     }
+    },
+    "derivacion_a_revision": {
+     "exitos": 4,
+     "total": 12,
+     "valor": 0.3333,
+     "ic95": [
+      0.13811783989736134,
+      0.609382412602386
+     ]
+    },
+    "calibracion": {
+     "≥ 0.85": {
+      "exitos": 12,
+      "total": 12,
+      "valor": 1.0,
+      "ic95": [
+       0.7574992425007574,
+       1.0
+      ]
+     },
+     "0.70–0.84": {
+      "exitos": 0,
+      "total": 0,
+      "valor": null,
+      "ic95": null
+     },
+     "< 0.70": {
+      "exitos": 0,
+      "total": 0,
+      "valor": null,
+      "ic95": null
+     }
+    },
+    "discrepancias": []
+   },
+   "ocr": {
+    "escaneos": 12,
+    "cer_mediana": 0.0024000000000000002,
+    "cer_maximo": 0.0096,
+    "por_caso": {
+     "GS-CSF-01-ESC": 0.0047,
+     "GS-CSF-03-ESC": 0.0069,
+     "GS-OPIN-01-ESC": 0.0037,
+     "GS-DOM-01-ESC": 0.0,
+     "GS-ACTA-01-ESC": 0.0051,
+     "GS-ACTA-03-ESC": 0.0046,
+     "GS-PODER-01-ESC": 0.0096,
+     "GS-CONT-01-ESC": 0.0011,
+     "GS-CONT-03-ESC": 0.0008,
+     "GS-CONT-07-ESC": 0.0011,
+     "GS-NDA-01-ESC": 0.0,
+     "GS-POL-01-ESC": 0.0
+    }
+   }
+  }
+ },
+ "pares_vectorial_escaneado": {
+  "VECTORIAL": {
+   "casos": 12,
+   "entidades": {
+    "por_campo": {
+     "tipo_documento": {
+      "vp": 12,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0,
+      "f1_ic95": [
+       1.0,
+       1.0
+      ],
+      "alucinacion": {
+       "exitos": 0,
+       "total": 0,
+       "valor": null,
+       "ic95": null
+      }
+     },
+     "rfc": {
+      "vp": 9,
+      "fp": 0,
+      "fn": 0,
+      "vn": 3,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0,
+      "f1_ic95": [
+       1.0,
+       1.0
+      ],
+      "alucinacion": {
+       "exitos": 0,
+       "total": 3,
+       "valor": 0.0,
+       "ic95": [
+        0.0,
+        0.5615060804490177
+       ]
+      }
+     },
+     "razon_social": {
+      "vp": 12,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0,
+      "f1_ic95": [
+       1.0,
+       1.0
+      ],
+      "alucinacion": {
+       "exitos": 0,
+       "total": 0,
+       "valor": null,
+       "ic95": null
+      }
+     },
+     "fecha_emision": {
+      "vp": 12,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0,
+      "f1_ic95": [
+       1.0,
+       1.0
+      ],
+      "alucinacion": {
+       "exitos": 0,
+       "total": 0,
+       "valor": null,
+       "ic95": null
+      }
+     },
+     "fecha_vencimiento": {
+      "vp": 5,
+      "fp": 0,
+      "fn": 0,
+      "vn": 7,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0,
+      "f1_ic95": [
+       1.0,
+       1.0
+      ],
+      "alucinacion": {
+       "exitos": 0,
+       "total": 7,
+       "valor": 0.0,
+       "ic95": [
+        0.0,
+        0.35433884297520657
+       ]
+      }
+     }
+    },
+    "micro": {
+     "vp": 50,
+     "fp": 0,
+     "fn": 0,
+     "vn": 10,
+     "precision": 1.0,
+     "exhaustividad": 1.0,
+     "f1": 1.0,
+     "f1_ic95": [
+      1.0,
+      1.0
+     ]
+    },
+    "f1_macro": 1.0,
+    "alucinacion": {
+     "exitos": 0,
+     "total": 10,
+     "valor": 0.0,
+     "ic95": [
+      0.0,
+      0.2775401687666166
+     ]
+    },
+    "documentos_con_todos_los_campos": {
+     "exitos": 12,
+     "total": 12,
+     "valor": 1.0,
+     "ic95": [
+      0.7574992425007574,
+      1.0
+     ]
+    }
+   },
+   "elementos": {
+    "pares": 29,
+    "omision": {
+     "vp": 1,
+     "fp": 0,
+     "fn": 0,
+     "vn": 28,
+     "precision": 1.0,
+     "exhaustividad": 1.0,
+     "f1": 1.0,
+     "f1_ic95": [
+      1.0,
+      1.0
+     ]
+    },
+    "presente": {
+     "vp": 28,
+     "fp": 0,
+     "fn": 0,
+     "vn": 1,
+     "precision": 1.0,
+     "exhaustividad": 1.0,
+     "f1": 1.0,
+     "f1_ic95": [
+      1.0,
+      1.0
+     ]
+    },
+    "abstenciones": 0,
+    "no_evaluadas": 0,
+    "citas_ancladas": {
+     "exitos": 28,
+     "total": 28,
+     "valor": 1.0,
+     "ic95": [
+      0.8793527963418923,
+      1.0
+     ]
+    },
+    "falsas_conformidades": [],
+    "omisiones_indebidas": [],
+    "por_regla": {
+     "RSC-01-CONT-CONF": {
+      "pares": 3,
+      "aciertos": 3
+     },
+     "RSC-01-CONT-FIRM": {
+      "pares": 3,
+      "aciertos": 3
+     },
+     "RSC-01-CONT-OBJ": {
+      "pares": 3,
+      "aciertos": 3
+     },
+     "RSC-01-CONT-PEN": {
+      "pares": 3,
+      "aciertos": 3
+     },
+     "RSC-01-CONT-VIG": {
+      "pares": 3,
+      "aciertos": 3
+     },
+     "RSC-01-NDA-NODIV": {
+      "pares": 1,
+      "aciertos": 1
+     },
+     "RSC-01-NDA-PART": {
+      "pares": 1,
+      "aciertos": 1
+     },
+     "RSC-01-NDA-VIG": {
+      "pares": 1,
+      "aciertos": 1
+     },
+     "RSC-ACTA-ADMON": {
+      "pares": 2,
+      "aciertos": 2
+     },
+     "RSC-ACTA-ESCR": {
+      "pares": 2,
+      "aciertos": 2
+     },
+     "RSC-ACTA-RPC": {
+      "pares": 2,
+      "aciertos": 2
+     },
+     "RSC-OPIN-SENT": {
+      "pares": 1,
+      "aciertos": 1
+     },
+     "RSC-PODER-FAC": {
+      "pares": 1,
+      "aciertos": 1
+     },
+     "RSC-PODER-NOT": {
+      "pares": 1,
+      "aciertos": 1
+     },
+     "RSC-PODER-PART": {
+      "pares": 1,
+      "aciertos": 1
+     },
+     "RSC-POL-COB": {
+      "pares": 1,
+      "aciertos": 1
+     }
+    }
+   },
+   "personas": {
+    "nombres": {
+     "vp": 14,
+     "fp": 0,
+     "fn": 0,
+     "vn": 0,
+     "precision": 1.0,
+     "exhaustividad": 1.0,
+     "f1": 1.0,
+     "f1_ic95": [
+      1.0,
+      1.0
+     ]
+    },
+    "cargo": {
+     "exitos": 12,
+     "total": 14,
+     "valor": 0.8571,
+     "ic95": [
+      0.600580922361363,
+      0.9599069262620787
+     ]
+    }
+   },
+   "decisiones": {
+    "matriz": {
+     "CONFORME": {
+      "CONFORME": 7,
+      "EN_REVISION": 0,
+      "NO_CONFORME": 0
+     },
+     "EN_REVISION": {
+      "CONFORME": 0,
+      "EN_REVISION": 4,
+      "NO_CONFORME": 0
+     },
+     "NO_CONFORME": {
+      "CONFORME": 0,
+      "EN_REVISION": 0,
+      "NO_CONFORME": 1
+     }
+    },
+    "exactitud": {
+     "exitos": 12,
+     "total": 12,
+     "valor": 1.0,
+     "ic95": [
+      0.7574992425007574,
+      1.0
+     ]
+    },
+    "f1_macro": 1.0,
+    "kappa": 1.0,
+    "falsa_conformidad": {
+     "exitos": 0,
+     "total": 5,
+     "valor": 0.0,
+     "ic95": [
+      0.0,
+      0.43449149475208104
+     ]
+    },
+    "rechazo_indebido": {
+     "exitos": 0,
+     "total": 11,
+     "valor": 0.0,
+     "ic95": [
+      2.7755575615628914e-17,
+      0.2588400172488141
+     ]
+    },
+    "revision_humana_por_estatus_esperado": {
+     "CONFORME": {
+      "exitos": 0,
+      "total": 7,
+      "valor": 0.0,
+      "ic95": [
+       0.0,
+       0.35433884297520657
+      ]
+     },
+     "EN_REVISION": {
+      "exitos": 4,
+      "total": 4,
+      "valor": 1.0,
+      "ic95": [
+       0.5100999795960008,
+       1.0
+      ]
+     },
+     "NO_CONFORME": {
+      "exitos": 0,
+      "total": 1,
+      "valor": 0.0,
+      "ic95": [
+       0.0,
+       0.7934567085261071
+      ]
+     }
+    },
+    "derivacion_a_revision": {
+     "exitos": 4,
+     "total": 12,
+     "valor": 0.3333,
+     "ic95": [
+      0.13811783989736134,
+      0.609382412602386
+     ]
+    },
+    "calibracion": {
+     "≥ 0.85": {
+      "exitos": 12,
+      "total": 12,
+      "valor": 1.0,
+      "ic95": [
+       0.7574992425007574,
+       1.0
+      ]
+     },
+     "0.70–0.84": {
+      "exitos": 0,
+      "total": 0,
+      "valor": null,
+      "ic95": null
+     },
+     "< 0.70": {
+      "exitos": 0,
+      "total": 0,
+      "valor": null,
+      "ic95": null
+     }
+    },
+    "discrepancias": []
+   },
+   "ocr": {
+    "escaneos": 0,
+    "cer_mediana": null,
+    "cer_maximo": null,
+    "por_caso": {}
+   }
+  },
+  "ESCANEADO": {
+   "casos": 12,
+   "entidades": {
+    "por_campo": {
+     "tipo_documento": {
+      "vp": 12,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0,
+      "f1_ic95": [
+       1.0,
+       1.0
+      ],
+      "alucinacion": {
+       "exitos": 0,
+       "total": 0,
+       "valor": null,
+       "ic95": null
+      }
+     },
+     "rfc": {
+      "vp": 8,
+      "fp": 1,
+      "fn": 1,
+      "vn": 3,
+      "precision": 0.8888888888888888,
+      "exhaustividad": 0.8888888888888888,
+      "f1": 0.8888888888888888,
+      "f1_ic95": [
+       0.6360795454545455,
+       1.0
+      ],
+      "alucinacion": {
+       "exitos": 0,
+       "total": 3,
+       "valor": 0.0,
+       "ic95": [
+        0.0,
+        0.5615060804490177
+       ]
+      }
+     },
+     "razon_social": {
+      "vp": 12,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0,
+      "f1_ic95": [
+       1.0,
+       1.0
+      ],
+      "alucinacion": {
+       "exitos": 0,
+       "total": 0,
+       "valor": null,
+       "ic95": null
+      }
+     },
+     "fecha_emision": {
+      "vp": 12,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0,
+      "f1_ic95": [
+       1.0,
+       1.0
+      ],
+      "alucinacion": {
+       "exitos": 0,
+       "total": 0,
+       "valor": null,
+       "ic95": null
+      }
+     },
+     "fecha_vencimiento": {
+      "vp": 5,
+      "fp": 0,
+      "fn": 0,
+      "vn": 7,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0,
+      "f1_ic95": [
+       1.0,
+       1.0
+      ],
+      "alucinacion": {
+       "exitos": 0,
+       "total": 7,
+       "valor": 0.0,
+       "ic95": [
+        0.0,
+        0.35433884297520657
+       ]
+      }
+     }
+    },
+    "micro": {
+     "vp": 49,
+     "fp": 1,
+     "fn": 1,
+     "vn": 10,
+     "precision": 0.98,
+     "exhaustividad": 0.98,
+     "f1": 0.98,
+     "f1_ic95": [
+      0.9361355226641999,
+      1.0
+     ]
+    },
+    "f1_macro": 0.9778,
+    "alucinacion": {
+     "exitos": 0,
+     "total": 10,
+     "valor": 0.0,
+     "ic95": [
+      0.0,
+      0.2775401687666166
+     ]
+    },
+    "documentos_con_todos_los_campos": {
+     "exitos": 11,
+     "total": 12,
+     "valor": 0.9167,
+     "ic95": [
+      0.6461140782014047,
+      0.9851352905492264
+     ]
+    }
+   },
+   "elementos": {
+    "pares": 29,
+    "omision": {
+     "vp": 1,
+     "fp": 0,
+     "fn": 0,
+     "vn": 28,
+     "precision": 1.0,
+     "exhaustividad": 1.0,
+     "f1": 1.0,
+     "f1_ic95": [
+      1.0,
+      1.0
+     ]
+    },
+    "presente": {
+     "vp": 28,
+     "fp": 0,
+     "fn": 0,
+     "vn": 1,
+     "precision": 1.0,
+     "exhaustividad": 1.0,
+     "f1": 1.0,
+     "f1_ic95": [
+      1.0,
+      1.0
+     ]
+    },
+    "abstenciones": 0,
+    "no_evaluadas": 0,
+    "citas_ancladas": {
+     "exitos": 28,
+     "total": 28,
+     "valor": 1.0,
+     "ic95": [
+      0.8793527963418923,
+      1.0
+     ]
+    },
+    "falsas_conformidades": [],
+    "omisiones_indebidas": [],
+    "por_regla": {
+     "RSC-01-CONT-CONF": {
+      "pares": 3,
+      "aciertos": 3
+     },
+     "RSC-01-CONT-FIRM": {
+      "pares": 3,
+      "aciertos": 3
+     },
+     "RSC-01-CONT-OBJ": {
+      "pares": 3,
+      "aciertos": 3
+     },
+     "RSC-01-CONT-PEN": {
+      "pares": 3,
+      "aciertos": 3
+     },
+     "RSC-01-CONT-VIG": {
+      "pares": 3,
+      "aciertos": 3
+     },
+     "RSC-01-NDA-NODIV": {
+      "pares": 1,
+      "aciertos": 1
+     },
+     "RSC-01-NDA-PART": {
+      "pares": 1,
+      "aciertos": 1
+     },
+     "RSC-01-NDA-VIG": {
+      "pares": 1,
+      "aciertos": 1
+     },
+     "RSC-ACTA-ADMON": {
+      "pares": 2,
+      "aciertos": 2
+     },
+     "RSC-ACTA-ESCR": {
+      "pares": 2,
+      "aciertos": 2
+     },
+     "RSC-ACTA-RPC": {
+      "pares": 2,
+      "aciertos": 2
+     },
+     "RSC-OPIN-SENT": {
+      "pares": 1,
+      "aciertos": 1
+     },
+     "RSC-PODER-FAC": {
+      "pares": 1,
+      "aciertos": 1
+     },
+     "RSC-PODER-NOT": {
+      "pares": 1,
+      "aciertos": 1
+     },
+     "RSC-PODER-PART": {
+      "pares": 1,
+      "aciertos": 1
+     },
+     "RSC-POL-COB": {
+      "pares": 1,
+      "aciertos": 1
+     }
+    }
+   },
+   "personas": {
+    "nombres": {
+     "vp": 14,
+     "fp": 0,
+     "fn": 0,
+     "vn": 0,
+     "precision": 1.0,
+     "exhaustividad": 1.0,
+     "f1": 1.0,
+     "f1_ic95": [
+      1.0,
+      1.0
+     ]
+    },
+    "cargo": {
+     "exitos": 12,
+     "total": 14,
+     "valor": 0.8571,
+     "ic95": [
+      0.600580922361363,
+      0.9599069262620787
+     ]
+    }
+   },
+   "decisiones": {
+    "matriz": {
+     "CONFORME": {
+      "CONFORME": 7,
+      "EN_REVISION": 0,
+      "NO_CONFORME": 0
+     },
+     "EN_REVISION": {
+      "CONFORME": 0,
+      "EN_REVISION": 4,
+      "NO_CONFORME": 0
+     },
+     "NO_CONFORME": {
+      "CONFORME": 0,
+      "EN_REVISION": 0,
+      "NO_CONFORME": 1
+     }
+    },
+    "exactitud": {
+     "exitos": 12,
+     "total": 12,
+     "valor": 1.0,
+     "ic95": [
+      0.7574992425007574,
+      1.0
+     ]
+    },
+    "f1_macro": 1.0,
+    "kappa": 1.0,
+    "falsa_conformidad": {
+     "exitos": 0,
+     "total": 5,
+     "valor": 0.0,
+     "ic95": [
+      0.0,
+      0.43449149475208104
+     ]
+    },
+    "rechazo_indebido": {
+     "exitos": 0,
+     "total": 11,
+     "valor": 0.0,
+     "ic95": [
+      2.7755575615628914e-17,
+      0.2588400172488141
+     ]
+    },
+    "revision_humana_por_estatus_esperado": {
+     "CONFORME": {
+      "exitos": 0,
+      "total": 7,
+      "valor": 0.0,
+      "ic95": [
+       0.0,
+       0.35433884297520657
+      ]
+     },
+     "EN_REVISION": {
+      "exitos": 4,
+      "total": 4,
+      "valor": 1.0,
+      "ic95": [
+       0.5100999795960008,
+       1.0
+      ]
+     },
+     "NO_CONFORME": {
+      "exitos": 0,
+      "total": 1,
+      "valor": 0.0,
+      "ic95": [
+       0.0,
+       0.7934567085261071
+      ]
+     }
+    },
+    "derivacion_a_revision": {
+     "exitos": 4,
+     "total": 12,
+     "valor": 0.3333,
+     "ic95": [
+      0.13811783989736134,
+      0.609382412602386
+     ]
+    },
+    "calibracion": {
+     "≥ 0.85": {
+      "exitos": 12,
+      "total": 12,
+      "valor": 1.0,
+      "ic95": [
+       0.7574992425007574,
+       1.0
+      ]
+     },
+     "0.70–0.84": {
+      "exitos": 0,
+      "total": 0,
+      "valor": null,
+      "ic95": null
+     },
+     "< 0.70": {
+      "exitos": 0,
+      "total": 0,
+      "valor": null,
+      "ic95": null
+     }
+    },
+    "discrepancias": []
+   },
+   "ocr": {
+    "escaneos": 12,
+    "cer_mediana": 0.0024000000000000002,
+    "cer_maximo": 0.0096,
+    "por_caso": {
+     "GS-CSF-01-ESC": 0.0047,
+     "GS-CSF-03-ESC": 0.0069,
+     "GS-OPIN-01-ESC": 0.0037,
+     "GS-DOM-01-ESC": 0.0,
+     "GS-ACTA-01-ESC": 0.0051,
+     "GS-ACTA-03-ESC": 0.0046,
+     "GS-PODER-01-ESC": 0.0096,
+     "GS-CONT-01-ESC": 0.0011,
+     "GS-CONT-03-ESC": 0.0008,
+     "GS-CONT-07-ESC": 0.0011,
+     "GS-NDA-01-ESC": 0.0,
+     "GS-POL-01-ESC": 0.0
+    }
+   }
+  }
+ },
+ "auditorias": [
+  {
+   "id": "GS-CSF-01",
+   "consultas_groq": 1,
+   "tokens": 1826,
+   "latencia_ms": 4029
+  },
+  {
+   "id": "GS-CSF-01-ESC",
+   "consultas_groq": 1,
+   "tokens": 1820,
+   "latencia_ms": 3320
+  },
+  {
+   "id": "GS-CSF-02",
+   "consultas_groq": 1,
+   "tokens": 1825,
+   "latencia_ms": 10147
+  },
+  {
+   "id": "GS-CSF-03",
+   "consultas_groq": 1,
+   "tokens": 1847,
+   "latencia_ms": 982
+  },
+  {
+   "id": "GS-CSF-03-ESC",
+   "consultas_groq": 1,
+   "tokens": 1842,
+   "latencia_ms": 3035
+  },
+  {
+   "id": "GS-CSF-04",
+   "consultas_groq": 1,
+   "tokens": 1802,
+   "latencia_ms": 1217
+  },
+  {
+   "id": "GS-OPIN-01",
+   "consultas_groq": 1,
+   "tokens": 1743,
+   "latencia_ms": 729
+  },
+  {
+   "id": "GS-OPIN-01-ESC",
+   "consultas_groq": 1,
+   "tokens": 1748,
+   "latencia_ms": 2196
+  },
+  {
+   "id": "GS-OPIN-02",
+   "consultas_groq": 1,
+   "tokens": 1756,
+   "latencia_ms": 1203
+  },
+  {
+   "id": "GS-OPIN-03",
+   "consultas_groq": 1,
+   "tokens": 1743,
+   "latencia_ms": 976
+  },
+  {
+   "id": "GS-OPIN-04",
+   "consultas_groq": 1,
+   "tokens": 1772,
+   "latencia_ms": 983
+  },
+  {
+   "id": "GS-DOM-01",
+   "consultas_groq": 1,
+   "tokens": 1715,
+   "latencia_ms": 849
+  },
+  {
+   "id": "GS-DOM-01-ESC",
+   "consultas_groq": 1,
+   "tokens": 1700,
+   "latencia_ms": 1848
+  },
+  {
+   "id": "GS-DOM-02",
+   "consultas_groq": 1,
+   "tokens": 1715,
+   "latencia_ms": 1054
+  },
+  {
+   "id": "GS-ACTA-01",
+   "consultas_groq": 2,
+   "tokens": 3968,
+   "latencia_ms": 2580
+  },
+  {
+   "id": "GS-ACTA-01-ESC",
+   "consultas_groq": 2,
+   "tokens": 3983,
+   "latencia_ms": 10145
+  },
+  {
+   "id": "GS-ACTA-02",
+   "consultas_groq": 2,
+   "tokens": 3810,
+   "latencia_ms": 3554
+  },
+  {
+   "id": "GS-ACTA-03",
+   "consultas_groq": 2,
+   "tokens": 4092,
+   "latencia_ms": 2740
+  },
+  {
+   "id": "GS-ACTA-03-ESC",
+   "consultas_groq": 2,
+   "tokens": 4088,
+   "latencia_ms": 4856
+  },
+  {
+   "id": "GS-ACTA-04",
+   "consultas_groq": 2,
+   "tokens": 3111,
+   "latencia_ms": 21056
+  },
+  {
+   "id": "GS-PODER-01",
+   "consultas_groq": 2,
+   "tokens": 3107,
+   "latencia_ms": 3293
+  },
+  {
+   "id": "GS-PODER-01-ESC",
+   "consultas_groq": 2,
+   "tokens": 3125,
+   "latencia_ms": 17822
+  },
+  {
+   "id": "GS-PODER-02",
+   "consultas_groq": 2,
+   "tokens": 3019,
+   "latencia_ms": 2058
+  },
+  {
+   "id": "GS-PODER-03",
+   "consultas_groq": 2,
+   "tokens": 3208,
+   "latencia_ms": 3866
+  },
+  {
+   "id": "GS-CONT-01",
+   "consultas_groq": 2,
+   "tokens": 4421,
+   "latencia_ms": 2817
+  },
+  {
+   "id": "GS-CONT-01-ESC",
+   "consultas_groq": 2,
+   "tokens": 4381,
+   "latencia_ms": 7727
+  },
+  {
+   "id": "GS-CONT-02",
+   "consultas_groq": 2,
+   "tokens": 4272,
+   "latencia_ms": 3972
+  },
+  {
+   "id": "GS-CONT-03",
+   "consultas_groq": 2,
+   "tokens": 4203,
+   "latencia_ms": 11388
+  },
+  {
+   "id": "GS-CONT-03-ESC",
+   "consultas_groq": 2,
+   "tokens": 4207,
+   "latencia_ms": 22682
+  },
+  {
+   "id": "GS-CONT-04",
+   "consultas_groq": 2,
+   "tokens": 4152,
+   "latencia_ms": 33181
+  },
+  {
+   "id": "GS-CONT-05",
+   "consultas_groq": 2,
+   "tokens": 4251,
+   "latencia_ms": 10514
+  },
+  {
+   "id": "GS-CONT-06",
+   "consultas_groq": 2,
+   "tokens": 4086,
+   "latencia_ms": 6586
+  },
+  {
+   "id": "GS-CONT-07",
+   "consultas_groq": 2,
+   "tokens": 4468,
+   "latencia_ms": 15834
+  },
+  {
+   "id": "GS-CONT-07-ESC",
+   "consultas_groq": 2,
+   "tokens": 4471,
+   "latencia_ms": 45630
+  },
+  {
+   "id": "GS-NDA-01",
+   "consultas_groq": 2,
+   "tokens": 3208,
+   "latencia_ms": 37340
+  },
+  {
+   "id": "GS-NDA-01-ESC",
+   "consultas_groq": 2,
+   "tokens": 3200,
+   "latencia_ms": 6187
+  },
+  {
+   "id": "GS-NDA-02",
+   "consultas_groq": 2,
+   "tokens": 3165,
+   "latencia_ms": 10433
+  },
+  {
+   "id": "GS-NDA-03",
+   "consultas_groq": 2,
+   "tokens": 3109,
+   "latencia_ms": 2503
+  },
+  {
+   "id": "GS-POL-01",
+   "consultas_groq": 2,
+   "tokens": 2569,
+   "latencia_ms": 9705
+  },
+  {
+   "id": "GS-POL-01-ESC",
+   "consultas_groq": 2,
+   "tokens": 2581,
+   "latencia_ms": 2874
+  },
+  {
+   "id": "GS-POL-02",
+   "consultas_groq": 2,
+   "tokens": 2571,
+   "latencia_ms": 2556
+  },
+  {
+   "id": "GS-LIC-01",
+   "consultas_groq": 2,
+   "tokens": 2339,
+   "latencia_ms": 1356
+  }
+ ],
+ "casos": [
+  {
+   "id": "GS-CSF-01",
+   "caso_base": "GS-CSF-01",
+   "rendicion": "VECTORIAL",
+   "tipo_registrado": "CSF_SAT",
+   "estatus_esperado": "CONFORME",
+   "estatus_dictaminado": "CONFORME",
+   "motivo_esperado": "RFC del titular y 20 días de antigüedad (RCV-03: máximo 90).",
+   "nivel_confianza": 0.95,
+   "requiere_revision_humana": false,
+   "observaciones": [
+    "El texto es legible y contiene todos los campos clave para la clasificación. Se detecta una marca explícita de 'DATOS FICTICIOS' que indica que el documento es de prueba, pero la estructura y los datos extraídos son consistentes con el formato oficial.",
+    "Dictamen CONFORME: titularidad y vigencia verificadas con confianza suficiente.",
+    "El documento incluye el Sello Digital del SAT (cadena original o sello digital)."
+   ],
+   "campos": {
+    "tipo_documento": {
+     "esperado": "CONSTANCIA_SITUACION_FISCAL",
+     "extraido": "CONSTANCIA_SITUACION_FISCAL",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "rfc": {
+     "esperado": "PLU180514AB3",
+     "extraido": "PLU180514AB3",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "razon_social": {
+     "esperado": "plurione",
+     "extraido": "plurione",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_emision": {
+     "esperado": "2026-09-10",
+     "extraido": "2026-09-10",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_vencimiento": {
+     "esperado": null,
+     "extraido": null,
+     "conteo": {
+      "vp": 0,
+      "fp": 0,
+      "fn": 0,
+      "vn": 1,
+      "precision": null,
+      "exhaustividad": null,
+      "f1": null
+     }
+    }
+   },
+   "elementos": {},
+   "personas": {
+    "esperadas": [],
+    "extraidas": [],
+    "conteo": {
+     "vp": 0,
+     "fp": 0,
+     "fn": 0,
+     "vn": 0,
+     "precision": null,
+     "exhaustividad": null,
+     "f1": null
+    },
+    "cargo_correcto": []
+   },
+   "cer": null
+  },
+  {
+   "id": "GS-CSF-01-ESC",
+   "caso_base": "GS-CSF-01",
+   "rendicion": "ESCANEADO",
+   "tipo_registrado": "CSF_SAT",
+   "estatus_esperado": "CONFORME",
+   "estatus_dictaminado": "CONFORME",
+   "motivo_esperado": "RFC del titular y 20 días de antigüedad (RCV-03: máximo 90).",
+   "nivel_confianza": 0.9375,
+   "requiere_revision_humana": false,
+   "observaciones": [
+    "El texto es legible y los campos clave (RFC, razón social, fecha de emisión) son claros. Se detecta una marca de agua indicando que es un documento de prueba con datos ficticios, pero la estructura corresponde a una Constancia de Situación Fiscal.",
+    "Dictamen CONFORME: titularidad y vigencia verificadas con confianza suficiente.",
+    "El documento incluye el Sello Digital del SAT (cadena original o sello digital)."
+   ],
+   "campos": {
+    "tipo_documento": {
+     "esperado": "CONSTANCIA_SITUACION_FISCAL",
+     "extraido": "CONSTANCIA_SITUACION_FISCAL",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "rfc": {
+     "esperado": "PLU180514AB3",
+     "extraido": "PLU180514AB3",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "razon_social": {
+     "esperado": "plurione",
+     "extraido": "plurione",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_emision": {
+     "esperado": "2026-09-10",
+     "extraido": "2026-09-10",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_vencimiento": {
+     "esperado": null,
+     "extraido": null,
+     "conteo": {
+      "vp": 0,
+      "fp": 0,
+      "fn": 0,
+      "vn": 1,
+      "precision": null,
+      "exhaustividad": null,
+      "f1": null
+     }
+    }
+   },
+   "elementos": {},
+   "personas": {
+    "esperadas": [],
+    "extraidas": [],
+    "conteo": {
+     "vp": 0,
+     "fp": 0,
+     "fn": 0,
+     "vn": 0,
+     "precision": null,
+     "exhaustividad": null,
+     "f1": null
+    },
+    "cargo_correcto": []
+   },
+   "cer": 0.0047
+  },
+  {
+   "id": "GS-CSF-02",
+   "caso_base": "GS-CSF-02",
+   "rendicion": "VECTORIAL",
+   "tipo_registrado": "CSF_SAT",
+   "estatus_esperado": "NO_CONFORME",
+   "estatus_dictaminado": "NO_CONFORME",
+   "motivo_esperado": "149 días de antigüedad: caducidad estricta RCV-03 (90 días).",
+   "nivel_confianza": 0.95,
+   "requiere_revision_humana": false,
+   "observaciones": [
+    "El texto es legible y contiene todos los campos clave para la clasificación. Se detecta una marca explícita de 'DATOS FICTICIOS' que indica que el documento es de prueba, pero la estructura y los datos extraídos son consistentes con el formato oficial.",
+    "RCV-03 (Caducidad Estricta de la Constancia de Situación Fiscal): El documento tiene 149 días naturales de antigüedad; el máximo permitido es 90 días.",
+    "Dictamen NO_CONFORME: la vigencia del documento ya expiró.",
+    "El documento incluye el Sello Digital del SAT (cadena original o sello digital)."
+   ],
+   "campos": {
+    "tipo_documento": {
+     "esperado": "CONSTANCIA_SITUACION_FISCAL",
+     "extraido": "CONSTANCIA_SITUACION_FISCAL",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "rfc": {
+     "esperado": "PLU180514AB3",
+     "extraido": "PLU180514AB3",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "razon_social": {
+     "esperado": "plurione",
+     "extraido": "plurione",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_emision": {
+     "esperado": "2026-05-04",
+     "extraido": "2026-05-04",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_vencimiento": {
+     "esperado": null,
+     "extraido": null,
+     "conteo": {
+      "vp": 0,
+      "fp": 0,
+      "fn": 0,
+      "vn": 1,
+      "precision": null,
+      "exhaustividad": null,
+      "f1": null
+     }
+    }
+   },
+   "elementos": {},
+   "personas": {
+    "esperadas": [],
+    "extraidas": [],
+    "conteo": {
+     "vp": 0,
+     "fp": 0,
+     "fn": 0,
+     "vn": 0,
+     "precision": null,
+     "exhaustividad": null,
+     "f1": null
+    },
+    "cargo_correcto": []
+   },
+   "cer": null
+  },
+  {
+   "id": "GS-CSF-03",
+   "caso_base": "GS-CSF-03",
+   "rendicion": "VECTORIAL",
+   "tipo_registrado": "CSF_SAT",
+   "estatus_esperado": "NO_CONFORME",
+   "estatus_dictaminado": "NO_CONFORME",
+   "motivo_esperado": "El RFC del documento no es el del titular del expediente (DOC-08: RFC ajeno).",
+   "nivel_confianza": 0.95,
+   "requiere_revision_humana": false,
+   "observaciones": [
+    "El texto es legible y contiene todos los campos clave para la clasificación. Se detecta una discrepancia entre el titular del expediente (PLURIONE) y el titular del documento (COMERCIALIZADORA DEL BAJIO), pero se extraen los datos tal como aparecen en el documento analizado.",
+    "El RFC del documento (CBA120809QW4) no coincide con el del titular registrado (PLU180514AB3).",
+    "Dictamen NO_CONFORME: el documento no pertenece al titular del expediente.",
+    "El documento incluye el Sello Digital del SAT (cadena original o sello digital)."
+   ],
+   "campos": {
+    "tipo_documento": {
+     "esperado": "CONSTANCIA_SITUACION_FISCAL",
+     "extraido": "CONSTANCIA_SITUACION_FISCAL",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "rfc": {
+     "esperado": "CBA120809QW4",
+     "extraido": "CBA120809QW4",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "razon_social": {
+     "esperado": "comercializadora del bajio",
+     "extraido": "comercializadora del bajio",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_emision": {
+     "esperado": "2026-09-10",
+     "extraido": "2026-09-10",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_vencimiento": {
+     "esperado": null,
+     "extraido": null,
+     "conteo": {
+      "vp": 0,
+      "fp": 0,
+      "fn": 0,
+      "vn": 1,
+      "precision": null,
+      "exhaustividad": null,
+      "f1": null
+     }
+    }
+   },
+   "elementos": {},
+   "personas": {
+    "esperadas": [],
+    "extraidas": [],
+    "conteo": {
+     "vp": 0,
+     "fp": 0,
+     "fn": 0,
+     "vn": 0,
+     "precision": null,
+     "exhaustividad": null,
+     "f1": null
+    },
+    "cargo_correcto": []
+   },
+   "cer": null
+  },
+  {
+   "id": "GS-CSF-03-ESC",
+   "caso_base": "GS-CSF-03",
+   "rendicion": "ESCANEADO",
+   "tipo_registrado": "CSF_SAT",
+   "estatus_esperado": "NO_CONFORME",
+   "estatus_dictaminado": "NO_CONFORME",
+   "motivo_esperado": "El RFC del documento no es el del titular del expediente (DOC-08: RFC ajeno).",
+   "nivel_confianza": 0.9367,
+   "requiere_revision_humana": false,
+   "observaciones": [
+    "El texto es legible y contiene todos los campos clave para la clasificación. Se detecta una discrepancia entre el titular del expediente (PLURIONE) y el titular del documento (COMERCIALIZADORA DEL BAJIO), pero se extraen los datos tal como aparecen en el documento analizado.",
+    "El RFC del documento (CBA120809QWA4) no coincide con el del titular registrado (PLU180514AB3).",
+    "El RFC extraído (CBA120809QWA4) no respeta la estructura oficial del SAT.",
+    "Dictamen NO_CONFORME: el documento no pertenece al titular del expediente.",
+    "El documento incluye el Sello Digital del SAT (cadena original o sello digital)."
+   ],
+   "campos": {
+    "tipo_documento": {
+     "esperado": "CONSTANCIA_SITUACION_FISCAL",
+     "extraido": "CONSTANCIA_SITUACION_FISCAL",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "rfc": {
+     "esperado": "CBA120809QW4",
+     "extraido": "CBA120809QWA4",
+     "conteo": {
+      "vp": 0,
+      "fp": 1,
+      "fn": 1,
+      "vn": 0,
+      "precision": 0.0,
+      "exhaustividad": 0.0,
+      "f1": 0.0
+     }
+    },
+    "razon_social": {
+     "esperado": "comercializadora del bajio",
+     "extraido": "comercializadora del bajio",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_emision": {
+     "esperado": "2026-09-10",
+     "extraido": "2026-09-10",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_vencimiento": {
+     "esperado": null,
+     "extraido": null,
+     "conteo": {
+      "vp": 0,
+      "fp": 0,
+      "fn": 0,
+      "vn": 1,
+      "precision": null,
+      "exhaustividad": null,
+      "f1": null
+     }
+    }
+   },
+   "elementos": {},
+   "personas": {
+    "esperadas": [],
+    "extraidas": [],
+    "conteo": {
+     "vp": 0,
+     "fp": 0,
+     "fn": 0,
+     "vn": 0,
+     "precision": null,
+     "exhaustividad": null,
+     "f1": null
+    },
+    "cargo_correcto": []
+   },
+   "cer": 0.0069
+  },
+  {
+   "id": "GS-CSF-04",
+   "caso_base": "GS-CSF-04",
+   "rendicion": "VECTORIAL",
+   "tipo_registrado": "CSF_SAT",
+   "estatus_esperado": "CONFORME",
+   "estatus_dictaminado": "CONFORME",
+   "motivo_esperado": "Sin RFC, la titularidad se verifica por la razón social (DG Cap. I: «el nombre o el RFC»); vigente.",
+   "nivel_confianza": 0.95,
+   "requiere_revision_humana": false,
+   "observaciones": [
+    "El texto es legible y corresponde a una constancia de situación fiscal ficticia. El RFC no aparece explícitamente en el cuerpo del documento, por lo que se devuelve null según las reglas, aunque sí se menciona en los metadatos del expediente.",
+    "El documento no incluye RFC; la titularidad se verificó por la razón social del titular.",
+    "Dictamen CONFORME: titularidad y vigencia verificadas con confianza suficiente.",
+    "El documento incluye el Sello Digital del SAT (cadena original o sello digital)."
+   ],
+   "campos": {
+    "tipo_documento": {
+     "esperado": "CONSTANCIA_SITUACION_FISCAL",
+     "extraido": "CONSTANCIA_SITUACION_FISCAL",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "rfc": {
+     "esperado": null,
+     "extraido": null,
+     "conteo": {
+      "vp": 0,
+      "fp": 0,
+      "fn": 0,
+      "vn": 1,
+      "precision": null,
+      "exhaustividad": null,
+      "f1": null
+     }
+    },
+    "razon_social": {
+     "esperado": "plurione",
+     "extraido": "plurione",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_emision": {
+     "esperado": "2026-09-10",
+     "extraido": "2026-09-10",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_vencimiento": {
+     "esperado": null,
+     "extraido": null,
+     "conteo": {
+      "vp": 0,
+      "fp": 0,
+      "fn": 0,
+      "vn": 1,
+      "precision": null,
+      "exhaustividad": null,
+      "f1": null
+     }
+    }
+   },
+   "elementos": {},
+   "personas": {
+    "esperadas": [],
+    "extraidas": [],
+    "conteo": {
+     "vp": 0,
+     "fp": 0,
+     "fn": 0,
+     "vn": 0,
+     "precision": null,
+     "exhaustividad": null,
+     "f1": null
+    },
+    "cargo_correcto": []
+   },
+   "cer": null
+  },
+  {
+   "id": "GS-OPIN-01",
+   "caso_base": "GS-OPIN-01",
+   "rendicion": "VECTORIAL",
+   "tipo_registrado": "OPINION_CUMPLIMIENTO",
+   "estatus_esperado": "CONFORME",
+   "estatus_dictaminado": "CONFORME",
+   "motivo_esperado": "Sentido positivo y 12 días de antigüedad (RCV-04: máximo 30).",
+   "nivel_confianza": 0.95,
+   "requiere_revision_humana": false,
+   "observaciones": [
+    "El texto es legible y contiene todos los campos clave para la clasificación. Se detecta una marca de agua o nota indicando que es un documento de prueba con datos ficticios, lo cual no afecta la extracción de los datos presentes.",
+    "Dictamen CONFORME: titularidad y vigencia verificadas con confianza suficiente.",
+    "El documento incluye el Sello Digital del SAT (cadena original o sello digital)."
+   ],
+   "campos": {
+    "tipo_documento": {
+     "esperado": "OPINION_CUMPLIMIENTO",
+     "extraido": "OPINION_CUMPLIMIENTO",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "rfc": {
+     "esperado": "PLU180514AB3",
+     "extraido": "PLU180514AB3",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "razon_social": {
+     "esperado": "plurione",
+     "extraido": "plurione",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_emision": {
+     "esperado": "2026-09-18",
+     "extraido": "2026-09-18",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_vencimiento": {
+     "esperado": null,
+     "extraido": null,
+     "conteo": {
+      "vp": 0,
+      "fp": 0,
+      "fn": 0,
+      "vn": 1,
+      "precision": null,
+      "exhaustividad": null,
+      "f1": null
+     }
+    }
+   },
+   "elementos": {
+    "RSC-OPIN-SENT": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    }
+   },
+   "personas": {
+    "esperadas": [],
+    "extraidas": [],
+    "conteo": {
+     "vp": 0,
+     "fp": 0,
+     "fn": 0,
+     "vn": 0,
+     "precision": null,
+     "exhaustividad": null,
+     "f1": null
+    },
+    "cargo_correcto": []
+   },
+   "cer": null
+  },
+  {
+   "id": "GS-OPIN-01-ESC",
+   "caso_base": "GS-OPIN-01",
+   "rendicion": "ESCANEADO",
+   "tipo_registrado": "OPINION_CUMPLIMIENTO",
+   "estatus_esperado": "CONFORME",
+   "estatus_dictaminado": "CONFORME",
+   "motivo_esperado": "Sentido positivo y 12 días de antigüedad (RCV-04: máximo 30).",
+   "nivel_confianza": 0.9475,
+   "requiere_revision_humana": false,
+   "observaciones": [
+    "El texto es legible y contiene todos los campos clave para la clasificación. Se detecta una errata menor en la cadena original ('origina!' por 'original') y el documento indica ser ficticio, pero los datos extraídos son consistentes.",
+    "Dictamen CONFORME: titularidad y vigencia verificadas con confianza suficiente.",
+    "El documento incluye el Sello Digital del SAT (cadena original o sello digital)."
+   ],
+   "campos": {
+    "tipo_documento": {
+     "esperado": "OPINION_CUMPLIMIENTO",
+     "extraido": "OPINION_CUMPLIMIENTO",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "rfc": {
+     "esperado": "PLU180514AB3",
+     "extraido": "PLU180514AB3",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "razon_social": {
+     "esperado": "plurione",
+     "extraido": "plurione",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_emision": {
+     "esperado": "2026-09-18",
+     "extraido": "2026-09-18",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_vencimiento": {
+     "esperado": null,
+     "extraido": null,
+     "conteo": {
+      "vp": 0,
+      "fp": 0,
+      "fn": 0,
+      "vn": 1,
+      "precision": null,
+      "exhaustividad": null,
+      "f1": null
+     }
+    }
+   },
+   "elementos": {
+    "RSC-OPIN-SENT": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    }
+   },
+   "personas": {
+    "esperadas": [],
+    "extraidas": [],
+    "conteo": {
+     "vp": 0,
+     "fp": 0,
+     "fn": 0,
+     "vn": 0,
+     "precision": null,
+     "exhaustividad": null,
+     "f1": null
+    },
+    "cargo_correcto": []
+   },
+   "cer": 0.0037
+  },
+  {
+   "id": "GS-OPIN-02",
+   "caso_base": "GS-OPIN-02",
+   "rendicion": "VECTORIAL",
+   "tipo_registrado": "OPINION_CUMPLIMIENTO",
+   "estatus_esperado": "NO_CONFORME",
+   "estatus_dictaminado": "NO_CONFORME",
+   "motivo_esperado": "Sentido negativo: el documento contradice el requisito (RSC-OPIN-SENT).",
+   "nivel_confianza": 0.95,
+   "requiere_revision_humana": false,
+   "observaciones": [
+    "El texto es legible y contiene todos los campos clave para la clasificación. Se detecta una marca de agua o nota indicando que es un documento de prueba con datos ficticios, lo cual no afecta la extracción de los datos presentes.",
+    "Dictamen NO_CONFORME: el documento incumple un requisito de forma explícita. Sentido positivo de la opinión de cumplimiento (RSC-OPIN-SENT): La opinión de cumplimiento se emitió en sentido NEGATIVO: el contribuyente no está al corriente de sus obligaciones fiscales.",
+    "El documento incluye el Sello Digital del SAT (cadena original o sello digital)."
+   ],
+   "campos": {
+    "tipo_documento": {
+     "esperado": "OPINION_CUMPLIMIENTO",
+     "extraido": "OPINION_CUMPLIMIENTO",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "rfc": {
+     "esperado": "PLU180514AB3",
+     "extraido": "PLU180514AB3",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "razon_social": {
+     "esperado": "plurione",
+     "extraido": "plurione",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_emision": {
+     "esperado": "2026-09-18",
+     "extraido": "2026-09-18",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_vencimiento": {
+     "esperado": null,
+     "extraido": null,
+     "conteo": {
+      "vp": 0,
+      "fp": 0,
+      "fn": 0,
+      "vn": 1,
+      "precision": null,
+      "exhaustividad": null,
+      "f1": null
+     }
+    }
+   },
+   "elementos": {
+    "RSC-OPIN-SENT": {
+     "presente_esperado": false,
+     "resultado": "NO_CUMPLE",
+     "presente_dictaminado": false,
+     "cita_anclada": null
+    }
+   },
+   "personas": {
+    "esperadas": [],
+    "extraidas": [],
+    "conteo": {
+     "vp": 0,
+     "fp": 0,
+     "fn": 0,
+     "vn": 0,
+     "precision": null,
+     "exhaustividad": null,
+     "f1": null
+    },
+    "cargo_correcto": []
+   },
+   "cer": null
+  },
+  {
+   "id": "GS-OPIN-03",
+   "caso_base": "GS-OPIN-03",
+   "rendicion": "VECTORIAL",
+   "tipo_registrado": "OPINION_CUMPLIMIENTO",
+   "estatus_esperado": "NO_CONFORME",
+   "estatus_dictaminado": "NO_CONFORME",
+   "motivo_esperado": "72 días de antigüedad: caducidad estricta RCV-04 (30 días).",
+   "nivel_confianza": 0.95,
+   "requiere_revision_humana": false,
+   "observaciones": [
+    "El texto es legible y contiene todos los campos clave para la clasificación. Se detecta una marca de agua o nota indicando que es un documento de prueba con datos ficticios, lo cual no afecta la extracción de los datos presentes.",
+    "RCV-04 (Caducidad Estricta de la Opinión de Cumplimiento (32-D)): El documento tiene 72 días naturales de antigüedad; el máximo permitido es 30 días.",
+    "Dictamen NO_CONFORME: la vigencia del documento ya expiró.",
+    "El documento incluye el Sello Digital del SAT (cadena original o sello digital)."
+   ],
+   "campos": {
+    "tipo_documento": {
+     "esperado": "OPINION_CUMPLIMIENTO",
+     "extraido": "OPINION_CUMPLIMIENTO",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "rfc": {
+     "esperado": "PLU180514AB3",
+     "extraido": "PLU180514AB3",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "razon_social": {
+     "esperado": "plurione",
+     "extraido": "plurione",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_emision": {
+     "esperado": "2026-07-20",
+     "extraido": "2026-07-20",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_vencimiento": {
+     "esperado": null,
+     "extraido": null,
+     "conteo": {
+      "vp": 0,
+      "fp": 0,
+      "fn": 0,
+      "vn": 1,
+      "precision": null,
+      "exhaustividad": null,
+      "f1": null
+     }
+    }
+   },
+   "elementos": {
+    "RSC-OPIN-SENT": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    }
+   },
+   "personas": {
+    "esperadas": [],
+    "extraidas": [],
+    "conteo": {
+     "vp": 0,
+     "fp": 0,
+     "fn": 0,
+     "vn": 0,
+     "precision": null,
+     "exhaustividad": null,
+     "f1": null
+    },
+    "cargo_correcto": []
+   },
+   "cer": null
+  },
+  {
+   "id": "GS-OPIN-04",
+   "caso_base": "GS-OPIN-04",
+   "rendicion": "VECTORIAL",
+   "tipo_registrado": "OPINION_CUMPLIMIENTO",
+   "estatus_esperado": "NO_CONFORME",
+   "estatus_dictaminado": "NO_CONFORME",
+   "motivo_esperado": "RFC ajeno al titular del expediente.",
+   "nivel_confianza": 0.95,
+   "requiere_revision_humana": false,
+   "observaciones": [
+    "El texto es legible y contiene todos los campos clave para la clasificación. Se detecta una discrepancia entre el titular del expediente (PLURIONE) y el titular del documento (COMERCIALIZADORA DEL BAJIO), pero se extraen los datos tal como aparecen en el documento analizado.",
+    "El RFC del documento (CBA120809QW4) no coincide con el del titular registrado (PLU180514AB3).",
+    "Dictamen NO_CONFORME: el documento no pertenece al titular del expediente.",
+    "El documento incluye el Sello Digital del SAT (cadena original o sello digital)."
+   ],
+   "campos": {
+    "tipo_documento": {
+     "esperado": "OPINION_CUMPLIMIENTO",
+     "extraido": "OPINION_CUMPLIMIENTO",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "rfc": {
+     "esperado": "CBA120809QW4",
+     "extraido": "CBA120809QW4",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "razon_social": {
+     "esperado": "comercializadora del bajio",
+     "extraido": "comercializadora del bajio",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_emision": {
+     "esperado": "2026-09-18",
+     "extraido": "2026-09-18",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_vencimiento": {
+     "esperado": null,
+     "extraido": null,
+     "conteo": {
+      "vp": 0,
+      "fp": 0,
+      "fn": 0,
+      "vn": 1,
+      "precision": null,
+      "exhaustividad": null,
+      "f1": null
+     }
+    }
+   },
+   "elementos": {
+    "RSC-OPIN-SENT": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    }
+   },
+   "personas": {
+    "esperadas": [],
+    "extraidas": [],
+    "conteo": {
+     "vp": 0,
+     "fp": 0,
+     "fn": 0,
+     "vn": 0,
+     "precision": null,
+     "exhaustividad": null,
+     "f1": null
+    },
+    "cargo_correcto": []
+   },
+   "cer": null
+  },
+  {
+   "id": "GS-DOM-01",
+   "caso_base": "GS-DOM-01",
+   "rendicion": "VECTORIAL",
+   "tipo_registrado": "COMP_DOMICILIO",
+   "estatus_esperado": "CONFORME",
+   "estatus_dictaminado": "CONFORME",
+   "motivo_esperado": "33 días de antigüedad (RCV-02: máximo 90).",
+   "nivel_confianza": 0.95,
+   "requiere_revision_humana": false,
+   "observaciones": [
+    "El texto es legible y los datos clave (RFC, razón social, fecha) son claros. Se detecta una marca de agua indicando que es un documento de prueba con datos ficticios, lo cual no afecta la extracción técnica de los campos solicitados.",
+    "Dictamen CONFORME: titularidad y vigencia verificadas con confianza suficiente."
+   ],
+   "campos": {
+    "tipo_documento": {
+     "esperado": "COMPROBANTE_DOMICILIO",
+     "extraido": "COMPROBANTE_DOMICILIO",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "rfc": {
+     "esperado": "PLU180514AB3",
+     "extraido": "PLU180514AB3",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "razon_social": {
+     "esperado": "plurione",
+     "extraido": "plurione",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_emision": {
+     "esperado": "2026-08-28",
+     "extraido": "2026-08-28",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_vencimiento": {
+     "esperado": null,
+     "extraido": null,
+     "conteo": {
+      "vp": 0,
+      "fp": 0,
+      "fn": 0,
+      "vn": 1,
+      "precision": null,
+      "exhaustividad": null,
+      "f1": null
+     }
+    }
+   },
+   "elementos": {},
+   "personas": {
+    "esperadas": [],
+    "extraidas": [],
+    "conteo": {
+     "vp": 0,
+     "fp": 0,
+     "fn": 0,
+     "vn": 0,
+     "precision": null,
+     "exhaustividad": null,
+     "f1": null
+    },
+    "cargo_correcto": []
+   },
+   "cer": null
+  },
+  {
+   "id": "GS-DOM-01-ESC",
+   "caso_base": "GS-DOM-01",
+   "rendicion": "ESCANEADO",
+   "tipo_registrado": "COMP_DOMICILIO",
+   "estatus_esperado": "CONFORME",
+   "estatus_dictaminado": "CONFORME",
+   "motivo_esperado": "33 días de antigüedad (RCV-02: máximo 90).",
+   "nivel_confianza": 0.9443,
+   "requiere_revision_humana": false,
+   "observaciones": [
+    "El texto es legible y los datos clave (RFC, razón social, fecha) son claros. Se detecta una marca de agua indicando que es un documento de prueba con datos ficticios.",
+    "Dictamen CONFORME: titularidad y vigencia verificadas con confianza suficiente."
+   ],
+   "campos": {
+    "tipo_documento": {
+     "esperado": "COMPROBANTE_DOMICILIO",
+     "extraido": "COMPROBANTE_DOMICILIO",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "rfc": {
+     "esperado": "PLU180514AB3",
+     "extraido": "PLU180514AB3",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "razon_social": {
+     "esperado": "plurione",
+     "extraido": "plurione",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_emision": {
+     "esperado": "2026-08-28",
+     "extraido": "2026-08-28",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_vencimiento": {
+     "esperado": null,
+     "extraido": null,
+     "conteo": {
+      "vp": 0,
+      "fp": 0,
+      "fn": 0,
+      "vn": 1,
+      "precision": null,
+      "exhaustividad": null,
+      "f1": null
+     }
+    }
+   },
+   "elementos": {},
+   "personas": {
+    "esperadas": [],
+    "extraidas": [],
+    "conteo": {
+     "vp": 0,
+     "fp": 0,
+     "fn": 0,
+     "vn": 0,
+     "precision": null,
+     "exhaustividad": null,
+     "f1": null
+    },
+    "cargo_correcto": []
+   },
+   "cer": 0.0
+  },
+  {
+   "id": "GS-DOM-02",
+   "caso_base": "GS-DOM-02",
+   "rendicion": "VECTORIAL",
+   "tipo_registrado": "COMP_DOMICILIO",
+   "estatus_esperado": "NO_CONFORME",
+   "estatus_dictaminado": "NO_CONFORME",
+   "motivo_esperado": "168 días de antigüedad: caducidad estricta RCV-02 (90 días).",
+   "nivel_confianza": 0.95,
+   "requiere_revision_humana": false,
+   "observaciones": [
+    "El texto es legible y los datos clave (RFC, razón social, fecha) son claros. Se detecta una marca de agua indicando que es un documento de prueba con datos ficticios, lo cual no afecta la extracción técnica de los campos solicitados.",
+    "RCV-02 (Caducidad Estricta del Comprobante de Domicilio Fiscal): El documento tiene 168 días naturales de antigüedad; el máximo permitido es 90 días.",
+    "Dictamen NO_CONFORME: la vigencia del documento ya expiró."
+   ],
+   "campos": {
+    "tipo_documento": {
+     "esperado": "COMPROBANTE_DOMICILIO",
+     "extraido": "COMPROBANTE_DOMICILIO",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "rfc": {
+     "esperado": "PLU180514AB3",
+     "extraido": "PLU180514AB3",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "razon_social": {
+     "esperado": "plurione",
+     "extraido": "plurione",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_emision": {
+     "esperado": "2026-04-15",
+     "extraido": "2026-04-15",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_vencimiento": {
+     "esperado": null,
+     "extraido": null,
+     "conteo": {
+      "vp": 0,
+      "fp": 0,
+      "fn": 0,
+      "vn": 1,
+      "precision": null,
+      "exhaustividad": null,
+      "f1": null
+     }
+    }
+   },
+   "elementos": {},
+   "personas": {
+    "esperadas": [],
+    "extraidas": [],
+    "conteo": {
+     "vp": 0,
+     "fp": 0,
+     "fn": 0,
+     "vn": 0,
+     "precision": null,
+     "exhaustividad": null,
+     "f1": null
+    },
+    "cargo_correcto": []
+   },
+   "cer": null
+  },
+  {
+   "id": "GS-ACTA-01",
+   "caso_base": "GS-ACTA-01",
+   "rendicion": "VECTORIAL",
+   "tipo_registrado": "ACTA_CONSTITUTIVA",
+   "estatus_esperado": "CONFORME",
+   "estatus_dictaminado": "CONFORME",
+   "motivo_esperado": "Escritura y notario, inscripción en el RPC y administración presentes; sin vencimiento.",
+   "nivel_confianza": 0.95,
+   "requiere_revision_humana": false,
+   "observaciones": [
+    "El texto es legible y corresponde a una escritura pública de constitución de sociedad. No se detecta RFC en el cuerpo del documento, por lo que se devuelve null. La fecha de emisión se toma del lugar y fecha de la escritura.",
+    "El documento no incluye RFC; la titularidad se verificó por la razón social del titular.",
+    "Dictamen CONFORME: titularidad y vigencia verificadas con confianza suficiente."
+   ],
+   "campos": {
+    "tipo_documento": {
+     "esperado": "ACTA_CONSTITUTIVA",
+     "extraido": "ACTA_CONSTITUTIVA",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "rfc": {
+     "esperado": null,
+     "extraido": null,
+     "conteo": {
+      "vp": 0,
+      "fp": 0,
+      "fn": 0,
+      "vn": 1,
+      "precision": null,
+      "exhaustividad": null,
+      "f1": null
+     }
+    },
+    "razon_social": {
+     "esperado": "plurione",
+     "extraido": "plurione",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_emision": {
+     "esperado": "2018-05-14",
+     "extraido": "2018-05-14",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_vencimiento": {
+     "esperado": null,
+     "extraido": null,
+     "conteo": {
+      "vp": 0,
+      "fp": 0,
+      "fn": 0,
+      "vn": 1,
+      "precision": null,
+      "exhaustividad": null,
+      "f1": null
+     }
+    }
+   },
+   "elementos": {
+    "RSC-ACTA-ESCR": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-ACTA-RPC": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-ACTA-ADMON": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    }
+   },
+   "personas": {
+    "esperadas": [
+     {
+      "nombre": "Héctor Daniel Quiroga Salas",
+      "cargo": "Administrador Único"
+     },
+     {
+      "nombre": "María Elena Ruiz Soto",
+      "cargo": "Apoderada"
+     }
+    ],
+    "extraidas": [
+     {
+      "nombre": "Héctor Daniel Quiroga Salas",
+      "cargo": "Administrador Único"
+     },
+     {
+      "nombre": "María Elena Ruiz Soto",
+      "cargo": null
+     }
+    ],
+    "conteo": {
+     "vp": 2,
+     "fp": 0,
+     "fn": 0,
+     "vn": 0,
+     "precision": 1.0,
+     "exhaustividad": 1.0,
+     "f1": 1.0
+    },
+    "cargo_correcto": [
+     true,
+     false
+    ]
+   },
+   "cer": null
+  },
+  {
+   "id": "GS-ACTA-01-ESC",
+   "caso_base": "GS-ACTA-01",
+   "rendicion": "ESCANEADO",
+   "tipo_registrado": "ACTA_CONSTITUTIVA",
+   "estatus_esperado": "CONFORME",
+   "estatus_dictaminado": "CONFORME",
+   "motivo_esperado": "Escritura y notario, inscripción en el RPC y administración presentes; sin vencimiento.",
+   "nivel_confianza": 0.95,
+   "requiere_revision_humana": false,
+   "observaciones": [
+    "El texto es legible y corresponde a una escritura pública de constitución de sociedad. No se detecta RFC en el cuerpo del documento. La fecha de emisión se toma del lugar y fecha de la escritura, no de la inscripción.",
+    "El documento no incluye RFC; la titularidad se verificó por la razón social del titular.",
+    "Dictamen CONFORME: titularidad y vigencia verificadas con confianza suficiente."
+   ],
+   "campos": {
+    "tipo_documento": {
+     "esperado": "ACTA_CONSTITUTIVA",
+     "extraido": "ACTA_CONSTITUTIVA",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "rfc": {
+     "esperado": null,
+     "extraido": null,
+     "conteo": {
+      "vp": 0,
+      "fp": 0,
+      "fn": 0,
+      "vn": 1,
+      "precision": null,
+      "exhaustividad": null,
+      "f1": null
+     }
+    },
+    "razon_social": {
+     "esperado": "plurione",
+     "extraido": "plurione",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_emision": {
+     "esperado": "2018-05-14",
+     "extraido": "2018-05-14",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_vencimiento": {
+     "esperado": null,
+     "extraido": null,
+     "conteo": {
+      "vp": 0,
+      "fp": 0,
+      "fn": 0,
+      "vn": 1,
+      "precision": null,
+      "exhaustividad": null,
+      "f1": null
+     }
+    }
+   },
+   "elementos": {
+    "RSC-ACTA-ESCR": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-ACTA-RPC": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-ACTA-ADMON": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    }
+   },
+   "personas": {
+    "esperadas": [
+     {
+      "nombre": "Héctor Daniel Quiroga Salas",
+      "cargo": "Administrador Único"
+     },
+     {
+      "nombre": "María Elena Ruiz Soto",
+      "cargo": "Apoderada"
+     }
+    ],
+    "extraidas": [
+     {
+      "nombre": "Héctor Daniel Quiroga Salas",
+      "cargo": "Administrador Único"
+     },
+     {
+      "nombre": "María Elena Ruiz Soto",
+      "cargo": null
+     }
+    ],
+    "conteo": {
+     "vp": 2,
+     "fp": 0,
+     "fn": 0,
+     "vn": 0,
+     "precision": 1.0,
+     "exhaustividad": 1.0,
+     "f1": 1.0
+    },
+    "cargo_correcto": [
+     true,
+     false
+    ]
+   },
+   "cer": 0.0051
+  },
+  {
+   "id": "GS-ACTA-02",
+   "caso_base": "GS-ACTA-02",
+   "rendicion": "VECTORIAL",
+   "tipo_registrado": "ACTA_CONSTITUTIVA",
+   "estatus_esperado": "EN_REVISION",
+   "estatus_dictaminado": "EN_REVISION",
+   "motivo_esperado": "Falta la inscripción en el Registro Público de Comercio (RSC-ACTA-RPC).",
+   "nivel_confianza": 0.95,
+   "requiere_revision_humana": true,
+   "observaciones": [
+    "El texto es legible y corresponde a una escritura pública de constitución de sociedad. No se detecta RFC en el cuerpo del documento proporcionado.",
+    "El documento no incluye RFC; la titularidad se verificó por la razón social del titular.",
+    "Dictamen EN_REVISION: omisión relevante; no se localizaron o no pudieron verificarse estos elementos: Inscripción en el Registro Público de Comercio (RSC-01)."
+   ],
+   "campos": {
+    "tipo_documento": {
+     "esperado": "ACTA_CONSTITUTIVA",
+     "extraido": "ACTA_CONSTITUTIVA",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "rfc": {
+     "esperado": null,
+     "extraido": null,
+     "conteo": {
+      "vp": 0,
+      "fp": 0,
+      "fn": 0,
+      "vn": 1,
+      "precision": null,
+      "exhaustividad": null,
+      "f1": null
+     }
+    },
+    "razon_social": {
+     "esperado": "plurione",
+     "extraido": "plurione",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_emision": {
+     "esperado": "2018-05-14",
+     "extraido": "2018-05-14",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_vencimiento": {
+     "esperado": null,
+     "extraido": null,
+     "conteo": {
+      "vp": 0,
+      "fp": 0,
+      "fn": 0,
+      "vn": 1,
+      "precision": null,
+      "exhaustividad": null,
+      "f1": null
+     }
+    }
+   },
+   "elementos": {
+    "RSC-ACTA-ESCR": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-ACTA-RPC": {
+     "presente_esperado": false,
+     "resultado": "NO_LOCALIZADO",
+     "presente_dictaminado": false,
+     "cita_anclada": null
+    },
+    "RSC-ACTA-ADMON": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    }
+   },
+   "personas": {
+    "esperadas": [
+     {
+      "nombre": "Héctor Daniel Quiroga Salas",
+      "cargo": "Administrador Único"
+     },
+     {
+      "nombre": "María Elena Ruiz Soto",
+      "cargo": "Apoderada"
+     }
+    ],
+    "extraidas": [
+     {
+      "nombre": "Héctor Daniel Quiroga Salas",
+      "cargo": "Administrador Único"
+     },
+     {
+      "nombre": "María Elena Ruiz Soto",
+      "cargo": null
+     }
+    ],
+    "conteo": {
+     "vp": 2,
+     "fp": 0,
+     "fn": 0,
+     "vn": 0,
+     "precision": 1.0,
+     "exhaustividad": 1.0,
+     "f1": 1.0
+    },
+    "cargo_correcto": [
+     true,
+     false
+    ]
+   },
+   "cer": null
+  },
+  {
+   "id": "GS-ACTA-03",
+   "caso_base": "GS-ACTA-03",
+   "rendicion": "VECTORIAL",
+   "tipo_registrado": "ACTA_CONSTITUTIVA",
+   "estatus_esperado": "CONFORME",
+   "estatus_dictaminado": "CONFORME",
+   "motivo_esperado": "Completa; la inscripción está en la última página (la auditoría lee todo el documento).",
+   "nivel_confianza": 0.95,
+   "requiere_revision_humana": false,
+   "observaciones": [
+    "El texto es legible y corresponde a una escritura pública de constitución. No se detecta RFC en el cuerpo del documento. La fecha de emisión se toma del lugar y fecha de la escritura, no de la inscripción.",
+    "El documento no incluye RFC; la titularidad se verificó por la razón social del titular.",
+    "Dictamen CONFORME: titularidad y vigencia verificadas con confianza suficiente."
+   ],
+   "campos": {
+    "tipo_documento": {
+     "esperado": "ACTA_CONSTITUTIVA",
+     "extraido": "ACTA_CONSTITUTIVA",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "rfc": {
+     "esperado": null,
+     "extraido": null,
+     "conteo": {
+      "vp": 0,
+      "fp": 0,
+      "fn": 0,
+      "vn": 1,
+      "precision": null,
+      "exhaustividad": null,
+      "f1": null
+     }
+    },
+    "razon_social": {
+     "esperado": "plurione",
+     "extraido": "plurione",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_emision": {
+     "esperado": "2018-05-14",
+     "extraido": "2018-05-14",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_vencimiento": {
+     "esperado": null,
+     "extraido": null,
+     "conteo": {
+      "vp": 0,
+      "fp": 0,
+      "fn": 0,
+      "vn": 1,
+      "precision": null,
+      "exhaustividad": null,
+      "f1": null
+     }
+    }
+   },
+   "elementos": {
+    "RSC-ACTA-ESCR": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-ACTA-RPC": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-ACTA-ADMON": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    }
+   },
+   "personas": {
+    "esperadas": [
+     {
+      "nombre": "Héctor Daniel Quiroga Salas",
+      "cargo": "Administrador Único"
+     },
+     {
+      "nombre": "María Elena Ruiz Soto",
+      "cargo": "Apoderada"
+     }
+    ],
+    "extraidas": [
+     {
+      "nombre": "Héctor Daniel Quiroga Salas",
+      "cargo": "Administrador Único"
+     },
+     {
+      "nombre": "María Elena Ruiz Soto",
+      "cargo": null
+     }
+    ],
+    "conteo": {
+     "vp": 2,
+     "fp": 0,
+     "fn": 0,
+     "vn": 0,
+     "precision": 1.0,
+     "exhaustividad": 1.0,
+     "f1": 1.0
+    },
+    "cargo_correcto": [
+     true,
+     false
+    ]
+   },
+   "cer": null
+  },
+  {
+   "id": "GS-ACTA-03-ESC",
+   "caso_base": "GS-ACTA-03",
+   "rendicion": "ESCANEADO",
+   "tipo_registrado": "ACTA_CONSTITUTIVA",
+   "estatus_esperado": "CONFORME",
+   "estatus_dictaminado": "CONFORME",
+   "motivo_esperado": "Completa; la inscripción está en la última página (la auditoría lee todo el documento).",
+   "nivel_confianza": 0.95,
+   "requiere_revision_humana": false,
+   "observaciones": [
+    "El texto es legible y corresponde a una escritura pública de constitución de sociedad. No se detecta RFC en el cuerpo del documento proporcionado.",
+    "El documento no incluye RFC; la titularidad se verificó por la razón social del titular.",
+    "Dictamen CONFORME: titularidad y vigencia verificadas con confianza suficiente."
+   ],
+   "campos": {
+    "tipo_documento": {
+     "esperado": "ACTA_CONSTITUTIVA",
+     "extraido": "ACTA_CONSTITUTIVA",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "rfc": {
+     "esperado": null,
+     "extraido": null,
+     "conteo": {
+      "vp": 0,
+      "fp": 0,
+      "fn": 0,
+      "vn": 1,
+      "precision": null,
+      "exhaustividad": null,
+      "f1": null
+     }
+    },
+    "razon_social": {
+     "esperado": "plurione",
+     "extraido": "plurione",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_emision": {
+     "esperado": "2018-05-14",
+     "extraido": "2018-05-14",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_vencimiento": {
+     "esperado": null,
+     "extraido": null,
+     "conteo": {
+      "vp": 0,
+      "fp": 0,
+      "fn": 0,
+      "vn": 1,
+      "precision": null,
+      "exhaustividad": null,
+      "f1": null
+     }
+    }
+   },
+   "elementos": {
+    "RSC-ACTA-ESCR": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-ACTA-RPC": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-ACTA-ADMON": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    }
+   },
+   "personas": {
+    "esperadas": [
+     {
+      "nombre": "Héctor Daniel Quiroga Salas",
+      "cargo": "Administrador Único"
+     },
+     {
+      "nombre": "María Elena Ruiz Soto",
+      "cargo": "Apoderada"
+     }
+    ],
+    "extraidas": [
+     {
+      "nombre": "Héctor Daniel Quiroga Salas",
+      "cargo": "Administrador Único"
+     },
+     {
+      "nombre": "María Elena Ruiz Soto",
+      "cargo": null
+     }
+    ],
+    "conteo": {
+     "vp": 2,
+     "fp": 0,
+     "fn": 0,
+     "vn": 0,
+     "precision": 1.0,
+     "exhaustividad": 1.0,
+     "f1": 1.0
+    },
+    "cargo_correcto": [
+     true,
+     false
+    ]
+   },
+   "cer": 0.0046
+  },
+  {
+   "id": "GS-ACTA-04",
+   "caso_base": "GS-ACTA-04",
+   "rendicion": "VECTORIAL",
+   "tipo_registrado": "ACTA_CONSTITUTIVA",
+   "estatus_esperado": "EN_REVISION",
+   "estatus_dictaminado": "EN_REVISION",
+   "motivo_esperado": "El contenido es un poder notarial, no un acta: tipo incompatible con el registrado.",
+   "nivel_confianza": 0.95,
+   "requiere_revision_humana": true,
+   "observaciones": [
+    "El texto es legible y claro, aunque contiene una marca de agua indicando que es un documento de prueba con datos ficticios. No se detecta RFC en el cuerpo del texto.",
+    "El documento no incluye RFC; la titularidad se verificó por la razón social del titular.",
+    "El documento se registró como ACTA_CONSTITUTIVA pero su contenido corresponde a PODER_NOTARIAL; debe confirmarse que se cargó el documento correcto.",
+    "Dictamen EN_REVISION: el tipo de documento detectado no corresponde al tipo con el que se registró en el expediente."
+   ],
+   "campos": {
+    "tipo_documento": {
+     "esperado": "PODER_NOTARIAL",
+     "extraido": "PODER_NOTARIAL",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "rfc": {
+     "esperado": null,
+     "extraido": null,
+     "conteo": {
+      "vp": 0,
+      "fp": 0,
+      "fn": 0,
+      "vn": 1,
+      "precision": null,
+      "exhaustividad": null,
+      "f1": null
+     }
+    },
+    "razon_social": {
+     "esperado": "plurione",
+     "extraido": "plurione",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_emision": {
+     "esperado": "2025-01-10",
+     "extraido": "2025-01-10",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_vencimiento": {
+     "esperado": null,
+     "extraido": null,
+     "conteo": {
+      "vp": 0,
+      "fp": 0,
+      "fn": 0,
+      "vn": 1,
+      "precision": null,
+      "exhaustividad": null,
+      "f1": null
+     }
+    }
+   },
+   "elementos": {
+    "RSC-ACTA-ESCR": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-ACTA-RPC": {
+     "presente_esperado": false,
+     "resultado": "NO_LOCALIZADO",
+     "presente_dictaminado": false,
+     "cita_anclada": null
+    },
+    "RSC-ACTA-ADMON": {
+     "presente_esperado": false,
+     "resultado": "NO_LOCALIZADO",
+     "presente_dictaminado": false,
+     "cita_anclada": null
+    }
+   },
+   "personas": {
+    "esperadas": [
+     {
+      "nombre": "María Elena Ruiz Soto",
+      "cargo": "Apoderado"
+     }
+    ],
+    "extraidas": [
+     {
+      "nombre": "María Elena Ruiz Soto",
+      "cargo": "apoderado"
+     }
+    ],
+    "conteo": {
+     "vp": 1,
+     "fp": 0,
+     "fn": 0,
+     "vn": 0,
+     "precision": 1.0,
+     "exhaustividad": 1.0,
+     "f1": 1.0
+    },
+    "cargo_correcto": [
+     true
+    ]
+   },
+   "cer": null
+  },
+  {
+   "id": "GS-PODER-01",
+   "caso_base": "GS-PODER-01",
+   "rendicion": "VECTORIAL",
+   "tipo_registrado": "PODER_NOTARIAL",
+   "estatus_esperado": "CONFORME",
+   "estatus_dictaminado": "CONFORME",
+   "motivo_esperado": "Otorgado ante notario, identifica otorgante y apoderado y señala facultades.",
+   "nivel_confianza": 0.95,
+   "requiere_revision_humana": false,
+   "observaciones": [
+    "El texto es legible y claro, aunque contiene una marca de agua indicando que es un documento de prueba con datos ficticios. No se detecta RFC en el cuerpo del texto.",
+    "El documento no incluye RFC; la titularidad se verificó por la razón social del titular.",
+    "Dictamen CONFORME: titularidad y vigencia verificadas con confianza suficiente."
+   ],
+   "campos": {
+    "tipo_documento": {
+     "esperado": "PODER_NOTARIAL",
+     "extraido": "PODER_NOTARIAL",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "rfc": {
+     "esperado": null,
+     "extraido": null,
+     "conteo": {
+      "vp": 0,
+      "fp": 0,
+      "fn": 0,
+      "vn": 1,
+      "precision": null,
+      "exhaustividad": null,
+      "f1": null
+     }
+    },
+    "razon_social": {
+     "esperado": "plurione",
+     "extraido": "plurione",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_emision": {
+     "esperado": "2025-01-10",
+     "extraido": "2025-01-10",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_vencimiento": {
+     "esperado": null,
+     "extraido": null,
+     "conteo": {
+      "vp": 0,
+      "fp": 0,
+      "fn": 0,
+      "vn": 1,
+      "precision": null,
+      "exhaustividad": null,
+      "f1": null
+     }
+    }
+   },
+   "elementos": {
+    "RSC-PODER-NOT": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-PODER-PART": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-PODER-FAC": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    }
+   },
+   "personas": {
+    "esperadas": [
+     {
+      "nombre": "María Elena Ruiz Soto",
+      "cargo": "Apoderado"
+     }
+    ],
+    "extraidas": [
+     {
+      "nombre": "María Elena Ruiz Soto",
+      "cargo": "apoderado"
+     }
+    ],
+    "conteo": {
+     "vp": 1,
+     "fp": 0,
+     "fn": 0,
+     "vn": 0,
+     "precision": 1.0,
+     "exhaustividad": 1.0,
+     "f1": 1.0
+    },
+    "cargo_correcto": [
+     true
+    ]
+   },
+   "cer": null
+  },
+  {
+   "id": "GS-PODER-01-ESC",
+   "caso_base": "GS-PODER-01",
+   "rendicion": "ESCANEADO",
+   "tipo_registrado": "PODER_NOTARIAL",
+   "estatus_esperado": "CONFORME",
+   "estatus_dictaminado": "CONFORME",
+   "motivo_esperado": "Otorgado ante notario, identifica otorgante y apoderado y señala facultades.",
+   "nivel_confianza": 0.95,
+   "requiere_revision_humana": false,
+   "observaciones": [
+    "El texto es legible y corresponde claramente a un poder notarial. No se detecta RFC en el cuerpo del documento. La fecha de vencimiento es null porque el poder se otorga por tiempo indefinido.",
+    "El documento no incluye RFC; la titularidad se verificó por la razón social del titular.",
+    "Dictamen CONFORME: titularidad y vigencia verificadas con confianza suficiente."
+   ],
+   "campos": {
+    "tipo_documento": {
+     "esperado": "PODER_NOTARIAL",
+     "extraido": "PODER_NOTARIAL",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "rfc": {
+     "esperado": null,
+     "extraido": null,
+     "conteo": {
+      "vp": 0,
+      "fp": 0,
+      "fn": 0,
+      "vn": 1,
+      "precision": null,
+      "exhaustividad": null,
+      "f1": null
+     }
+    },
+    "razon_social": {
+     "esperado": "plurione",
+     "extraido": "plurione",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_emision": {
+     "esperado": "2025-01-10",
+     "extraido": "2025-01-10",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_vencimiento": {
+     "esperado": null,
+     "extraido": null,
+     "conteo": {
+      "vp": 0,
+      "fp": 0,
+      "fn": 0,
+      "vn": 1,
+      "precision": null,
+      "exhaustividad": null,
+      "f1": null
+     }
+    }
+   },
+   "elementos": {
+    "RSC-PODER-NOT": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-PODER-PART": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-PODER-FAC": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    }
+   },
+   "personas": {
+    "esperadas": [
+     {
+      "nombre": "María Elena Ruiz Soto",
+      "cargo": "Apoderado"
+     }
+    ],
+    "extraidas": [
+     {
+      "nombre": "María Elena Ruiz Soto",
+      "cargo": "apoderado"
+     }
+    ],
+    "conteo": {
+     "vp": 1,
+     "fp": 0,
+     "fn": 0,
+     "vn": 0,
+     "precision": 1.0,
+     "exhaustividad": 1.0,
+     "f1": 1.0
+    },
+    "cargo_correcto": [
+     true
+    ]
+   },
+   "cer": 0.0096
+  },
+  {
+   "id": "GS-PODER-02",
+   "caso_base": "GS-PODER-02",
+   "rendicion": "VECTORIAL",
+   "tipo_registrado": "PODER_NOTARIAL",
+   "estatus_esperado": "EN_REVISION",
+   "estatus_dictaminado": "EN_REVISION",
+   "motivo_esperado": "No señala facultades de pleitos y cobranzas, administración o dominio (RSC-PODER-FAC).",
+   "nivel_confianza": 0.95,
+   "requiere_revision_humana": true,
+   "observaciones": [
+    "El texto es legible y corresponde claramente a un poder notarial. No se detecta RFC en el cuerpo del documento. La fecha de vencimiento no se especifica, indicando vigencia indefinida.",
+    "El documento no incluye RFC; la titularidad se verificó por la razón social del titular.",
+    "Dictamen EN_REVISION: omisión relevante; no se localizaron o no pudieron verificarse estos elementos: Facultades conferidas (RSC-01)."
+   ],
+   "campos": {
+    "tipo_documento": {
+     "esperado": "PODER_NOTARIAL",
+     "extraido": "PODER_NOTARIAL",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "rfc": {
+     "esperado": null,
+     "extraido": null,
+     "conteo": {
+      "vp": 0,
+      "fp": 0,
+      "fn": 0,
+      "vn": 1,
+      "precision": null,
+      "exhaustividad": null,
+      "f1": null
+     }
+    },
+    "razon_social": {
+     "esperado": "plurione",
+     "extraido": "plurione",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_emision": {
+     "esperado": "2025-01-10",
+     "extraido": "2025-01-10",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_vencimiento": {
+     "esperado": null,
+     "extraido": null,
+     "conteo": {
+      "vp": 0,
+      "fp": 0,
+      "fn": 0,
+      "vn": 1,
+      "precision": null,
+      "exhaustividad": null,
+      "f1": null
+     }
+    }
+   },
+   "elementos": {
+    "RSC-PODER-NOT": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-PODER-PART": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-PODER-FAC": {
+     "presente_esperado": false,
+     "resultado": "NO_LOCALIZADO",
+     "presente_dictaminado": false,
+     "cita_anclada": null
+    }
+   },
+   "personas": {
+    "esperadas": [
+     {
+      "nombre": "María Elena Ruiz Soto",
+      "cargo": "Apoderado"
+     }
+    ],
+    "extraidas": [
+     {
+      "nombre": "María Elena Ruiz Soto",
+      "cargo": "apoderado"
+     }
+    ],
+    "conteo": {
+     "vp": 1,
+     "fp": 0,
+     "fn": 0,
+     "vn": 0,
+     "precision": 1.0,
+     "exhaustividad": 1.0,
+     "f1": 1.0
+    },
+    "cargo_correcto": [
+     true
+    ]
+   },
+   "cer": null
+  },
+  {
+   "id": "GS-PODER-03",
+   "caso_base": "GS-PODER-03",
+   "rendicion": "VECTORIAL",
+   "tipo_registrado": "PODER_NOTARIAL",
+   "estatus_esperado": "CONFORME",
+   "estatus_dictaminado": "CONFORME",
+   "motivo_esperado": "Completo, con dos apoderados.",
+   "nivel_confianza": 0.95,
+   "requiere_revision_humana": false,
+   "observaciones": [
+    "El texto es legible y claro, aunque indica ser un documento de prueba con datos ficticios. No se encuentra el RFC en el cuerpo del texto.",
+    "El documento no incluye RFC; la titularidad se verificó por la razón social del titular.",
+    "Dictamen CONFORME: titularidad y vigencia verificadas con confianza suficiente."
+   ],
+   "campos": {
+    "tipo_documento": {
+     "esperado": "PODER_NOTARIAL",
+     "extraido": "PODER_NOTARIAL",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "rfc": {
+     "esperado": null,
+     "extraido": null,
+     "conteo": {
+      "vp": 0,
+      "fp": 0,
+      "fn": 0,
+      "vn": 1,
+      "precision": null,
+      "exhaustividad": null,
+      "f1": null
+     }
+    },
+    "razon_social": {
+     "esperado": "plurione",
+     "extraido": "plurione",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_emision": {
+     "esperado": "2025-01-10",
+     "extraido": "2025-01-10",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_vencimiento": {
+     "esperado": null,
+     "extraido": null,
+     "conteo": {
+      "vp": 0,
+      "fp": 0,
+      "fn": 0,
+      "vn": 1,
+      "precision": null,
+      "exhaustividad": null,
+      "f1": null
+     }
+    }
+   },
+   "elementos": {
+    "RSC-PODER-NOT": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-PODER-PART": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-PODER-FAC": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    }
+   },
+   "personas": {
+    "esperadas": [
+     {
+      "nombre": "María Elena Ruiz Soto",
+      "cargo": "Apoderado"
+     },
+     {
+      "nombre": "Rodrigo Esteban Lara Villaseñor",
+      "cargo": "Apoderado"
+     }
+    ],
+    "extraidas": [
+     {
+      "nombre": "María Elena Ruiz Soto",
+      "cargo": "apoderado"
+     },
+     {
+      "nombre": "Rodrigo Esteban Lara Villaseñor",
+      "cargo": "apoderado"
+     }
+    ],
+    "conteo": {
+     "vp": 2,
+     "fp": 0,
+     "fn": 0,
+     "vn": 0,
+     "precision": 1.0,
+     "exhaustividad": 1.0,
+     "f1": 1.0
+    },
+    "cargo_correcto": [
+     true,
+     true
+    ]
+   },
+   "cer": null
+  },
+  {
+   "id": "GS-CONT-01",
+   "caso_base": "GS-CONT-01",
+   "rendicion": "VECTORIAL",
+   "tipo_registrado": "CONTRATO_SERVICIOS",
+   "estatus_esperado": "EN_REVISION",
+   "estatus_dictaminado": "EN_REVISION",
+   "motivo_esperado": "Todas las cláusulas presentes; el contrato identifica a sus firmantes y RSC-02 deja la decisión al analista (DOC-05).",
+   "nivel_confianza": 0.95,
+   "requiere_revision_humana": true,
+   "observaciones": [
+    "El texto es legible y contiene todos los datos requeridos. Se detectó un segundo RFC (SIN150302KL7) correspondiente a la contraparte, pero se extrajo el del titular registrado en el expediente conforme a las instrucciones.",
+    "Dictamen EN_REVISION: el analista debe confirmar que el firmante corresponde con un apoderado con facultades vigentes en el poder notarial o el acta constitutiva del expediente (RSC-02, RN-03)."
+   ],
+   "campos": {
+    "tipo_documento": {
+     "esperado": "CONTRATO",
+     "extraido": "CONTRATO",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "rfc": {
+     "esperado": "PLU180514AB3",
+     "extraido": "PLU180514AB3",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "razon_social": {
+     "esperado": "plurione",
+     "extraido": "plurione",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_emision": {
+     "esperado": "2026-03-02",
+     "extraido": "2026-03-02",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_vencimiento": {
+     "esperado": "2027-03-01",
+     "extraido": "2027-03-01",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    }
+   },
+   "elementos": {
+    "RSC-01-CONT-OBJ": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-01-CONT-VIG": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-01-CONT-PEN": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-01-CONT-CONF": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-01-CONT-FIRM": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    }
+   },
+   "personas": {
+    "esperadas": [
+     {
+      "nombre": "María Elena Ruiz Soto",
+      "cargo": "Apoderada legal"
+     },
+     {
+      "nombre": "Jorge Alberto Treviño Garza",
+      "cargo": "Representante legal"
+     }
+    ],
+    "extraidas": [
+     {
+      "nombre": "María Elena Ruiz Soto",
+      "cargo": "Apoderada legal"
+     },
+     {
+      "nombre": "Jorge Alberto Treviño Garza",
+      "cargo": "Representante legal"
+     }
+    ],
+    "conteo": {
+     "vp": 2,
+     "fp": 0,
+     "fn": 0,
+     "vn": 0,
+     "precision": 1.0,
+     "exhaustividad": 1.0,
+     "f1": 1.0
+    },
+    "cargo_correcto": [
+     true,
+     true
+    ]
+   },
+   "cer": null
+  },
+  {
+   "id": "GS-CONT-01-ESC",
+   "caso_base": "GS-CONT-01",
+   "rendicion": "ESCANEADO",
+   "tipo_registrado": "CONTRATO_SERVICIOS",
+   "estatus_esperado": "EN_REVISION",
+   "estatus_dictaminado": "EN_REVISION",
+   "motivo_esperado": "Todas las cláusulas presentes; el contrato identifica a sus firmantes y RSC-02 deja la decisión al analista (DOC-05).",
+   "nivel_confianza": 0.95,
+   "requiere_revision_humana": true,
+   "observaciones": [
+    "El texto es legible y contiene todos los datos requeridos. Se detectó un segundo RFC (SIN150302KL7) correspondiente a la contraparte, pero se extrajo el del titular registrado en el expediente conforme a las instrucciones.",
+    "Dictamen EN_REVISION: el analista debe confirmar que el firmante corresponde con un apoderado con facultades vigentes en el poder notarial o el acta constitutiva del expediente (RSC-02, RN-03)."
+   ],
+   "campos": {
+    "tipo_documento": {
+     "esperado": "CONTRATO",
+     "extraido": "CONTRATO",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "rfc": {
+     "esperado": "PLU180514AB3",
+     "extraido": "PLU180514AB3",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "razon_social": {
+     "esperado": "plurione",
+     "extraido": "plurione",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_emision": {
+     "esperado": "2026-03-02",
+     "extraido": "2026-03-02",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_vencimiento": {
+     "esperado": "2027-03-01",
+     "extraido": "2027-03-01",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    }
+   },
+   "elementos": {
+    "RSC-01-CONT-OBJ": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-01-CONT-VIG": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-01-CONT-PEN": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-01-CONT-CONF": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-01-CONT-FIRM": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    }
+   },
+   "personas": {
+    "esperadas": [
+     {
+      "nombre": "María Elena Ruiz Soto",
+      "cargo": "Apoderada legal"
+     },
+     {
+      "nombre": "Jorge Alberto Treviño Garza",
+      "cargo": "Representante legal"
+     }
+    ],
+    "extraidas": [
+     {
+      "nombre": "María Elena Ruiz Soto",
+      "cargo": "Apoderada legal"
+     },
+     {
+      "nombre": "Jorge Alberto Treviño Garza",
+      "cargo": "Representante legal"
+     }
+    ],
+    "conteo": {
+     "vp": 2,
+     "fp": 0,
+     "fn": 0,
+     "vn": 0,
+     "precision": 1.0,
+     "exhaustividad": 1.0,
+     "f1": 1.0
+    },
+    "cargo_correcto": [
+     true,
+     true
+    ]
+   },
+   "cer": 0.0011
+  },
+  {
+   "id": "GS-CONT-02",
+   "caso_base": "GS-CONT-02",
+   "rendicion": "VECTORIAL",
+   "tipo_registrado": "CONTRATO_SERVICIOS",
+   "estatus_esperado": "EN_REVISION",
+   "estatus_dictaminado": "EN_REVISION",
+   "motivo_esperado": "Falta la cláusula de confidencialidad: omisión contractual relevante (RSC-01).",
+   "nivel_confianza": 0.95,
+   "requiere_revision_humana": true,
+   "observaciones": [
+    "El texto es legible y contiene todos los datos solicitados. Se detectó un segundo RFC (SIN150302KL7) correspondiente a la contraparte, pero se extrajo el del titular registrado en el expediente conforme a las instrucciones.",
+    "Dictamen EN_REVISION: omisión relevante; no se localizaron o no pudieron verificarse estos elementos: Confidencialidad y no divulgación (RSC-01)."
+   ],
+   "campos": {
+    "tipo_documento": {
+     "esperado": "CONTRATO",
+     "extraido": "CONTRATO",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "rfc": {
+     "esperado": "PLU180514AB3",
+     "extraido": "PLU180514AB3",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "razon_social": {
+     "esperado": "plurione",
+     "extraido": "plurione",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_emision": {
+     "esperado": "2026-03-02",
+     "extraido": "2026-03-02",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_vencimiento": {
+     "esperado": "2027-03-01",
+     "extraido": "2027-03-01",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    }
+   },
+   "elementos": {
+    "RSC-01-CONT-OBJ": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-01-CONT-VIG": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-01-CONT-PEN": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-01-CONT-CONF": {
+     "presente_esperado": false,
+     "resultado": "NO_LOCALIZADO",
+     "presente_dictaminado": false,
+     "cita_anclada": null
+    },
+    "RSC-01-CONT-FIRM": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    }
+   },
+   "personas": {
+    "esperadas": [
+     {
+      "nombre": "María Elena Ruiz Soto",
+      "cargo": "Apoderada legal"
+     },
+     {
+      "nombre": "Jorge Alberto Treviño Garza",
+      "cargo": "Representante legal"
+     }
+    ],
+    "extraidas": [
+     {
+      "nombre": "María Elena Ruiz Soto",
+      "cargo": "Apoderada legal"
+     },
+     {
+      "nombre": "Jorge Alberto Treviño Garza",
+      "cargo": "Representante legal"
+     }
+    ],
+    "conteo": {
+     "vp": 2,
+     "fp": 0,
+     "fn": 0,
+     "vn": 0,
+     "precision": 1.0,
+     "exhaustividad": 1.0,
+     "f1": 1.0
+    },
+    "cargo_correcto": [
+     true,
+     true
+    ]
+   },
+   "cer": null
+  },
+  {
+   "id": "GS-CONT-03",
+   "caso_base": "GS-CONT-03",
+   "rendicion": "VECTORIAL",
+   "tipo_registrado": "CONTRATO_SERVICIOS",
+   "estatus_esperado": "EN_REVISION",
+   "estatus_dictaminado": "EN_REVISION",
+   "motivo_esperado": "Falta la penalización por incumplimiento: omisión contractual relevante (RSC-01).",
+   "nivel_confianza": 0.95,
+   "requiere_revision_humana": true,
+   "observaciones": [
+    "El texto es legible y contiene datos ficticios de prueba. Se detectaron dos RFC en el documento; se extrajo el del titular registrado en el expediente (PLU180514AB3) conforme a las instrucciones.",
+    "Dictamen EN_REVISION: omisión relevante; no se localizaron o no pudieron verificarse estos elementos: Penalización por incumplimiento (RSC-01)."
+   ],
+   "campos": {
+    "tipo_documento": {
+     "esperado": "CONTRATO",
+     "extraido": "CONTRATO",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "rfc": {
+     "esperado": "PLU180514AB3",
+     "extraido": "PLU180514AB3",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "razon_social": {
+     "esperado": "plurione",
+     "extraido": "plurione",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_emision": {
+     "esperado": "2026-03-02",
+     "extraido": "2026-03-02",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_vencimiento": {
+     "esperado": "2027-03-01",
+     "extraido": "2027-03-01",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    }
+   },
+   "elementos": {
+    "RSC-01-CONT-OBJ": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-01-CONT-VIG": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-01-CONT-PEN": {
+     "presente_esperado": false,
+     "resultado": "NO_LOCALIZADO",
+     "presente_dictaminado": false,
+     "cita_anclada": null
+    },
+    "RSC-01-CONT-CONF": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-01-CONT-FIRM": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    }
+   },
+   "personas": {
+    "esperadas": [
+     {
+      "nombre": "María Elena Ruiz Soto",
+      "cargo": "Apoderada legal"
+     },
+     {
+      "nombre": "Jorge Alberto Treviño Garza",
+      "cargo": "Representante legal"
+     }
+    ],
+    "extraidas": [
+     {
+      "nombre": "María Elena Ruiz Soto",
+      "cargo": "Apoderada legal"
+     },
+     {
+      "nombre": "Jorge Alberto Treviño Garza",
+      "cargo": "Representante legal"
+     }
+    ],
+    "conteo": {
+     "vp": 2,
+     "fp": 0,
+     "fn": 0,
+     "vn": 0,
+     "precision": 1.0,
+     "exhaustividad": 1.0,
+     "f1": 1.0
+    },
+    "cargo_correcto": [
+     true,
+     true
+    ]
+   },
+   "cer": null
+  },
+  {
+   "id": "GS-CONT-03-ESC",
+   "caso_base": "GS-CONT-03",
+   "rendicion": "ESCANEADO",
+   "tipo_registrado": "CONTRATO_SERVICIOS",
+   "estatus_esperado": "EN_REVISION",
+   "estatus_dictaminado": "EN_REVISION",
+   "motivo_esperado": "Falta la penalización por incumplimiento: omisión contractual relevante (RSC-01).",
+   "nivel_confianza": 0.9495,
+   "requiere_revision_humana": true,
+   "observaciones": [
+    "El texto es legible y contiene todos los datos requeridos. Se detectó un segundo RFC (SIN150302KL7) correspondiente a la contraparte, pero se extrajo el del titular del expediente conforme a las instrucciones.",
+    "Dictamen EN_REVISION: omisión relevante; no se localizaron o no pudieron verificarse estos elementos: Penalización por incumplimiento (RSC-01)."
+   ],
+   "campos": {
+    "tipo_documento": {
+     "esperado": "CONTRATO",
+     "extraido": "CONTRATO",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "rfc": {
+     "esperado": "PLU180514AB3",
+     "extraido": "PLU180514AB3",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "razon_social": {
+     "esperado": "plurione",
+     "extraido": "plurione",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_emision": {
+     "esperado": "2026-03-02",
+     "extraido": "2026-03-02",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_vencimiento": {
+     "esperado": "2027-03-01",
+     "extraido": "2027-03-01",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    }
+   },
+   "elementos": {
+    "RSC-01-CONT-OBJ": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-01-CONT-VIG": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-01-CONT-PEN": {
+     "presente_esperado": false,
+     "resultado": "NO_LOCALIZADO",
+     "presente_dictaminado": false,
+     "cita_anclada": null
+    },
+    "RSC-01-CONT-CONF": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-01-CONT-FIRM": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    }
+   },
+   "personas": {
+    "esperadas": [
+     {
+      "nombre": "María Elena Ruiz Soto",
+      "cargo": "Apoderada legal"
+     },
+     {
+      "nombre": "Jorge Alberto Treviño Garza",
+      "cargo": "Representante legal"
+     }
+    ],
+    "extraidas": [
+     {
+      "nombre": "María Elena Ruiz Soto",
+      "cargo": "Apoderada legal"
+     },
+     {
+      "nombre": "Jorge Alberto Treviño Garza",
+      "cargo": "Representante legal"
+     }
+    ],
+    "conteo": {
+     "vp": 2,
+     "fp": 0,
+     "fn": 0,
+     "vn": 0,
+     "precision": 1.0,
+     "exhaustividad": 1.0,
+     "f1": 1.0
+    },
+    "cargo_correcto": [
+     true,
+     true
+    ]
+   },
+   "cer": 0.0008
+  },
+  {
+   "id": "GS-CONT-04",
+   "caso_base": "GS-CONT-04",
+   "rendicion": "VECTORIAL",
+   "tipo_registrado": "CONTRATO_SERVICIOS",
+   "estatus_esperado": "EN_REVISION",
+   "estatus_dictaminado": "EN_REVISION",
+   "motivo_esperado": "Falta la vigencia y la terminación anticipada (RSC-01).",
+   "nivel_confianza": 0.95,
+   "requiere_revision_humana": true,
+   "observaciones": [
+    "El texto es legible y contiene datos ficticios de prueba. Se detectaron dos RFC en el documento; se extrajo el del titular registrado en el expediente (PLU180514AB3) conforme a las instrucciones.",
+    "Dictamen EN_REVISION: omisión relevante; no se localizaron o no pudieron verificarse estos elementos: Vigencia y terminación anticipada (RSC-01)."
+   ],
+   "campos": {
+    "tipo_documento": {
+     "esperado": "CONTRATO",
+     "extraido": "CONTRATO",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "rfc": {
+     "esperado": "PLU180514AB3",
+     "extraido": "PLU180514AB3",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "razon_social": {
+     "esperado": "plurione",
+     "extraido": "plurione",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_emision": {
+     "esperado": "2026-03-02",
+     "extraido": "2026-03-02",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_vencimiento": {
+     "esperado": null,
+     "extraido": null,
+     "conteo": {
+      "vp": 0,
+      "fp": 0,
+      "fn": 0,
+      "vn": 1,
+      "precision": null,
+      "exhaustividad": null,
+      "f1": null
+     }
+    }
+   },
+   "elementos": {
+    "RSC-01-CONT-OBJ": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-01-CONT-VIG": {
+     "presente_esperado": false,
+     "resultado": "NO_LOCALIZADO",
+     "presente_dictaminado": false,
+     "cita_anclada": null
+    },
+    "RSC-01-CONT-PEN": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-01-CONT-CONF": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-01-CONT-FIRM": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    }
+   },
+   "personas": {
+    "esperadas": [
+     {
+      "nombre": "María Elena Ruiz Soto",
+      "cargo": "Apoderada legal"
+     },
+     {
+      "nombre": "Jorge Alberto Treviño Garza",
+      "cargo": "Representante legal"
+     }
+    ],
+    "extraidas": [
+     {
+      "nombre": "María Elena Ruiz Soto",
+      "cargo": "Apoderada legal"
+     },
+     {
+      "nombre": "Jorge Alberto Treviño Garza",
+      "cargo": "Representante legal"
+     }
+    ],
+    "conteo": {
+     "vp": 2,
+     "fp": 0,
+     "fn": 0,
+     "vn": 0,
+     "precision": 1.0,
+     "exhaustividad": 1.0,
+     "f1": 1.0
+    },
+    "cargo_correcto": [
+     true,
+     true
+    ]
+   },
+   "cer": null
+  },
+  {
+   "id": "GS-CONT-05",
+   "caso_base": "GS-CONT-05",
+   "rendicion": "VECTORIAL",
+   "tipo_registrado": "CONTRATO_SERVICIOS",
+   "estatus_esperado": "EN_REVISION",
+   "estatus_dictaminado": "EN_REVISION",
+   "motivo_esperado": "No define el objeto del contrato (RSC-01-CONT-OBJ).",
+   "nivel_confianza": 0.95,
+   "requiere_revision_humana": true,
+   "observaciones": [
+    "El texto es legible y contiene todos los datos solicitados. Se detectó un segundo RFC (SIN150302KL7) correspondiente a la contraparte, pero se extrajo el del titular registrado en el expediente conforme a las instrucciones.",
+    "Dictamen EN_REVISION: el analista debe confirmar que el firmante corresponde con un apoderado con facultades vigentes en el poder notarial o el acta constitutiva del expediente (RSC-02, RN-03)."
+   ],
+   "campos": {
+    "tipo_documento": {
+     "esperado": "CONTRATO",
+     "extraido": "CONTRATO",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "rfc": {
+     "esperado": "PLU180514AB3",
+     "extraido": "PLU180514AB3",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "razon_social": {
+     "esperado": "plurione",
+     "extraido": "plurione",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_emision": {
+     "esperado": "2026-03-02",
+     "extraido": "2026-03-02",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_vencimiento": {
+     "esperado": "2027-03-01",
+     "extraido": "2027-03-01",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    }
+   },
+   "elementos": {
+    "RSC-01-CONT-OBJ": {
+     "presente_esperado": false,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-01-CONT-VIG": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-01-CONT-PEN": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-01-CONT-CONF": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-01-CONT-FIRM": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    }
+   },
+   "personas": {
+    "esperadas": [
+     {
+      "nombre": "María Elena Ruiz Soto",
+      "cargo": "Apoderada legal"
+     },
+     {
+      "nombre": "Jorge Alberto Treviño Garza",
+      "cargo": "Representante legal"
+     }
+    ],
+    "extraidas": [
+     {
+      "nombre": "María Elena Ruiz Soto",
+      "cargo": "Apoderada legal"
+     },
+     {
+      "nombre": "Jorge Alberto Treviño Garza",
+      "cargo": "Representante legal"
+     }
+    ],
+    "conteo": {
+     "vp": 2,
+     "fp": 0,
+     "fn": 0,
+     "vn": 0,
+     "precision": 1.0,
+     "exhaustividad": 1.0,
+     "f1": 1.0
+    },
+    "cargo_correcto": [
+     true,
+     true
+    ]
+   },
+   "cer": null
+  },
+  {
+   "id": "GS-CONT-06",
+   "caso_base": "GS-CONT-06",
+   "rendicion": "VECTORIAL",
+   "tipo_registrado": "CONTRATO_SERVICIOS",
+   "estatus_esperado": "EN_REVISION",
+   "estatus_dictaminado": "EN_REVISION",
+   "motivo_esperado": "No contiene el apartado de firmas (RSC-01-CONT-FIRM); los representantes solo se mencionan en el proemio.",
+   "nivel_confianza": 0.95,
+   "requiere_revision_humana": true,
+   "observaciones": [
+    "El texto es legible y corresponde a un contrato de prestación de servicios. No se identifica una fecha de emisión explícita, solo el periodo de vigencia.",
+    "Dictamen EN_REVISION: omisión relevante; no se localizaron o no pudieron verificarse estos elementos: Firmas de las partes (RSC-01)."
+   ],
+   "campos": {
+    "tipo_documento": {
+     "esperado": "CONTRATO",
+     "extraido": "CONTRATO",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "rfc": {
+     "esperado": "PLU180514AB3",
+     "extraido": "PLU180514AB3",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "razon_social": {
+     "esperado": "plurione",
+     "extraido": "plurione",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_emision": {
+     "esperado": "2026-03-02",
+     "extraido": null,
+     "conteo": {
+      "vp": 0,
+      "fp": 0,
+      "fn": 1,
+      "vn": 0,
+      "precision": null,
+      "exhaustividad": 0.0,
+      "f1": null
+     }
+    },
+    "fecha_vencimiento": {
+     "esperado": "2027-03-01",
+     "extraido": "2027-03-01",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    }
+   },
+   "elementos": {
+    "RSC-01-CONT-OBJ": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-01-CONT-VIG": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-01-CONT-PEN": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-01-CONT-CONF": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-01-CONT-FIRM": {
+     "presente_esperado": false,
+     "resultado": "NO_LOCALIZADO",
+     "presente_dictaminado": false,
+     "cita_anclada": null
+    }
+   },
+   "personas": {
+    "esperadas": [
+     {
+      "nombre": "María Elena Ruiz Soto",
+      "cargo": "Apoderada legal"
+     },
+     {
+      "nombre": "Jorge Alberto Treviño Garza",
+      "cargo": "Representante legal"
+     }
+    ],
+    "extraidas": [
+     {
+      "nombre": "María Elena Ruiz Soto",
+      "cargo": "apoderada"
+     },
+     {
+      "nombre": "Jorge Alberto Treviño Garza",
+      "cargo": "representante"
+     }
+    ],
+    "conteo": {
+     "vp": 2,
+     "fp": 0,
+     "fn": 0,
+     "vn": 0,
+     "precision": 1.0,
+     "exhaustividad": 1.0,
+     "f1": 1.0
+    },
+    "cargo_correcto": [
+     true,
+     true
+    ]
+   },
+   "cer": null
+  },
+  {
+   "id": "GS-CONT-07",
+   "caso_base": "GS-CONT-07",
+   "rendicion": "VECTORIAL",
+   "tipo_registrado": "CONTRATO_SERVICIOS",
+   "estatus_esperado": "EN_REVISION",
+   "estatus_dictaminado": "EN_REVISION",
+   "motivo_esperado": "Completo, con dos firmantes por el cliente; el contrato identifica a sus firmantes y RSC-02 deja la decisión al analista (DOC-05).",
+   "nivel_confianza": 0.95,
+   "requiere_revision_humana": true,
+   "observaciones": [
+    "El texto es legible y contiene datos ficticios de prueba. Se detectaron dos RFC en el documento; se extrajo el del titular registrado en el expediente (PLU180514AB3) conforme a las instrucciones.",
+    "Dictamen EN_REVISION: el analista debe confirmar que el firmante corresponde con un apoderado con facultades vigentes en el poder notarial o el acta constitutiva del expediente (RSC-02, RN-03)."
+   ],
+   "campos": {
+    "tipo_documento": {
+     "esperado": "CONTRATO",
+     "extraido": "CONTRATO",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "rfc": {
+     "esperado": "PLU180514AB3",
+     "extraido": "PLU180514AB3",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "razon_social": {
+     "esperado": "plurione",
+     "extraido": "plurione",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_emision": {
+     "esperado": "2026-03-02",
+     "extraido": "2026-03-02",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_vencimiento": {
+     "esperado": "2027-03-01",
+     "extraido": "2027-03-01",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    }
+   },
+   "elementos": {
+    "RSC-01-CONT-OBJ": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-01-CONT-VIG": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-01-CONT-PEN": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-01-CONT-CONF": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-01-CONT-FIRM": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    }
+   },
+   "personas": {
+    "esperadas": [
+     {
+      "nombre": "María Elena Ruiz Soto",
+      "cargo": "Apoderada legal"
+     },
+     {
+      "nombre": "Jorge Alberto Treviño Garza",
+      "cargo": "Representante legal"
+     },
+     {
+      "nombre": "Laura Patricia Ibarra Montes",
+      "cargo": "Directora General"
+     }
+    ],
+    "extraidas": [
+     {
+      "nombre": "María Elena Ruiz Soto",
+      "cargo": "Apoderada legal"
+     },
+     {
+      "nombre": "Laura Patricia Ibarra Montes",
+      "cargo": "Directora General"
+     },
+     {
+      "nombre": "Jorge Alberto Treviño Garza",
+      "cargo": "Representante legal"
+     }
+    ],
+    "conteo": {
+     "vp": 3,
+     "fp": 0,
+     "fn": 0,
+     "vn": 0,
+     "precision": 1.0,
+     "exhaustividad": 1.0,
+     "f1": 1.0
+    },
+    "cargo_correcto": [
+     true,
+     true,
+     true
+    ]
+   },
+   "cer": null
+  },
+  {
+   "id": "GS-CONT-07-ESC",
+   "caso_base": "GS-CONT-07",
+   "rendicion": "ESCANEADO",
+   "tipo_registrado": "CONTRATO_SERVICIOS",
+   "estatus_esperado": "EN_REVISION",
+   "estatus_dictaminado": "EN_REVISION",
+   "motivo_esperado": "Completo, con dos firmantes por el cliente; el contrato identifica a sus firmantes y RSC-02 deja la decisión al analista (DOC-05).",
+   "nivel_confianza": 0.9486,
+   "requiere_revision_humana": true,
+   "observaciones": [
+    "El texto es legible y contiene todos los datos requeridos. Se detectó un segundo RFC (SIN150302KL7) correspondiente a la contraparte, pero se extrajo el del titular del expediente según las instrucciones.",
+    "Dictamen EN_REVISION: el analista debe confirmar que el firmante corresponde con un apoderado con facultades vigentes en el poder notarial o el acta constitutiva del expediente (RSC-02, RN-03)."
+   ],
+   "campos": {
+    "tipo_documento": {
+     "esperado": "CONTRATO",
+     "extraido": "CONTRATO",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "rfc": {
+     "esperado": "PLU180514AB3",
+     "extraido": "PLU180514AB3",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "razon_social": {
+     "esperado": "plurione",
+     "extraido": "plurione",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_emision": {
+     "esperado": "2026-03-02",
+     "extraido": "2026-03-02",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_vencimiento": {
+     "esperado": "2027-03-01",
+     "extraido": "2027-03-01",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    }
+   },
+   "elementos": {
+    "RSC-01-CONT-OBJ": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-01-CONT-VIG": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-01-CONT-PEN": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-01-CONT-CONF": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-01-CONT-FIRM": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    }
+   },
+   "personas": {
+    "esperadas": [
+     {
+      "nombre": "María Elena Ruiz Soto",
+      "cargo": "Apoderada legal"
+     },
+     {
+      "nombre": "Jorge Alberto Treviño Garza",
+      "cargo": "Representante legal"
+     },
+     {
+      "nombre": "Laura Patricia Ibarra Montes",
+      "cargo": "Directora General"
+     }
+    ],
+    "extraidas": [
+     {
+      "nombre": "María Elena Ruiz Soto",
+      "cargo": "Apoderada legal"
+     },
+     {
+      "nombre": "Laura Patricia Ibarra Montes",
+      "cargo": "Directora General"
+     },
+     {
+      "nombre": "Jorge Alberto Treviño Garza",
+      "cargo": "Representante legal"
+     }
+    ],
+    "conteo": {
+     "vp": 3,
+     "fp": 0,
+     "fn": 0,
+     "vn": 0,
+     "precision": 1.0,
+     "exhaustividad": 1.0,
+     "f1": 1.0
+    },
+    "cargo_correcto": [
+     true,
+     true,
+     true
+    ]
+   },
+   "cer": 0.0011
+  },
+  {
+   "id": "GS-NDA-01",
+   "caso_base": "GS-NDA-01",
+   "rendicion": "VECTORIAL",
+   "tipo_registrado": "ACUERDO_CONFIDENCIALIDAD",
+   "estatus_esperado": "EN_REVISION",
+   "estatus_dictaminado": "EN_REVISION",
+   "motivo_esperado": "Completo; el contrato identifica a sus firmantes y RSC-02 deja la decisión al analista (DOC-05).",
+   "nivel_confianza": 0.95,
+   "requiere_revision_humana": true,
+   "observaciones": [
+    "El texto es legible y coherente, aunque contiene una advertencia de ser un documento de prueba con datos ficticios. Se detectaron dos RFC en el texto, pero se extrajo el del titular del expediente conforme a las instrucciones.",
+    "Dictamen EN_REVISION: el analista debe confirmar que el firmante corresponde con un apoderado con facultades vigentes en el poder notarial o el acta constitutiva del expediente (RSC-02, RN-03)."
+   ],
+   "campos": {
+    "tipo_documento": {
+     "esperado": "CONTRATO",
+     "extraido": "CONTRATO",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "rfc": {
+     "esperado": "PLU180514AB3",
+     "extraido": "PLU180514AB3",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "razon_social": {
+     "esperado": "plurione",
+     "extraido": "plurione",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_emision": {
+     "esperado": "2026-06-15",
+     "extraido": "2026-06-15",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_vencimiento": {
+     "esperado": "2029-06-15",
+     "extraido": "2029-06-15",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    }
+   },
+   "elementos": {
+    "RSC-01-NDA-NODIV": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-01-NDA-PART": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-01-NDA-VIG": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    }
+   },
+   "personas": {
+    "esperadas": [
+     {
+      "nombre": "María Elena Ruiz Soto",
+      "cargo": "Apoderada legal"
+     },
+     {
+      "nombre": "Jorge Alberto Treviño Garza",
+      "cargo": "Representante legal"
+     }
+    ],
+    "extraidas": [
+     {
+      "nombre": "María Elena Ruiz Soto",
+      "cargo": "Apoderada legal"
+     },
+     {
+      "nombre": "Jorge Alberto Treviño Garza",
+      "cargo": "Representante legal"
+     }
+    ],
+    "conteo": {
+     "vp": 2,
+     "fp": 0,
+     "fn": 0,
+     "vn": 0,
+     "precision": 1.0,
+     "exhaustividad": 1.0,
+     "f1": 1.0
+    },
+    "cargo_correcto": [
+     true,
+     true
+    ]
+   },
+   "cer": null
+  },
+  {
+   "id": "GS-NDA-01-ESC",
+   "caso_base": "GS-NDA-01",
+   "rendicion": "ESCANEADO",
+   "tipo_registrado": "ACUERDO_CONFIDENCIALIDAD",
+   "estatus_esperado": "EN_REVISION",
+   "estatus_dictaminado": "EN_REVISION",
+   "motivo_esperado": "Completo; el contrato identifica a sus firmantes y RSC-02 deja la decisión al analista (DOC-05).",
+   "nivel_confianza": 0.9398,
+   "requiere_revision_humana": true,
+   "observaciones": [
+    "El texto es legible y claro, aunque contiene una advertencia de ser un documento de prueba con datos ficticios. Se detectaron dos RFC en el texto, pero se extrajo el del titular del expediente conforme a las instrucciones.",
+    "Dictamen EN_REVISION: el analista debe confirmar que el firmante corresponde con un apoderado con facultades vigentes en el poder notarial o el acta constitutiva del expediente (RSC-02, RN-03)."
+   ],
+   "campos": {
+    "tipo_documento": {
+     "esperado": "CONTRATO",
+     "extraido": "CONTRATO",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "rfc": {
+     "esperado": "PLU180514AB3",
+     "extraido": "PLU180514AB3",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "razon_social": {
+     "esperado": "plurione",
+     "extraido": "plurione",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_emision": {
+     "esperado": "2026-06-15",
+     "extraido": "2026-06-15",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_vencimiento": {
+     "esperado": "2029-06-15",
+     "extraido": "2029-06-15",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    }
+   },
+   "elementos": {
+    "RSC-01-NDA-NODIV": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-01-NDA-PART": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-01-NDA-VIG": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    }
+   },
+   "personas": {
+    "esperadas": [
+     {
+      "nombre": "María Elena Ruiz Soto",
+      "cargo": "Apoderada legal"
+     },
+     {
+      "nombre": "Jorge Alberto Treviño Garza",
+      "cargo": "Representante legal"
+     }
+    ],
+    "extraidas": [
+     {
+      "nombre": "María Elena Ruiz Soto",
+      "cargo": "Apoderada legal"
+     },
+     {
+      "nombre": "Jorge Alberto Treviño Garza",
+      "cargo": "Representante legal"
+     }
+    ],
+    "conteo": {
+     "vp": 2,
+     "fp": 0,
+     "fn": 0,
+     "vn": 0,
+     "precision": 1.0,
+     "exhaustividad": 1.0,
+     "f1": 1.0
+    },
+    "cargo_correcto": [
+     true,
+     true
+    ]
+   },
+   "cer": 0.0
+  },
+  {
+   "id": "GS-NDA-02",
+   "caso_base": "GS-NDA-02",
+   "rendicion": "VECTORIAL",
+   "tipo_registrado": "ACUERDO_CONFIDENCIALIDAD",
+   "estatus_esperado": "EN_REVISION",
+   "estatus_dictaminado": "EN_REVISION",
+   "motivo_esperado": "Falta la cláusula de no divulgación (RSC-01-NDA-NODIV).",
+   "nivel_confianza": 0.95,
+   "requiere_revision_humana": true,
+   "observaciones": [
+    "El texto es legible y contiene una advertencia de ser ficticio. Se detectaron dos RFC en el texto, pero se extrajo el del titular del expediente conforme a las instrucciones.",
+    "Dictamen EN_REVISION: el analista debe confirmar que el firmante corresponde con un apoderado con facultades vigentes en el poder notarial o el acta constitutiva del expediente (RSC-02, RN-03)."
+   ],
+   "campos": {
+    "tipo_documento": {
+     "esperado": "CONTRATO",
+     "extraido": "CONTRATO",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "rfc": {
+     "esperado": "PLU180514AB3",
+     "extraido": "PLU180514AB3",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "razon_social": {
+     "esperado": "plurione",
+     "extraido": "plurione",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_emision": {
+     "esperado": "2026-06-15",
+     "extraido": "2026-06-15",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_vencimiento": {
+     "esperado": "2029-06-15",
+     "extraido": "2029-06-15",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    }
+   },
+   "elementos": {
+    "RSC-01-NDA-NODIV": {
+     "presente_esperado": false,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-01-NDA-PART": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-01-NDA-VIG": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    }
+   },
+   "personas": {
+    "esperadas": [
+     {
+      "nombre": "María Elena Ruiz Soto",
+      "cargo": "Apoderada legal"
+     },
+     {
+      "nombre": "Jorge Alberto Treviño Garza",
+      "cargo": "Representante legal"
+     }
+    ],
+    "extraidas": [
+     {
+      "nombre": "María Elena Ruiz Soto",
+      "cargo": "Apoderada legal"
+     },
+     {
+      "nombre": "Jorge Alberto Treviño Garza",
+      "cargo": "Representante legal"
+     }
+    ],
+    "conteo": {
+     "vp": 2,
+     "fp": 0,
+     "fn": 0,
+     "vn": 0,
+     "precision": 1.0,
+     "exhaustividad": 1.0,
+     "f1": 1.0
+    },
+    "cargo_correcto": [
+     true,
+     true
+    ]
+   },
+   "cer": null
+  },
+  {
+   "id": "GS-NDA-03",
+   "caso_base": "GS-NDA-03",
+   "rendicion": "VECTORIAL",
+   "tipo_registrado": "ACUERDO_CONFIDENCIALIDAD",
+   "estatus_esperado": "EN_REVISION",
+   "estatus_dictaminado": "EN_REVISION",
+   "motivo_esperado": "Falta la vigencia de la obligación de confidencialidad (RSC-01-NDA-VIG).",
+   "nivel_confianza": 0.95,
+   "requiere_revision_humana": true,
+   "observaciones": [
+    "El texto es legible y coherente, aunque contiene una advertencia de ser un documento de prueba con datos ficticios. Se detectaron dos RFC en el texto, pero se extrajo el del titular del expediente conforme a las instrucciones.",
+    "Dictamen EN_REVISION: omisión relevante; no se localizaron o no pudieron verificarse estos elementos: Vigencia de la confidencialidad (RSC-01)."
+   ],
+   "campos": {
+    "tipo_documento": {
+     "esperado": "CONTRATO",
+     "extraido": "CONTRATO",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "rfc": {
+     "esperado": "PLU180514AB3",
+     "extraido": "PLU180514AB3",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "razon_social": {
+     "esperado": "plurione",
+     "extraido": "plurione",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_emision": {
+     "esperado": "2026-06-15",
+     "extraido": "2026-06-15",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_vencimiento": {
+     "esperado": null,
+     "extraido": null,
+     "conteo": {
+      "vp": 0,
+      "fp": 0,
+      "fn": 0,
+      "vn": 1,
+      "precision": null,
+      "exhaustividad": null,
+      "f1": null
+     }
+    }
+   },
+   "elementos": {
+    "RSC-01-NDA-NODIV": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-01-NDA-PART": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    },
+    "RSC-01-NDA-VIG": {
+     "presente_esperado": false,
+     "resultado": "NO_LOCALIZADO",
+     "presente_dictaminado": false,
+     "cita_anclada": null
+    }
+   },
+   "personas": {
+    "esperadas": [
+     {
+      "nombre": "María Elena Ruiz Soto",
+      "cargo": "Apoderada legal"
+     },
+     {
+      "nombre": "Jorge Alberto Treviño Garza",
+      "cargo": "Representante legal"
+     }
+    ],
+    "extraidas": [
+     {
+      "nombre": "María Elena Ruiz Soto",
+      "cargo": "Apoderada legal"
+     },
+     {
+      "nombre": "Jorge Alberto Treviño Garza",
+      "cargo": "Representante legal"
+     }
+    ],
+    "conteo": {
+     "vp": 2,
+     "fp": 0,
+     "fn": 0,
+     "vn": 0,
+     "precision": 1.0,
+     "exhaustividad": 1.0,
+     "f1": 1.0
+    },
+    "cargo_correcto": [
+     true,
+     true
+    ]
+   },
+   "cer": null
+  },
+  {
+   "id": "GS-POL-01",
+   "caso_base": "GS-POL-01",
+   "rendicion": "VECTORIAL",
+   "tipo_registrado": "POLIZA_SEGURO",
+   "estatus_esperado": "CONFORME",
+   "estatus_dictaminado": "CONFORME",
+   "motivo_esperado": "Coberturas y sumas aseguradas presentes; vence en 93 días (RCV-01: vigente).",
+   "nivel_confianza": 0.95,
+   "requiere_revision_humana": false,
+   "observaciones": [
+    "El texto es legible y contiene todos los campos requeridos. Se detecta una marca de agua o nota indicando que los datos son ficticios, pero la estructura corresponde claramente a una póliza de seguro.",
+    "Dictamen CONFORME: titularidad y vigencia verificadas con confianza suficiente."
+   ],
+   "campos": {
+    "tipo_documento": {
+     "esperado": "POLIZA",
+     "extraido": "POLIZA",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "rfc": {
+     "esperado": "PLU180514AB3",
+     "extraido": "PLU180514AB3",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "razon_social": {
+     "esperado": "plurione",
+     "extraido": "plurione",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_emision": {
+     "esperado": "2025-12-20",
+     "extraido": "2025-12-20",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_vencimiento": {
+     "esperado": "2027-01-01",
+     "extraido": "2027-01-01",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    }
+   },
+   "elementos": {
+    "RSC-POL-COB": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    }
+   },
+   "personas": {
+    "esperadas": [],
+    "extraidas": [],
+    "conteo": {
+     "vp": 0,
+     "fp": 0,
+     "fn": 0,
+     "vn": 0,
+     "precision": null,
+     "exhaustividad": null,
+     "f1": null
+    },
+    "cargo_correcto": []
+   },
+   "cer": null
+  },
+  {
+   "id": "GS-POL-01-ESC",
+   "caso_base": "GS-POL-01",
+   "rendicion": "ESCANEADO",
+   "tipo_registrado": "POLIZA_SEGURO",
+   "estatus_esperado": "CONFORME",
+   "estatus_dictaminado": "CONFORME",
+   "motivo_esperado": "Coberturas y sumas aseguradas presentes; vence en 93 días (RCV-01: vigente).",
+   "nivel_confianza": 0.9422,
+   "requiere_revision_humana": false,
+   "observaciones": [
+    "El texto es legible y contiene todos los campos requeridos. Se detecta una marca de agua o nota indicando que los datos son ficticios, pero la estructura corresponde claramente a una póliza de seguro.",
+    "Dictamen CONFORME: titularidad y vigencia verificadas con confianza suficiente."
+   ],
+   "campos": {
+    "tipo_documento": {
+     "esperado": "POLIZA",
+     "extraido": "POLIZA",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "rfc": {
+     "esperado": "PLU180514AB3",
+     "extraido": "PLU180514AB3",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "razon_social": {
+     "esperado": "plurione",
+     "extraido": "plurione",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_emision": {
+     "esperado": "2025-12-20",
+     "extraido": "2025-12-20",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_vencimiento": {
+     "esperado": "2027-01-01",
+     "extraido": "2027-01-01",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    }
+   },
+   "elementos": {
+    "RSC-POL-COB": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    }
+   },
+   "personas": {
+    "esperadas": [],
+    "extraidas": [],
+    "conteo": {
+     "vp": 0,
+     "fp": 0,
+     "fn": 0,
+     "vn": 0,
+     "precision": null,
+     "exhaustividad": null,
+     "f1": null
+    },
+    "cargo_correcto": []
+   },
+   "cer": 0.0
+  },
+  {
+   "id": "GS-POL-02",
+   "caso_base": "GS-POL-02",
+   "rendicion": "VECTORIAL",
+   "tipo_registrado": "POLIZA_SEGURO",
+   "estatus_esperado": "NO_CONFORME",
+   "estatus_dictaminado": "NO_CONFORME",
+   "motivo_esperado": "Venció el 1 de enero de 2026 (RCV-01).",
+   "nivel_confianza": 0.95,
+   "requiere_revision_humana": false,
+   "observaciones": [
+    "El texto es legible y contiene todos los campos requeridos. Se detecta una marca de agua o nota indicando que los datos son ficticios para pruebas, lo cual no afecta la extracción de los datos estructurales.",
+    "RCV-01 (Vigencia Mandatoria): El documento venció hace 272 días (2026-01-01).",
+    "Dictamen NO_CONFORME: la vigencia del documento ya expiró."
+   ],
+   "campos": {
+    "tipo_documento": {
+     "esperado": "POLIZA",
+     "extraido": "POLIZA",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "rfc": {
+     "esperado": "PLU180514AB3",
+     "extraido": "PLU180514AB3",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "razon_social": {
+     "esperado": "plurione",
+     "extraido": "plurione",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_emision": {
+     "esperado": "2024-12-18",
+     "extraido": "2024-12-18",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_vencimiento": {
+     "esperado": "2026-01-01",
+     "extraido": "2026-01-01",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    }
+   },
+   "elementos": {
+    "RSC-POL-COB": {
+     "presente_esperado": true,
+     "resultado": "CUMPLE",
+     "presente_dictaminado": true,
+     "cita_anclada": true
+    }
+   },
+   "personas": {
+    "esperadas": [],
+    "extraidas": [],
+    "conteo": {
+     "vp": 0,
+     "fp": 0,
+     "fn": 0,
+     "vn": 0,
+     "precision": null,
+     "exhaustividad": null,
+     "f1": null
+    },
+    "cargo_correcto": []
+   },
+   "cer": null
+  },
+  {
+   "id": "GS-LIC-01",
+   "caso_base": "GS-LIC-01",
+   "rendicion": "VECTORIAL",
+   "tipo_registrado": "LICENCIA_OPERACION",
+   "estatus_esperado": "EN_REVISION",
+   "estatus_dictaminado": "EN_REVISION",
+   "motivo_esperado": "No indica el giro o actividad autorizada (RSC-LIC-GIRO).",
+   "nivel_confianza": 0.99,
+   "requiere_revision_humana": true,
+   "observaciones": [
+    "El texto es legible y contiene todos los campos requeridos de forma explícita. Se detecta una marca de agua indicando que es un documento de prueba con datos ficticios.",
+    "Dictamen EN_REVISION: omisión relevante; no se localizaron o no pudieron verificarse estos elementos: Giro o actividad autorizada (RSC-01)."
+   ],
+   "campos": {
+    "tipo_documento": {
+     "esperado": "LICENCIA",
+     "extraido": "LICENCIA",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "rfc": {
+     "esperado": "PLU180514AB3",
+     "extraido": "PLU180514AB3",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "razon_social": {
+     "esperado": "plurione",
+     "extraido": "plurione",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_emision": {
+     "esperado": "2026-01-05",
+     "extraido": "2026-01-05",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    },
+    "fecha_vencimiento": {
+     "esperado": "2026-12-31",
+     "extraido": "2026-12-31",
+     "conteo": {
+      "vp": 1,
+      "fp": 0,
+      "fn": 0,
+      "vn": 0,
+      "precision": 1.0,
+      "exhaustividad": 1.0,
+      "f1": 1.0
+     }
+    }
+   },
+   "elementos": {
+    "RSC-LIC-GIRO": {
+     "presente_esperado": false,
+     "resultado": "NO_LOCALIZADO",
+     "presente_dictaminado": false,
+     "cita_anclada": null
+    }
+   },
+   "personas": {
+    "esperadas": [],
+    "extraidas": [],
+    "conteo": {
+     "vp": 0,
+     "fp": 0,
+     "fn": 0,
+     "vn": 0,
+     "precision": null,
+     "exhaustividad": null,
+     "f1": null
+    },
+    "cargo_correcto": []
+   },
+   "cer": null
+  }
+ ]
+}

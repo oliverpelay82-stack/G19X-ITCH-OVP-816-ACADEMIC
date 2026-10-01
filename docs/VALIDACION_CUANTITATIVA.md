@@ -5,7 +5,7 @@
 | Propósito | Demostrar con métricas reproducibles la exactitud de la IA (ISO/IEC 25010, Adecuación funcional › Exactitud) y el rendimiento del sistema (ISO/IEC 25010, Eficiencia de desempeño) frente a RNF-01, RNF-02 y RNF-03, y medir la eficiencia del chat documental antes y después de su optimización (PRD §21.4, P4) |
 | Fase del cronograma | Fase 5 · QA (DOC-07, semanas 13 y 14: «pruebas de precisión de IA»; riesgo «baja precisión en la detección de cláusulas», 13 h de pruebas de precisión) |
 | Fuentes | DOC-01 H12 y H15; DOC-03 (ISO/IEC 25010: «Gold Standard con precisión, exhaustividad y F1»); DOC-04 RNF-01 a RNF-03; DOC-05 (RSC-01, RSC-02, bandas del Nivel 5); DOC-08 §6.2; [PRD.md](PRD.md) §11, §15 y §21.4 |
-| Estado | Diseño aprobado el 30/09/2026, junto con la configuración del OCR (§5) y la optimización del chat (§6). Medición base del chat y los cinco pasos de P4 (T3, T4, T0, T2 y T1) medidos con Groq (§10.1, 01/10/2026); precisión y rendimiento pendientes |
+| Estado | Diseño aprobado el 30/09/2026, junto con la configuración del OCR (§5) y la optimización del chat (§6). Chat (§10.1), precisión del Gold Standard (§10.2) y rendimiento (§10.3) medidos el 01/10/2026; pendiente la medición formal del RNF-02 completo sin el presupuesto del grabador |
 | Restricciones | Sin cambios de arquitectura ni de contratos de API; sin tocar el Módulo 7; ningún dato real de terceros en el repositorio; la suite de precisión corre sin consumir tokens una vez grabada |
 
 ---
@@ -471,9 +471,171 @@ Medición con Groq real en ambas baterías, con la cuota del 01/10/2026 y la lec
 | T1 (PLUS-08) | Montos y cláusulas nombradas: el renglón literal con su página, ≈ 30 ms | 2/38 y 1/8 turnos, 3/3 correctos |
 | T2 (PLUS-09) | Preguntas puntuales con un contexto de ≈ 2,500 caracteres en lugar de ≈ 6,400 | −71 % de tokens por turno en el documento largo; exactitud 100 % |
 
-### 10.2 Precisión y 10.3 Rendimiento
+### 10.2 Precisión (01/10/2026)
 
-*Pendiente de ejecución.* Tablas previstas:
+Corrida oficial de `python -m evaluacion.evaluar_precision` sobre los 42 casos (30 vectoriales y 12 escaneados), con Groq real: `qwen/qwen3.8-27b` a temperatura 0.0, lectura `n3-3.3` con 8 procesos y fecha de referencia fija (30/09/2026). Las 42 auditorías consumieron 126,019 tokens (1,700 a 4,470 por caso: los contratos y NDA hacen dos llamadas). La reproducción desde el casete (`evaluacion/casetes/precision.json`) da las mismas cifras sin llamar a Groq. Detalle por caso en [`resultados_validacion/precision.json`](resultados_validacion/precision.json).
 
-- **10.2 Precisión:** extracción por campo (P, R, F1, IC 95 %, n); elementos RSC por regla y por rendición; RSC-02; matriz de confusión 3 × 3, κ, falsa conformidad y rechazo indebido; calibración por banda; CER del OCR.
-- **10.3 Rendimiento:** RNF-01 (p50/p95/p99 por tamaño de expediente, con y sin auditoría en curso); RNF-02 por documento y etapa, configuración anterior contra definitiva; RNF-03 por escenario; conclusión por RNF (Cumple / No cumple).
+**Incidente de la grabación.** En la primera pasada, la verificación de contenido de `GS-NDA-01-ESC` falló por el límite por minuto de Groq (`GroqNoDisponibleError`). El motor la trató como debía: dictamen EN_REVISION, con la observación «la verificación de contenido no pudo completarse». Esa inferencia se regrabó y es la que se reporta. El caso confirma que una falla del proveedor no aprueba nada.
+
+#### PE-4 · Decisiones de los Niveles 4 y 5
+
+| | Dictaminado CONFORME | Dictaminado EN_REVISION | Dictaminado NO_CONFORME |
+|---|---|---|---|
+| Esperado CONFORME (16) | **16** | 0 | 0 |
+| Esperado EN_REVISION (18) | 0 | **18** | 0 |
+| Esperado NO_CONFORME (8) | 0 | 0 | **8** |
+
+| Métrica | Resultado | IC 95 % | Meta |
+|---|---|---|---|
+| Exactitud del estatus preliminar | **42/42 (100 %)** | 92–100 % | — |
+| κ de Cohen · F1 macro | 1.000 · 1.000 | — | — |
+| **Tasa de falsa conformidad** | **0/26 (0 %)** | 0–13 % | 0 % ✔ |
+| **Tasa de rechazo indebido** | **0/34 (0 %)** | 0–10 % | 0 % ✔ |
+| Derivación a revisión humana | 18/42; por estatus esperado: CONFORME 0/16, EN_REVISION 18/18, NO_CONFORME 0/8 | — | — |
+
+- Cada caso que necesita analista llega al analista y ninguno de los que no lo necesitan lo hace. Los 8 NO_CONFORME se rechazan por hechos del documento (vencimiento, RFC ajeno, opinión negativa, póliza vencida), nunca por confianza baja.
+- **Calibración:** los 42 casos se dictaminaron con confianza ≥ 0.85 y los 42 fueron correctos (IC 92–100 %). Las bandas 0.70–0.84 y < 0.70 quedaron vacías: con documentos sintéticos legibles la calibración de esas bandas **no se puede evaluar**; hace falta el subconjunto real (§2.4).
+- Que el estatus sea perfecto no significa que todo lo extraído lo sea (ver PE-2): los contratos y NDA siempre pasan a revisión humana (RSC-02), y eso absorbió los dos errores de elementos.
+
+#### PE-1 · Extracción de entidades
+
+| Campo | n | Precisión | Exhaustividad | F1 (IC 95 %) | Alucinación |
+|---|---|---|---|---|---|
+| Tipo documental | 42 | 100 % | 100 % | 100 % | — |
+| RFC | 42 | 96.8 % | 96.8 % | 96.8 % (90–100 %) | 0/11 |
+| Razón social | 42 | 100 % | 100 % | 100 % | — |
+| Fecha de emisión | 42 | 100 % | 97.6 % | 98.8 % (96–100 %) | — |
+| Fecha de vencimiento | 42 | 100 % | 100 % | 100 % | 0/26 |
+| **Micro** | 210 | **99.4 %** | **98.8 %** | **99.1 % (98–100 %)** | **0/37** |
+
+- **Ninguna alucinación:** en los 37 campos que el documento no trae (11 RFC y 26 fechas de vencimiento), el modelo no inventó un valor. F1 macro 99.1 %; 40/42 documentos con todos sus campos correctos.
+- **RFC de GS-CSF-03-ESC:** el OCR leyó «CBA120809QWA4» (una A de más) en el renglón del RFC y el modelo lo copió fielmente; la cadena original del mismo documento trae el RFC correcto. El dictamen no cambia (el RFC es ajeno en ambos casos: NO_CONFORME). Es el único error atribuible al OCR en los 12 escaneos.
+- **Fecha de emisión de GS-CONT-06** (contrato sin apartado de firmas): la anotación la fija en el inicio de la vigencia (2 de marzo de 2026); el modelo devolvió vacío porque, sin firmas, el documento no declara la fecha en que se celebró. Es una **discrepancia defendible de la anotación**; la cifra oficial la cuenta como error y no se ajusta a posteriori (§2.1).
+
+#### PE-2 · Elementos normativos RSC
+
+101 pares (caso, regla anotada): 14 omisiones reales y 87 elementos presentes.
+
+| Clase | VP | FP | FN | Precisión | Exhaustividad | F1 (IC 95 %) |
+|---|---|---|---|---|---|---|
+| Omisión (la métrica crítica) | 12 | 0 | **2** | 100 % | **85.7 %** | 92.3 % (78–100 %) |
+| Presente | 87 | 2 | 0 | 97.8 % | 100 % | 98.9 % (97–100 %) |
+
+- **Dos falsas conformidades de elemento, ambas por inferencia del modelo:**
+  - `GS-CONT-05` (contrato sin objeto): RSC-01-CONT-OBJ se dio por cumplida con la cita «…prestar los servicios objeto de este contrato» de las declaraciones, y la observación «el objeto se define implícitamente».
+  - `GS-NDA-02` (NDA sin obligación de no divulgación): RSC-01-NDA-NODIV se dio por cumplida con la definición de información confidencial, «estableciendo la base para la obligación».
+- **Las citas son literales pero no prueban el elemento.** Las 89 citas de los elementos CUMPLE están ancladas al texto (89/89): el anclaje garantiza que la cita existe, no que sea pertinente. Es un límite del diseño actual.
+- **Impacto:** ninguno en el estatus. Contratos y NDA siempre pasan a revisión humana por RSC-02, y el analista ve la cita y la observación «implícitamente». Pero el motivo que se muestra da el elemento por presente.
+- **Por regla:** 15 de las 17 reglas evaluadas aciertan en todos sus pares; RSC-01-CONT-OBJ 9/10 y RSC-01-NDA-NODIV 3/4.
+- **Abstenciones:** ninguna (0 NO_VERIFICABLE).
+- **Corrección propuesta:** pendiente de la aprobación del residente. Exigir en las instrucciones de verificación que el elemento esté **expreso** y tratar como NO_LOCALIZADO un CUMPLE cuya observación declare una inferencia. Cambia `version_instrucciones`, así que exige volver a grabar esta suite.
+
+#### PE-3 · Firmantes y apoderados (RSC-02)
+
+- **Nombres:** 46/46 personas encontradas, sin ninguna inventada (P = R = F1 = 100 %).
+- **Cargo:** 41/46 (89 %, IC 77–95 %). Los 5 fallos son el mismo: en las 5 actas (3 vectoriales y 2 escaneadas), la apoderada se extrae sin cargo, porque el acta la nombra solo por su poder («Se otorga a María Elena Ruiz Soto poder general…») y no la llama «apoderada».
+- **Impacto:** el cotejo RN-03 usa el nombre y el rol (APODERADOS), no el cargo, así que no se afecta. Lo que ve el analista es un cargo vacío.
+
+#### OCR (CER sobre texto conocido)
+
+| Escaneos | CER mediano | CER máximo | Peor documento |
+|---|---|---|---|
+| 12 | **0.24 %** | 0.96 % | Poder notarial |
+
+Tres escaneos tienen CER de 0 %. La lectura 3.3 coincide con lo medido sin modelo en §10.1 (recall de palabras 99.65 %).
+
+**Ablación vectorial / escaneado** (los 12 casos base que tienen escaneo, en sus dos rendiciones):
+
+| Rendición | F1 micro de entidades | Documentos con todos los campos | Estatus correcto |
+|---|---|---|---|
+| Vectorial | 100 % | 12/12 | 12/12 |
+| Escaneado | 98.0 % | 11/12 | 12/12 |
+
+El OCR cuesta 2 puntos de F1 en las entidades (el RFC de GS-CSF-03-ESC) y nada en las decisiones ni en los elementos RSC.
+
+#### Lectura para el residente
+
+- **Lo que se puede afirmar con estas cifras:** en el Gold Standard, el motor no aprobó nada que debiera revisarse ni rechazó nada aprobable; no inventó datos; y cada cita que presenta existe en el documento.
+- **Lo que no se puede afirmar:**
+  - el comportamiento con documentos reales ni la calibración de las bandas bajas (§2.4 y §9);
+  - que el motor detecte siempre la omisión de una cláusula: 2 de 14 omisiones se dieron por cumplidas.
+
+### 10.3 Rendimiento (01/10/2026)
+
+**Equipo:** AMD Ryzen 5 3500U (4 núcleos y 8 hilos), 5.9 GB de RAM y Windows 11. Python 3.12, PostgreSQL 17 local y Tesseract 5.4. Servicios locales, con un proceso de uvicorn por servicio. Las cifras valen para este equipo de desarrollo (§9), no para un servidor.
+
+#### RNF-01 · Evaluación determinista (≤ 2 s) — **Cumple**
+
+`python scripts/benchmark_rendimiento.py`, sobre `plurione_compliance_bench`. Expedientes jurídicos con tipos de documento distintos, cada uno con su dictamen, el anexo del contrato (RIE-02) y el cotejo RN-03 acreditado. 5 peticiones de calentamiento y 100 medidas, secuenciales. Detalle en [`rendimiento.json`](resultados_validacion/rendimiento.json).
+
+| Expediente | `GET /expedientes/{id}` p50 / p95 / p99 | Con OCR de 20 páginas en curso, p95 | `reevaluar()` en proceso, p95 |
+|---|---|---|---|
+| 3 documentos | 47.5 / 65.6 / 73.1 ms | 54.6 ms | 47.8 ms |
+| 8 documentos | 30.0 / 54.2 / 62.0 ms | 56.4 ms | 53.8 ms |
+| 15 documentos | 51.2 / **72.5** / 80.4 ms | 58.5 ms | 55.6 ms |
+| Listado de 30 expedientes (estrés) | 201.9 / 245.1 / 280.1 ms | — | — |
+
+- El peor p95 es de 72.5 ms: **27 veces por debajo de la meta**.
+- La lectura OCR en curso con 8 procesos no la degrada. El core es otro proceso y su trabajo es de base de datos, no de CPU.
+- La evaluación en proceso cuesta de 30 a 55 ms; el resto del tiempo es red local y serialización.
+
+#### RNF-02 · Extracción y análisis (≤ 25 s por documento de hasta 20 páginas) — **Cumple con documentos sintéticos; no con el acta real**
+
+`python -m evaluacion.benchmark_extraccion` mide el Nivel 3 en frío (sin persistencia ni caché): 5 corridas por documento, con la configuración definitiva y con la anterior, cada una en su propio proceso. Detalle en [`rendimiento_extraccion.json`](resultados_validacion/rendimiento_extraccion.json).
+
+| Documento | Páginas | Definitiva: mediana (rango) | Anterior: mediana | Cambio |
+|---|---|---|---|---|
+| Contrato vectorial | 20 | 0.02 s | 0.03 s | — |
+| Contrato escaneado | 20 | **8.9 s** (8.6–9.0) | 15.5 s | −43 % |
+| Contrato escaneado a color, con sellos en 5 páginas | 20 | 10.0 s (9.9–10.9) | 15.6 s | −36 % |
+| Acta real escaneada (bóveda, no versionada) | 26 | **35.4 s** (31.0–36.8) | 71.5 s | −50 % |
+
+- **Desglose por etapa** (tiempo acumulado en los 8 procesos, contrato escaneado): Tesseract 36.8 s, preprocesamiento 5.6 s y rasterizado 2.1 s. El OCR es ≈ 83 % del trabajo; con 8 procesos en paralelo, eso son 8.9 s de reloj.
+- **Sellos:** con la configuración definitiva, el raster a color de un documento con sellos cuesta 1.1 s más. La relectura de sellos de la configuración anterior no cambió el tiempo, lo que confirma §5.1.
+
+**RNF-02 completo, Nivel 3 en frío + Nivel 4:** 3 auditorías reales del contrato escaneado ([`rendimiento_rnf02.json`](resultados_validacion/rendimiento_rnf02.json)).
+
+| Auditoría | Lectura del texto | Groq: extracción · verificación (en paralelo) | Total medido | Total sin la espera del grabador |
+|---|---|---|---|---|
+| 1 | 9.1 s | 3.0 s · 1.7 s | 70.9 s | ≈ 12.1 s |
+| 2 | 9.0 s | 2.3 s · 2.1 s | 71.2 s | ≈ 11.3 s |
+| 3 | 9.4 s | 1.3 s · 2.0 s | 71.5 s | ≈ 11.4 s |
+
+- **El total medido no es el del servicio.** Unos 58 s de cada auditoría son la espera del presupuesto de 7,000 tokens por minuto del grabador (`evaluacion/entorno.py`), que existe para grabar casetes sin errores 429 y no forma parte del servicio.
+- **La última columna es una reconstrucción:** lectura + la mayor de las dos latencias de Groq, porque las dos llamadas corren en paralelo. Su mediana es ≈ **11.4 s frente a la meta de 25 s**.
+- **Pendiente:** el benchmark ya corre sin ese presupuesto y con 61 s entre auditorías (prueba `test_sin_limite_de_tokens_el_grabador_no_espera`). La medición formal se repite con la cuota diaria siguiente, porque la de hoy se agotó (≈ 21,000 tokens).
+- **El acta real no cumple la meta.** Sus 26 páginas tardan 35.4 s solo en el Nivel 3, unos 27 s si se normaliza a 20 páginas (1.36 s por página). Con el Nivel 4, ≈ 30 s frente a 25 s.
+  - Sus páginas son mucho más densas que las del contrato sintético (0.44 s por página): Tesseract acumula 207 s contra 37 s.
+  - Para los escaneos reales densos, el RNF-02 **no se cumple en este equipo**. Las palancas de §5.2 ya están en su mejor valor.
+  - Lo que queda fuera del alcance documentado: un equipo con más núcleos, OCR en la nube o reducir los ppp, que §5.1 descartó por pérdida de texto.
+
+#### RNF-03 · Concurrencia (≥ 50 peticiones simultáneas) — **Cumple el criterio de §7.4, con degradación de latencia**
+
+50 peticiones liberadas por una barrera, contra la misma serie en secuencia:
+
+| Escenario | Secuencial p95 | Simultáneo p50 / p95 | Degradación del p95 | 5xx | Respuestas correctas |
+|---|---|---|---|---|---|
+| `GET /health` | 5.0 ms | 269 / 316 ms | ×63 | 0 | 50/50 |
+| `GET /expedientes/{id}` (10 expedientes) | 64.2 ms | 831 / **1,070 ms** | ×17 | 0 | 50/50 |
+| Cargas de documentos distintos (10 expedientes) | 98.2 ms | 1,542 / 2,200 ms | ×22 | 0 | 50/50 (201) |
+
+| Pérdida de transacciones | Resultado |
+|---|---|
+| Cargas aceptadas (secuenciales + simultáneas) | 100 |
+| Documentos en la base (versiones incluidas) | 100 |
+| Eventos INGESTA_DOCUMENTO | 100 |
+| Cadena de la bitácora | Íntegra y sellada (499 eventos) |
+
+- **Sin errores ni pérdidas:** 0 respuestas 5xx, 0 transacciones perdidas, la cadena íntegra y un p95 de consulta simultánea de 1.07 s, por debajo de 2 s.
+- **Sí hay degradación de latencia:** las 50 peticiones se atienden con un solo proceso de uvicorn, así que esperan turno.
+- **Las cargas simultáneas suben a 2.2 s de p95.** El candado de la bitácora las serializa, como advierte el PRD §21.3. Es el precio de la cadena sellada: sin el candado, dos eventos podrían encadenarse al mismo eslabón.
+- **«Sin degradación» se lee como «sin errores ni pérdidas y dentro de la meta de RNF-01»,** el criterio que fija §7.4. Un despliegue con varios procesos (`uvicorn --workers`) reduciría la espera de las consultas; las cargas seguirían serializadas por diseño.
+- **Primera corrida descartada.** Cargaba tipos repetidos, que el core guarda como versiones, y contaba los documentos desde la evaluación, que solo lista los vigentes. El script ahora exige el tamaño evaluado y cuenta las filas en la base.
+
+#### Conclusión por requisito
+
+| Requisito | Resultado |
+|---|---|
+| RNF-01 (≤ 2 s) | **Cumple:** p95 ≤ 73 ms, incluso con OCR en curso |
+| RNF-02 (≤ 25 s, 20 páginas) | **Cumple con el contrato escaneado sintético** (≈ 11.4 s, reconstrucción pendiente de la medición formal sin el presupuesto del grabador); **no cumple con el acta real densa** (≈ 30 s normalizado a 20 páginas) |
+| RNF-03 (≥ 50 simultáneas) | **Cumple el criterio de §7.4** (0 errores, 0 pérdidas, p95 de consulta 1.07 s), con degradación de latencia por un solo proceso |

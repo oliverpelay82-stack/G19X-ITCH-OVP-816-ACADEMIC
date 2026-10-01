@@ -10,12 +10,17 @@ sin red: Groq se sustituye por una función falsa y el Gold Standard aporta los 
      casete, sin llamar a Groq, y el chat recibe el dictamen simulado con la
      forma del core.
   4. Al salir del entorno, los clientes y los ajustes originales se restauran.
+  5. Un casete de respaldo (el del chat) ahorra las auditorías ya grabadas: se
+     reproducen sin Groq y se copian al casete propio, que no lo modifica.
+  6. Si Groq no responde, el aviso de procesamiento diferido queda en el core
+     simulado y nunca llega al core real.
 
 Uso:  cd services/ai-service && python -m pytest tests/test_entorno_evaluacion.py
 """
 import json
 import os
 import sys
+import time
 from datetime import date
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -120,3 +125,52 @@ def test_grabar_y_reproducir(tmp_path, monkeypatch):
     assert repetida["estatus_preliminar"] == grabada["estatus_preliminar"]
     assert chat_repetido["respuesta"] == chat["respuesta"]
     assert chat_repetido["citas"] == chat["citas"]
+
+
+def test_casete_de_respaldo_ahorra_lo_ya_grabado(tmp_path, monkeypatch):
+    llamadas = []
+    generar_json, _ = _groq_falso(llamadas)
+    monkeypatch.setattr(groq_client, "generar_json", generar_json)
+    respaldo, propio = str(tmp_path / "chat.json"), str(tmp_path / "precision.json")
+    with entorno.Entorno(_casos("GS-CSF-01"), respaldo, entorno.GRABAR) as e:
+        e.cliente().post("/api/v1/ai/analisis-semantico", json={"documento_id": "GS-CSF-01", **TITULAR})
+    with open(respaldo, encoding="utf-8") as f:
+        contenido_respaldo = f.read()
+    assert llamadas == ["json"]
+
+    with entorno.Entorno(_casos("GS-CSF-01"), propio, entorno.GRABAR, respaldos=(respaldo,)) as e:
+        r = e.cliente().post("/api/v1/ai/analisis-semantico", json={"documento_id": "GS-CSF-01", **TITULAR})
+        assert r.json()["estatus_preliminar"] == "CONFORME"
+    assert llamadas == ["json"]   # ninguna llamada nueva
+    with open(respaldo, encoding="utf-8") as f:
+        assert f.read() == contenido_respaldo
+    # El casete propio se reproduce sin el respaldo.
+    with entorno.Entorno(_casos("GS-CSF-01"), propio, entorno.REPRODUCIR) as e:
+        e.cliente().post("/api/v1/ai/analisis-semantico", json={"documento_id": "GS-CSF-01", **TITULAR})
+        assert e.casete.faltantes == []
+
+
+def test_groq_caido_no_avisa_al_core_real(tmp_path, monkeypatch):
+    def caido(prompt, system):
+        raise groq_client.GroqNoDisponibleError("sin cuota")
+
+    def core_real(*_a, **_k):
+        raise AssertionError("el entorno llamó al core real")
+
+    monkeypatch.setattr(groq_client, "generar_json", caido)
+    monkeypatch.setattr(core_client, "marcar_diferido", core_real)
+    with entorno.Entorno(_casos("GS-CSF-01"), str(tmp_path / "c.json"), entorno.GRABAR) as e:
+        r = e.cliente().post("/api/v1/ai/analisis-semantico", json={"documento_id": "GS-CSF-01", **TITULAR})
+        assert r.status_code == 503
+        assert [d["documento_id"] for d in e.core.diferidos] == ["GS-CSF-01"]
+
+
+def test_sin_limite_de_tokens_el_grabador_no_espera():
+    limitado = entorno.Casete("no-existe.json", entorno.GRABAR)
+    libre = entorno.Casete("no-existe.json", entorno.GRABAR, limitar_tokens=False)
+    for casete in (limitado, libre):
+        casete._presupuesto.esperar(6000)
+    inicio = time.monotonic()
+    libre._presupuesto.esperar(6000)          # solo cabe en el mismo minuto sin el límite
+    assert time.monotonic() - inicio < 0.5
+    assert limitado._presupuesto.limite == entorno.TOKENS_POR_MINUTO

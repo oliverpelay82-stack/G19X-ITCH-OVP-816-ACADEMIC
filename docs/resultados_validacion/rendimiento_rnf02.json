@@ -1,0 +1,65 @@
+{
+ "ejecutado_en": "2026-10-01T15:42:17-0600",
+ "equipo": {
+  "sistema": "Windows-11-10.0.26300-SP0",
+  "procesador": "AMD64 Family 23 Model 24 Stepping 1, AuthenticAMD",
+  "nucleos_logicos": 8,
+  "python": "3.12.10"
+ },
+ "version_lectura": "n3-3.3|tesseract-5.4.0.20240606|spa|300dpi|sin-sellos",
+ "configuraciones": {},
+ "corridas": 5,
+ "nivel_3": {},
+ "rnf_02": {
+  "auditorias": [
+   {
+    "corrida": 1,
+    "total_ms": 70906,
+    "tiempos_ms": {
+     "resolucion_texto": 9101,
+     "inferencia": 61744
+    },
+    "consultas_groq": 2,
+    "latencia_groq_ms": [
+     3030,
+     1656
+    ],
+    "tokens": 7097,
+    "estatus": "EN_REVISION"
+   },
+   {
+    "corrida": 2,
+    "total_ms": 71205,
+    "tiempos_ms": {
+     "resolucion_texto": 8975,
+     "inferencia": 62178
+    },
+    "consultas_groq": 2,
+    "latencia_groq_ms": [
+     2333,
+     2101
+    ],
+    "tokens": 7097,
+    "estatus": "EN_REVISION"
+   },
+   {
+    "corrida": 3,
+    "total_ms": 71458,
+    "tiempos_ms": {
+     "resolucion_texto": 9360,
+     "inferencia": 62040
+    },
+    "consultas_groq": 2,
+    "latencia_groq_ms": [
+     1296,
+     1979
+    ],
+    "tokens": 7097,
+    "estatus": "EN_REVISION"
+   }
+  ],
+  "mediana_ms": 71205,
+  "meta_ms": 25000,
+  "cumple": false
+ }
+}

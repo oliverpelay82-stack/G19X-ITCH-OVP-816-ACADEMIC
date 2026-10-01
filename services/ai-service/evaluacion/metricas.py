@@ -11,6 +11,7 @@ pueda recalcularse a mano:
     de los Niveles 4 y 5 (CONFORME, EN_REVISION, NO_CONFORME).
   * ``bootstrap_f1``: intervalo del F1 micro remuestreando casos.
   * ``percentil``: latencias p50 y p95.
+  * ``distancia_edicion`` y ``cer``: tasa de error de caracteres del OCR.
 """
 from __future__ import annotations
 
@@ -177,3 +178,29 @@ def percentil(valores: Sequence[float], p: float) -> float | None:
     if abajo == arriba:
         return float(ordenados[abajo])
     return ordenados[abajo] + (ordenados[arriba] - ordenados[abajo]) * (posicion - abajo)
+
+
+def distancia_edicion(a: str, b: str) -> int:
+    """Distancia de Levenshtein (inserciones, eliminaciones y sustituciones de un carácter)."""
+    if len(a) < len(b):
+        a, b = b, a
+    anterior = list(range(len(b) + 1))
+    for i, ca in enumerate(a, start=1):
+        actual = [i]
+        for j, cb in enumerate(b, start=1):
+            actual.append(min(anterior[j] + 1, actual[j - 1] + 1, anterior[j - 1] + (ca != cb)))
+        anterior = actual
+    return anterior[-1]
+
+
+def cer(referencia: str, reconocido: str) -> float | None:
+    """
+    Tasa de error de caracteres: distancia de edición / longitud de la referencia.
+
+    Antes de comparar se colapsan los espacios y saltos de línea en uno solo: el
+    OCR no reproduce la maquetación y eso no es un error de lectura. Puede pasar
+    de 1 si el OCR inventa más texto del que hay.
+    """
+    ref = " ".join(referencia.split())
+    rec = " ".join(reconocido.split())
+    return distancia_edicion(ref, rec) / len(ref) if ref else None

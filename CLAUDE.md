@@ -138,6 +138,8 @@ Bandas del DOC-08 §6.2: ≥ 0.85 CONFORME; de 0.70 a 0.84 y por debajo de 0.70,
 - **Validación cuantitativa** (`services/ai-service/evaluacion/`, `docs/VALIDACION_CUANTITATIVA.md`):
   - Gold Standard de 42 casos ficticios, más un contrato de 20 páginas, congelado por SHA-256 (`*.sha256`, `.gitattributes -text`). Un cambio de la anotación exige un commit propio.
   - `python -m evaluacion.medir_chat --etiqueta <nombre> [--bateria corta|extensa] [--modo grabar]`. En modo reproducir (el predeterminado) no consume tokens y aborta si falta una huella del casete; en modo grabar llama a Groq solo por lo que falte. Las baterías corren sin el presupuesto de T4; lo mide `python -m evaluacion.escenario_contencion`.
+  - Precisión: `python -m evaluacion.evaluar_precision [--modo grabar]` (42 casos, casete `casetes/precision.json`, reutiliza el del chat; en modo grabar guarda tras cada caso y continúa donde quedó).
+  - Rendimiento: `python scripts/benchmark_rendimiento.py` (RNF-01 y RNF-03, base `plurione_compliance_bench`) y `python -m evaluacion.benchmark_extraccion [--actas RUTA] [--nivel4 N --sin-nivel3]` (RNF-02). Medir con nada más ejecutándose en el equipo.
   - Las corridas con Groq se planean según 8,000 tokens por minuto y 200,000 por día. Resultados en `docs/resultados_validacion/`.
 
 | Área | Pruebas |
@@ -152,7 +154,7 @@ Bandas del DOC-08 §6.2: ≥ 0.85 CONFORME; de 0.70 a 0.84 y por debajo de 0.70,
 | Nivel 3 (ai) | `test_iluminacion`, `test_sellos`, `test_visor_documento`, `test_optimizaciones`, `test_cache_y_lectura` |
 | Nivel 4 (ai) | `test_contenido_titularidad`, `test_vigencia_dictamen`, `test_opinion_cumplimiento`, `test_persistencia_dictamen` |
 | Chat P4 (ai) | `test_respuestas_directas`, `test_pasajes`, `test_contexto_enfocado`, `test_contexto_chat`, `test_cache_chat`, `test_presupuesto_tokens` |
-| Evaluación (ai) | `test_metricas`, `test_gold_standard`, `test_entorno_evaluacion`, `test_bateria_chat` |
+| Evaluación (ai) | `test_metricas`, `test_gold_standard`, `test_entorno_evaluacion`, `test_bateria_chat`, `test_evaluar_precision` |
 
 ---
 
