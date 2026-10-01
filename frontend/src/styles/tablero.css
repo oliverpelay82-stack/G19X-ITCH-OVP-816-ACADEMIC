@@ -99,19 +99,3 @@
   font-size: var(--fs-micro);
   color: var(--text-muted);
 }
-
-.area-fila {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.area-fila .dist-row {
-  list-style: none;
-}
-
-.area-sub {
-  padding-left: 118px;
-  font-size: var(--fs-micro);
-  color: var(--text-muted);
-}

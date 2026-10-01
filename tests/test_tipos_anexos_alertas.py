@@ -27,6 +27,7 @@ import io
 import os
 import re
 import sys
+import zipfile
 from datetime import date, timedelta
 from types import SimpleNamespace
 
@@ -341,6 +342,16 @@ def prueba_reportes(ctx: dict) -> None:
     texto_global = " ".join(p.extract_text() for p in PdfReader(io.BytesIO(global_pdf.content)).pages)
     verificar("Expedientes conformes" in texto_global and "Índice de cumplimiento promedio" in texto_global,
               "El reporte global distingue expedientes conformes e índice de cumplimiento promedio")
+    # Fase A (R1): portada ejecutiva con el anillo del semáforo y los hallazgos por severidad.
+    verificar("Resumen ejecutivo" in texto_global and "índice promedio" in texto_global
+              and "Hallazgos vigentes por severidad" in texto_global,
+              "El PDF global abre con el resumen ejecutivo en gráficas")
+    # Fase A (R2): hoja «Gráficas» con sus datos y dos gráficas nativas de Excel.
+    graficas = [n for n in zipfile.ZipFile(io.BytesIO(global_xlsx.content)).namelist() if n.startswith("xl/charts/chart")]
+    datos = list(libro["Gráficas"].iter_rows(min_row=2, max_row=4, values_only=True))
+    verificar(libro.sheetnames[1] == "Gráficas" and len(graficas) == 2 and sum(n for _, n in datos) == total,
+              "El Excel global trae la hoja «Gráficas» con anillo y barras, y sus datos cuadran",
+              f"{len(graficas)} gráficas, {sum(n for _, n in datos)} expedientes")
     verificar(client.get("/api/v1/reportes/cumplimiento", params={"formato": "docx"}).status_code == 422,
               "Un formato no admitido responde 422")
     verificar(client.get("/api/v1/reportes/expedientes/no-existe").status_code == 404, "Expediente inexistente: 404")

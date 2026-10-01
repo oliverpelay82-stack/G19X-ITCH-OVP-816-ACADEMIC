@@ -120,6 +120,8 @@ Bandas del DOC-08 §6.2: ≥ 0.85 CONFORME; de 0.70 a 0.84 y por debajo de 0.70,
   - el éxito de una auditoría no se anuncia con un aviso flotante;
   - la meta de cada respuesta del chat indica su procedencia.
 - El catálogo `#/ui` (`src/dev/`) solo existe en desarrollo: nunca importar `src/dev/` de forma estática.
+- Carga por vista: `App.jsx` importa con `React.lazy` todas las vistas salvo Expedientes (la de inicio). Recharts solo se importa desde `components/graficas/` (Reportes).
+- Gráficas (`components/graficas/`): `comun.jsx` (tarjeta, leyenda, tooltip y «Ver datos»), `estilo.js` (ejes, retícula, separación, `animar()`) y la lógica sin React en archivos `.js`. Cada gráfica lleva leyenda con cifras, tooltip y tabla de datos. Sus colores son los tokens `--chart-*` de `index.css`, validados con un verificador de paletas; uno nuevo se valida antes de usarse. El texto nunca lleva el color de la serie. Los reportes PDF y Excel usan los mismos colores (`GRAFICA_ESTADO`, `GRAFICA_SEVERIDAD` en `motor/reportes.py`).
 
 ---
 

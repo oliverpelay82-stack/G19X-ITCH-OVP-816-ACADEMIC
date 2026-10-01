@@ -542,18 +542,6 @@
   animation: crecer calc(var(--dur-slow) * 2) var(--ease);
 }
 
-.dist-fill--ok {
-  background: var(--ok-solid);
-}
-
-.dist-fill--warn {
-  background: var(--warn-solid);
-}
-
-.dist-fill--bad {
-  background: var(--bad-solid);
-}
-
 .dist-value {
   text-align: right;
   color: var(--text-primary);

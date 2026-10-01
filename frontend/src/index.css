@@ -133,6 +133,16 @@
   --warn-solid: #d97706;
   --bad-solid: #dc2626;
   --off-solid: #a8a29e;
+  /* Gráficas (Reportes). Validadas con el verificador de paletas: estados con
+     separación suficiente en un anillo (los sólidos de arriba ponen rojo y ámbar
+     demasiado cerca) y una rampa de un solo tono para la severidad, de Media a Crítica. */
+  --chart-ok: #15803d;
+  --chart-warn: #d97706;
+  --chart-bad: #be123c;
+  --chart-sev-media: #f87171;
+  --chart-sev-media-alta: #dc2626;
+  --chart-sev-alta: #b91c1c;
+  --chart-sev-critica: #7f1d1d;
 
   --focus-ring: 0 0 0 3px rgba(87, 83, 78, 0.18);
   --selection: rgba(168, 162, 158, 0.28);
@@ -189,6 +199,14 @@
   --warn-solid: #f59e0b;
   --bad-solid: #ef4444;
   --off-solid: #52525b;
+  /* En oscuro, lo más grave es lo más luminoso. */
+  --chart-ok: #059669;
+  --chart-warn: #d97706;
+  --chart-bad: #e11d48;
+  --chart-sev-media: #991b1b;
+  --chart-sev-media-alta: #dc2626;
+  --chart-sev-alta: #f87171;
+  --chart-sev-critica: #fecaca;
 
   --focus-ring: 0 0 0 3px rgba(255, 255, 255, 0.14);
   --selection: rgba(161, 161, 170, 0.3);

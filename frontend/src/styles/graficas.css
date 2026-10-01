@@ -1,0 +1,201 @@
+/* Gráficas de Reportes (Recharts, Fase A). Solo tokens: las marcas usan
+   --chart-*, el texto los tonos de texto y la retícula las líneas del tema. */
+
+.report-grid--dos {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.grafica-card {
+  gap: var(--s-3);
+  min-width: 0;
+}
+
+.grafica-cabecera {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.grafica-subtitulo {
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+}
+
+.grafica-vacia {
+  display: grid;
+  place-items: center;
+  min-height: 180px;
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* Recharts dibuja el foco del navegador sobre el SVG al pulsar: el foco
+   visible lo da la tarjeta. */
+.grafica-card .recharts-wrapper,
+.grafica-card .recharts-surface,
+.grafica-card .recharts-sector,
+.grafica-card .recharts-rectangle {
+  outline: none;
+}
+
+.grafica-pulsable {
+  cursor: pointer;
+}
+
+/* V1: la cifra protagonista sobre el centro del anillo. */
+.anillo {
+  position: relative;
+}
+
+.anillo-centro {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* El tooltip va por encima de la cifra central del anillo. */
+.grafica-card .recharts-tooltip-wrapper {
+  z-index: 2;
+}
+
+.anillo-cifra {
+  font-size: var(--fs-display);
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--text-primary);
+}
+
+.anillo-pie {
+  font-size: var(--fs-micro);
+  color: var(--text-muted);
+}
+
+/* Leyenda: muestra del color, etiqueta en texto secundario y cifra. */
+.grafica-leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2) var(--s-4);
+  list-style: none;
+  font-size: var(--fs-small);
+}
+
+.grafica-leyenda li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.grafica-muestra {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+
+.grafica-muestra--punto {
+  border-radius: var(--r-full);
+}
+
+.grafica-leyenda-etiqueta {
+  color: var(--text-secondary);
+}
+
+.grafica-leyenda-valor {
+  color: var(--text-primary);
+}
+
+/* Tooltip: el valor manda, la etiqueta acompaña; trazo corto de la serie. */
+.grafica-tooltip {
+  min-width: 140px;
+  max-width: 260px;
+  padding: var(--s-2) var(--s-3);
+  border: var(--border-default);
+  border-radius: var(--r-sm);
+  background: var(--bg-surface-elevated);
+  box-shadow: var(--shadow-pop);
+  font-size: var(--fs-small);
+  color: var(--text-secondary);
+}
+
+.grafica-tooltip-titulo {
+  margin-bottom: 4px;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.grafica-tooltip ul {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  list-style: none;
+}
+
+.grafica-tooltip li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.grafica-tooltip strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.grafica-trazo {
+  flex: none;
+  width: 10px;
+  height: 2px;
+  border-radius: 1px;
+}
+
+.grafica-tooltip-nota {
+  margin-top: 4px;
+  color: var(--text-muted);
+}
+
+/* «Ver datos»: la tabla de la gráfica, plegada. */
+.grafica-datos summary {
+  width: fit-content;
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.grafica-datos summary:hover {
+  color: var(--text-primary);
+}
+
+.grafica-tabla {
+  width: 100%;
+  margin-top: var(--s-2);
+  border-collapse: collapse;
+  font-size: var(--fs-small);
+}
+
+.grafica-tabla th,
+.grafica-tabla td {
+  padding: 4px 0;
+  border-bottom: var(--border-subtle);
+  text-align: left;
+}
+
+.grafica-tabla th {
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.grafica-tabla .col-right {
+  text-align: right;
+}
+
+@media (max-width: 1100px) {
+  .report-grid--dos {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

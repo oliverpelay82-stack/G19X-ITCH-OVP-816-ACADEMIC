@@ -21,8 +21,14 @@ from datetime import datetime
 from typing import Any
 
 from openpyxl import Workbook
+from openpyxl.chart import BarChart, DoughnutChart, Reference
+from openpyxl.chart.label import DataLabelList
+from openpyxl.chart.series import DataPoint
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.utils import get_column_letter
+from reportlab.graphics.charts.barcharts import HorizontalBarChart
+from reportlab.graphics.charts.doughnut import Doughnut
+from reportlab.graphics.shapes import Drawing, Rect, String
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_LEFT
 from reportlab.lib.pagesizes import letter
@@ -89,6 +95,12 @@ TINTA = colors.HexColor("#1C1917")
 SECUNDARIO = colors.HexColor("#57534E")
 LINEA = colors.HexColor("#E7E5E4")
 FONDO_SUTIL = colors.HexColor("#F5F5F4")
+# Gráficas del reporte global (Fase A, R1 y R2): los mismos tokens --chart-* del
+# tema claro de la interfaz, validados con el verificador de paletas. El texto
+# nunca lleva el color de la serie.
+GRAFICA_ESTADO = (("CONFORME", "Conformes", "#15803d"), ("EN_REVISION", "En revisión", "#d97706"),
+                  ("NO_CONFORME", "No conformes", "#be123c"))
+GRAFICA_SEVERIDAD = {"CRITICA": "#7f1d1d", "ALTA": "#b91c1c", "MEDIA_ALTA": "#dc2626", "MEDIA": "#f87171"}
 COLOR_ESTADO = {
     "CONFORME": (colors.HexColor("#15803D"), colors.HexColor("#F0FDF4")),
     "EN_REVISION": (colors.HexColor("#B45309"), colors.HexColor("#FFFBEB")),
@@ -378,6 +390,7 @@ def global_xlsx(evaluados: list[tuple[Expediente, EvaluacionExpediente]], cadena
         ("Reporte emitido", _ahora()),
         *_ancla(cadena or {}),
     ])
+    _hoja_graficas(libro, indicadores)
     _hoja_tabla(libro.create_sheet("Expedientes"), [
         ("folio", "Folio", 26), ("nombre", "Nombre", 30), ("tipo", "Tipo", 14), ("titular", "Titular", 38),
         ("rfc", "RFC", 16), ("estado", "Estado", 14), ("indice", "Índice de cumplimiento %", 14),
@@ -629,6 +642,7 @@ def global_pdf(evaluados: list[tuple[Expediente, EvaluacionExpediente]], cadena:
     historia: list = [
         Paragraph("Reporte de Cumplimiento Documental", e["titulo"]),
         Paragraph(f"{ind['total']} expedientes evaluados · emitido el {_ahora()}", e["subtitulo"]),
+        *_resumen_ejecutivo(ind, e, ancho),
         _ficha([
             ("Expedientes conformes", f"{_pct(ind['porcentaje_global'])} de los expedientes"),
             ("Índice de cumplimiento promedio", _pct(ind["indice_promedio"])
@@ -659,6 +673,142 @@ def global_pdf(evaluados: list[tuple[Expediente, EvaluacionExpediente]], cadena:
     historia += _seccion_ancla(cadena or {}, e, ancho)
     return _documento_pdf(historia, "Reporte de Cumplimiento Documental")
 
+
+
+# ═══════════════════ Gráficas del reporte global (R1 y R2) ═══════════════════
+def _conteo_estados(ind: dict[str, Any]) -> list[tuple[str, int, str]]:
+    claves = {"CONFORME": "conformes", "EN_REVISION": "en_revision", "NO_CONFORME": "no_conformes"}
+    return [(etiqueta, ind[claves[clave]], color) for clave, etiqueta, color in GRAFICA_ESTADO]
+
+
+def _conteo_severidades(ind: dict[str, Any]) -> list[tuple[str, int, str]]:
+    por = dict(ind["alertas_por_severidad"])
+    return [(SEVERIDAD_LEGIBLE[s], por.get(s, 0), color) for s, color in GRAFICA_SEVERIDAD.items()]
+
+
+def _anillo_pdf(ind: dict[str, Any], ancho: float) -> Drawing:
+    """Semáforo de los expedientes como anillo, con el índice promedio al centro y su leyenda."""
+    dibujo = Drawing(ancho, 120)
+    estados = [(etq, n, color) for etq, n, color in _conteo_estados(ind) if n]
+    if estados:
+        anillo = Doughnut()
+        anillo.x, anillo.y, anillo.width, anillo.height = 4, 4, 112, 112
+        anillo.data = [n for _, n, _ in estados]
+        anillo.labels = None
+        anillo.innerRadiusFraction = 0.72
+        anillo.startAngle, anillo.direction = 90, "clockwise"
+        anillo.slices.strokeColor, anillo.slices.strokeWidth = colors.white, 1.5
+        for i, (_, _, color) in enumerate(estados):
+            anillo.slices[i].fillColor = colors.HexColor(color)
+        dibujo.add(anillo)
+    indice = f"{round(ind['indice_promedio'])}%" if ind["indice_promedio"] is not None else "—"
+    dibujo.add(String(60, 60, indice, fontName="Helvetica-Bold", fontSize=15, fillColor=TINTA, textAnchor="middle"))
+    dibujo.add(String(60, 48, "índice promedio", fontName="Helvetica", fontSize=6.5,
+                      fillColor=SECUNDARIO, textAnchor="middle"))
+    total = ind["total"] or 1
+    for i, (etq, n, color) in enumerate(_conteo_estados(ind)):
+        y = 82 - i * 18
+        dibujo.add(Rect(132, y, 7, 7, fillColor=colors.HexColor(color), strokeColor=None))
+        dibujo.add(String(144, y + 0.5, f"{etq}: {n} ({round(n / total * 100)} %)", fontName="Helvetica",
+                          fontSize=7.5, fillColor=TINTA))
+    return dibujo
+
+
+def _barras_severidad_pdf(ind: dict[str, Any], ancho: float) -> Drawing:
+    """Hallazgos vigentes por severidad, de Crítica a Media, con la cifra en la punta."""
+    filas = list(reversed(_conteo_severidades(ind)))   # el eje dibuja de abajo hacia arriba
+    dibujo = Drawing(ancho, 120)
+    barras = HorizontalBarChart()
+    barras.x, barras.y, barras.width, barras.height = 62, 8, ancho - 92, 104
+    barras.data = [[n for _, n, _ in filas]]
+    barras.categoryAxis.categoryNames = [etq for etq, _, _ in filas]
+    barras.categoryAxis.labels.fontName, barras.categoryAxis.labels.fontSize = "Helvetica", 7.5
+    barras.categoryAxis.labels.fillColor = SECUNDARIO
+    barras.categoryAxis.strokeColor = LINEA
+    barras.categoryAxis.visibleTicks = False
+    barras.valueAxis.valueMin = 0
+    barras.valueAxis.valueMax = max([n for _, n, _ in filas] + [1]) * 1.15
+    barras.valueAxis.visible = False
+    barras.barWidth = 10
+    barras.groupSpacing = 8
+    barras.bars.strokeColor = None
+    for i, (_, _, color) in enumerate(filas):
+        barras.bars[(0, i)].fillColor = colors.HexColor(color)
+    barras.barLabelFormat = "%d"
+    barras.barLabels.fontName, barras.barLabels.fontSize = "Helvetica", 7.5
+    barras.barLabels.fillColor = TINTA
+    barras.barLabels.nudge = 7
+    dibujo.add(barras)
+    return dibujo
+
+
+def _resumen_ejecutivo(ind: dict[str, Any], e, ancho: float) -> list:
+    """R1: portada ejecutiva del reporte global, antes de la ficha de indicadores."""
+    mitad = (ancho - 12) / 2
+    tabla = Table(
+        [[Paragraph("Semáforo de los expedientes", e["cabecera"]),
+          Paragraph("Hallazgos vigentes por severidad", e["cabecera"])],
+         [_anillo_pdf(ind, mitad), _barras_severidad_pdf(ind, mitad)]],
+        colWidths=[mitad + 6, mitad + 6],
+    )
+    tabla.setStyle(TableStyle([
+        ("BOX", (0, 0), (0, -1), 0.4, LINEA), ("BOX", (1, 0), (1, -1), 0.4, LINEA),
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("TOPPADDING", (0, 0), (-1, -1), 6), ("LEFTPADDING", (0, 0), (-1, -1), 6),
+    ]))
+    return [Paragraph("Resumen ejecutivo", e["seccion"]), tabla, Spacer(1, 8)]
+
+
+def _hoja_graficas(libro: Workbook, ind: dict[str, Any]) -> None:
+    """R2: hoja «Gráficas» con sus datos y gráficas nativas de Excel, editables por quien abre el archivo."""
+    hoja = libro.create_sheet("Gráficas", 1)
+    estados, severidades = _conteo_estados(ind), _conteo_severidades(ind)
+    fila_sev = len(estados) + 3
+    for fila, (a, b) in ((1, ("Estado del expediente", "Expedientes")), (fila_sev, ("Severidad", "Hallazgos vigentes"))):
+        for col, texto in ((1, a), (2, b)):
+            hoja.cell(row=fila, column=col, value=texto).font = Font(bold=True, color="57534E")
+    for inicio, filas in ((2, estados), (fila_sev + 1, severidades)):
+        for i, (etq, n, _) in enumerate(filas, start=inicio):
+            hoja.cell(row=i, column=1, value=etq)
+            hoja.cell(row=i, column=2, value=n)
+    hoja.column_dimensions["A"].width = 24
+    hoja.column_dimensions["B"].width = 18
+
+    def colorear(serie, filas) -> None:
+        for i, (_, _, color) in enumerate(filas):
+            punto = DataPoint(idx=i)
+            punto.graphicalProperties.solidFill = color.lstrip("#")
+            punto.graphicalProperties.line.solidFill = "FFFFFF"
+            serie.dPt.append(punto)
+
+    anillo = DoughnutChart(holeSize=62)
+    anillo.title = "Semáforo de los expedientes"
+    anillo.add_data(Reference(hoja, min_col=2, min_row=1, max_row=len(estados) + 1), titles_from_data=True)
+    anillo.set_categories(Reference(hoja, min_col=1, min_row=2, max_row=len(estados) + 1))
+    colorear(anillo.series[0], estados)
+    anillo.title.overlay = False        # el título arriba, sin encimarse con el anillo
+    anillo.legend.position = "r"
+    anillo.height, anillo.width = 7.5, 13
+    hoja.add_chart(anillo, "D1")
+
+    barras = BarChart()
+    barras.type = "bar"
+    barras.title = "Hallazgos vigentes por severidad"
+    barras.add_data(Reference(hoja, min_col=2, min_row=fila_sev, max_row=fila_sev + len(severidades)),
+                    titles_from_data=True)
+    barras.set_categories(Reference(hoja, min_col=1, min_row=fila_sev + 1, max_row=fila_sev + len(severidades)))
+    barras.x_axis.scaling.orientation = "maxMin"   # Crítica arriba, como en la tabla
+    barras.y_axis.majorGridlines = None
+    barras.legend = None
+    # openpyxl 3.1 oculta los ejes por omisión: sin esto, las barras salen sin nombres ni cifras.
+    barras.x_axis.delete = barras.y_axis.delete = False
+    barras.dataLabels = DataLabelList()
+    barras.dataLabels.showVal = True
+    barras.dataLabels.showSerName = barras.dataLabels.showCatName = barras.dataLabels.showLegendKey = False
+    barras.title.overlay = False
+    colorear(barras.series[0], severidades)
+    barras.height, barras.width = 7.5, 11
+    hoja.add_chart(barras, "D17")
 
 
 # ═══════════════════ Ficha de custodia (P3, PLUS-06) ═══════════════════

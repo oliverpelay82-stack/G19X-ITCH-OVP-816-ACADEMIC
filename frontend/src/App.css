@@ -22,6 +22,7 @@
 @import './styles/chat.css';               /* Burbujas, citas y composer */
 @import './styles/sistema.css';            /* Esqueletos, toasts y tooltips */
 @import './styles/alertas-reportes.css';   /* Tipos, alertas, índice y reportes */
+@import './styles/graficas.css';           /* Gráficas de Reportes (Recharts) */
 @import './styles/responsive.css';         /* Ajustes por ancho de pantalla */
 @import './styles/visor.css';              /* Visor, inspector del documento y resumen del dictamen */
 @import './styles/detalle-expediente.css'; /* Navegación entre documentos, archivo vigente, alertas agrupadas, auditar pendientes e historial */

@@ -11,7 +11,7 @@
 | Desarrollo (Scrum Master / Desarrollador) | Oliver Villanueva Pelay, residente (No. de control 21520500) |
 | Stakeholder evaluador | Edgar Loheffelmman (PluriOne) |
 | Asesor interno | Dr. Wilfrido Campos Francisco |
-| Versión del documento | 2.6 — 1 de octubre de 2026 (2.5: P7 documentado; 2.4: P6; 2.3: P5 implementado; 2.2: P5 documentado; 2.1: revisión de requerimientos; 2.0: correcciones de la documentación; 1.9: revisión visual del frontend; 1.8: chat documental eficiente; 1.7: revisión del frontend; 1.6: índice de cumplimiento; 1.5: P3; 1.4: P2; 1.3: P1; 1.2: 28 de septiembre; 1.0: 27 de septiembre de 2026) |
+| Versión del documento | 2.7 — 1 de octubre de 2026 (2.6: P7 implementado; 2.5: P7 documentado; 2.4: P6; 2.3: P5 implementado; 2.2: P5 documentado; 2.1: revisión de requerimientos; 2.0: correcciones de la documentación; 1.9: revisión visual del frontend; 1.8: chat documental eficiente; 1.7: revisión del frontend; 1.6: índice de cumplimiento; 1.5: P3; 1.4: P2; 1.3: P1; 1.2: 28 de septiembre; 1.0: 27 de septiembre de 2026) |
 | Estado del producto | En desarrollo: Sprints 1 y 2 implementados, Sprint 3 implementado parcialmente, Sprint 4 implementado salvo HU-31, Módulo 7 pendiente |
 | Documento hermano | [MRD.md](MRD.md) — requerimientos de mercado |
 
@@ -485,7 +485,7 @@ Microservicios desacoplados orquestados con Docker Compose en la red `plurione-n
 | Orquestación | Docker Compose |
 | Extracción e IA | PyMuPDF, Tesseract OCR 5 con OpenCV, Groq Cloud (qwen/qwen3.8-27b) |
 | Reportes | ReportLab (PDF) y openpyxl (Excel), ambos con sus módulos de gráficas |
-| Gráficas del tablero | Librería de código abierto con licencia MIT, cargada solo en la vista de Reportes (sustituye a Power BI, §19) |
+| Gráficas del tablero | Recharts 3 (licencia MIT), cargada solo en la vista de Reportes (sustituye a Power BI, §19); las vistas se cargan por separado |
 
 ### 12.3 Contratos de API
 
@@ -585,6 +585,7 @@ Revisión completa de la interfaz después de P1 a P3, en lotes aprobados por el
 | Refinamiento | Contenido centrado con ancho máximo; Bóveda con solo los vigentes por defecto; detalle del expediente con columna lateral fija, motivos en filas y alertas compactas; modal del documento con encabezado de veredicto y secciones (Resultado, Evidencia, Registro técnico, Chat) en bloques delimitados. | RNF-07, RNF-08 |
 | Proporciones (30/09/2026) | Sin cambiar paleta ni tokens, en siete tandas con regresión visual entre cada una: etiquetas de estado con mayúscula inicial y espaciados con tokens; modal del documento sin estados repetidos, un solo acceso a la ratificación y sin tarjetas anidadas; detalle del expediente con cada motivo y su qué hacer (los documentos ya no se listan tres veces), tabla con el código de regla bajo el nombre y filtro de fechas como un solo control; huella de la Bóveda en un renglón; bandeja de Alertas agrupada por severidad, con el expediente en una columna propia y renglones de unos 100 caracteres; Reportes en cuatro secciones con título (reporte global arriba, métricas, hallazgos, seguimiento del analista y dictamen por expediente), sin la tarjeta «Expedientes conformes», que repetía la métrica «Expedientes»; Reglas sin encabezados vacíos. | RF-18, RF-21, RN-05, RNF-07, RNF-08 |
 | Pulido de producto (30/09/2026) | Dos niveles de título (secciones y etiquetas de tarjeta) y títulos de página iguales al menú; tablas con encabezados en mayúscula inicial, orden por columna, encabezado fijo y fechas «27 sep»; Reglas sin la columna «Acción»; indicador único de salud del sistema; contador solo en Alertas; Expedientes por prioridad; confirmación al pausar o activar una regla; atajo «/» al buscador; estados vacíos con su acción. | RF-18, RF-22, RNF-07, RNF-08 |
+| Gráficas, Fase A (01/10/2026) | Plan visual aprobado el 01/10/2026: cada vista se carga al abrirla (el paquete principal baja de 418 a 334 KB) y Reportes incorpora Recharts con cuatro gráficas: semáforo de los expedientes como anillo con el índice promedio al centro; hallazgos por área y severidad apilados; vencimientos de los próximos 90 días como puntos por área, con las franjas de las alertas de vigencia (5 y 30 días) y acceso al expediente; y cambios del semáforo de los últimos 30 días (mejoras y deterioros) a partir de la bitácora, sin guardar historia nueva. Cada gráfica trae leyenda con cifras, tooltip y «Ver datos» en tabla, y respeta el tema oscuro y «reducir movimiento». El reporte global en PDF abre con un resumen ejecutivo en gráficas y el Excel agrega la hoja «Gráficas» con gráficas nativas. Colores en tokens `--chart-*`, validados con un verificador de paletas (separación entre estados y para daltonismo, rampa de un solo tono para la severidad); los tokens de estado no cambian. Se descartó guardar una fotografía diaria del índice: ningún DOC la pide y la tendencia del semáforo ya sale de la bitácora. | RF-22, RF-24, RNF-07, RNF-08 |
 
 ---
 

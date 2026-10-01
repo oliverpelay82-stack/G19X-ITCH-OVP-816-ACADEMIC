@@ -1,13 +1,9 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Sidebar from './components/Sidebar.jsx'
 import Header from './components/Header.jsx'
 import MetricsCards from './components/MetricsCards.jsx'
-import TitularesTab from './components/TitularesTab.jsx'
 import ExpedientesTab from './components/ExpedientesTab.jsx'
-import BovedaTab from './components/BovedaTab.jsx'
-import ReglasTab from './components/ReglasTab.jsx'
-import AlertasTab from './components/AlertasTab.jsx'
-import ReportesTab from './components/ReportesTab.jsx'
+import { SkeletonRows } from './components/Skeleton.jsx'
 import useToast from './hooks/useToast.js'
 import useTheme from './hooks/useTheme.js'
 import useRuta from './hooks/useRuta.js'
@@ -21,6 +17,26 @@ import {
   getTitulares,
 } from './services/api.js'
 import './App.css'
+
+// Carga por vista: Expedientes es la de inicio y va en el paquete principal; las
+// demás se descargan al abrirlas. Reportes trae las gráficas (Recharts), que así
+// no pesan en el resto del sistema.
+const TitularesTab = lazy(() => import('./components/TitularesTab.jsx'))
+const BovedaTab = lazy(() => import('./components/BovedaTab.jsx'))
+const ReglasTab = lazy(() => import('./components/ReglasTab.jsx'))
+const AlertasTab = lazy(() => import('./components/AlertasTab.jsx'))
+const ReportesTab = lazy(() => import('./components/ReportesTab.jsx'))
+
+/** Mientras llega el código de una vista: el mismo esqueleto de las tablas, sin aviso. */
+function CargandoVista() {
+  return (
+    <table className="data-table" aria-busy="true" aria-label="Cargando la vista">
+      <tbody>
+        <SkeletonRows rows={5} cols={4} />
+      </tbody>
+    </table>
+  )
+}
 
 /**
  * Título de cada sección y su grupo de navegación. Las migas tienen dos
@@ -278,6 +294,7 @@ export default function App() {
           )}
 
           <div className="tab-region" key={tabActiva}>
+            <Suspense fallback={<CargandoVista />}>
             {tabActiva === 'titulares' && (
               <TitularesTab
                 titulares={titulares}
@@ -335,6 +352,7 @@ export default function App() {
                 isOnline={health.rules.online}
               />
             )}
+            </Suspense>
           </div>
         </main>
       </div>
