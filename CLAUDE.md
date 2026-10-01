@@ -80,7 +80,7 @@ Microservicios FastAPI desacoplados en `services/`, orquestados con Docker Compo
 ### Nivel 4 — Análisis semántico (ai-service)
 - Groq a temperatura 0.0 con JSON estricto. **El modelo solo extrae**; titularidad, vigencia y estatus preliminar los calculan reglas deterministas. Titularidad por RFC o por razón social normalizada; sin RFC y con otra razón social → EN_REVISION; tipo incompatible con el registrado (`TIPOS_COMPATIBLES`) → EN_REVISION.
 - Contexto: encabezado más fragmentos por BM25 (`pipelines/fragmentos.py`). BM25 léxico, sin embeddings: decisión documentada.
-- Verificación de contenido RSC/RDS: `CUMPLE` solo con una cita literal anclada al texto (`cita_literal`, semejanza ≥ 0.93 para errores de OCR; **las cifras deben coincidir exactamente** y una paráfrasis no pasa). `NO_LOCALIZADO` o `NO_VERIFICABLE` → EN_REVISION; las RDS siempre pasan a ratificación (RDS-03). El sentido de la opinión 32-D (RSC-OPIN-SENT) se lee sin modelo; negativo → NO_CONFORME.
+- Verificación de contenido RSC/RDS: `CUMPLE` solo con una cita literal anclada al texto (`cita_literal`, semejanza ≥ 0.93 para errores de OCR; **las cifras deben coincidir exactamente** y una paráfrasis no pasa) y sin una observación que declare una deducción (`declara_deduccion`: «implícitamente», «se infiere»… → NO_VERIFICABLE). `NO_LOCALIZADO` o `NO_VERIFICABLE` → EN_REVISION; las RDS siempre pasan a ratificación (RDS-03). El sentido de la opinión 32-D (RSC-OPIN-SENT) se lee sin modelo; negativo → NO_CONFORME.
 - RSC-02 (P2): firmantes de contrato o NDA y apoderados de poder o acta, con su cita; el core coteja firmante y apoderado en cada evaluación (RN-03).
 
 ### Chat documental (P4, PRD §21.4)

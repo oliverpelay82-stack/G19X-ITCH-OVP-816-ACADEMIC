@@ -239,3 +239,45 @@ def test_el_estado_no_afirma_que_falte_una_fecha_que_el_motor_no_extrajo():
     estado = chat._estado_en_sistema(documento, [], {"estatus": "EN_REVISION", "fecha_emision_extraida": "2026-03-02",
                                                       "fecha_vencimiento_extraida": None, "reglas_aplicadas": []})
     assert "no extraído por el motor" in estado and "no declarado" not in estado
+
+
+def test_un_cumple_deducido_no_se_acepta_aunque_la_cita_sea_literal(monkeypatch):
+    """
+    Validación cuantitativa §10.2: el modelo dio por presente el objeto de un contrato que
+    no lo define, con una cita literal de las declaraciones y la observación «se define
+    implícitamente». Una cita que existe no prueba un elemento que el documento no expresa.
+    """
+    texto = ("II. Declara EL PRESTADOR que cuenta con la capacidad técnica y los recursos necesarios para "
+             "prestar los servicios objeto de este contrato.\nPRIMERA. CONTRAPRESTACIÓN. EL CLIENTE pagará...")
+    criterios = [{"codigo_regla": c, "nombre_regla": c, "familia_regla": "RSC", "criterio": c, "severidad": "ALTA",
+                  "recomendacion": "Solicitar la cláusula."} for c in ("RSC-01-CONT-OBJ", "RSC-01-CONT-PEN")]
+    cita = "prestar los servicios objeto de este contrato"
+    respuesta = groq_client.RespuestaJSON({"verificaciones": [
+        {"codigo_regla": "RSC-01-CONT-OBJ", "cumple": True, "cita": cita,
+         "observacion": "El objeto se define implícitamente por el título del contrato."},
+        {"codigo_regla": "RSC-01-CONT-PEN", "cumple": True, "cita": cita,
+         "observacion": "Existe una cláusula explícita."},
+    ]})
+    monkeypatch.setattr(groq_client, "generar_json", lambda prompt, system: respuesta)
+    r = {v["codigo_regla"]: v for v in verificacion_contenido.verificar(texto, criterios).verificaciones}
+    assert r["RSC-01-CONT-OBJ"]["resultado"] == "NO_VERIFICABLE" and r["RSC-01-CONT-OBJ"]["cita"] is None
+    assert "dedujo" in r["RSC-01-CONT-OBJ"]["observacion"]
+    assert r["RSC-01-CONT-OBJ"]["recomendacion"] == "Solicitar la cláusula."
+    assert r["RSC-01-CONT-PEN"]["resultado"] == "CUMPLE"   # «explícita» no es una deducción
+
+
+@pytest.mark.parametrize("observacion, deducida", [
+    ("El objeto se define implícitamente por el título del contrato.", True),
+    ("Define la información confidencial, estableciendo la base para la obligación de no divulgación.", True),
+    ("No se establece de forma explícita, pero se entiende del contexto.", True),
+    ("Se infiere de la declaración del prestador.", True),
+    # Observaciones reales de elementos que sí estaban (casetes de la validación).
+    ("La cláusula tercera establece explícitamente la fecha de vencimiento de las obligaciones.", False),
+    ("Existe una cláusula de confidencialidad que obliga a no divulgar información.", False),
+    ("Se incluye la constancia de inscripción con el folio mercantil específico.", False),
+    ("Se designa al órgano de administración y se especifican las facultades de representación legal.", False),
+    # Regla 4 de las instrucciones: la leyenda registral con datos ilegibles sí es evidencia.
+    ("Leyenda de inscripción en el Registro Público; el folio manuscrito no se pudo leer.", False),
+])
+def test_frases_de_deduccion(observacion, deducida):
+    assert verificacion_contenido.declara_deduccion(observacion) is deducida

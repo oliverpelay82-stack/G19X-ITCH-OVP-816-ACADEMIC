@@ -1,7 +1,7 @@
 {
  "etiqueta": "precision",
  "modo": "reproducir",
- "ejecutado_en": "2026-10-01T21:24:07+00:00",
+ "ejecutado_en": "2026-10-01T21:57:28+00:00",
  "entorno": {
   "modelo": "qwen/qwen3.8-27b",
   "version_lectura": "n3-3.3|tesseract-5.4.0.20240606|spa|300dpi|sin-sellos",
@@ -156,46 +156,43 @@
   "elementos": {
    "pares": 101,
    "omision": {
-    "vp": 12,
+    "vp": 14,
     "fp": 0,
-    "fn": 2,
+    "fn": 0,
     "vn": 87,
     "precision": 1.0,
-    "exhaustividad": 0.8571428571428571,
-    "f1": 0.923076923076923,
+    "exhaustividad": 1.0,
+    "f1": 1.0,
     "f1_ic95": [
-     0.782608695652174,
+     1.0,
      1.0
     ]
    },
    "presente": {
     "vp": 87,
-    "fp": 2,
+    "fp": 0,
     "fn": 0,
-    "vn": 12,
-    "precision": 0.9775280898876404,
+    "vn": 14,
+    "precision": 1.0,
     "exhaustividad": 1.0,
-    "f1": 0.9886363636363636,
+    "f1": 1.0,
     "f1_ic95": [
-     0.9718289965783401,
+     1.0,
      1.0
     ]
    },
-   "abstenciones": 0,
+   "abstenciones": 2,
    "no_evaluadas": 0,
    "citas_ancladas": {
-    "exitos": 89,
-    "total": 89,
+    "exitos": 87,
+    "total": 87,
     "valor": 1.0,
     "ic95": [
-     0.9586219970358116,
+     0.957711004649852,
      1.0
     ]
    },
-   "falsas_conformidades": [
-    "GS-CONT-05:RSC-01-CONT-OBJ",
-    "GS-NDA-02:RSC-01-NDA-NODIV"
-   ],
+   "falsas_conformidades": [],
    "omisiones_indebidas": [],
    "por_regla": {
     "RSC-01-CONT-CONF": {
@@ -208,7 +205,7 @@
     },
     "RSC-01-CONT-OBJ": {
      "pares": 10,
-     "aciertos": 9
+     "aciertos": 10
     },
     "RSC-01-CONT-PEN": {
      "pares": 10,
@@ -220,7 +217,7 @@
     },
     "RSC-01-NDA-NODIV": {
      "pares": 4,
-     "aciertos": 3
+     "aciertos": 4
     },
     "RSC-01-NDA-PART": {
      "pares": 4,
@@ -565,46 +562,43 @@
    "elementos": {
     "pares": 72,
     "omision": {
-     "vp": 11,
+     "vp": 13,
      "fp": 0,
-     "fn": 2,
+     "fn": 0,
      "vn": 59,
      "precision": 1.0,
-     "exhaustividad": 0.8461538461538461,
-     "f1": 0.9166666666666666,
+     "exhaustividad": 1.0,
+     "f1": 1.0,
      "f1_ic95": [
-      0.761904761904762,
+      1.0,
       1.0
      ]
     },
     "presente": {
      "vp": 59,
-     "fp": 2,
+     "fp": 0,
      "fn": 0,
-     "vn": 11,
-     "precision": 0.9672131147540983,
+     "vn": 13,
+     "precision": 1.0,
      "exhaustividad": 1.0,
-     "f1": 0.9833333333333333,
+     "f1": 1.0,
      "f1_ic95": [
-      0.957946656923639,
+      1.0,
       1.0
      ]
     },
-    "abstenciones": 0,
+    "abstenciones": 2,
     "no_evaluadas": 0,
     "citas_ancladas": {
-     "exitos": 61,
-     "total": 61,
+     "exitos": 59,
+     "total": 59,
      "valor": 1.0,
      "ic95": [
-      0.9407540837980555,
+      0.938868520215908,
       1.0
      ]
     },
-    "falsas_conformidades": [
-     "GS-CONT-05:RSC-01-CONT-OBJ",
-     "GS-NDA-02:RSC-01-NDA-NODIV"
-    ],
+    "falsas_conformidades": [],
     "omisiones_indebidas": [],
     "por_regla": {
      "RSC-01-CONT-CONF": {
@@ -617,7 +611,7 @@
      },
      "RSC-01-CONT-OBJ": {
       "pares": 7,
-      "aciertos": 6
+      "aciertos": 7
      },
      "RSC-01-CONT-PEN": {
       "pares": 7,
@@ -629,7 +623,7 @@
      },
      "RSC-01-NDA-NODIV": {
       "pares": 3,
-      "aciertos": 2
+      "aciertos": 3
      },
      "RSC-01-NDA-PART": {
       "pares": 3,
@@ -2016,13 +2010,13 @@
    "id": "GS-CSF-01",
    "consultas_groq": 1,
    "tokens": 1826,
-   "latencia_ms": 4029
+   "latencia_ms": 4052
   },
   {
    "id": "GS-CSF-01-ESC",
    "consultas_groq": 1,
    "tokens": 1820,
-   "latencia_ms": 3320
+   "latencia_ms": 3357
   },
   {
    "id": "GS-CSF-02",
@@ -2034,115 +2028,115 @@
    "id": "GS-CSF-03",
    "consultas_groq": 1,
    "tokens": 1847,
-   "latencia_ms": 982
+   "latencia_ms": 980
   },
   {
    "id": "GS-CSF-03-ESC",
    "consultas_groq": 1,
    "tokens": 1842,
-   "latencia_ms": 3035
+   "latencia_ms": 2969
   },
   {
    "id": "GS-CSF-04",
    "consultas_groq": 1,
    "tokens": 1802,
-   "latencia_ms": 1217
+   "latencia_ms": 1219
   },
   {
    "id": "GS-OPIN-01",
    "consultas_groq": 1,
    "tokens": 1743,
-   "latencia_ms": 729
+   "latencia_ms": 712
   },
   {
    "id": "GS-OPIN-01-ESC",
    "consultas_groq": 1,
    "tokens": 1748,
-   "latencia_ms": 2196
+   "latencia_ms": 2252
   },
   {
    "id": "GS-OPIN-02",
    "consultas_groq": 1,
    "tokens": 1756,
-   "latencia_ms": 1203
+   "latencia_ms": 1202
   },
   {
    "id": "GS-OPIN-03",
    "consultas_groq": 1,
    "tokens": 1743,
-   "latencia_ms": 976
+   "latencia_ms": 972
   },
   {
    "id": "GS-OPIN-04",
    "consultas_groq": 1,
    "tokens": 1772,
-   "latencia_ms": 983
+   "latencia_ms": 986
   },
   {
    "id": "GS-DOM-01",
    "consultas_groq": 1,
    "tokens": 1715,
-   "latencia_ms": 849
+   "latencia_ms": 845
   },
   {
    "id": "GS-DOM-01-ESC",
    "consultas_groq": 1,
    "tokens": 1700,
-   "latencia_ms": 1848
+   "latencia_ms": 1756
   },
   {
    "id": "GS-DOM-02",
    "consultas_groq": 1,
    "tokens": 1715,
-   "latencia_ms": 1054
+   "latencia_ms": 1053
   },
   {
    "id": "GS-ACTA-01",
    "consultas_groq": 2,
    "tokens": 3968,
-   "latencia_ms": 2580
+   "latencia_ms": 2583
   },
   {
    "id": "GS-ACTA-01-ESC",
    "consultas_groq": 2,
    "tokens": 3983,
-   "latencia_ms": 10145
+   "latencia_ms": 10086
   },
   {
    "id": "GS-ACTA-02",
    "consultas_groq": 2,
    "tokens": 3810,
-   "latencia_ms": 3554
+   "latencia_ms": 3559
   },
   {
    "id": "GS-ACTA-03",
    "consultas_groq": 2,
    "tokens": 4092,
-   "latencia_ms": 2740
+   "latencia_ms": 2774
   },
   {
    "id": "GS-ACTA-03-ESC",
    "consultas_groq": 2,
    "tokens": 4088,
-   "latencia_ms": 4856
+   "latencia_ms": 5021
   },
   {
    "id": "GS-ACTA-04",
    "consultas_groq": 2,
    "tokens": 3111,
-   "latencia_ms": 21056
+   "latencia_ms": 21058
   },
   {
    "id": "GS-PODER-01",
    "consultas_groq": 2,
    "tokens": 3107,
-   "latencia_ms": 3293
+   "latencia_ms": 3279
   },
   {
    "id": "GS-PODER-01-ESC",
    "consultas_groq": 2,
    "tokens": 3125,
-   "latencia_ms": 17822
+   "latencia_ms": 17806
   },
   {
    "id": "GS-PODER-02",
@@ -2154,49 +2148,49 @@
    "id": "GS-PODER-03",
    "consultas_groq": 2,
    "tokens": 3208,
-   "latencia_ms": 3866
+   "latencia_ms": 3867
   },
   {
    "id": "GS-CONT-01",
    "consultas_groq": 2,
    "tokens": 4421,
-   "latencia_ms": 2817
+   "latencia_ms": 2821
   },
   {
    "id": "GS-CONT-01-ESC",
    "consultas_groq": 2,
    "tokens": 4381,
-   "latencia_ms": 7727
+   "latencia_ms": 7843
   },
   {
    "id": "GS-CONT-02",
    "consultas_groq": 2,
    "tokens": 4272,
-   "latencia_ms": 3972
+   "latencia_ms": 3971
   },
   {
    "id": "GS-CONT-03",
    "consultas_groq": 2,
    "tokens": 4203,
-   "latencia_ms": 11388
+   "latencia_ms": 11382
   },
   {
    "id": "GS-CONT-03-ESC",
    "consultas_groq": 2,
    "tokens": 4207,
-   "latencia_ms": 22682
+   "latencia_ms": 22595
   },
   {
    "id": "GS-CONT-04",
    "consultas_groq": 2,
    "tokens": 4152,
-   "latencia_ms": 33181
+   "latencia_ms": 33182
   },
   {
    "id": "GS-CONT-05",
    "consultas_groq": 2,
    "tokens": 4251,
-   "latencia_ms": 10514
+   "latencia_ms": 10515
   },
   {
    "id": "GS-CONT-06",
@@ -2208,49 +2202,49 @@
    "id": "GS-CONT-07",
    "consultas_groq": 2,
    "tokens": 4468,
-   "latencia_ms": 15834
+   "latencia_ms": 15836
   },
   {
    "id": "GS-CONT-07-ESC",
    "consultas_groq": 2,
    "tokens": 4471,
-   "latencia_ms": 45630
+   "latencia_ms": 45674
   },
   {
    "id": "GS-NDA-01",
    "consultas_groq": 2,
    "tokens": 3208,
-   "latencia_ms": 37340
+   "latencia_ms": 37350
   },
   {
    "id": "GS-NDA-01-ESC",
    "consultas_groq": 2,
    "tokens": 3200,
-   "latencia_ms": 6187
+   "latencia_ms": 6154
   },
   {
    "id": "GS-NDA-02",
    "consultas_groq": 2,
    "tokens": 3165,
-   "latencia_ms": 10433
+   "latencia_ms": 10428
   },
   {
    "id": "GS-NDA-03",
    "consultas_groq": 2,
    "tokens": 3109,
-   "latencia_ms": 2503
+   "latencia_ms": 2499
   },
   {
    "id": "GS-POL-01",
    "consultas_groq": 2,
    "tokens": 2569,
-   "latencia_ms": 9705
+   "latencia_ms": 9710
   },
   {
    "id": "GS-POL-01-ESC",
    "consultas_groq": 2,
    "tokens": 2581,
-   "latencia_ms": 2874
+   "latencia_ms": 2830
   },
   {
    "id": "GS-POL-02",
@@ -2262,7 +2256,7 @@
    "id": "GS-LIC-01",
    "consultas_groq": 2,
    "tokens": 2339,
-   "latencia_ms": 1356
+   "latencia_ms": 1354
   }
  ],
  "casos": [
@@ -5959,7 +5953,7 @@
    "requiere_revision_humana": true,
    "observaciones": [
     "El texto es legible y contiene todos los datos solicitados. Se detectó un segundo RFC (SIN150302KL7) correspondiente a la contraparte, pero se extrajo el del titular registrado en el expediente conforme a las instrucciones.",
-    "Dictamen EN_REVISION: el analista debe confirmar que el firmante corresponde con un apoderado con facultades vigentes en el poder notarial o el acta constitutiva del expediente (RSC-02, RN-03)."
+    "Dictamen EN_REVISION: omisión relevante; no se localizaron o no pudieron verificarse estos elementos: Objeto del contrato (RSC-01)."
    ],
    "campos": {
     "tipo_documento": {
@@ -6031,9 +6025,9 @@
    "elementos": {
     "RSC-01-CONT-OBJ": {
      "presente_esperado": false,
-     "resultado": "CUMPLE",
-     "presente_dictaminado": true,
-     "cita_anclada": true
+     "resultado": "NO_VERIFICABLE",
+     "presente_dictaminado": false,
+     "cita_anclada": null
     },
     "RSC-01-CONT-VIG": {
      "presente_esperado": true,
@@ -6853,7 +6847,7 @@
    "requiere_revision_humana": true,
    "observaciones": [
     "El texto es legible y contiene una advertencia de ser ficticio. Se detectaron dos RFC en el texto, pero se extrajo el del titular del expediente conforme a las instrucciones.",
-    "Dictamen EN_REVISION: el analista debe confirmar que el firmante corresponde con un apoderado con facultades vigentes en el poder notarial o el acta constitutiva del expediente (RSC-02, RN-03)."
+    "Dictamen EN_REVISION: omisión relevante; no se localizaron o no pudieron verificarse estos elementos: Cláusula de no divulgación (RSC-01)."
    ],
    "campos": {
     "tipo_documento": {
@@ -6925,9 +6919,9 @@
    "elementos": {
     "RSC-01-NDA-NODIV": {
      "presente_esperado": false,
-     "resultado": "CUMPLE",
-     "presente_dictaminado": true,
-     "cita_anclada": true
+     "resultado": "NO_VERIFICABLE",
+     "presente_dictaminado": false,
+     "cita_anclada": null
     },
     "RSC-01-NDA-PART": {
      "presente_esperado": true,

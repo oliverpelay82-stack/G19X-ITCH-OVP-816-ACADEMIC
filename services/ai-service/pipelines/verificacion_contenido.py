@@ -15,7 +15,11 @@ transcribe la cita que lo sustenta; el resultado lo decide código determinista:
                     deben coincidir exactamente (``cita_literal``).
   * NO_LOCALIZADO   el modelo no lo encontró en el texto.
   * NO_VERIFICABLE  el modelo dice que cumple, pero su cita no está en el texto
-                    (posible alucinación), o no pudo decidirlo.
+                    (posible alucinación), o no pudo decidirlo. También cuando la
+                    cita es literal pero la observación del modelo declara que dedujo
+                    el elemento («implícitamente», «se infiere»): una cita que existe
+                    no prueba un elemento que el documento no expresa (regla 1 de
+                    SYSTEM_PROMPT; validación cuantitativa §10.2).
 
 Una omisión no rechaza el documento: es una «Omisión Contractual Relevante»
 (RSC-01, semáforo amarillo) que resuelve el analista en el Nivel 5, igual que
@@ -90,6 +94,24 @@ class ResultadoVerificacion:
     @property
     def incluye_reglas_dinamicas(self) -> bool:
         return any(v["familia_regla"] == "RDS" for v in self.verificaciones)
+
+
+# Frases con las que el modelo declara que dedujo un elemento en lugar de localizarlo.
+# Se derivaron de las observaciones reales de la validación (§10.2): «el objeto se define
+# implícitamente», «estableciendo la base para la obligación». No tocan «explícitamente»
+# ni la leyenda registral con datos ilegibles (regla 4), que sí es evidencia.
+_DEDUCCION = re.compile(
+    r"\bimplicit|\binfier|\binferir|\binferenc|\bdeduc|\bpresum|\bsobreentiend|\bse entiende\b"
+    r"|\bda a entender|\bsugiere|\bindirect|\bpor extension\b|\bla base (?:para|de)\b"
+    r"|\bno (?:se )?(?:menciona|establece|indica|senala|define|estipula)\w* (?:de (?:forma|manera) )?"
+    r"(?:expres|explicit)"
+)
+
+
+def declara_deduccion(observacion: str) -> bool:
+    """La observación del modelo admite que el elemento se dedujo y no está expreso en el documento."""
+    texto = unicodedata.normalize("NFKD", observacion.lower())
+    return bool(_DEDUCCION.search("".join(c for c in texto if not unicodedata.combining(c))))
 
 
 # Puntos suspensivos con los que el modelo une fragmentos de una misma cita.
@@ -326,7 +348,11 @@ def verificar(texto: str, criterios: list[dict[str, Any]], paginas: list[dict] |
         cita = v.get("cita") if isinstance(v.get("cita"), str) and v.get("cita").strip() else None
         observacion = str(v.get("observacion") or "").strip()
         anclada = cita_literal(cita, texto) if v.get("cumple") is True else None
-        if anclada:
+        if anclada and declara_deduccion(observacion):
+            resultado = NO_VERIFICABLE
+            observacion = (f"El modelo lo dedujo, no lo localizó expreso en el documento: «{observacion}» "
+                           "Debe confirmarse manualmente.")
+        elif anclada:
             resultado = CUMPLE
             cita, ajustada = anclada
             if ajustada:

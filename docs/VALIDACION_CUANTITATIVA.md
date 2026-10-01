@@ -528,7 +528,17 @@ Corrida oficial de `python -m evaluacion.evaluar_precision` sobre los 42 casos (
 - **Impacto:** ninguno en el estatus. Contratos y NDA siempre pasan a revisión humana por RSC-02, y el analista ve la cita y la observación «implícitamente». Pero el motivo que se muestra da el elemento por presente.
 - **Por regla:** 15 de las 17 reglas evaluadas aciertan en todos sus pares; RSC-01-CONT-OBJ 9/10 y RSC-01-NDA-NODIV 3/4.
 - **Abstenciones:** ninguna (0 NO_VERIFICABLE).
-- **Corrección propuesta:** pendiente de la aprobación del residente. Exigir en las instrucciones de verificación que el elemento esté **expreso** y tratar como NO_LOCALIZADO un CUMPLE cuya observación declare una inferencia. Cambia `version_instrucciones`, así que exige volver a grabar esta suite.
+- **Corrección aplicada (aprobada el 01/10/2026): salvaguarda determinista.** Un CUMPLE con cita literal cuya observación declara una deducción («implícitamente», «se infiere», «la base para»…) queda NO_VERIFICABLE y pasa al analista (`verificacion_contenido.declara_deduccion`).
+  - Las frases se tomaron de las 39 observaciones reales de los casetes; ninguna observación de un elemento presente las contiene.
+  - Las instrucciones del modelo no cambian: no hay que regrabar y el resultado se mide desde el casete, sin tokens.
+
+| Elementos RSC | Omisiones detectadas | Omisiones indebidas | Falsas conformidades |
+|---|---|---|---|
+| Antes de la salvaguarda | 12/14 (85.7 %) | 0 | 2 |
+| **Con la salvaguarda** | **14/14 (100 %)** | **0** | **0** |
+
+  - El estatus (42/42), las entidades y el chat (37/38 y 8/8, los mismos tokens) no cambian.
+  - **Límite:** si el modelo deduce un elemento sin decirlo en su observación, la salvaguarda no lo detecta. Si vuelve a aparecer una falsa conformidad en documentos reales, el paso siguiente es exigir el elemento expreso en las instrucciones, lo que obliga a regrabar.
 
 #### PE-3 · Firmantes y apoderados (RSC-02)
 
@@ -558,7 +568,7 @@ El OCR cuesta 2 puntos de F1 en las entidades (el RFC de GS-CSF-03-ESC) y nada e
 - **Lo que se puede afirmar con estas cifras:** en el Gold Standard, el motor no aprobó nada que debiera revisarse ni rechazó nada aprobable; no inventó datos; y cada cita que presenta existe en el documento.
 - **Lo que no se puede afirmar:**
   - el comportamiento con documentos reales ni la calibración de las bandas bajas (§2.4 y §9);
-  - que el motor detecte siempre la omisión de una cláusula: 2 de 14 omisiones se dieron por cumplidas.
+  - que el motor detecte siempre la omisión de una cláusula: sin la salvaguarda, 2 de 14 omisiones se dieron por cumplidas, y con ella 14 de 14 se detectan en este conjunto. La salvaguarda depende de que el modelo declare su deducción.
 
 ### 10.3 Rendimiento (01/10/2026)
 
