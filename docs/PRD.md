@@ -11,7 +11,7 @@
 | Desarrollo (Scrum Master / Desarrollador) | Oliver Villanueva Pelay, residente (No. de control 21520500) |
 | Stakeholder evaluador | Edgar Loheffelmman (PluriOne) |
 | Asesor interno | Dr. Wilfrido Campos Francisco |
-| Versión del documento | 1.9 — 30 de septiembre de 2026 (1.8: chat documental eficiente; 1.7: revisión del frontend; 1.6: índice de cumplimiento; 1.5: P3; 1.4: P2; 1.3: P1; 1.2: 28 de septiembre; 1.0: 27 de septiembre de 2026) |
+| Versión del documento | 2.1 — 30 de septiembre de 2026 (2.0: correcciones de la documentación; 1.9: revisión visual del frontend; 1.8: chat documental eficiente; 1.7: revisión del frontend; 1.6: índice de cumplimiento; 1.5: P3; 1.4: P2; 1.3: P1; 1.2: 28 de septiembre; 1.0: 27 de septiembre de 2026) |
 | Estado del producto | En desarrollo: Sprints 1 y 2 implementados, Sprint 3 implementado parcialmente, Sprint 4 implementado salvo HU-31, Módulo 7 pendiente |
 | Documento hermano | [MRD.md](MRD.md) — requerimientos de mercado |
 
@@ -189,9 +189,9 @@ Prioridad tomada de las historias de usuario asociadas (Cap. VII); «—» cuand
 
 | ID | Requerimiento | Prioridad | Estado | Evidencia / nota |
 |---|---|---|---|---|
-| RF-10 | Extraer texto, tablas y pares clave-valor de documentos escaneados o nativos. | Alta | Implementado | PyMuPDF para la capa vectorial y Tesseract con preprocesamiento OpenCV para lo escaneado. |
-| RF-11 | Análisis semántico con Qwen 3.8 (27B) en Groq Cloud para verificar cláusulas obligatorias. | Alta | Implementado | Verificación de contenido del Nivel 4 (RSC-01): cada auditoría verifica los elementos que el catálogo exige al tipo de documento (16 reglas RSC: contrato, NDA, acta constitutiva, poder notarial, póliza y licencia). Un elemento es CUMPLE solo si su cita literal aparece en el texto; si no, NO_LOCALIZADO o NO_VERIFICABLE, el dictamen pasa a revisión humana y se emite la alerta CONTENIDO_NO_LOCALIZADO. Los datos del firmante (RSC-02) se extraen en la misma llamada y se cotejan con los apoderados del expediente (P2, §21.2). |
-| RF-12 | Indexación y búsqueda semántica sobre el corpus documental. | — | Parcial | Recuperación BM25 dentro de cada documento; sin búsqueda sobre todo el acervo. |
+| RF-10 | Extraer texto, tablas y pares clave-valor de documentos escaneados o nativos. | Alta | Parcial | Se extrae el texto plano (PyMuPDF para la capa vectorial; Tesseract con preprocesamiento OpenCV para lo escaneado). La estructura tabular y los pares clave-valor que pide el DOC-04 no se extraen como tales: el Nivel 4 obtiene los datos clave del texto. |
+| RF-11 | Análisis semántico con un modelo de lenguaje para verificar cláusulas obligatorias. El proveedor y el modelo son decisiones de diseño (§12.2, §19): hoy, Qwen 3.8 (27B) en Groq Cloud. | Alta | Implementado | Verificación de contenido del Nivel 4 (RSC-01): cada auditoría verifica los elementos que el catálogo exige al tipo de documento (16 reglas RSC: contrato, NDA, acta constitutiva, poder notarial, póliza y licencia). Un elemento es CUMPLE solo si su cita literal aparece en el texto; si no, NO_LOCALIZADO o NO_VERIFICABLE, el dictamen pasa a revisión humana y se emite la alerta CONTENIDO_NO_LOCALIZADO. Los datos del firmante (RSC-02) se extraen en la misma llamada y se cotejan con los apoderados del expediente (P2, §21.2). |
+| RF-12 | Indexación y búsqueda semántica sobre el corpus documental. | — | Fuera del alcance | Sin historia de usuario, prioridad ni lugar en el cronograma, y no interviene en el dictamen. La búsqueda dentro de cada documento la cubre la recuperación BM25 del chat (P4). Se declara fuera del alcance de la residencia (versión 2.1). |
 | RF-13 | Cada resultado de la IA incluye justificación, nivel de confianza y cita textual. | Alta | Implementado | Dictamen con confianza y observaciones; chat con citas. |
 | RF-14 | Hallazgos con discrepancia, vigencia no verificable o confianza < 85 % pasan a revisión humana (EN_REVISION) con justificación obligatoria. | Alta | Implementado | `POST /api/v1/dictamenes/{id}/ratificar`. |
 
@@ -216,7 +216,7 @@ Prioridad tomada de las historias de usuario asociadas (Cap. VII); «—» cuand
 
 | ID | Requerimiento | Prioridad | Estado | Evidencia / nota |
 |---|---|---|---|---|
-| RF-22 | Tablero con porcentaje global de cumplimiento, conformes vs. no conformes y distribución de hallazgos. | Alta | Implementado | Vista de Reportes. El índice de cumplimiento del DOC-05 (§10.5) se agrega junto al porcentaje de expedientes conformes. |
+| RF-22 | Tablero con porcentaje global de cumplimiento, conformes vs. no conformes y distribución de hallazgos. | Alta | Implementado | Vista de Reportes. El índice de cumplimiento del DOC-05 (§10.5) se agrega junto al porcentaje de expedientes conformes. Las gráficas del tablero sustituyen a la integración con Power BI que menciona el DOC-04 (§19). |
 | RF-23 | Dictamen formal de auditoría por expediente. | Alta | Implementado | `GET /api/v1/reportes/expedientes/{id}`. |
 | RF-24 | Exportación en PDF y Excel (.xlsx). | Alta | Implementado | ReportLab y openpyxl; cada exportación se registra en la bitácora. |
 
@@ -228,7 +228,7 @@ Prioridad tomada de las historias de usuario asociadas (Cap. VII); «—» cuand
 | RF-26 | Autorización por rol (RBAC). | Alta | **Pendiente** | Roles definidos (sección 5). |
 | RF-27 | Bitácora inmutable protegida por el motor de base de datos. | Alta | Implementado | Disparador `trg_bitacora_inmutable` y, desde P3, cada evento sellado en cadena y verificable (`/bitacora/verificar-cadena`); el usuario autenticado se registrará con RF-25. |
 
-**Resumen:** 21 implementados, 3 parciales y 3 pendientes de 27. La Tabla 34 del DG reporta 20, 4 y 3; la diferencia es RF-11, que pasa a implementado con la verificación de contenido del Nivel 4 (versión 1.2 de este documento).
+**Resumen:** 21 implementados, 2 parciales, 3 pendientes y 1 fuera del alcance de 27 (versión 2.1: RF-10 pasa a parcial y RF-12 sale del alcance). La Tabla 34 del DG reporta 20, 4 y 3; la diferencia es RF-11, que pasa a implementado con la verificación de contenido del Nivel 4 (versión 1.2 de este documento).
 
 ---
 
@@ -238,7 +238,7 @@ Prioridad tomada de las historias de usuario asociadas (Cap. VII); «—» cuand
 
 | ID | Historia (resumen) | Módulo | Sprint | Prioridad | Horas | Estado |
 |---|---|---|---|---|---|---|
-| HU-01 | Crear tipos de expediente (jurídico, corporativo, regulatorio). | M1 | 1 | Alta | 6 | Implementado (catálogo de los 3 tipos del DOC-02) |
+| HU-01 | Clasificar el expediente en uno de los tres tipos del DOC-02 (jurídico, corporativo o regulatorio). | M1 | 1 | Alta | 6 | Implementado (catálogo de los 3 tipos del DOC-02). La redacción original, «crear tipos de expediente», prometía tipos nuevos; el DOC-02 define exactamente estos tres (versión 2.1). |
 | HU-02 | Crear un expediente con nombre, empresa y tipo. | M1 | 1 | Alta | 6 | Implementado |
 | HU-03 | Cargar PDF e imágenes con cálculo automático de SHA-256. | M1 | 1 | Alta | 8 | Implementado |
 | HU-04 | Buscar expedientes por nombre, empresa, tipo o fecha. | M1 | 1 | Alta | 5 | Implementado |
@@ -270,9 +270,9 @@ Prioridad tomada de las historias de usuario asociadas (Cap. VII); «—» cuand
 | HU-30 | Consultar la bitácora completa de un expediente. | M7 | 4 | Alta | 5 | Implementado (historial del expediente en la interfaz, `HistorialExpediente.jsx`, sobre `GET /api/v1/bitacora`; eventos consecutivos iguales agrupados) |
 | HU-31 | Usuario de consulta: solo el semáforo de sus expedientes asignados. | M7 | 4 | Media | 4 | Pendiente (depende de RF-25/26) |
 | HU-32 | Validación completa de un expediente (reglas + IA) con un solo botón. | Integración | 4 | Alta | 14 | Implementado («Auditar pendientes» en el detalle del expediente: audita en secuencia, con reglas e IA, los documentos vigentes sin dictamen y muestra el avance por documento y el semáforo y las alertas antes y después) |
-| HU-33 | Manejo controlado de errores (documento ilegible, IA no disponible). | Integración | 4 | Alta | 9 | Implementado (degradación controlada, DG §8.7) |
+| HU-33 | Manejo controlado de errores (documento ilegible, IA no disponible). | Integración | 4 | Alta | 9 | Parcial: una falla no detiene el resto del expediente (DG §8.7), pero faltan las dos excepciones del DOC-05, «Documento ilegible, se requiere recarga» y «Procesamiento diferido» (§10.4; se implementan en P5, §21.5) |
 
-**Resumen:** 26 implementadas, 3 parciales y 4 pendientes de 33. Respecto de la versión 1.0 pasan a implementadas HU-30 y HU-32 (versión 1.1), HU-19 (versión 1.2) y HU-23 (versión 1.4). Las historias PLUS (HU-34 en adelante) se cuentan en la sección 21.
+**Resumen:** 25 implementadas, 4 parciales y 4 pendientes de 33 (HU-33 pasa a parcial en la versión 2.1). Respecto de la versión 1.0 pasan a implementadas HU-30 y HU-32 (versión 1.1), HU-19 (versión 1.2) y HU-23 (versión 1.4). Las historias PLUS (HU-34 en adelante) se cuentan en la sección 21.
 
 ---
 
@@ -374,8 +374,8 @@ Cada alerta incluye su recomendación correctiva (RF-21). Las alertas se derivan
 
 | Escenario | Acción del sistema | Estatus |
 |---|---|---|
-| Documento ilegible | Se notifica que debe recargarse con mejor resolución. | Amarillo |
-| Servicio de IA no disponible | Reintentos con espera progresiva; si persiste, el documento queda pendiente sin perderse. | Alerta interna |
+| Documento ilegible | La extracción no obtiene texto suficiente: el documento queda «Documento ilegible, se requiere recarga», distinto de la revisión humana por contenido, y se pide recargarlo con mejor resolución (DOC-05, Tabla 1). Implementación: §21.5. | Amarillo |
+| Servicio de IA no disponible | Hasta 3 reintentos con espera progresiva; si la falla persiste, el documento se marca para procesamiento posterior y se reintenta solo, dentro de la cuota diaria del proveedor (DOC-05, Tabla 1). Implementación: §21.5. | Alerta interna «Procesamiento diferido» |
 | Archivo protegido con contraseña | El Nivel 1 detecta la contraseña de apertura en la carga, custodia el archivo y emite un dictamen No conforme «Archivo protegido, no procesable» (PLUS-02). | Rojo |
 
 Una falla en un documento nunca detiene la validación del resto del expediente.
@@ -433,17 +433,24 @@ Verificado en vivo el 29/09/2026: el expediente de desarrollo (Grupo Bimbo, No c
 | ID | Requerimiento | Estado |
 |---|---|---|
 | RNF-01 | Evaluación determinista de un expediente completo en ≤ 2 s. | Sin medición formal documentada; la evaluación no invoca servicios externos (DG §8.10). |
-| RNF-02 | Extracción y análisis con IA de un documento de hasta 20 páginas en ≤ 25 s. | Cumplido: un acta escaneada de 26 páginas se audita en unos 13 s (DG §10.2, §10.7). |
+| RNF-02 | Extracción y análisis con IA de un documento de hasta 20 páginas en ≤ 25 s. | Por volver a medir: los 13 s para 26 páginas del DG (§10.2, §10.7) son anteriores a las lecturas 3.2 y 3.3; la última medición, con la 3.2, fue de 24.3 s para 14 páginas en frío (unos 33 s extrapolados a 20). La medición forma parte de la validación cuantitativa (PE-6). |
 | RNF-03 | ≥ 50 peticiones simultáneas sin degradación. | Sin verificar (no hay prueba de concurrencia documentada). |
 | RNF-04 | Cifrado AES-256 de la bóveda en reposo. | Pendiente. |
-| RNF-05 | TLS 1.3 entre cliente, microservicios, base de datos y proveedor de inferencia. | Parcial: cifrado solo hacia el proveedor de inferencia. |
+| RNF-05 | TLS 1.3 en el borde (entre el cliente y el sistema, mediante un proxy inverso) y hacia el proveedor de inferencia; los microservicios y la base de datos en una red interna aislada, sin puertos expuestos. Redefinido en la versión 2.1: cifrar el tráfico entre contenedores de una misma red aislada añade certificados internos sin una protección equivalente; la segregación de redes cumple el objetivo (ISO/IEC 27001, A.8.22). | Parcial: cifrado solo hacia el proveedor de inferencia; proxy inverso y aislamiento de puertos pendientes. |
 | RNF-06 | Al proveedor de IA solo viaja el texto extraído, con Retención Cero de Datos. | Implementado (minimización de datos); ZDR debe activarse en la consola del proveedor. |
 | RNF-07 | Interfaz responsiva, resolución mínima de 1366 × 768. | Implementado. Revisión del frontend (§13.1): a 1366 × 768 ninguna vista se desborda ni recorta textos que deban leerse (tipos de documento, folios, huellas, categorías, placeholders); las métricas solo acompañan a Expedientes y Reportes, el catálogo de reglas se pliega por familia (de 3,268 a 768 px de alto) y el modal del documento abre con el dictamen. La regresión visual (`scripts/regresion_visual.py`, 158 capturas en 1366 × 768 y 1920 × 1080, en ambos temas, con modales completos y escenarios interactivos) fija la apariencia de cada vista y modal. |
 | RNF-08 | Semáforo y hallazgos comprensibles para personal jurídico sin conocimientos técnicos. | Implementado. Revisión del frontend (§13.1): la interfaz, los motivos del semáforo, las alertas y los reportes PDF y Excel no citan requisitos (RF-, RN-, RNF-, DOC-), niveles del pipeline, el proveedor de IA ni códigos internos, y las fechas se escriben en palabras (`motor/redaccion.py`); los códigos de regla se conservan donde identifican una regla. El índice de cumplimiento (§10.5) separa el cumplimiento de la completitud documental. Las pruebas del core fallan si un motivo, una alerta o el PDF del dictamen traen códigos o referencias. Observación: las observaciones que redacta el modelo se muestran tal como quedaron en el dictamen (inmutable); si el modelo escribe un código de su catálogo (p. ej. «se clasifica como OTRO»), el ajuste corresponde a las instrucciones del ai-service. |
-| RNF-09 | Disponibilidad ≥ 99.5 % en horario operativo. | Sin medición documentada. |
-| RNF-10 | Respaldos automatizados diarios de PostgreSQL (RPO < 24 h). | Pendiente (hoy solo respaldos manuales con `pg_dump`). |
+| RNF-09 | Disponibilidad ≥ 99.5 % en horario operativo, medida con las comprobaciones de salud de cada servicio (reinicio automático en Docker y registro de disponibilidad a partir de sus sondeos). Precisado en la versión 2.1. | Sin medición documentada. |
+| RNF-10 | Respaldos automatizados diarios, en un mismo punto, de PostgreSQL, la bóveda y la base del ai-service (RPO < 24 h), con una prueba de restauración. Ampliado en la versión 2.1: un respaldo de la base sin la bóveda no sirve como evidencia, y al restaurarlo RIE-03 marcaría como alterados los documentos no restaurados. | Pendiente (hoy solo respaldos manuales con `pg_dump`). |
 | RNF-11 | Solución contenerizada con Docker Compose. | Implementado (`docker-compose.yml`). |
 | RNF-12 | Pruebas y análisis estático en cada confirmación con GitHub Actions. | Implementado (`.github/workflows/ci.yml`, en cada push a `master` y en cada pull request): pytest de core, rules y ai-service sobre PostgreSQL 17, y en el frontend oxlint, equivalencia de marcado del sistema de diseño (`npm run test:ui`) y build de producción. |
+
+**Extensiones PLUS no funcionales** (no forman parte del DOC-04; versión 2.1):
+
+| ID | Requerimiento | Fundamento | Estado |
+|---|---|---|---|
+| PLUS-12 | Accesibilidad WCAG 2.1 nivel AA: navegación completa por teclado, foco visible y atrapado en los modales, roles y estados ARIA, contraste mínimo de 4.5:1 en el texto y respeto a «reducir movimiento». | ISO/IEC 25010 (usabilidad › accesibilidad), citada en el DOC-03 | Parcial: implementado en la interfaz (trampa de foco, `aria-sort`, contraste AA de los tokens, «reducir movimiento»); falta su verificación automática. |
+| PLUS-13 | Conservación de la evidencia: documentos (con sus versiones sustituidas), dictámenes, bitácora y texto extraído se conservan al menos 5 años y mientras exista el expediente; el sistema no elimina registros (§12.6). | CFF, art. 30; ISO 30301 | Implementado por diseño (no hay eliminación); la disposición al vencer el plazo depende del Módulo 7. |
 
 ---
 
@@ -477,7 +484,8 @@ Microservicios desacoplados orquestados con Docker Compose en la red `plurione-n
 | Base de datos | PostgreSQL 17 con disparadores PL/pgSQL de inmutabilidad |
 | Orquestación | Docker Compose |
 | Extracción e IA | PyMuPDF, Tesseract OCR 5 con OpenCV, Groq Cloud (qwen/qwen3.8-27b) |
-| Reportes | ReportLab (PDF) y openpyxl (Excel) |
+| Reportes | ReportLab (PDF) y openpyxl (Excel), ambos con sus módulos de gráficas |
+| Gráficas del tablero | Librería de código abierto con licencia MIT, cargada solo en la vista de Reportes (sustituye a Power BI, §19) |
 
 ### 12.3 Contratos de API
 
@@ -532,6 +540,20 @@ Integridad garantizada por la base, además de la API:
 - El archivo original nunca sale de la infraestructura de PluriOne: al proveedor solo viaja el texto extraído, cifrado en tránsito.
 - Groq no retiene por defecto las entradas ni salidas ni entrena con ellas; la Retención Cero de Datos elimina incluso el registro temporal de diagnóstico.
 - Modelo e identificador fijados por configuración (`GROQ_MODEL`), temperatura 0.0 y registro del modelo en cada dictamen, para reproducibilidad y auditoría.
+- **Datos personales en la base del ai-service** (LFPDPPP, DOC-03): la SQLite guarda el texto extraído de cada documento, con nombres de firmantes y apoderados. Su finalidad es exclusivamente verificar el cumplimiento: reproducir el dictamen con la misma lectura, responder el chat documental con evidencia y no repetir el OCR. Se conserva lo mismo que su documento (§12.6) y se respalda junto con la base y la bóveda (RNF-10). No se comparte con terceros salvo el texto que viaja al proveedor de inferencia, con Retención Cero de Datos. El acceso queda restringido por rol con el Módulo 7, y su cifrado en reposo forma parte de RNF-04.
+
+### 12.6 Conservación de la evidencia
+
+[DOC-03: ISO 30301, NOM-151-SCFI-2016 y Código Fiscal de la Federación]
+
+| Registro | Conservación | Fundamento |
+|---|---|---|
+| Documentos custodiados (incluidas las versiones sustituidas) | Mientras exista el expediente y, como mínimo, 5 años desde su carga | CFF, art. 30 (conservación de la documentación fiscal: constancias, opiniones 32-D y comprobantes del expediente); ISO 30301 (retención y disposición controladas) |
+| Dictámenes y ratificaciones | Lo mismo que su documento | Protocolo de auditoría del DOC-05: deben poder demostrar el fundamento de cada validación |
+| Bitácora sellada | Sin eliminación: es la cadena de custodia | NOM-151-SCFI-2016 (trazabilidad); P3 |
+| Texto extraído (ai-service) | Lo mismo que su documento | §12.5 |
+
+El sistema **no elimina** ningún registro: una sustitución conserva la versión anterior y su historia. La disposición al vencer el plazo es una decisión de PluriOne, que deberá ejecutarse con un rol autorizado (Módulo 7) y quedar registrada en la bitácora.
 
 ---
 
@@ -700,8 +722,19 @@ Riesgos adicionales identificados en la implementación [DG §8.7 y §10.7]:
 | Azure AI Document Intelligence para extraer texto | PyMuPDF + Tesseract OCR 5 con preprocesamiento OpenCV, locales | El archivo original no sale de la infraestructura de PluriOne y la capa vectorial se lee de forma exacta (DG §5.2, §8.7). |
 | Azure OpenAI + LangChain para el análisis semántico | Groq Cloud (Qwen 3.8, 27B) mediante el SDK compatible con OpenAI | Se evaluó primero un modelo local (Ollama), inviable sin GPU y con 8 GB de RAM; Groq responde en 1–2 s y su plan gratuito cubre la residencia. |
 | Azure AI Search | Recuperación de fragmentos BM25 sobre el texto persistido | Método determinista y auditable, sin dependencias adicionales. |
-| Power BI para dashboards | Panel y reportes PDF/Excel generados por el propio sistema | No documentado en las fuentes; el alcance funcional (RF-22 a RF-24) se cumple sin Power BI. |
+| Power BI para el tablero (DOC-04: «visualización de métricas ejecutivas en dashboard con integración a Power BI») | Tablero propio con gráficas de una librería de código abierto (licencia MIT) y reportes PDF y Excel con gráficas generadas por el sistema | Power BI requiere licencia de pago para publicar y compartir tableros, y conectarlo exigiría exponer los datos de cumplimiento a un servicio externo. El tablero integrado cubre RF-22 a RF-24 sin costo de licencia, con los datos dentro de la infraestructura de PluriOne (RNF-06) y con el mismo semáforo y vocabulario que el resto del sistema. |
 | Microsoft Entra ID | Autenticación JWT HMAC-SHA256 diseñada en DOC-08 | Pendiente de implementar (Módulo 7). |
+
+**Decisiones respecto de los DOC-04, DOC-05 y DOC-08** (declaradas a partir del análisis de brechas, C1 a C5 y C7):
+
+| Documento | Implementación | Motivo |
+|---|---|---|
+| DOC-08: monolito modular en dos contenedores (backend en el puerto 8000, PostgreSQL 16) e inferencia local con Ollama (Qwen2.5:7b) | Tres microservicios (core 8001, rules 8002, ai 8003), frontend en 5173, PostgreSQL 17 y Groq Cloud | La arquitectura de microservicios es la del DOCUMENTO GENERAL (Cap. VIII): el catálogo de reglas y la IA se despliegan y fallan por separado, y el motor de reglas (Nivel 2) sigue operando sin la IA (riesgo del DOC-07). Ollama se descartó por falta de GPU (fila anterior). PostgreSQL 17 es la versión estable vigente en el arranque del proyecto. |
+| DOC-08: carga de hasta 50 MB | Hasta 15 MB por archivo (`MAX_FILE_SIZE_BYTES`) | Límite fijado desde la primera versión de la implementación. Su origen no está documentado: queda como pregunta abierta (§20). |
+| DOC-04, RF-14: revisión humana con confianza inferior al 80 % | Bandas del DOC-05 y del DOC-08 §6.2: CONFORME desde 85 %; de 70 % a 84 % y por debajo de 70 %, revisión humana | El DOC-05 y el DOC-08, posteriores y más específicos, fijan 85 %; se aplica el criterio más estricto. |
+| DOC-04 (RF-08): severidades Alta, Media y Baja; DOC-07 (HU-11): Crítica, Alta y Media | Las cuatro severidades del DOC-05: Crítica, Alta, Media-Alta y Media | El DOC-05 es el que define el catálogo de reglas y su criticidad. |
+| Amarillo del semáforo: «próximo a vencer» (DOC-03), «próximos a vencer o pendientes de ratificación» (DOC-04), «advertencia» (DOC-06) | Amarillo también con documentos sin auditar y obligatorios no críticos faltantes (§10.2) | Un expediente con documentos sin revisar no puede mostrarse en verde: subir archivos nunca aprueba un expediente. |
+| DOC-08: estado `BLOQUEADO` del expediente | El documento alterado queda ALTERADO, con un dictamen No conforme y respuesta 409 (RIE-03) | Equivalente funcional: el bloqueo se aplica al documento comprometido y el expediente pasa a No conforme por ese dictamen. |
 
 ---
 
@@ -713,7 +746,9 @@ Riesgos adicionales identificados en la implementación [DG §8.7 y §10.7]:
 2. Notificaciones por correo electrónico: RF-20, HU-17.
 3. Criterios en lenguaje natural para tipos de documento dinámicos (RDS-02): RF-09, HU-24.
 4. Carga en lote (RF-02).
-5. Requerimientos no funcionales: cifrado AES-256 en reposo (RNF-04), TLS 1.3 interno (RNF-05) y respaldos automatizados (RNF-10); pruebas de concurrencia y disponibilidad (RNF-03, RNF-09).
+5. Requerimientos no funcionales: cifrado AES-256 en reposo (RNF-04), TLS 1.3 en el borde y red interna aislada (RNF-05) y respaldos conjuntos automatizados (RNF-10); pruebas de concurrencia y disponibilidad (RNF-03, RNF-09).
+6. Después de P5 (revisión de requerimientos, versión 2.1): corrección de los datos de una empresa o un expediente con registro en la bitácora (ISO 30301, control de cambios de metadatos; hoy el API no permite editarlos) y ciclo de vida del expediente activo, cerrado y archivado, sin eliminar nada, para que un expediente concluido deje de evaluarse y de alertar (complementa la conservación de §12.6).
+7. Iteración posterior: revocación de poderes y vigencias ligadas entre documentos (fianza y convenio modificatorio atados a la vigencia del contrato), que exige el DOC-02.
 
 **Completados desde la versión 1.0 de este documento:** vista de la bitácora en la interfaz (HU-30), validación del expediente completo con un botón (HU-32) e integración continua con GitHub Actions (RNF-12) en la versión 1.1; verificación automática de cláusulas (RSC-01: RF-11 y HU-19) y la categoría de alerta CONTENIDO_NO_LOCALIZADO (RF-18) en la versión 1.2; la ingesta blindada (P1) en la versión 1.3, los datos del firmante con su cotejo contra el poder o el acta (RSC-02, RN-03, HU-23) en la versión 1.4, y la cadena de custodia sellada con su ficha de trazabilidad (P3) en la versión 1.5.
 
@@ -722,6 +757,8 @@ Riesgos adicionales identificados en la implementación [DG §8.7 y §10.7]:
 - ¿Qué documentos adicionales de los inventarios del DOC-02 deben declararse obligatorios por defecto en cada tipo de expediente?
 - ¿Qué proveedor de correo y qué destinatarios se usarán para las notificaciones (RF-20)?
 - ¿Se requiere MFA desde la primera versión del Módulo 7 (RF-25)?
+- ¿Se mantiene el límite de 15 MB por archivo (§19) o se adopta el de 50 MB del DOC-08? Un acta escaneada de muchas páginas puede rebasar 15 MB.
+- ¿Confirma PluriOne el plazo de conservación de §12.6 o aplica uno mayor por contrato o por regulación sectorial?
 
 ---
 

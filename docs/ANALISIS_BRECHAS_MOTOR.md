@@ -3,7 +3,7 @@
 | Campo | Valor |
 |---|---|
 | Pregunta | ¿Qué le falta al sistema para consolidarse como un motor de validación de cumplimiento documental corporativo o bancario, sin salirse de los DOC-01 a DOC-08, de la Ficha Técnica 045 ni de los compromisos con PluriOne? |
-| Fecha | 29 de septiembre de 2026 (tras cerrar P1, P2 y P3; PRD versión 1.5) |
+| Fecha | 29 de septiembre de 2026 (tras cerrar P1, P2 y P3; PRD versión 1.5). Actualizado el 30 de septiembre de 2026 (PRD 2.0): ver la sección 5. |
 | Fuentes | Ficha Técnica 045 (PDF de PluriOne); texto íntegro de DOC-01 a DOC-08 ([ESPECIFICACIONES_DOC01_A_DOC08.txt](ESPECIFICACIONES_DOC01_A_DOC08.txt)); [PRD.md](PRD.md) v1.5; código del repositorio, contra el que se verificó cada afirmación |
 | Criterio | Solo es brecha lo que exige alguno de esos documentos. Donde un requisito bancario va más allá de lo documentado, se indica. |
 | Documentos hermanos | [PRD.md](PRD.md), [MRD.md](MRD.md), [AUDITORIA_TECNICA.md](AUDITORIA_TECNICA.md) |
@@ -49,17 +49,17 @@ Ninguna es un defecto del sistema, pero un auditor que lea los documentos en ord
 
 | # | Contradicción | Implementación | Acción |
 |---|---|---|---|
-| C1 | El DOC-08 describe un monolito modular de dos contenedores, puerto 8000, inferencia local con Ollama (Qwen2.5:7b) y PostgreSQL 16. | Tres microservicios (DG Cap. VIII), Groq Cloud y PostgreSQL 17. | Completar la sección 19 del PRD (monolito → microservicios, Ollama → Groq, PostgreSQL 16 → 17, puertos). |
-| C2 | Límite de carga: 50 MB en el DOC-08. | 15 MB (`documento_controller.py`, `MAX_FILE_SIZE_BYTES`). | Documentar el origen del límite de 15 MB. |
-| C3 | Umbral de revisión humana: el DOC-04 (RF-14) dice menor a 80 %; el DOC-05 y el DOC-08 dicen 85 % con la banda 0.70–0.84. | 85 % (DOC-05 y DOC-08). | El PRD reescribió RF-14 como 85 % sin nota: declarar la decisión. |
-| C4 | Severidades: Alta/Media/Baja (DOC-04, RF-08); Crítica/Alta/Media (HU-11); cuatro niveles (DOC-05). | Cuatro niveles del DOC-05. | Declarar la decisión. |
-| C5 | Amarillo del semáforo: «Próximo a vencer» (DOC-03), «próximos a vencer o pendientes de ratificación» (DOC-04), «Advertencia» (DOC-06). | Más amplio: también documentos sin auditar y obligatorios no críticos faltantes. | Declarar la decisión. |
-| **C6** | Modelo de puntuación del DOC-05: porcentaje = reglas cumplidas ÷ reglas evaluadas × 100, con bloqueo por criticidad. | No existe: se calcula el porcentaje de documentos obligatorios presentes (`motor/cumplimiento.py`). | **Brecha real.** Es la causa de que la interfaz muestre «Completitud 100 %» junto a «Cumplimiento global 0 %» en un expediente No conforme. |
-| C7 | Estado `BLOQUEADO` del expediente (DOC-08). | Documento ALTERADO con respuesta 409 (RIE-03). | Equivalente funcional; declararlo. |
+| C1 | El DOC-08 describe un monolito modular de dos contenedores, puerto 8000, inferencia local con Ollama (Qwen2.5:7b) y PostgreSQL 16. | Tres microservicios (DG Cap. VIII), Groq Cloud y PostgreSQL 17. | Completar la sección 19 del PRD (monolito → microservicios, Ollama → Groq, PostgreSQL 16 → 17, puertos). **Declarado en PRD §19 (30/09/2026).** |
+| C2 | Límite de carga: 50 MB en el DOC-08. | 15 MB (`documento_controller.py`, `MAX_FILE_SIZE_BYTES`). | Documentar el origen del límite de 15 MB. **Declarado en PRD §19; el origen sigue sin documentarse y queda como pregunta abierta (PRD §20).** |
+| C3 | Umbral de revisión humana: el DOC-04 (RF-14) dice menor a 80 %; el DOC-05 y el DOC-08 dicen 85 % con la banda 0.70–0.84. | 85 % (DOC-05 y DOC-08). | El PRD reescribió RF-14 como 85 % sin nota: declarar la decisión. **Declarado en PRD §19 (30/09/2026).** |
+| C4 | Severidades: Alta/Media/Baja (DOC-04, RF-08); Crítica/Alta/Media (HU-11); cuatro niveles (DOC-05). | Cuatro niveles del DOC-05. | Declarar la decisión. **Declarado en PRD §19 (30/09/2026).** |
+| C5 | Amarillo del semáforo: «Próximo a vencer» (DOC-03), «próximos a vencer o pendientes de ratificación» (DOC-04), «Advertencia» (DOC-06). | Más amplio: también documentos sin auditar y obligatorios no críticos faltantes. | Declarar la decisión. **Declarado en PRD §19 (30/09/2026).** |
+| **C6** | Modelo de puntuación del DOC-05: porcentaje = reglas cumplidas ÷ reglas evaluadas × 100, con bloqueo por criticidad. | No existe: se calcula el porcentaje de documentos obligatorios presentes (`motor/cumplimiento.py`). | **Brecha real.** Es la causa de que la interfaz muestre «Completitud 100 %» junto a «Cumplimiento global 0 %» en un expediente No conforme. **Resuelta el 29/09/2026 (PRD §10.5).** |
+| C7 | Estado `BLOQUEADO` del expediente (DOC-08). | Documento ALTERADO con respuesta 409 (RIE-03). | Equivalente funcional; declararlo. **Declarado en PRD §19 (30/09/2026).** |
 | C9 | El DOC-02 (Tabla 2) marca 8 obligatorios corporativos: acta constitutiva, poderes, estatutos, actas de asamblea, RFC, constancia de situación fiscal, aviso de privacidad y comprobante de domicilio. | El catálogo base exige 3. | Decisión del Product Owner (pregunta abierta del PRD §20). Consecuencia: activarlos como Críticos lleva a No conforme a todos los expedientes corporativos existentes. |
 | C10 | ISO 30301 (DOC-03): metadatos obligatorios, entre ellos el emisor oficial. | El emisor no se guarda. | Agregarlo a la extracción del Nivel 4. |
 
-Además, el PRD marca RF-10 como implementado, pero el DOC-04 pide «texto plano, estructura tabular y pares clave-valor» y el sistema extrae texto plano: RF-10 es **parcial**.
+Además, el PRD marcaba RF-10 como implementado, pero el DOC-04 pide «texto plano, estructura tabular y pares clave-valor» y el sistema extrae texto plano: RF-10 es **parcial** (corregido en el PRD 2.0).
 
 ---
 
@@ -94,7 +94,7 @@ Se registran la regla, el resultado, la confianza, la cita, la IP, el modelo y l
 
 | Prueba | Fuente | Estado en el repositorio |
 |---|---|---|
-| Precisión de la IA con un conjunto de referencia (precisión, exhaustividad y F1) | DOC-03 (ISO/IEC 25010); DOC-01, H12 | Pendiente: no hay conjunto de referencia ni script de métricas. El PRD da el criterio por cumplido citando el DG Cap. X. |
+| Precisión de la IA con un conjunto de referencia (precisión, exhaustividad y F1) | DOC-03 (ISO/IEC 25010); DOC-01, H12 | En curso: Gold Standard de 42 casos ficticios más un contrato de 20 páginas, congelado por SHA-256, con su script de métricas ([VALIDACION_CUANTITATIVA.md](VALIDACION_CUANTITATIVA.md)); falta la corrida de precisión con cuota de Groq. |
 | RNF-01 (≤ 2 s), RNF-03 (50 peticiones simultáneas), RNF-09 (disponibilidad) | DOC-04 | Sin medición. |
 | RNF-02 (≤ 25 s para 20 páginas) | DOC-04 | En riesgo: el PRD cita 13 s para 26 páginas, pero la medición más reciente, tras la detección de sellos (Nivel 3, versión 3.2), es de 24.3 s para 14 páginas en frío; extrapolada a 20 páginas, unos 33 s. Debe volver a medirse. |
 | Pruebas de seguridad | Ficha 045, actividad 6 | Pendiente (fase de QA). |
@@ -153,3 +153,40 @@ Contexto de calendario: según la Tabla 8 del DOC-07, el 29 de septiembre corres
 - **C6 se resuelve dentro del Lote 3 de la revisión del frontend** (resuelto el mismo 29/09/2026; PRD §10.5): el core calculará el índice de cumplimiento del DOC-05 (reglas cumplidas ÷ reglas evaluadas, con bloqueo por criticidad) como un campo nuevo de la evaluación, sin romper contratos de la API, y el tablero dejará de presentar la completitud documental como si fuera cumplimiento.
 - **El Módulo 7 (autenticación, usuarios y roles) queda para el final del proyecto.** Hasta entonces el trabajo se concentra en el frontend (lotes 0 a 5 aprobados).
 - Los demás huecos quedan registrados aquí como insumo de las siguientes iteraciones; cada uno se propondrá para aprobación antes de implementarse.
+
+---
+
+## 5. Actualización del 30 de septiembre de 2026 (PRD 2.0)
+
+Revisión cruzada de los DOC-01 a DOC-08, el PRD, el MRD y el código, a petición del residente: señalar con fundamento lo que la documentación tiene mal o no define, y lo que el motor aún no cumple.
+
+### 5.1 Errores de la documentación corregidos
+
+| # | Error | Corrección |
+|---|---|---|
+| A1 | El PRD §19 decía que Power BI no estaba documentado, pero el DOC-04 pide «visualización de métricas ejecutivas en dashboard con integración a Power BI». | Decisión del residente: el tablero propio, con gráficas de una librería de código abierto (MIT), sustituye a Power BI, que requiere licencia de pago para compartir tableros y exigiría exponer los datos a un servicio externo. Declarado en PRD §19 y §12.2. |
+| A2 | RF-10 figuraba como implementado. | Parcial en PRD y MRD (MR-07). |
+| A3 | C1 a C5 y C7 no estaban declarados. | Declarados en PRD §19. |
+| A4 | Este análisis y el MRD (MR-22 «Planeado») estaban desactualizados. | Actualizados. |
+
+### 5.2 Huecos de la documentación definidos
+
+| # | Hueco | Definición |
+|---|---|---|
+| B1 | Ningún documento fijaba la conservación de la evidencia (ISO 30301; CFF, art. 30). | PRD §12.6: mínimo 5 años y mientras exista el expediente; el sistema no elimina registros; la disposición la decide PluriOne con un rol autorizado (Módulo 7). |
+| B2 | El texto extraído con datos personales se guardaba en la SQLite del ai-service sin finalidad ni plazo declarados (LFPDPPP). | PRD §12.5: finalidad, plazo igual al del documento, respaldo conjunto y cifrado dentro de RNF-04. |
+| B3 | La excepción «Documento ilegible, se requiere recarga» del DOC-05 no se distinguía de la revisión humana. | PRD §10.4 la redacta como la define el DOC-05; se implementa en P5 (PRD §21.5). |
+
+### 5.3 Estado de los huecos de la sección 3.2
+
+| Hueco | Estado al 30/09/2026 |
+|---|---|
+| 3 · Índice de cumplimiento (C6) | Resuelto (PRD §10.5). |
+| 5 · Excepciones del DOC-05 (ilegible y procesamiento diferido) | Aprobado para P5 (C5 y B3). |
+| 7 · Barrido programado de integridad y último sello en los reportes | Aprobado para P5 (C2 y C3). |
+| Reproducibilidad del dictamen (2.3) | Aprobada para P5 (C4). |
+| 8 · Conjunto de referencia | Construido; falta la corrida con cuota de Groq. |
+| 10 · Decisiones C1 a C5 y C7 | Declaradas (PRD §19). |
+| Emisor como metadato (C10), RF-10 completo, UTC en la bitácora, cifrado en reposo y respaldos conjuntos | Después de P5, por decisión del residente. |
+| 1 · Módulo 7 | Sin cambios: fase final. |
+
