@@ -191,9 +191,11 @@ _MIGRACIONES_POSTGRES = [
 ]
 
 
-# Valores heredados que la API ya no crea pero que existen en registros de
-# custodia y no se reescriben (contradirían su evento en la bitácora inmutable).
-_TIPOS_DOCUMENTO_HEREDADOS = ("OTRO",)
+# RF-09: el catálogo de tipos de documento no es una lista cerrada (los tipos
+# nuevos se declaran con reglas RDS en el rules-service), así que la base valida
+# el formato del código y la API valida que el tipo exista (config/catalogo.py).
+# El tipo heredado OTRO, que la API ya no crea, cumple el formato.
+_CHECKS_DE_FORMATO = {("documentos", "tipo_documento"): r"^[A-Z][A-Z0-9_]{1,49}$"}
 
 
 def _restricciones_check() -> dict[tuple[str, str], tuple[str, ...]]:
@@ -205,14 +207,12 @@ def _restricciones_check() -> dict[tuple[str, str], tuple[str, ...]]:
 
     from motor import cumplimiento, integridad
     from schemas.dictamen_schema import EstatusDictamen
-    from schemas.documento_schema import TipoDocumentoEnum
     from schemas.expediente_schema import TipoExpedienteEnum
 
     estados = (cumplimiento.CONFORME, cumplimiento.EN_REVISION, cumplimiento.NO_CONFORME)
     return {
         ("expedientes", "estado_cumplimiento"): estados,
         ("expedientes", "tipo_expediente"): tuple(t.value for t in TipoExpedienteEnum),
-        ("documentos", "tipo_documento"): tuple(t.value for t in TipoDocumentoEnum) + _TIPOS_DOCUMENTO_HEREDADOS,
         ("documentos", "estado_integridad"): (integridad.INTEGRO, integridad.ALTERADO),
         ("dictamenes_auditoria", "estatus"): get_args(EstatusDictamen),
         ("dictamenes_auditoria", "estatus_preliminar"): get_args(EstatusDictamen),
@@ -231,6 +231,10 @@ def _sentencias_check() -> list[str]:
         lista = ", ".join("'" + v.replace("'", "''") + "'" for v in valores)
         sentencias.append(f"ALTER TABLE {tabla} DROP CONSTRAINT IF EXISTS {nombre}")
         sentencias.append(f"ALTER TABLE {tabla} ADD CONSTRAINT {nombre} CHECK ({columna} IN ({lista}))")
+    for (tabla, columna), patron in _CHECKS_DE_FORMATO.items():
+        nombre = f"ck_{tabla}_{columna}"
+        sentencias.append(f"ALTER TABLE {tabla} DROP CONSTRAINT IF EXISTS {nombre}")
+        sentencias.append(f"ALTER TABLE {tabla} ADD CONSTRAINT {nombre} CHECK ({columna} ~ '{patron}')")
     return sentencias
 
 

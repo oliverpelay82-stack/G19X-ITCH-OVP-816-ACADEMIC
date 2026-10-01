@@ -1,0 +1,55 @@
+@startuml rf09-actividad-tipo-documento-nuevo
+' RF-09 — Alta de un tipo de documento nuevo con su criterio para la IA.
+' Trazabilidad: RF-09, HU-24; RDS-01 (el alta crea una entrada en la tabla de reglas),
+' RDS-02 (criterio en lenguaje natural guardado en la base), RDS-03 (revisión humana
+' obligatoria); RF-06 y RIE-01 si el tipo es obligatorio en un tipo de expediente; MR-06.
+' Implementación prevista: services/rules-service/controllers/regla_controller.py
+' (GET /reglas/tipos-documento); services/core-service/config/catalogo.py,
+' controllers/documento_controller.py, clients/rules_client.py y config/database.py;
+' frontend/src/components/TipoDocumentoNuevo.jsx, constants.js y ReglasTab.jsx.
+' Sin tablas nuevas: el tipo vive en reglas_validacion (DOC-08, Tabla 24).
+
+title RF-09 — Tipo de documento nuevo
+
+|Administrador|
+start
+:En Reglas, «Nuevo tipo de documento»:
+nombre (p. ej. «Permiso de Impacto Ambiental»),
+criterio para la IA en lenguaje natural (RDS-02),
+recomendación si no se cumple y, opcional,
+el tipo de expediente que lo exige y su severidad;
+|Interfaz|
+:Deriva el código del nombre
+(PERMISO_DE_IMPACTO_AMBIENTAL)
+y verifica que no exista;
+|rules-service|
+:POST /reglas: regla RDS que declara el tipo
+(nombre = nombre del tipo, descripción = criterio);
+if (¿Obligatorio en un tipo de expediente?) then (sí)
+  :POST /reglas: regla RIE-01 del tipo
+  para ese expediente (RF-06), con la forma
+  de las reglas del catálogo base;
+endif
+|Analista|
+:Custodia un archivo con el tipo nuevo;
+|core-service|
+:¿El tipo está en el catálogo base
+o en GET /reglas/tipos-documento (activo)?;
+if (¿Admitido?) then (no)
+  :422 «Tipo de documento no reconocido»;
+  stop
+else (sí)
+endif
+:Nivel 1, custodia y bitácora como cualquier tipo;
+:Completitud con la regla RIE si la hay (RIE-01);
+|ai-service|
+:Auditoría: el criterio RDS del tipo
+se verifica con su cita (RSC/RDS);
+:El tipo registrado no se contrasta con el detectado
+(el modelo no tiene con qué clasificarlo);
+:RDS-03: el dictamen pasa siempre
+a revisión humana (EN_REVISION);
+|Analista|
+:Ratifica con su justificación (Nivel 5, RN-05);
+stop
+@enduml

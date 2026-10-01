@@ -21,8 +21,9 @@ from models.bitacora import EVENTO_DESCARGA_DOCUMENTO, EVENTO_INGESTA_DOCUMENTO,
 from models.documento import Documento
 from models.expediente import Expediente
 from motor import archivo_protegido, bitacora, cumplimiento, integridad, senales_pdf
+from motor.tipos_documento import tipo_admitido
 from schemas.dictamen_schema import ProcesamientoDiferidoRequest
-from schemas.documento_schema import DocumentoResponse, TipoDocumentoEnum
+from schemas.documento_schema import DocumentoResponse
 
 router = APIRouter(prefix="/api/v1/documentos", tags=["Documentos"])
 
@@ -144,9 +145,9 @@ def _leer_verificado(db: Session, documento: Documento, request: Request) -> byt
 def subir_documento(
     request: Request,
     expediente_id: str = Form(..., description="ID del expediente al que se vinculará"),
-    tipo_documento: TipoDocumentoEnum = Form(
-        TipoDocumentoEnum.CSF_SAT,
-        description="Tipo de documento admitido en el catálogo oficial"
+    tipo_documento: str = Form(
+        "CSF_SAT", max_length=50,
+        description="Tipo del catálogo base (DOC-02) o declarado por una regla RDS activa (RF-09)",
     ),
     file: UploadFile = File(..., description="Archivo digitalizado (PDF o Imagen)"),
     usuario: str = Form("OPERADOR", max_length=100, description="Usuario que realiza la carga (bitácora)"),
@@ -155,7 +156,8 @@ def subir_documento(
     """
     Carga de archivo con Pipeline de Validación Nivel 1:
     1. Valida que el expediente exista.
-    2. Valida tipo documental contra catálogo oficial (TipoDocumentoEnum).
+    2. Valida el tipo documental: catálogo base (TipoDocumentoEnum) o declarado
+       por una regla RDS activa del rules-service (RF-09).
     3. Valida tamaño de archivo (máx. 15 MB) y rechaza archivos vacíos.
     4. Valida MIME Type y cabecera binaria (Magic Bytes) para evitar archivos corruptos o extensiones falsas.
     5. Calcula el Hash criptográfico inmutable SHA-256 (Principio NOM-151) y
@@ -174,6 +176,13 @@ def subir_documento(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Expediente con ID '{expediente_id}' no encontrado.",
+        )
+    tipo_documento = (tipo_documento or "").strip().upper()
+    if not tipo_admitido(tipo_documento):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail=f"Tipo de documento no reconocido: '{tipo_documento}'. Use un tipo del catálogo o uno declarado "
+                   "en Reglas como tipo de documento nuevo (RF-09).",
         )
 
     # 2. Leer contenido binario (acotado al límite del Nivel 1 más un byte)
@@ -246,7 +255,7 @@ def subir_documento(
         nuevo_documento = Documento(
             id=str(uuid.uuid4()),
             expediente_id=expediente.id,
-            tipo_documento=tipo_documento.value,
+            tipo_documento=tipo_documento,
             nombre_archivo_original=nombre_original,
             ruta_almacenamiento=ruta_guardado,
             hash_sha256=hash_sha256,
@@ -266,7 +275,7 @@ def subir_documento(
             usuario=usuario,
             ip_origen=_ip(request),
             detalle={
-                "tipo_documento": tipo_documento.value,
+                "tipo_documento": tipo_documento,
                 "nombre_archivo_original": nombre_original,
                 "hash_sha256": hash_sha256,
                 "tamanio_bytes": tamanio_bytes,

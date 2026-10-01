@@ -111,13 +111,19 @@ def test_valor_fuera_del_catalogo_se_rechaza(campos):
             tx.rollback()
 
 
-def test_tipo_documento_heredado_otro_se_admite():
+def test_tipo_documento_valida_el_formato_del_codigo():
+    """
+    RF-09: el catálogo de tipos no es una lista cerrada, así que la base valida
+    el formato del código (la API valida que el tipo exista). El heredado OTRO
+    y un tipo declarado por una regla RDS se admiten; un código mal formado no.
+    """
     with engine.connect() as c:
         tx = c.begin()
         try:
             _insertar_expediente(c)
             expediente = c.execute(text("SELECT id FROM expedientes ORDER BY actualizado_en DESC LIMIT 1")).scalar()
-            for tipo, admitido in (("OTRO", True), ("INVENTADO", False)):
+            for tipo, admitido in (("OTRO", True), ("PERMISO_DE_IMPACTO_AMBIENTAL", True), ("csf_sat", False),
+                                   ("TIPO CON ESPACIOS", False), ("1_EMPIEZA_CON_CIFRA", False)):
                 c.execute(text("SAVEPOINT prueba"))
                 try:
                     c.execute(text("INSERT INTO documentos (id, expediente_id, tipo_documento, nombre_archivo_original, "
@@ -139,5 +145,5 @@ if __name__ == "__main__":
     test_restricciones_check_presentes()
     for campos in ({"estado": "APROBADO"}, {"tipo": "FISCAL"}):
         test_valor_fuera_del_catalogo_se_rechaza(campos)
-    test_tipo_documento_heredado_otro_se_admite()
+    test_tipo_documento_valida_el_formato_del_codigo()
     print("PASÓ: índice, claves foráneas de custodia y restricciones CHECK")

@@ -30,6 +30,7 @@ Estos diagramas complementan los del DOCUMENTO GENERAL (Cap. IV, Figuras 1–6, 
 | QA — Validación cuantitativa (Fase 5, no PLUS) | [qa-actividad-evaluacion.puml](qa-actividad-evaluacion.puml) | Actividades | — | §15; RNF-01 a RNF-03; [VALIDACION_CUANTITATIVA.md](../VALIDACION_CUANTITATIVA.md) | — |
 | Detalle de la empresa (interfaz, no PLUS) | [ui-actividad-detalle-empresa.puml](ui-actividad-detalle-empresa.puml) | Actividades | Empresas → F2 | §13.1; RF-01, RF-05, RF-18, RF-19, RF-21; HU-02, HU-04, HU-27 | MR-12, MR-18 |
 | Corrección de datos de captura (no PLUS) | [ui-actividad-correccion-datos.puml](ui-actividad-correccion-datos.puml) | Actividades | Empresas y F2 | §13.1; RF-01, RF-27; RN-04, RN-05; HU-02, HU-07 | MR-10 |
+| RF-09 — Tipos de documento nuevos (DOC-04, no PLUS) | [rf09-actividad-tipo-documento-nuevo.puml](rf09-actividad-tipo-documento-nuevo.puml) | Actividades | Reglas, F1 y F3 | §5 RF-09, HU-24; RDS-01 a RDS-03; RF-06, RIE-01 | MR-06 |
 
 ## Generar las imágenes
 

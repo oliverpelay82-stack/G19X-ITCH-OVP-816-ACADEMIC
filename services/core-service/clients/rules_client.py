@@ -16,6 +16,7 @@ import json
 import logging
 import os
 from dataclasses import dataclass, field
+from typing import Any
 
 import requests
 
@@ -132,3 +133,18 @@ def obtener_documentos_obligatorios(tipo_expediente: str = TIPO_EXPEDIENTE_PREDE
         )
     return InventarioObligatorio(documentos=documentos, fuente=FUENTE_CATALOGO, anexos=anexos, version_catalogo=version,
                                  versiones_por_tipo=versiones_por_tipo)
+
+
+def tipos_documento_declarados() -> list[dict[str, Any]] | None:
+    """
+    RF-09: tipos de documento declarados por reglas dinámicas (RDS-01), con su
+    nombre y si siguen activos. ``None`` si el rules-service no responde: quien
+    llama conserva lo que ya sabía.
+    """
+    try:
+        respuesta = requests.get(f"{RULES_BASE_URL}/api/v1/reglas/tipos-documento", timeout=TIMEOUT_SEGUNDOS,
+                                 headers=observabilidad.cabeceras())
+        respuesta.raise_for_status()
+        return [t for t in respuesta.json() if isinstance(t, dict) and t.get("tipo_documento")]
+    except (requests.RequestException, ValueError):
+        return None

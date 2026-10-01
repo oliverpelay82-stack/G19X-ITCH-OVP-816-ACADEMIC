@@ -8,6 +8,7 @@ import PaletaComandos from './components/PaletaComandos.jsx'
 import useToast from './hooks/useToast.js'
 import useTheme from './hooks/useTheme.js'
 import useRuta from './hooks/useRuta.js'
+import { registrarTiposDeclarados } from './constants.js'
 import {
   getDocumentos,
   getExpedientes,
@@ -131,6 +132,7 @@ export default function App() {
     if (t.status === 'fulfilled') setTitulares(t.value || [])
     if (e.status === 'fulfilled') setExpedientes(e.value || [])
     if (d.status === 'fulfilled') setDocumentos(d.value || [])
+    if (r.status === 'fulfilled') registrarTiposDeclarados(r.value || []) // RF-09: antes de pintar
     setReglas(r.status === 'fulfilled' ? r.value || [] : [])
     setLoading(false)
   }, [])

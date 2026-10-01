@@ -66,6 +66,51 @@ export const TIPO_DOCUMENTO_LABEL = {
 }
 export const TIPO_DOCUMENTO_CORTO = Object.fromEntries(TIPOS_DOCUMENTO.map((t) => [t.value, t.corto]))
 
+const TIPOS_BASE = new Set(TIPOS_DOCUMENTO.map((t) => t.value))
+// RIE-01-<código> cabe en los 50 caracteres de codigo_regla.
+const LARGO_MAXIMO_CODIGO = 43
+
+/** Código de un tipo nuevo a partir de su nombre: sin acentos, en mayúsculas y con guiones bajos. */
+export function codigoDeTipo(nombre) {
+  return (nombre || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g, '_')
+    .replace(/^[_0-9]+|_+$/g, '')
+    .slice(0, LARGO_MAXIMO_CODIGO)
+    .replace(/_+$/, '')
+}
+
+/**
+ * RF-09: incorpora al catálogo los tipos declarados por reglas RDS (RDS-01),
+ * con el mismo criterio que el rules-service (GET /reglas/tipos-documento): el
+ * nombre de la regla más antigua de cada código y activo si alguna lo está.
+ * Modifica los objetos exportados para que todas las vistas los nombren sin
+ * cambiar sus importaciones; la carga solo ofrece los activos. Se llama cada vez
+ * que llegan las reglas.
+ */
+export function registrarTiposDeclarados(reglas) {
+  const declarados = new Map()
+  const ordenadas = [...(reglas || [])].sort((a, b) =>
+    String(a.creado_en).localeCompare(String(b.creado_en)) || a.codigo_regla.localeCompare(b.codigo_regla)
+  )
+  for (const r of ordenadas) {
+    const codigo = r.familia_regla === 'RDS' && r.tipo_documento?.trim().toUpperCase()
+    if (!codigo || TIPOS_BASE.has(codigo)) continue
+    const previo = declarados.get(codigo)
+    if (!previo) declarados.set(codigo, { value: codigo, label: r.nombre_regla, corto: r.nombre_regla,
+      grupo: r.tipo_expediente || null, activo: r.activo, declarado: true })
+    else if (r.activo) previo.activo = true
+  }
+  for (let i = TIPOS_DOCUMENTO.length - 1; i >= 0; i--) if (TIPOS_DOCUMENTO[i].declarado) TIPOS_DOCUMENTO.splice(i, 1)
+  for (const tipo of declarados.values()) {
+    TIPO_DOCUMENTO_LABEL[tipo.value] = tipo.label
+    TIPO_DOCUMENTO_CORTO[tipo.value] = tipo.corto
+    if (tipo.activo) TIPOS_DOCUMENTO.push(tipo)
+  }
+}
+
 /**
  * Tipos documentales ordenados para cargar en un expediente: primero los que
  * faltan (obligatorios y anexos), luego el inventario de su tipo y al final el

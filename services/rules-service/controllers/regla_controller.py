@@ -19,6 +19,7 @@ from schemas.regla_schema import (
     EvaluacionVigenciaResponse,
     ReglaCreate,
     ReglaResponse,
+    TipoDocumentoDeclaradoResponse,
 )
 
 router = APIRouter(prefix="/api/v1/reglas", tags=["Reglas de Validación"])
@@ -184,6 +185,40 @@ def version_del_catalogo(
     if tipo_documento:
         respuesta["version_reglas_tipo"] = version_catalogo.de_tipo(reglas, tipo_documento)
     return respuesta
+
+
+@router.get(
+    "/tipos-documento",
+    response_model=list[TipoDocumentoDeclaradoResponse],
+    summary="Tipos de documento declarados por reglas dinámicas (RF-09, RDS-01)",
+)
+def tipos_documento_declarados(db: Session = Depends(get_db)):
+    """
+    RF-09: un tipo de documento nuevo se declara con una regla RDS (RDS-01) cuyo
+    nombre es el del tipo y cuya descripción es el criterio para la IA (RDS-02).
+    Se listan todos los tipos que aparecen en reglas RDS, con el nombre de la más
+    antigua; el core descarta los de su catálogo base y admite en la carga solo
+    los activos.
+    """
+    reglas = db.query(Regla).filter(Regla.familia_regla == "RDS", Regla.tipo_documento.isnot(None)).all()
+    return agrupar_tipos_declarados(reglas)
+
+
+def agrupar_tipos_declarados(reglas) -> list[TipoDocumentoDeclaradoResponse]:
+    """Un tipo por código: nombre y expediente de la regla RDS más antigua; activo si alguna lo está."""
+    tipos: dict[str, TipoDocumentoDeclaradoResponse] = {}
+    for r in sorted(reglas, key=lambda r: (str(r.creado_en), r.codigo_regla)):
+        if r.familia_regla != "RDS" or not r.tipo_documento:
+            continue
+        clave = r.tipo_documento.strip().upper()
+        if clave not in tipos:
+            tipos[clave] = TipoDocumentoDeclaradoResponse(
+                tipo_documento=clave, nombre=r.nombre_regla, activo=r.activo,
+                tipo_expediente=r.tipo_expediente, codigo_regla=r.codigo_regla,
+            )
+        elif r.activo:
+            tipos[clave].activo = True
+    return list(tipos.values())
 
 
 @router.get(

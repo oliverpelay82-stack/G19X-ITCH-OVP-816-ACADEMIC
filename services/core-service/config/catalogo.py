@@ -9,8 +9,13 @@ Catálogos oficiales del motor (DOC-02 y DOC-04).
     expediente no se decide aquí: lo declaran las reglas RIE del rules-service
     (RF-06). Este módulo solo aporta los nombres legibles que usan las alertas
     y los reportes.
+  * **Tipos declarados (RF-09, RDS-01).** El catálogo base no es una lista
+    cerrada: un tipo nuevo se declara con una regla RDS en el rules-service.
+    motor/tipos_documento.py los consulta y registra aquí sus nombres.
 """
 from __future__ import annotations
+
+import re
 
 TIPOS_EXPEDIENTE: dict[str, str] = {
     "JURIDICO": "Jurídico",
@@ -57,13 +62,28 @@ TIPOS_DOCUMENTO: dict[str, str] = {
 ETIQUETA_TIPO_HEREDADO = "Otro documento"
 
 
+# Código de un tipo de documento: el mismo formato que exige la CHECK de la base.
+FORMATO_CODIGO_TIPO = re.compile(r"^[A-Z][A-Z0-9_]{1,49}$")
+# RF-09: nombres de los tipos declarados por reglas RDS. Los registra
+# motor/tipos_documento.py cada vez que consulta al rules-service.
+_NOMBRES_DECLARADOS: dict[str, str] = {}
+
+
+def registrar_nombres_declarados(nombres: dict[str, str]) -> None:
+    _NOMBRES_DECLARADOS.clear()
+    _NOMBRES_DECLARADOS.update(nombres)
+
+
 def etiqueta_documento(tipo: str | None) -> str:
-    """Nombre legible de un tipo de documento; el código si no está en el catálogo."""
+    """Nombre legible de un tipo de documento: el del catálogo, el declarado (RF-09) o el código."""
     if not tipo:
         return "Documento"
-    if tipo.upper() == "OTRO":
+    clave = tipo.upper()
+    if clave == "OTRO":
         return ETIQUETA_TIPO_HEREDADO
-    return TIPOS_DOCUMENTO.get(tipo.upper(), tipo)
+    if clave in TIPOS_DOCUMENTO:
+        return TIPOS_DOCUMENTO[clave]
+    return _NOMBRES_DECLARADOS.get(clave, tipo)
 
 
 def etiqueta_expediente(tipo: str | None) -> str:

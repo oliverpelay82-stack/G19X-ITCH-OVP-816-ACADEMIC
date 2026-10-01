@@ -21,6 +21,7 @@ import { SkeletonRows } from './Skeleton.jsx'
 import useToast from '../hooks/useToast.js'
 import useDebounce from '../hooks/useDebounce.js'
 import { createRegla, toggleRegla } from '../services/api.js'
+import TipoDocumentoNuevo from './TipoDocumentoNuevo.jsx'
 import { formatFecha } from '../utils/format.js'
 import {
   FAMILIA_META,
@@ -300,6 +301,7 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
         <Button variante="primary" icono={Plus} className="toolbar-action" onClick={() => setModalAbierto(true)}>
           Nueva regla
         </Button>
+        <TipoDocumentoNuevo onCreado={onRefresh} disabled={!isOnline} />
       </div>
 
       {/* Los filtros secundarios van en su propio renglón, como en Expedientes: a

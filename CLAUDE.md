@@ -61,6 +61,7 @@ Microservicios FastAPI desacoplados en `services/`, orquestados con Docker Compo
 
 ### Nivel 2 — Reglas deterministas (rules y core)
 - Completitud contra los obligatorios del tipo de expediente que declara el rules-service (con respaldo DOC-02); los anexos RIE-02 se exigen solo si su documento principal está presente.
+- Tipos de documento (RF-09): los 22 del catálogo base más los declarados por reglas RDS (`GET /reglas/tipos-documento`; `motor/tipos_documento.py` los admite en la carga si están activos y registra sus nombres). La CHECK de `documentos.tipo_documento` valida el formato del código; la existencia la valida la API. En el frontend, `registrarTiposDeclarados` (constants.js) los incorpora al catálogo al recibir las reglas.
 - Vigencia RCV, recalculada en cada consulta (RN-02): RCV-01 (días para el vencimiento; alertas a 30, 15 y 5 días) y caducidad estricta desde la emisión: RCV-02 comprobante de domicilio (90 días), RCV-03 constancia fiscal (90), RCV-04 opinión 32-D (30).
 - Semáforo: NO_CONFORME si falta un obligatorio crítico o un anexo exigido, o si un documento vigente es NO_CONFORME o venció; EN_REVISION si hay obligatorios no críticos faltantes, documentos sin auditar, pendientes de ratificación o próximos a vencer; CONFORME solo con todo presente y conforme. **Subir archivos nunca aprueba un expediente.**
 - Índice de cumplimiento (C6, PRD §10.5): cumplidas / (cumplidas + incumplidas + pendientes); el bloqueo por criticidad no altera el porcentaje.

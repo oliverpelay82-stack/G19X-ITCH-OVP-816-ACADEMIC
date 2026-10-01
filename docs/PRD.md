@@ -183,7 +183,7 @@ Prioridad tomada de las historias de usuario asociadas (Cap. VII); «—» cuand
 | RF-06 | Definir documentos obligatorios y opcionales por tipo de expediente sin alterar el código. | Alta | Implementado | Reglas RIE con `tipo_expediente` (sección 9.3). |
 | RF-07 | Configurar anexos obligatorios dependientes de un documento principal. | Alta | Implementado | Reglas RIE-02 con `documento_principal`. |
 | RF-08 | Severidad por regla (Crítica, Alta, Media-Alta o Media) y acción ante incumplimiento. | Alta | Implementado | Campos `severidad` y `accion` del catálogo. |
-| RF-09 | Interfaz para dar de alta nuevos tipos de documento y definir los criterios que evaluará la IA. | Alta | Parcial | Alta de reglas desde la interfaz; el catálogo de 22 tipos es fijo y el criterio en lenguaje natural (RDS-02) aún no se aplica en el Nivel 4. |
+| RF-09 | Interfaz para dar de alta nuevos tipos de documento y definir los criterios que evaluará la IA. | Alta | Implementado | Implementado el 01/10/2026 ([rf09-actividad-tipo-documento-nuevo.puml](uml/rf09-actividad-tipo-documento-nuevo.puml)). En Reglas, «Nuevo tipo de documento» pide el nombre (el código se deriva), lo que debe verificar la IA en lenguaje natural (RDS-02), qué hacer si no se cumple y, opcional, en qué tipo de expediente es obligatorio. Crea la regla RDS que declara el tipo en `reglas_validacion` (RDS-01, sin tablas nuevas) y, si es obligatorio, su regla RIE-01 (RF-06). El rules-service publica los tipos declarados (`GET /reglas/tipos-documento`); el core los admite en la carga si están activos y los nombra en alertas y reportes (`motor/tipos_documento.py`, caché de 60 s); la CHECK de `documentos.tipo_documento` valida el formato del código y no la lista de 22. El Nivel 4 verifica el criterio con su cita y RDS-03 lleva cada documento a revisión humana. Nota para el DOCUMENTO GENERAL: el diccionario de datos de `documentos.tipo_documento` («uno de los 22 tipos») ya no aplica. |
 
 ### M3 — Análisis Inteligente de Documentos
 
@@ -261,7 +261,7 @@ Prioridad tomada de las historias de usuario asociadas (Cap. VII); «—» cuand
 | HU-21 | Marcar para revisión manual los hallazgos con confianza < 85 %. | M3 | 3 | Alta | 5 | Implementado |
 | HU-22 | Aprobar o rechazar hallazgos de la IA con registro en la bitácora. | M3 | 3 | Alta | 6 | Implementado |
 | HU-23 | Extraer los datos del firmante para cotejarlos con el poder notarial. | M3 | 3 | Media | 8 | Implementado (P2, §21.2: firmantes con cita, cotejo con los apoderados del poder o del acta y decisión del analista) |
-| HU-24 | Dar de alta tipos de documento con criterios en lenguaje natural. | M2 | 3 | Alta | 10 | Parcial |
+| HU-24 | Dar de alta tipos de documento con criterios en lenguaje natural. | M2 | 3 | Alta | 10 | Implementado (RF-09) |
 | HU-25 | Reutilizar el análisis si el documento no cambió (misma huella). | M3 | 3 | Media | 5 | Implementado (texto e inferencia en caché por huella) |
 | HU-26 | Dashboard con porcentaje global, conformes y no conformes. | M6 | 4 | Alta | 10 | Implementado |
 | HU-27 | Semáforo visual de cada expediente. | M6 | 4 | Alta | 6 | Implementado |
@@ -494,7 +494,7 @@ Microservicios desacoplados orquestados con Docker Compose en la red `plurione-n
 | Servicio | Endpoints principales |
 |---|---|
 | core-service | `/health`; `/titulares`; `/expedientes` (alta y búsqueda); `/expedientes/{id}`; `/documentos/upload`; `/documentos/{id}/integridad`; `/documentos/{id}/contenido`; `/dictamenes`; `/dictamenes/{id}/ratificar`; `PATCH /titulares/{id}` y `PATCH /expedientes/{id}` (corrección de datos de captura); `/documentos/{id}/contenido?descarga=true` (descarga del original); `/bitacora`; `/bitacora/verificar-cadena` (P3); `/alertas`; `/reportes/expedientes/{id}`; `/reportes/cumplimiento`; `/reportes/documentos/{id}/custodia` (P3) |
-| rules-service | `/health`; `/reglas` (catálogo, alta y pausa); `/reglas/documentos-obligatorios?tipo_expediente=`; `/reglas/evaluar-vigencia` |
+| rules-service | `/health`; `/reglas` (catálogo, alta y pausa); `/reglas/documentos-obligatorios?tipo_expediente=`; `/reglas/tipos-documento` (tipos declarados por reglas RDS, RF-09); `/reglas/evaluar-vigencia` |
 | ai-service | `/health`; `/ai/extraer-texto`; `/ai/documentos/{id}/preparar`; `/ai/analisis-semantico`; `/ai/chat-documento`; `/ai/configuracion-ocr` |
 
 Documentación interactiva OpenAPI en `/docs` de cada servicio.

@@ -54,7 +54,7 @@ from models.bitacora import EVENTO_EVALUACION_REGLAS
 from models.dictamen import ORIGEN_NIVEL_1, ORIGEN_NIVEL_3_ILEGIBLE, ORIGEN_NIVEL_4, DictamenAuditoria
 from models.documento import Documento
 from models.expediente import Expediente
-from motor import bitacora, senales_pdf
+from motor import bitacora, senales_pdf, tipos_documento
 from motor import representacion as cotejo_legal
 from motor.redaccion import dias, fecha_legible, texto_llano
 
@@ -364,6 +364,8 @@ def evaluar(
         .order_by(Documento.creado_en.desc())
         .all()
     )
+    # RF-09: un tipo declarado por una regla RDS se nombra con el nombre de su regla.
+    tipos_documento.refrescar_si_hay_desconocidos(set(requeridos) | {d.tipo_documento for d in documentos})
     vigentes: dict[str, Documento] = {}
     for doc in documentos:
         vigentes.setdefault(doc.tipo_documento, doc)

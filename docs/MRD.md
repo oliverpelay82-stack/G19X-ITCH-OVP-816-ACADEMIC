@@ -362,7 +362,7 @@ Derivados de los objetivos y umbrales documentados [Anteproyecto; DG Caps. IV, V
 | MR-03 Anexos obligatorios | RF-07, RIE-02, HU-10 | Implementado |
 | MR-04 Vigencia y alertas anticipadas | RF-15, RF-16, RF-17, RCV-01 a RCV-04, HU-13, HU-14 | Implementado (umbrales por configuración) |
 | MR-05 Reglas configurables por sector | RF-06, RF-08, HU-09, HU-11 | Implementado |
-| MR-06 Nuevos tipos de documento con criterios para la IA | RF-09, RDS-01, RDS-02, HU-24 | Parcial |
+| MR-06 Nuevos tipos de documento con criterios para la IA | RF-09, RDS-01, RDS-02, HU-24 | Implementado |
 | MR-07 Lectura de PDF nativos y escaneados | RF-10, HU-18 | Parcial (texto plano de PDF nativos y escaneados; tablas y pares clave-valor pendientes: PRD, RF-10) |
 | MR-08 Análisis de contenido explicable | RF-11, RF-13, RSC-01, RSC-02, HU-19, HU-20, HU-23 | Cumplido (cláusulas verificadas con cita literal, RSC-01; datos del firmante cotejados con los apoderados del poder o del acta, RSC-02 y RN-03, con decisión del analista: PRD §21.2) |
 | MR-09 Decisión humana en casos dudosos | RF-14, RN-05, HU-21, HU-22 | Implementado |

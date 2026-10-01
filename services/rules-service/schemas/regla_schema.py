@@ -73,6 +73,18 @@ class DocumentoObligatorioResponse(BaseModel):
     tipo_expediente: Optional[str] = Field(None, description="Tipo de expediente de la regla; nulo = todos")
 
 
+class TipoDocumentoDeclaradoResponse(BaseModel):
+    """
+    Tipo de documento declarado por reglas dinámicas (RF-09, RDS-01): el nombre y
+    el tipo de expediente son los de la regla RDS más antigua que lo declara.
+    """
+    tipo_documento: str
+    nombre: str
+    activo: bool = Field(description="Alguna regla RDS activa lo declara; con todas pausadas no se admite en la carga")
+    tipo_expediente: Optional[str] = None
+    codigo_regla: str = Field(description="Regla RDS que lo declaró")
+
+
 class EvaluacionVigenciaRequest(BaseModel):
     """Fechas de un documento a contrastar con las reglas Cronológicas y de Vigencia (RCV)."""
     tipo_documento: str = Field(..., min_length=2, max_length=50, description="Tipo documental, ej. 'COMP_DOMICILIO'")
