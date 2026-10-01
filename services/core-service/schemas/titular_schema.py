@@ -3,6 +3,8 @@ Esquemas de validación de datos (DTOs).
 Equivalente a las clases DTO / Request en Spring Boot.
 """
 from datetime import datetime
+from typing import Optional
+
 from pydantic import BaseModel, ConfigDict, Field, computed_field, model_validator
 
 from motor import rfc as rfc_sat
@@ -20,6 +22,30 @@ class TitularCreate(BaseModel):
         """M1: formato, longitud por tipo de persona y fecha; el dígito solo con RFC_DIGITO_ESTRICTO."""
         self.tipo_persona = (self.tipo_persona or "MORAL").strip().upper()
         self.rfc = rfc_sat.validar(self.rfc, self.tipo_persona)
+        return self
+
+
+class TitularUpdate(BaseModel):
+    """
+    Corrección de datos de captura (PRD §13.1). El RFC y el tipo de persona no
+    se editan: identifican al titular, y un error ahí se resuelve con un
+    registro nuevo. Un campo desconocido (rfc incluido) responde 422.
+    """
+    razon_social: Optional[str] = Field(None, min_length=3, max_length=200)
+    categoria: Optional[str] = Field(None, min_length=1, max_length=50)
+
+    model_config = ConfigDict(extra="forbid")
+
+    @model_validator(mode="after")
+    def _normalizar(self) -> "TitularUpdate":
+        if self.razon_social is not None:
+            self.razon_social = " ".join(self.razon_social.split())
+            if len(self.razon_social) < 3:
+                raise ValueError("La razón social debe tener al menos 3 caracteres.")
+        if self.categoria is not None:
+            self.categoria = self.categoria.strip().upper()
+        if self.razon_social is None and self.categoria is None:
+            raise ValueError("Indique la razón social o la categoría a corregir.")
         return self
 
 

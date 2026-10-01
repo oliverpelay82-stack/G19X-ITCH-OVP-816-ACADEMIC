@@ -8,15 +8,16 @@ import hashlib
 import os
 import uuid
 from datetime import datetime, timezone
+from urllib.parse import quote
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, Response, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Request, Response, UploadFile, status
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from config.boveda import ruta_en_boveda
 from config.catalogo import etiqueta_documento
 from config.database import get_db
-from models.bitacora import EVENTO_INGESTA_DOCUMENTO, EVENTO_PROCESAMIENTO_DIFERIDO
+from models.bitacora import EVENTO_DESCARGA_DOCUMENTO, EVENTO_INGESTA_DOCUMENTO, EVENTO_PROCESAMIENTO_DIFERIDO
 from models.documento import Documento
 from models.expediente import Expediente
 from motor import archivo_protegido, bitacora, cumplimiento, integridad, senales_pdf
@@ -351,15 +352,33 @@ def verificar_integridad(documento_id: str, request: Request, db: Session = Depe
     summary="Descargar el binario verificado del documento (RIE-03)",
     responses={409: {"description": "La huella del binario no coincide con la registrada: documento bloqueado"}},
 )
-def descargar_contenido(documento_id: str, request: Request, db: Session = Depends(get_db)):
+def descargar_contenido(
+    documento_id: str,
+    request: Request,
+    descarga: bool = Query(
+        False,
+        description="Descarga de un usuario: el archivo llega con su nombre de carga y queda en la bitácora "
+                    "(DESCARGA_DOCUMENTO). Sin ella es la lectura del ai-service, que no se registra.",
+    ),
+    db: Session = Depends(get_db),
+):
     """Entrega el binario solo si su huella coincide con la registrada (RIE-03)."""
     documento = _documento_o_404(db, documento_id)
     contenido = _leer_verificado(db, documento, request)
-    return Response(
-        content=contenido,
-        media_type=documento.mime_type,
-        headers={"X-Hash-SHA256": documento.hash_sha256},
-    )
+    cabeceras = {"X-Hash-SHA256": documento.hash_sha256}
+    if descarga:
+        nombre = documento.nombre_archivo_original or f"documento-{documento.id}"
+        # RFC 6266: nombre ASCII de respaldo y el original en UTF-8 (acentos y eñes).
+        respaldo = nombre.encode("ascii", "replace").decode().replace("?", "_").replace('"', "_")
+        cabeceras["Content-Disposition"] = f"attachment; filename=\"{respaldo}\"; filename*=UTF-8''{quote(nombre)}"
+        bitacora.registrar(
+            db, EVENTO_DESCARGA_DOCUMENTO, expediente_id=documento.expediente_id, documento_id=documento.id,
+            usuario="OPERADOR", ip_origen=_ip(request),
+            detalle={"nombre_archivo_original": documento.nombre_archivo_original,
+                     "hash_sha256": documento.hash_sha256},
+        )
+        db.commit()
+    return Response(content=contenido, media_type=documento.mime_type, headers=cabeceras)
 
 
 @router.post(

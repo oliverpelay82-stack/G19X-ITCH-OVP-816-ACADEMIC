@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { ArrowLeft, ArrowUpRight, FolderPlus, SearchX } from 'lucide-react'
 import { AlertaItem } from './Alertas.jsx'
+import { CorregirEmpresa } from './CorreccionDatos.jsx'
 import FolioExpediente from './FolioExpediente.jsx'
 import { IconoExpediente } from './IconosMotor.jsx'
 import { Badge, Button, Card, CopyChip, EmptyState, KeyValue, KeyValueList, Tag } from './ui/index.js'
@@ -27,7 +28,16 @@ const plural = (n, uno, varios) => `${n} ${n === 1 ? uno : varios}`
  * listado de expedientes ya cargado, que trae la evaluación de cada uno; no
  * hay tarjetas de métricas, que van solo en Expedientes y Reportes.
  */
-export default function DetalleEmpresa({ titular, expedientes, aviso, onVolver, onAbrir, onAperturar, isOnline }) {
+export default function DetalleEmpresa({
+  titular,
+  expedientes,
+  aviso,
+  onVolver,
+  onAbrir,
+  onAperturar,
+  onRefresh,
+  isOnline,
+}) {
   const ordenados = useMemo(
     () =>
       [...expedientes].sort(
@@ -94,16 +104,12 @@ export default function DetalleEmpresa({ titular, expedientes, aviso, onVolver, 
             </h2>
             <p className="profile-sub">{lineaResumen}</p>
           </div>
-          <Button
-            variante="primary"
-            compacto
-            icono={FolderPlus}
-            className="empresa-aperturar"
-            onClick={() => onAperturar(titular)}
-            disabled={!isOnline}
-          >
-            Aperturar expediente
-          </Button>
+          <div className="empresa-acciones">
+            <CorregirEmpresa titular={titular} onCorregido={onRefresh} disabled={!isOnline} />
+            <Button variante="primary" compacto icono={FolderPlus} onClick={() => onAperturar(titular)} disabled={!isOnline}>
+              Aperturar expediente
+            </Button>
+          </div>
         </header>
         <KeyValueList className="profile-grid empresa-datos">
           <KeyValue etiqueta="RFC">

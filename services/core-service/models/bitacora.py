@@ -33,6 +33,11 @@ EVENTO_VERIFICACION_INTEGRIDAD = "VERIFICACION_INTEGRIDAD"
 EVENTO_PROCESAMIENTO_DIFERIDO = "PROCESAMIENTO_DIFERIDO"
 # P7 (PLUS-22): una autoridad RFC 3161 selló en el tiempo un eslabón de la cadena.
 EVENTO_SELLO_TIEMPO = "SELLO_TIEMPO"
+# Descarga del archivo original por un usuario (RF-24, RF-27); la lectura del ai-service no se registra.
+EVENTO_DESCARGA_DOCUMENTO = "DESCARGA_DOCUMENTO"
+# Corrección de datos de captura (RF-27, RN-04): el valor anterior y el nuevo de cada campo.
+EVENTO_ACTUALIZACION_TITULAR = "ACTUALIZACION_TITULAR"
+EVENTO_ACTUALIZACION_EXPEDIENTE = "ACTUALIZACION_EXPEDIENTE"
 
 
 class BitacoraAuditoria(Base):

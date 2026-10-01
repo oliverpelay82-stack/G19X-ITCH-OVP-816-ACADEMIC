@@ -114,12 +114,18 @@ export const getHealthAi = () => request(AI_BASE_URL, '/health', { tiempoLimite:
 /* ── M1: Titulares (Core Service :8001) ─────────────────────────── */
 export const getTitulares = () => request(CORE_BASE_URL, '/titulares', { tiempoLimite: LIMITE_SONDEO_MS })
 export const createTitular = (data) => request(CORE_BASE_URL, '/titulares', { method: 'POST', body: data })
+/** Corrección de datos de captura: razón social y categoría (el RFC no se edita). */
+export const corregirTitular = (id, cambios) =>
+  request(CORE_BASE_URL, `/titulares/${id}`, { method: 'PATCH', body: cambios })
 
 /* ── M1: Expedientes (Core Service :8001) ───────────────────────── */
 /** Filtros opcionales (RF-05): { q, tipo_expediente, estado, desde, hasta }. */
 export const getExpedientes = (params) => request(CORE_BASE_URL, '/expedientes', { params, tiempoLimite: LIMITE_SONDEO_MS })
 export const getExpedienteById = (id) => request(CORE_BASE_URL, `/expedientes/${id}`)
 export const createExpediente = (data) => request(CORE_BASE_URL, '/expedientes', { method: 'POST', body: data })
+/** Renombra un expediente (nulo quita el nombre); el tipo no se edita. */
+export const renombrarExpediente = (id, nombre) =>
+  request(CORE_BASE_URL, `/expedientes/${id}`, { method: 'PATCH', body: { nombre } })
 
 /* ── M1: Documentos / Bóveda (Core Service :8001) ───────────────── */
 export const getDocumentos = () => request(CORE_BASE_URL, '/documentos', { tiempoLimite: LIMITE_SONDEO_MS })
@@ -140,8 +146,9 @@ export const verificarCadena = () => request(CORE_BASE_URL, '/bitacora/verificar
 
 /* ── M6: Reportes exportables (Core Service :8001) ──────────────── */
 /**
- * Descarga un reporte (PDF o Excel) y lo entrega al navegador como archivo.
- * `ruta`: '/reportes/expedientes/{id}' o '/reportes/cumplimiento'.
+ * Descarga un archivo del core (un reporte en PDF o Excel, o el original de
+ * un documento) y lo entrega al navegador. `ruta`: '/reportes/expedientes/{id}',
+ * '/reportes/cumplimiento' o '/documentos/{id}/contenido'.
  */
 export async function descargarReporte(ruta, params) {
   const query = new URLSearchParams(
@@ -160,7 +167,12 @@ export async function descargarReporte(ruta, params) {
       response.headers.get('X-Request-ID') || folio)
   }
   const disposicion = response.headers.get('content-disposition') || ''
-  const nombre = /filename="([^"]+)"/.exec(disposicion)?.[1] || `reporte.${params?.formato || 'pdf'}`
+  // filename* (RFC 6266) conserva acentos y eñes; filename es el respaldo ASCII.
+  const extendido = /filename\*=UTF-8''([^;]+)/i.exec(disposicion)?.[1]
+  const nombre =
+    (extendido && decodeURIComponent(extendido)) ||
+    /filename="([^"]+)"/.exec(disposicion)?.[1] ||
+    `reporte.${params?.formato || 'pdf'}`
   const url = URL.createObjectURL(await response.blob())
   const enlace = document.createElement('a')
   enlace.href = url
@@ -171,6 +183,10 @@ export async function descargarReporte(ruta, params) {
   setTimeout(() => URL.revokeObjectURL(url), 1000)
   return nombre
 }
+
+/** El archivo original de un documento, verificado por RIE-03; la descarga queda en la bitácora. */
+export const descargarOriginal = (documentoId) =>
+  descargarReporte(`/documentos/${documentoId}/contenido`, { descarga: true })
 
 /* ── M2: Reglas de Validación (Rules Service :8002) ─────────────── */
 export const getReglas = (params) => request(RULES_BASE_URL, '/reglas', { params, tiempoLimite: LIMITE_SONDEO_MS })

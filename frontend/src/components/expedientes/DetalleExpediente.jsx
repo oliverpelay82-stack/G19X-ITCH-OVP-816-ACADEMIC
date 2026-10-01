@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { Lightbulb, Maximize2, Plus } from 'lucide-react'
 import { Badge, Button, Card } from '../ui/index.js'
 import DropZone from '../DropZone.jsx'
+import { RenombrarExpediente } from '../CorreccionDatos.jsx'
 import ExportarReporte from '../ExportarReporte.jsx'
 import HistorialExpediente from '../HistorialExpediente.jsx'
 import IndiceCumplimiento, { ReglasEvaluadas } from '../IndiceCumplimiento.jsx'
@@ -356,6 +357,12 @@ export function DetalleExpediente({ exp, subiendo, onSubir, iaOnline, onRefresh,
             tipos={tiposCarga}
             onArchivo={(archivo, tipo) => onSubir(exp.id, archivo, tipo)}
           />
+        </div>
+
+        <div className="exp-lateral-bloque">
+          <p className="eyebrow">Nombre del expediente</p>
+          <p className="field-hint">{exp.nombre || 'Sin nombre descriptivo.'}</p>
+          <RenombrarExpediente exp={exp} onRenombrado={onRefresh} />
         </div>
 
         <div className="exp-lateral-bloque">

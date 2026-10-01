@@ -1,18 +1,31 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { CornerDownLeft, FileText, FolderOpen, Moon, Navigation, RefreshCw, Search, Sun } from 'lucide-react'
-import { getEstadoBadge, TIPO_DOCUMENTO_LABEL, TIPO_EXPEDIENTE_LABEL } from '../constants.js'
+import { Building2, CornerDownLeft, FileText, FolderOpen, Moon, Navigation, RefreshCw, Search, Sun } from 'lucide-react'
+import { categoriaTitular, getEstadoBadge, TIPO_DOCUMENTO_LABEL, TIPO_EXPEDIENTE_LABEL } from '../constants.js'
 import { coincide, normalizar } from '../utils/busqueda.js'
 
 const POR_GRUPO = 6
 
 /**
- * D1 · Paleta de comandos (Ctrl+K o ⌘K): saltar a un expediente por folio,
- * nombre, empresa o RFC; a un documento por su archivo; a una sección; o
+ * D1 · Paleta de comandos (Ctrl+K o ⌘K): saltar a una empresa por razón social
+ * o RFC (abre su detalle); a un expediente por folio, nombre, empresa o RFC; a
+ * un documento por su archivo; a una sección; o
  * cambiar el tema y actualizar los datos, sin el ratón. ↑/↓ recorren, Intro
  * ejecuta y Escape cierra; el foco vuelve a donde estaba.
  */
-export default function PaletaComandos({ onCerrar, secciones, expedientes, documentos, onIr, onAbrirExpediente, isDark, onToggleTheme, onRefresh }) {
+export default function PaletaComandos({
+  onCerrar,
+  secciones,
+  titulares = [],
+  expedientes,
+  documentos,
+  onIr,
+  onVerEmpresa,
+  onAbrirExpediente,
+  isDark,
+  onToggleTheme,
+  onRefresh,
+}) {
   const [texto, setTexto] = useState('')
   const [activo, setActivo] = useState(0)
   const campo = useRef(null)
@@ -41,6 +54,14 @@ export default function PaletaComandos({ onCerrar, secciones, expedientes, docum
       busqueda: `ir a ${s.titulo} ${s.grupo}`,
       ejecutar: () => onIr(clave),
     }))
+    const deEmpresas = titulares.map((t) => ({
+      clave: `emp-${t.id}`,
+      icono: Building2,
+      titulo: t.razon_social,
+      sub: `${t.rfc} · ${categoriaTitular(t.categoria)}`,
+      busqueda: [t.razon_social, t.rfc].join(' '),
+      ejecutar: () => onVerEmpresa(t.rfc),
+    }))
     const deExpedientes = expedientes.map((e) => ({
       clave: `exp-${e.id}`,
       icono: FolderOpen,
@@ -63,6 +84,7 @@ export default function PaletaComandos({ onCerrar, secciones, expedientes, docum
     // Sin texto: lo que se usa para moverse. Con texto: primero lo buscado.
     return (q
       ? [
+          { titulo: 'Empresas', items: filtrar(deEmpresas) },
           { titulo: 'Expedientes', items: filtrar(deExpedientes) },
           { titulo: 'Documentos', items: filtrar(deDocumentos) },
           { titulo: 'Ir a', items: filtrar(irA) },
@@ -73,7 +95,7 @@ export default function PaletaComandos({ onCerrar, secciones, expedientes, docum
           { titulo: 'Acciones', items: acciones },
         ]
     ).filter((g) => g.items.length)
-  }, [texto, expedientes, documentos, secciones, isDark, onAbrirExpediente, onIr, onRefresh, onToggleTheme])
+  }, [texto, titulares, expedientes, documentos, secciones, isDark, onAbrirExpediente, onVerEmpresa, onIr, onRefresh, onToggleTheme])
 
   const planos = grupos.flatMap((g) => g.items)
   const actual = Math.min(activo, Math.max(planos.length - 1, 0))

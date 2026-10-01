@@ -2,12 +2,14 @@
 Controlador de Titulares de Expediente.
 Equivalente a @RestController @RequestMapping("/api/v1/titulares") en Spring Boot.
 """
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 
 from config.database import get_db
+from models.bitacora import EVENTO_ACTUALIZACION_TITULAR
 from models.titular import TitularExpediente
-from schemas.titular_schema import TitularCreate, TitularResponse
+from motor import bitacora
+from schemas.titular_schema import TitularCreate, TitularResponse, TitularUpdate
 
 router = APIRouter(prefix="/api/v1/titulares", tags=["Titulares"])
 
@@ -16,7 +18,7 @@ router = APIRouter(prefix="/api/v1/titulares", tags=["Titulares"])
     "",
     response_model=TitularResponse,
     status_code=status.HTTP_201_CREATED,
-    summary="Registrar un nuevo titular en MySQL",
+    summary="Registrar un nuevo titular",
 )
 def registrar_titular(titular_dto: TitularCreate, db: Session = Depends(get_db)):
     """
@@ -50,7 +52,7 @@ def registrar_titular(titular_dto: TitularCreate, db: Session = Depends(get_db))
 @router.get(
     "",
     response_model=list[TitularResponse],
-    summary="Listar todos los titulares desde MySQL",
+    summary="Listar todos los titulares",
 )
 def listar_titulares(db: Session = Depends(get_db)):
     """
@@ -58,3 +60,39 @@ def listar_titulares(db: Session = Depends(get_db)):
     Consulta todos los registros de la tabla titulares_expediente.
     """
     return db.query(TitularExpediente).order_by(TitularExpediente.creado_en.desc()).all()
+
+
+@router.patch(
+    "/{titular_id}",
+    response_model=TitularResponse,
+    summary="Corregir la razón social o la categoría de un titular (el RFC no se edita)",
+)
+def corregir_titular(titular_id: str, dto: TitularUpdate, request: Request, db: Session = Depends(get_db)):
+    """
+    Corrección de datos de captura (PRD §13.1). Solo los campos que cambian
+    quedan en la bitácora sellada, con su valor anterior y el nuevo (RF-27,
+    RN-04); si nada cambia no hay evento. Los dictámenes emitidos no cambian
+    (RN-05): el cotejo RN-03 y las auditorías nuevas usan la razón social corregida.
+    """
+    titular = db.query(TitularExpediente).filter(TitularExpediente.id == titular_id).first()
+    if not titular:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Titular con ID '{titular_id}' no encontrado."
+        )
+    cambios = {
+        campo: {"anterior": getattr(titular, campo), "nuevo": valor}
+        for campo, valor in dto.model_dump(exclude_none=True).items()
+        if getattr(titular, campo) != valor
+    }
+    if not cambios:
+        return titular
+    for campo, valores in cambios.items():
+        setattr(titular, campo, valores["nuevo"])
+    bitacora.registrar(
+        db, EVENTO_ACTUALIZACION_TITULAR, usuario="OPERADOR",
+        ip_origen=request.client.host if request.client else None,
+        detalle={"titular_id": titular.id, "rfc": titular.rfc, "cambios": cambios},
+    )
+    db.commit()
+    db.refresh(titular)
+    return titular

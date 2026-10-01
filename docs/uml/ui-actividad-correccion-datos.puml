@@ -1,0 +1,43 @@
+@startuml ui-actividad-correccion-datos
+' Corrección de los datos de captura de una empresa y del nombre de un expediente.
+' Trazabilidad: RF-01, RF-27 (bitácora), RN-04 (nada se borra; el cambio queda con su valor anterior);
+' HU-02, HU-07; MR-10.
+' Implementación prevista: services/core-service/controllers/titular_controller.py,
+' controllers/expediente_controller.py, schemas/titular_schema.py, schemas/expediente_schema.py,
+' models/bitacora.py; frontend/src/components/DetalleEmpresa.jsx y expedientes/DetalleExpediente.jsx.
+
+title Corregir datos de una empresa o de un expediente
+
+|Analista|
+start
+:Abre «Corregir datos» en la empresa
+o «Renombrar» en el expediente;
+:Edita la razón social o la categoría
+(o el nombre del expediente);
+note right
+  El RFC y el tipo de persona no se editan: identifican al titular.
+  El tipo de expediente tampoco: decide qué documentos se exigen.
+  Un error ahí se resuelve con un registro nuevo.
+end note
+|core-service|
+:PATCH /titulares/{id} o PATCH /expedientes/{id};
+if (¿Datos válidos y distintos de los actuales?) then (no)
+  :422 con el motivo,
+  o la respuesta sin cambios
+  si nada cambió (sin evento);
+  stop
+else (sí)
+endif
+:Actualiza el registro;
+:Bitácora sellada: ACTUALIZACION_TITULAR
+o ACTUALIZACION_EXPEDIENTE, con el valor
+anterior y el nuevo de cada campo (RF-27);
+:Los dictámenes ya emitidos no cambian (RN-05):
+el cotejo RN-03 y las auditorías nuevas usan
+la razón social corregida;
+|Interfaz|
+:Refresca los datos y avisa el cambio;
+:El historial del expediente muestra
+el renombre con su valor anterior;
+stop
+@enduml

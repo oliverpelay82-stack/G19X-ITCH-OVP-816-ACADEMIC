@@ -72,6 +72,9 @@ EVENTO_LEGIBLE = {
     "VERIFICACION_INTEGRIDAD": "Verificación de integridad de la bóveda",
     "PROCESAMIENTO_DIFERIDO": "Auditoría diferida (la IA no respondió)",
     "SELLO_TIEMPO": "Sello de tiempo de un tercero",
+    "DESCARGA_DOCUMENTO": "Archivo original descargado",
+    "ACTUALIZACION_TITULAR": "Datos de la empresa corregidos",
+    "ACTUALIZACION_EXPEDIENTE": "Expediente renombrado",
 }
 ORIGEN_LEGIBLE = {
     "NIVEL_4_IA": "Análisis con IA",

@@ -277,6 +277,7 @@ export default function TitularesTab({
         onVolver={volver}
         onAbrir={acciones.onAbrir}
         onAperturar={aperturar}
+        onRefresh={onRefresh}
         isOnline={isOnline}
       />
     ) : (

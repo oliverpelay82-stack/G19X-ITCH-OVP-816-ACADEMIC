@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { ChevronDown, ChevronUp, PanelRightClose, PanelRightOpen, UserCheck } from 'lucide-react'
+import { ChevronDown, ChevronUp, Download, PanelRightClose, PanelRightOpen, UserCheck } from 'lucide-react'
 import { Badge, Button, CopyChip, IconButton, KeyValue, KeyValueList, Modal } from './ui/index.js'
 import { cx } from './ui/clases.js'
 import Destello from './Destello.jsx'
@@ -7,7 +7,8 @@ import DocumentoIaPanel from './DocumentoIaPanel.jsx'
 import ExportarReporte from './ExportarReporte.jsx'
 import VisorDocumento from './VisorDocumento.jsx'
 import { EvidenciaContext } from './evidencia-context.js'
-import { localizarCita } from '../services/api.js'
+import useToast from '../hooks/useToast.js'
+import { descargarOriginal, localizarCita } from '../services/api.js'
 import { ESTADO_DOCUMENTO, TIPO_DOCUMENTO_LABEL } from '../constants.js'
 import { firmaDeMime, tipoCorto } from '../utils/documentos.js'
 import { formatBytes, formatDia, formatFecha } from '../utils/format.js'
@@ -213,6 +214,13 @@ function InspectorDocumento({ doc, expediente, iaOnline, onRefresh, onVisor, onO
             ratificacionEnEncabezado={Boolean(estado?.ratificable)}
             registroTecnico={
               <>
+                <section className="ia-bloque" aria-label="Archivo original">
+                  <p className="eyebrow">Archivo original</p>
+                  <div className="inspector-custodia">
+                    <p className="field-hint">El archivo tal como se custodió, verificado contra su huella.</p>
+                    <DescargarOriginal doc={doc} />
+                  </div>
+                </section>
                 <section className="ia-bloque" aria-label="Ficha de custodia">
                   <p className="eyebrow">Ficha de custodia</p>
                   <div className="inspector-custodia">
@@ -231,6 +239,27 @@ function InspectorDocumento({ doc, expediente, iaOnline, onRefresh, onVisor, onO
         {visorAbierto && <VisorDocumento doc={doc} busqueda={busqueda} onCerrar={() => alternarVisor(false)} />}
       </div>
     </EvidenciaContext.Provider>
+  )
+}
+
+/** Descarga del original (RIE-03); si la huella no coincide, el core lo rechaza y el aviso lo explica. */
+function DescargarOriginal({ doc }) {
+  const toast = useToast()
+  const [descargando, setDescargando] = useState(false)
+  const descargar = async () => {
+    setDescargando(true)
+    try {
+      toast.exito('Original descargado', await descargarOriginal(doc.id))
+    } catch (err) {
+      toast.error('No se pudo descargar el original', err.message)
+    } finally {
+      setDescargando(false)
+    }
+  }
+  return (
+    <Button compacto icono={Download} cargando={descargando} onClick={descargar}>
+      Descargar original
+    </Button>
   )
 }
 

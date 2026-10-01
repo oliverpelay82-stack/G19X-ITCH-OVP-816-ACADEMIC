@@ -158,8 +158,10 @@
   color: var(--text-primary);
 }
 
-.empresa-aperturar {
+.empresa-acciones {
+  display: flex;
   flex: none;
+  gap: var(--s-2);
   margin-left: auto;
 }
 

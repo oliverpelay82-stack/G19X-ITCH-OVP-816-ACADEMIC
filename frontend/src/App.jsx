@@ -266,6 +266,8 @@ export default function App() {
     [ir, folioDe]
   )
 
+  const verEmpresa = useCallback((rfc) => ir('titulares', rfc), [ir])
+
   const aperturarExpediente = useCallback(
     (titularId) => {
       setAperturaTitular(titularId)
@@ -324,7 +326,7 @@ export default function App() {
                 onAbrirExpediente={abrirExpediente}
                 onAperturarExpediente={aperturarExpediente}
                 rfcAbierto={tabActiva === 'titulares' ? ruta.folio : null}
-                onVerEmpresa={(rfc) => ir('titulares', rfc)}
+                onVerEmpresa={verEmpresa}
                 loading={loading}
                 onRefresh={refrescar}
                 isOnline={health.core.online}
@@ -383,9 +385,11 @@ export default function App() {
           <PaletaComandos
             onCerrar={() => setPaletaAbierta(false)}
             secciones={SECCIONES}
+            titulares={titulares}
             expedientes={expedientes}
             documentos={documentos}
             onIr={setTabActiva}
+            onVerEmpresa={verEmpresa}
             onAbrirExpediente={abrirExpediente}
             isDark={isDark}
             onToggleTheme={toggleTheme}

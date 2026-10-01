@@ -86,6 +86,16 @@ function describir(evento, nombres) {
         detalle: d.reporte === 'FICHA_CUSTODIA' ? documento : null,
         tono: 'neutral',
       }
+    case 'ACTUALIZACION_EXPEDIENTE': {
+      const { anterior, nuevo } = d.cambios?.nombre || {}
+      return {
+        titulo: nuevo ? `Expediente renombrado: «${nuevo}»` : 'Nombre del expediente quitado',
+        detalle: anterior ? `Antes: «${anterior}»` : 'Antes no tenía nombre',
+        tono: 'neutral',
+      }
+    }
+    case 'DESCARGA_DOCUMENTO':
+      return { titulo: 'Archivo original descargado', detalle: documento, tono: 'neutral' }
     default:
       return { titulo: evento.evento, tono: 'neutral' }
   }

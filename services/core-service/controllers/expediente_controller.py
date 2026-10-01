@@ -18,11 +18,16 @@ from sqlalchemy.orm import Session
 
 from config.catalogo import TIPOS_EXPEDIENTE
 from config.database import get_db
-from models.bitacora import EVENTO_APERTURA_EXPEDIENTE
+from models.bitacora import EVENTO_ACTUALIZACION_EXPEDIENTE, EVENTO_APERTURA_EXPEDIENTE
 from models.titular import TitularExpediente
 from models.expediente import Expediente
 from motor import bitacora, cumplimiento
-from schemas.expediente_schema import EvaluacionExpedienteResponse, ExpedienteCreate, ExpedienteResponse
+from schemas.expediente_schema import (
+    EvaluacionExpedienteResponse,
+    ExpedienteCreate,
+    ExpedienteResponse,
+    ExpedienteUpdate,
+)
 from schemas.titular_schema import TitularResponse
 
 router = APIRouter(prefix="/api/v1/expedientes", tags=["Expedientes"])
@@ -212,3 +217,33 @@ def obtener_expediente_por_id(expediente_id: str, db: Session = Depends(get_db))
     evaluacion = cumplimiento.reevaluar(db, exp, causa="CONSULTA_EXPEDIENTE")
     db.commit()
     return _respuesta(exp, evaluacion)
+
+
+@router.patch(
+    "/{expediente_id}",
+    response_model=ExpedienteResponse,
+    summary="Renombrar un expediente (el tipo no se edita)",
+)
+def renombrar_expediente(expediente_id: str, dto: ExpedienteUpdate, request: Request, db: Session = Depends(get_db)):
+    """
+    Corrección del nombre descriptivo (RF-01, PRD §13.1). El cambio queda en la
+    bitácora sellada con el nombre anterior y el nuevo (RF-27, RN-04) y aparece
+    en el historial del expediente; si el nombre no cambia no hay evento.
+    """
+    exp = db.query(Expediente).filter(Expediente.id == expediente_id).first()
+    if not exp:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Expediente con ID '{expediente_id}' no encontrado."
+        )
+    nombre = " ".join((dto.nombre or "").split()) or None
+    if nombre != exp.nombre:
+        anterior, exp.nombre = exp.nombre, nombre
+        bitacora.registrar(
+            db, EVENTO_ACTUALIZACION_EXPEDIENTE, expediente_id=exp.id, usuario="OPERADOR",
+            ip_origen=request.client.host if request.client else None,
+            detalle={"codigo_expediente": exp.codigo_expediente,
+                     "cambios": {"nombre": {"anterior": anterior, "nuevo": nombre}}},
+        )
+        db.commit()
+        db.refresh(exp)
+    return _respuesta(exp, None)
