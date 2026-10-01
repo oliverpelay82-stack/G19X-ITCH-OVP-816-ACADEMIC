@@ -155,7 +155,7 @@ def capturar(destino: str) -> None:
         navegador = p.chromium.launch(channel="chrome")
         for ancho, alto in TAMANOS:
             for tema in TEMAS:
-                pagina = navegador.new_page(viewport={"width": ancho, "height": alto})
+                pagina = navegador.new_page(viewport={"width": ancho, "height": alto}, reduced_motion="reduce")
                 _preparar(pagina, tema)
                 prefijo = f"{ancho}x{alto}_{tema}"
                 for vista in VISTAS:

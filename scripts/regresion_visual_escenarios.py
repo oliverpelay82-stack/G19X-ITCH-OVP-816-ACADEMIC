@@ -269,7 +269,7 @@ def capturar_escenarios(navegador: Browser, carpeta: Path, ancho: int, alto: int
     y captura), para no duplicar la lógica de determinismo.
     """
     prefijo = f"{ancho}x{alto}_{tema}_int"
-    pagina: Page = navegador.new_page(viewport={"width": ancho, "height": alto})
+    pagina: Page = navegador.new_page(viewport={"width": ancho, "height": alto}, reduced_motion="reduce")
     pagina.add_init_script("performance.now = () => 1000")
     pagina.route("**/api/v1/ai/documentos/*/preparar", _responder(PREPARAR))
     pagina.route("**/api/v1/ai/analisis-semantico", _auditoria_guardada)
@@ -458,7 +458,7 @@ def _escenarios_representacion(navegador: Browser, carpeta: Path, ancho: int, al
     capturas.
     """
     prefijo = f"{ancho}x{alto}_{tema}_int"
-    pagina: Page = navegador.new_page(viewport={"width": ancho, "height": alto})
+    pagina: Page = navegador.new_page(viewport={"width": ancho, "height": alto}, reduced_motion="reduce")
     pagina.add_init_script("performance.now = () => 1000")
     estado = {"cotejo": "ACREDITADO", "documento_id": None}
 

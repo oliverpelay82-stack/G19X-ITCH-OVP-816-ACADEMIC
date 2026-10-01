@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
+import { flushSync } from 'react-dom'
+import { reducirMovimiento } from '../utils/movimiento.js'
 
 // v2: el rediseño White & Warm hace del tema claro el predeterminado.
 const STORAGE_KEY = 'plurione-theme-v2'
@@ -34,8 +36,20 @@ export default function useTheme() {
     }
   }, [theme])
 
+  // Fundido entre temas con View Transitions (index.css fija su duración):
+  // el tema se aplica dentro de la transición, junto con el icono del botón.
+  // Sin la API o con «reducir movimiento», el cambio es instantáneo.
   const toggleTheme = useCallback(() => {
-    setTheme((t) => (t === 'dark' ? 'light' : 'dark'))
+    const siguiente = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'
+    const aplicar = () => {
+      document.documentElement.setAttribute('data-theme', siguiente)
+      flushSync(() => setTheme(siguiente))
+    }
+    if (typeof document.startViewTransition === 'function' && !reducirMovimiento()) {
+      document.startViewTransition(aplicar)
+    } else {
+      aplicar()
+    }
   }, [])
 
   return { theme, setTheme, toggleTheme, isDark: theme === 'dark' }

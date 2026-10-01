@@ -1,8 +1,44 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Building2, FolderKanban, Gauge, Vault } from 'lucide-react'
 import { Skeleton } from './Skeleton.jsx'
 import { Card } from './ui/index.js'
 import { formatIndice, promedioIndice } from '../utils/indice.js'
+import { reducirMovimiento } from '../utils/movimiento.js'
+
+/** Duración del conteo: el doble de la transición lenta del sistema de diseño. */
+const DURACION_CONTEO = 480
+
+// Las cifras cuentan solo la primera vez que llegan los datos en la sesión:
+// al volver a Expedientes o a Reportes, o con cada sondeo, se muestran fijas.
+let cifrasContadas = false
+
+/**
+ * Cifra de una métrica que, en la primera carga, cuenta de 0 a su valor
+ * (curva de salida, 480 ms). Terminado el conteo muestra el valor vivo, así
+ * que un sondeo posterior la actualiza sin animar. Con «reducir movimiento»
+ * no cuenta.
+ */
+function Cifra({ valor, formato = String }) {
+  const [contando] = useState(() => !cifrasContadas && typeof valor === 'number' && valor > 0 && !reducirMovimiento())
+  const [mostrado, setMostrado] = useState(0)
+  const [terminado, setTerminado] = useState(!contando)
+  useEffect(() => {
+    if (!contando) return undefined
+    const inicio = performance.now()
+    let cuadro
+    const paso = (ahora) => {
+      const avance = Math.min(1, (ahora - inicio) / DURACION_CONTEO)
+      setMostrado(valor * (1 - (1 - avance) ** 3))
+      if (avance < 1) cuadro = requestAnimationFrame(paso)
+      else setTerminado(true)
+    }
+    cuadro = requestAnimationFrame(paso)
+    return () => cancelAnimationFrame(cuadro)
+    // Solo al montarse: el destino es el valor con el que llegaron los datos.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+  return formato(terminado ? valor : Math.round(mostrado))
+}
 
 const contar = (lista, prueba) => lista.reduce((n, x) => n + (prueba(x) ? 1 : 0), 0)
 
@@ -36,12 +72,17 @@ export default function MetricsCards({ titulares, expedientes, documentos, loadi
     }
   }, [titulares, expedientes, documentos])
 
+  // Con los primeros datos a la vista, las cifras ya contaron: no lo repiten.
+  useEffect(() => {
+    if (!loading) cifrasContadas = true
+  }, [loading])
+
   const tarjetas = [
     {
       id: 'empresas',
       icon: Building2,
       label: 'Empresas',
-      valor: titulares.length,
+      valor: <Cifra valor={titulares.length} />,
       pie: (
         <span className="metric-foot">{`${datos.morales} ${datos.morales === 1 ? 'moral' : 'morales'} · ${datos.fisicas} ${datos.fisicas === 1 ? 'física' : 'físicas'}`}</span>
       ),
@@ -50,7 +91,7 @@ export default function MetricsCards({ titulares, expedientes, documentos, loadi
       id: 'expedientes',
       icon: FolderKanban,
       label: 'Expedientes',
-      valor: expedientes.length,
+      valor: <Cifra valor={expedientes.length} />,
       pie: (
         <span className="metric-estados" aria-label="Semáforo de expedientes">
           {datos.semaforo.map((s) => (
@@ -67,7 +108,7 @@ export default function MetricsCards({ titulares, expedientes, documentos, loadi
       id: 'boveda',
       icon: Vault,
       label: 'Bóveda',
-      valor: documentos.length,
+      valor: <Cifra valor={documentos.length} />,
       pie: <span className="metric-foot">{`${enMB(datos.bytes)} bajo custodia`}</span>,
     },
     {
@@ -76,7 +117,7 @@ export default function MetricsCards({ titulares, expedientes, documentos, loadi
       id: 'cumplimiento',
       icon: Gauge,
       label: 'Cumplimiento',
-      valor: formatIndice(datos.indice),
+      valor: <Cifra valor={datos.indice} formato={formatIndice} />,
       pie: <span className="metric-foot">{`Obligatorios presentes: ${datos.completitud.toFixed(0)}%`}</span>,
       progreso: datos.indice ?? 0,
       titulo: 'Promedio del índice de cumplimiento de los expedientes: reglas cumplidas entre reglas aplicables',

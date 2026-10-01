@@ -123,6 +123,8 @@
 .indice-segmento {
   display: block;
   height: 100%;
+  transform-origin: left center;
+  animation: crecer calc(var(--dur-slow) * 2) var(--ease);
 }
 
 .indice-segmento--ok {
@@ -534,7 +536,10 @@
   height: 100%;
   border-radius: var(--r-full);
   background: var(--text-tertiary);
+  transform-origin: left center;
   transition: width var(--dur-slow) var(--ease);
+  /* Al aparecer crece desde su origen; después, un cambio de cifra ajusta el ancho. */
+  animation: crecer calc(var(--dur-slow) * 2) var(--ease);
 }
 
 .dist-fill--ok {

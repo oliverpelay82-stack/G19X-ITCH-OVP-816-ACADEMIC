@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { ChevronDown, ChevronUp, PanelRightClose, PanelRightOpen, UserCheck } from 'lucide-react'
 import { Badge, Button, CopyChip, IconButton, KeyValue, KeyValueList, Modal } from './ui/index.js'
+import { cx } from './ui/clases.js'
+import Destello from './Destello.jsx'
 import DocumentoIaPanel from './DocumentoIaPanel.jsx'
 import ExportarReporte from './ExportarReporte.jsx'
 import VisorDocumento from './VisorDocumento.jsx'
@@ -60,7 +62,7 @@ function estadoEnExpediente(doc, expediente) {
  * página donde está y la resalta (HU-20). Se monta con `key={doc.id}` para
  * reiniciar el visor al cambiar de documento.
  */
-function InspectorDocumento({ doc, expediente, iaOnline, onRefresh, onVisor, onOcupado, visorInicial, children }) {
+function InspectorDocumento({ doc, expediente, iaOnline, onRefresh, onVisor, onOcupado, visorInicial, entrada, children }) {
   // Al pasar al documento siguiente el visor sigue abierto si lo estaba.
   const [visorAbierto, setVisorAbierto] = useState(Boolean(visorInicial) && iaOnline)
   // Sección del panel de IA y solicitudes de ratificación desde el encabezado.
@@ -123,7 +125,7 @@ function InspectorDocumento({ doc, expediente, iaOnline, onRefresh, onVisor, onO
 
   return (
     <EvidenciaContext.Provider value={contexto}>
-      <div className={`inspector ${visorAbierto ? 'inspector--visor' : ''}`}>
+      <div className={cx('inspector', visorAbierto && 'inspector--visor', entrada && `inspector--desde-${entrada}`)}>
         <div className="inspector-principal">
           {/* Encabezado de veredicto: el estado del documento y las acciones
               principales, antes que cualquier detalle. */}
@@ -132,9 +134,11 @@ function InspectorDocumento({ doc, expediente, iaOnline, onRefresh, onVisor, onO
               <p className="eyebrow">Estado del documento</p>
               {estado ? (
                 <>
-                  <Badge tono={estado.tono} punto grande>
-                    {estado.label}
-                  </Badge>
+                  <Destello valor={estado.label} tono={estado.tono}>
+                    <Badge tono={estado.tono} punto grande>
+                      {estado.label}
+                    </Badge>
+                  </Destello>
                   <p className="doc-veredicto-nota">{estado.nota}</p>
                 </>
               ) : (
@@ -204,16 +208,21 @@ function InspectorDocumento({ doc, expediente, iaOnline, onRefresh, onVisor, onO
 export default function DetalleDocumentoModal({ documento, lista, expediente, iaOnline, onRefresh, onCambiar, onCerrar }) {
   const [visorAbierto, setVisorAbierto] = useState(false)
   const [auditando, setAuditando] = useState(false)
+  // Último paso de la navegación (↑/↓): el documento nuevo entra desde ese lado.
+  const [navegacion, setNavegacion] = useState(null)
   const posicion = lista.findIndex((d) => d.id === documento.id)
 
   const irA = useCallback(
     (paso) => {
       const siguiente = lista[posicion + paso]
       if (!siguiente || auditando) return
+      setNavegacion({ id: siguiente.id, desde: paso > 0 ? 'abajo' : 'arriba' })
       onCambiar(siguiente)
     },
     [lista, posicion, auditando, onCambiar]
   )
+  // Solo si el documento a la vista es el de esa navegación (no uno abierto desde la lista).
+  const entrada = navegacion?.id === documento.id ? navegacion.desde : null
 
   useEffect(() => {
     const alPulsar = (e) => {
@@ -227,7 +236,7 @@ export default function DetalleDocumentoModal({ documento, lista, expediente, ia
   }, [irA])
 
   const firma = firmaDeMime(documento.mime_type)
-  const navegacion = posicion >= 0 && lista.length > 1 && (
+  const controlesNavegacion = posicion >= 0 && lista.length > 1 && (
     <div className="modal-nav" role="group" aria-label="Navegar entre documentos">
       <IconButton
         etiqueta="Documento anterior"
@@ -259,7 +268,7 @@ export default function DetalleDocumentoModal({ documento, lista, expediente, ia
       title={documento.nombre_archivo_original}
       subtitle={`${expediente?.codigo_expediente || 'Sin expediente'} · ${expediente?.titular?.razon_social || 'Sin titular'}`}
       onClose={onCerrar}
-      acciones={navegacion}
+      acciones={controlesNavegacion}
     >
       <InspectorDocumento
         key={documento.id}
@@ -270,6 +279,7 @@ export default function DetalleDocumentoModal({ documento, lista, expediente, ia
         onVisor={setVisorAbierto}
         onOcupado={setAuditando}
         visorInicial={visorAbierto}
+        entrada={entrada}
       >
         <KeyValueList className="inspect-grid">
           <Dato label="Huella SHA-256 · inmutable" ancho>

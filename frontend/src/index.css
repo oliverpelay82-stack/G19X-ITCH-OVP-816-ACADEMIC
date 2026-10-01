@@ -345,8 +345,85 @@ code {
   }
 }
 
+/* Barras de datos: crecen desde su origen al aparecer, una sola vez. */
+@keyframes crecer {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+/* Despliegue con altura animada (filas de una rejilla de 0fr a 1fr). */
+@keyframes desplegar {
+  from {
+    grid-template-rows: 0fr;
+  }
+  to {
+    grid-template-rows: 1fr;
+  }
+}
+
+/* Contenido que llega desde arriba o desde abajo (navegación con dirección). */
+@keyframes entrar-desde-abajo {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@keyframes entrar-desde-arriba {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+/* Destello de un valor que acaba de cambiar: una capa sube y baja de opacidad. */
+@keyframes destello {
+  30% {
+    opacity: 0.22;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
 .spin {
   animation: spin 0.8s linear infinite;
+}
+
+.destello {
+  position: relative;
+  display: inline-flex;
+}
+
+.destello.is-activo::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: var(--r-sm);
+  background: var(--off-solid);
+  opacity: 0;
+  pointer-events: none;
+  animation: destello calc(var(--dur-slow) * 4) var(--ease);
+}
+
+.destello--ok::after {
+  background: var(--ok-solid);
+}
+
+.destello--warn::after {
+  background: var(--warn-solid);
+}
+
+.destello--bad::after {
+  background: var(--bad-solid);
+}
+
+/* Cambio de tema con fundido (View Transitions); sin la API, es instantáneo. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: var(--dur-slow);
+  animation-timing-function: var(--ease);
 }
 
 @media (prefers-reduced-motion: reduce) {

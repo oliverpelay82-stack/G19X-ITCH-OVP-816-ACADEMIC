@@ -1,6 +1,19 @@
+import { useEffect, useState } from 'react'
 import { ChevronRight, Moon, RefreshCw, Sun } from 'lucide-react'
 import SystemHealth from './SystemHealth.jsx'
 import { IconButton } from './ui/index.js'
+
+/** Si la página está desplazada: la cabecera fija marca entonces su borde con una sombra fina. */
+function useDesplazado() {
+  const [desplazado, setDesplazado] = useState(false)
+  useEffect(() => {
+    const revisar = () => setDesplazado(window.scrollY > 0)
+    revisar()
+    window.addEventListener('scroll', revisar, { passive: true })
+    return () => window.removeEventListener('scroll', revisar)
+  }, [])
+  return desplazado
+}
 
 /**
  * Cabecera ejecutiva: migas navegables (Cumplimiento › Sección), título H1,
@@ -8,8 +21,9 @@ import { IconButton } from './ui/index.js'
  * micro-squircles (refrescar y tema).
  */
 export default function Header({ titulo, migas = [], onNavigate, health, reglas, onRefresh, refrescando, isDark, onToggleTheme }) {
+  const desplazado = useDesplazado()
   return (
-    <header className="app-header">
+    <header className={desplazado ? 'app-header is-desplazado' : 'app-header'}>
       <div className="app-header-heading">
         {migas.length > 0 && (
           <nav className="breadcrumbs" aria-label="Ruta">

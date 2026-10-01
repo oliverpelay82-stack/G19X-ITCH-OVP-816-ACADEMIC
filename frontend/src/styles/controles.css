@@ -79,6 +79,7 @@
 }
 
 .segmented {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 2px;
@@ -114,6 +115,33 @@
   border-color: var(--line);
   box-shadow: var(--shadow-hairline);
   color: var(--text-primary);
+}
+
+/* Indicador deslizante de la opción activa (Segmented.jsx): se mueve solo
+   con transform; mientras no se ha medido, la opción activa se pinta sola. */
+.segmented-indicador {
+  position: absolute;
+  top: 2px;
+  left: 0;
+  height: 26px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-xs);
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-hairline);
+  opacity: 0;
+  transform-origin: left center;
+  pointer-events: none;
+  transition: transform var(--dur-slow) var(--ease);
+}
+
+.segmented-item {
+  position: relative;
+}
+
+.segmented--deslizante .segmented-item.is-active {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
 }
 
 .segmented-count {

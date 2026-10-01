@@ -197,6 +197,23 @@
   transform: rotate(180deg);
 }
 
+/* Despliegue del detalle: las filas de la envoltura van de 0fr a 1fr, así
+   la página no brinca. El detalle recorta su contenido solo mientras se
+   despliega (recortar), para no cortar después tooltips ni sombras, y sin
+   romper la columna lateral fija. */
+.exp-desplegable {
+  display: grid;
+  grid-template-rows: 1fr;
+  animation: desplegar var(--dur-slow) var(--ease);
+}
+
+@keyframes recortar {
+  from,
+  to {
+    overflow: clip;
+  }
+}
+
 .exp-detail {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 340px;
@@ -205,7 +222,8 @@
   padding: var(--s-5) var(--s-5) var(--s-6) var(--s-6);
   border-top: var(--border-subtle);
   background: var(--bg-canvas);
-  animation: fade-in var(--dur-slow) var(--ease);
+  min-height: 0;
+  animation: fade-in var(--dur-slow) var(--ease), recortar var(--dur-slow) var(--ease);
 }
 
 .exp-detail-main,

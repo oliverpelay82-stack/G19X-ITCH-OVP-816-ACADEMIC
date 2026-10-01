@@ -10,6 +10,15 @@
   gap: var(--s-5);
 }
 
+/* Al pasar al documento siguiente o al anterior, el contenido entra desde ese lado. */
+.inspector--desde-abajo {
+  animation: entrar-desde-abajo var(--dur-slow) var(--ease);
+}
+
+.inspector--desde-arriba {
+  animation: entrar-desde-arriba var(--dur-slow) var(--ease);
+}
+
 .inspector--visor {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
   align-items: start;

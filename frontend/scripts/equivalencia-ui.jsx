@@ -16,6 +16,7 @@ import {
   Input,
   KeyValue,
   KeyValueList,
+  Segmented,
   Select,
   Tag,
   Tooltip,
@@ -302,6 +303,34 @@ export const CASOS = [
           <X size={15} />
         </button>
       </Tooltip>
+    ),
+  },
+  {
+    nombre: 'Segmented con indicador deslizante (filtros de Alertas)',
+    actual: (
+      <div className="segmented" role="group" aria-label="Filtrar por severidad">
+        <span className="segmented-indicador" aria-hidden="true" />
+        <button type="button" aria-pressed="true" className="segmented-item is-active" onClick={nada}>
+          Todas
+          <span className="segmented-count tabular">5</span>
+        </button>
+        <button type="button" aria-pressed="false" className="segmented-item " onClick={nada}>
+          <span className="status-dot status-dot--warn" aria-hidden="true" />
+          Alta
+          <span className="segmented-count tabular">1</span>
+        </button>
+      </div>
+    ),
+    nuevo: (
+      <Segmented
+        label="Filtrar por severidad"
+        valor="TODAS"
+        onChange={nada}
+        opciones={[
+          { id: 'TODAS', label: 'Todas', conteo: 5 },
+          { id: 'ALTA', label: 'Alta', tono: 'warn', conteo: 1 },
+        ]}
+      />
     ),
   },
 ]

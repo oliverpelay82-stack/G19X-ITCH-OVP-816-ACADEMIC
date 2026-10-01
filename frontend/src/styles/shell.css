@@ -189,6 +189,23 @@
   border-bottom: var(--border-default);
 }
 
+/* Con contenido debajo, una sombra fina separa la cabecera fija; aparece
+   y se va con opacidad, sin sombra permanente en la vista sin desplazar. */
+.app-header::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 -1px;
+  height: 1px;
+  box-shadow: var(--shadow-pop);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dur) var(--ease);
+}
+
+.app-header.is-desplazado::after {
+  opacity: 1;
+}
+
 .app-header-heading {
   display: flex;
   flex-direction: column;

@@ -11,6 +11,7 @@ import { getEstadoBadge, TIPO_EXPEDIENTE_LABEL, TIPOS_EXPEDIENTE } from '../cons
 import { formatRelativo, iniciales } from '../utils/format.js'
 import { formatIndice, indiceDe } from '../utils/indice.js'
 import { DetalleExpediente } from './expedientes/DetalleExpediente.jsx'
+import Destello from './Destello.jsx'
 
 /** Estados de cumplimiento del expediente, en el orden del semáforo. */
 const ESTADOS_FILTRO = ['CONFORME', 'EN_REVISION', 'NO_CONFORME']
@@ -305,9 +306,11 @@ export default function ExpedientesTab({
                       )}
                     </span>
                   </span>
-                  <Badge tono={meta.tono} punto grande>
-                    {meta.label}
-                  </Badge>
+                  <Destello valor={exp.estado_cumplimiento} tono={meta.tono}>
+                    <Badge tono={meta.tono} punto grande>
+                      {meta.label}
+                    </Badge>
+                  </Destello>
                   <span
                     className="exp-indice"
                     title={
@@ -331,16 +334,19 @@ export default function ExpedientesTab({
                   </span>
                 </button>
 
+                {/* La envoltura despliega el detalle con altura animada (vistas.css). */}
                 {abierto && (
-                  <DetalleExpediente
-                    exp={exp}
-                    subiendo={subiendoEn === exp.id}
-                    onSubir={subirDocumento}
-                    iaOnline={iaOnline}
-                    onRefresh={onRefresh}
-                    documentos={documentos}
-                    onAbrirDocumento={(documento, lista) => setDocumentoAbierto({ documento, lista })}
-                  />
+                  <div className="exp-desplegable">
+                    <DetalleExpediente
+                      exp={exp}
+                      subiendo={subiendoEn === exp.id}
+                      onSubir={subirDocumento}
+                      iaOnline={iaOnline}
+                      onRefresh={onRefresh}
+                      documentos={documentos}
+                      onAbrirDocumento={(documento, lista) => setDocumentoAbierto({ documento, lista })}
+                    />
+                  </div>
                 )}
               </Card>
             )
