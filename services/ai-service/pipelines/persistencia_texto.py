@@ -121,6 +121,16 @@ def _conectar() -> sqlite3.Connection:
     return conexion
 
 
+def conexion() -> sqlite3.Connection:
+    """Conexión a la base del ai-service con sus tablas creadas (la usa la cola de diferidos, P5)."""
+    return _conectar()
+
+
+def candado_escritura() -> Lock:
+    """Candado que serializa las escrituras en la base del ai-service."""
+    return _candado_escritura
+
+
 def _version() -> str:
     from pipelines.extraccion_pipeline import version_lectura  # import diferido: evita el ciclo con el pipeline
 

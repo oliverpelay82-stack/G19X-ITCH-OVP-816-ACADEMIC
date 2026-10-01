@@ -104,6 +104,11 @@ _MIGRACIONES_POSTGRES = [
     """,
     # P2 (RSC-02, RN-03): datos de representación legal del dictamen.
     "ALTER TABLE dictamenes_auditoria ADD COLUMN IF NOT EXISTS representacion_legal JSON",
+    # P5 (DOC-05, protocolo de auditoría): versión de la lectura y de las instrucciones.
+    "ALTER TABLE dictamenes_auditoria ADD COLUMN IF NOT EXISTS version_lectura VARCHAR(160)",
+    "ALTER TABLE dictamenes_auditoria ADD COLUMN IF NOT EXISTS version_instrucciones VARCHAR(40)",
+    # P5 (DOC-05, Tabla 1): marca de procesamiento diferido del documento.
+    "ALTER TABLE documentos ADD COLUMN IF NOT EXISTS procesamiento_diferido JSON",
     # P3 (PLUS-04): sello encadenado de la bitácora. Agregar columnas es DDL:
     # el trigger de inmutabilidad (por fila) no lo impide y los eventos previos
     # no se reescriben. El índice único impide dos eventos con la misma secuencia.
@@ -144,6 +149,8 @@ _MIGRACIONES_POSTGRES = [
            OR NEW.reglas_aplicadas::text IS DISTINCT FROM OLD.reglas_aplicadas::text
            OR NEW.observaciones::text IS DISTINCT FROM OLD.observaciones::text
            OR NEW.representacion_legal::text IS DISTINCT FROM OLD.representacion_legal::text
+           OR NEW.version_lectura IS DISTINCT FROM OLD.version_lectura
+           OR NEW.version_instrucciones IS DISTINCT FROM OLD.version_instrucciones
            OR NEW.hash_sha256 IS DISTINCT FROM OLD.hash_sha256
            OR NEW.creado_en IS DISTINCT FROM OLD.creado_en THEN
             RAISE EXCEPTION 'dictamenes_auditoria: solo la ratificación humana puede modificar un dictamen (RN-05)';

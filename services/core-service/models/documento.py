@@ -6,7 +6,7 @@ Mapea la tabla 'documentos' en MySQL.
 from datetime import datetime, timezone
 import uuid
 
-from sqlalchemy import Column, String, BigInteger, DateTime, ForeignKey
+from sqlalchemy import JSON, Column, String, BigInteger, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 
 from config.database import Base
@@ -42,6 +42,10 @@ class Documento(Base):
     
     # Hash criptográfico SHA-256 (64 caracteres hexadecimales para NOM-151)
     hash_sha256 = Column(String(64), nullable=False, index=True)
+    # P5 (DOC-05, Tabla 1): auditoría diferida porque la IA no respondió. Se
+    # limpia al guardarse el dictamen. {motivo, intentos, max_intentos,
+    # proximo_intento, agotado, desde}.
+    procesamiento_diferido = Column(JSON, nullable=True)
     
     # Tamaño en bytes y tipo MIME
     tamanio_bytes = Column(BigInteger, nullable=False)

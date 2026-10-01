@@ -102,6 +102,9 @@ export const ALERTA_META = {
   CONTENIDO_NO_LOCALIZADO: { label: 'Contenido' },
   PENDIENTE_AUDITORIA: { label: 'Sin auditar' },
   REPRESENTACION_NO_ACREDITADA: { label: 'Representación' },
+  // P5 (DOC-05, Tabla 1): excepciones del procesamiento.
+  DOCUMENTO_ILEGIBLE: { label: 'Ilegible' },
+  PROCESAMIENTO_DIFERIDO: { label: 'Diferido' },
 }
 
 export const FAMILIAS_REGLA = ['RIE', 'RCV', 'RSC', 'RDS']

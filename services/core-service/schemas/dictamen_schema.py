@@ -34,6 +34,15 @@ class DictamenCreate(BaseModel):
                     "{codigo_regla, nombre_regla, resultado, cita, observacion, recomendacion}",
     )
     modelo_utilizado: Optional[str] = Field(None, max_length=100)
+    origen: Optional[Literal["NIVEL_4_IA", "NIVEL_3_ILEGIBLE"]] = Field(
+        None, description="P5: NIVEL_3_ILEGIBLE si la lectura no obtuvo texto suficiente (sin modelo); por omisión, NIVEL_4_IA"
+    )
+    version_lectura: Optional[str] = Field(
+        None, max_length=160, description="P5: versión de la lectura del Nivel 3 (pipeline, Tesseract, idioma, DPI)"
+    )
+    version_instrucciones: Optional[str] = Field(
+        None, max_length=40, description="P5: huella de las instrucciones al modelo"
+    )
     usuario: str = Field("SISTEMA", min_length=1, max_length=100)
     representacion: Optional[dict[str, Any]] = Field(
         None,
@@ -82,6 +91,8 @@ class DictamenResponse(BaseModel):
     fecha_emision_extraida: Optional[date] = None
     fecha_vencimiento_extraida: Optional[date] = None
     modelo_utilizado: Optional[str] = None
+    version_lectura: Optional[str] = None
+    version_instrucciones: Optional[str] = None
     representacion_legal: Optional[dict[str, Any]] = None
     hash_sha256: str
     revisado_por_humano: bool
@@ -129,3 +140,13 @@ class VerificacionCadenaResponse(BaseModel):
     algoritmo: str
     total_hallazgos: int = 0
     hallazgos: list[HallazgoCadenaResponse] = Field(default_factory=list)
+
+
+class ProcesamientoDiferidoRequest(BaseModel):
+    """P5 (DOC-05, Tabla 1): el ai-service avisa que la auditoría de un documento quedó diferida."""
+    motivo: str = Field(..., min_length=1, max_length=500)
+    intentos: int = Field(0, ge=0)
+    max_intentos: int = Field(..., ge=1)
+    proximo_intento: Optional[datetime] = None
+    agotado: bool = False
+

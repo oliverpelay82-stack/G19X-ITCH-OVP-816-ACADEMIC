@@ -182,9 +182,9 @@ Revisión cruzada de los DOC-01 a DOC-08, el PRD, el MRD y el código, a petici�
 | Hueco | Estado al 30/09/2026 |
 |---|---|
 | 3 · Índice de cumplimiento (C6) | Resuelto (PRD §10.5). |
-| 5 · Excepciones del DOC-05 (ilegible y procesamiento diferido) | Aprobado para P5 (C5 y B3). |
-| 7 · Barrido programado de integridad y último sello en los reportes | Aprobado para P5 (C2 y C3). |
-| Reproducibilidad del dictamen (2.3) | Aprobada para P5 (C4). |
+| 5 · Excepciones del DOC-05 (ilegible y procesamiento diferido) | Resuelto en P5 (PRD §21.5). |
+| 7 · Barrido programado de integridad y último sello en los reportes | Resuelto en P5 (PLUS-14 y PLUS-15). |
+| Reproducibilidad del dictamen (2.3) | Resuelta en P5: versión de la lectura y de las instrucciones en cada dictamen. |
 | 8 · Conjunto de referencia | Construido; falta la corrida con cuota de Groq. |
 | 10 · Decisiones C1 a C5 y C7 | Declaradas (PRD §19). |
 | Emisor como metadato (C10), RF-10 completo, UTC en la bitácora, cifrado en reposo y respaldos conjuntos | Después de P5, por decisión del residente. |

@@ -1,0 +1,57 @@
+@startuml p5-actividad-barrido-integridad
+' P5 — Barrido programado de integridad (PLUS-14) y ancla en los reportes (PLUS-15).
+' Trazabilidad: RIE-03, HU-08, HU-44, HU-45; RF-23, RF-24, RF-27; ISO 30301
+' (integridad permanente); NOM-151-SCFI-2016 (trazabilidad).
+' Implementación: services/core-service/motor/integridad.py (barrer),
+' motor/reevaluacion_programada.py y motor/reportes.py
+' Actualiza la reevaluación programada y F6 (reportes).
+
+title P5 — Barrido de integridad y último sello en los reportes
+
+|core-service · reevaluación programada|
+start
+:Cada REEVALUACION_INTERVALO_HORAS
+(24 por defecto; también al arrancar);
+if (¿BARRIDO_INTEGRIDAD activo?) then (sí)
+  |core-service · motor/integridad.py|
+  :Toma los documentos con estado INTEGRO;
+  repeat
+    :Recalcula el SHA-256 del binario
+    en la bóveda (solo lectura);
+    if (¿Falta el binario o la huella no coincide?) then (sí)
+      :Marca el documento ALTERADO;
+      :Dictamen NO_CONFORME de origen RIE-03
+      y evento ALERTA_INTEGRIDAD con
+      «detectado en el barrido programado»;
+      :Reevalúa su expediente (semáforo rojo);
+    else (no)
+    endif
+  repeat while (¿Quedan documentos?) is (sí)
+  :Registra VERIFICACION_INTEGRIDAD en la
+  bitácora sellada: documentos revisados,
+  alterados y duración;
+else (no)
+endif
+|core-service · reevaluación programada|
+:Reevalúa todos los expedientes
+(vigencias, sin IA);
+stop
+
+|Usuario|
+start
+:Exporta un reporte PDF o Excel
+(expediente, global o ficha de custodia);
+|core-service · motor/reportes.py|
+:Verifica la cadena de la bitácora;
+:Imprime el último eslabón: secuencia,
+sello (SHA-256), fecha y resultado
+(íntegra o comprometida);
+note right
+  Cada copia en manos de un auditor
+  funciona como ancla: reescribir la
+  historia cambiaría el último sello
+  y dejaría de coincidir con el papel.
+end note
+:Registra EXPORTACION_REPORTE;
+stop
+@enduml

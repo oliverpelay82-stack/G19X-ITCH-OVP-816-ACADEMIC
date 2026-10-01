@@ -9,7 +9,7 @@
 | Línea de negocio | Portafolio de soluciones LegalTech de PluriOne |
 | Patrocinador de negocio | Lic. Juan Méndez Herrera, Director Comercial (asesor empresarial y Product Owner) |
 | Elaborado por | Oliver Villanueva Pelay, residente — Instituto Tecnológico de Chilpancingo |
-| Versión del documento | 1.9 — 30 de septiembre de 2026 (1.8: correcciones de la documentación; 1.7: 30 de septiembre; 1.6: 29 de septiembre; 1.5: índice de cumplimiento; 1.4: P3; 1.3: P2; 1.2: P1; 1.1: 28 de septiembre; 1.0: 27 de septiembre de 2026) |
+| Versión del documento | 2.0 — 30 de septiembre de 2026 (1.9: revisión de requerimientos; 1.8: correcciones de la documentación; 1.7: 30 de septiembre; 1.6: 29 de septiembre; 1.5: índice de cumplimiento; 1.4: P3; 1.3: P2; 1.2: P1; 1.1: 28 de septiembre; 1.0: 27 de septiembre de 2026) |
 | Documento hermano | [PRD.md](PRD.md) — requerimientos del producto |
 
 > **Fuentes.** Este MRD se construye exclusivamente con el anteproyecto de residencia, los entregables DOC-01 a DOC-08 ([ESPECIFICACIONES_DOC01_A_DOC08.txt](ESPECIFICACIONES_DOC01_A_DOC08.txt)) y el DOCUMENTO GENERAL («DG»). La información de mercado que esas fuentes no contienen —tamaño de mercado, precio o modelo comercial— no se estima: se declara en la [sección 13](#13-información-de-mercado-no-documentada) como pendiente de definir con PluriOne.
@@ -376,3 +376,4 @@ Derivados de los objetivos y umbrales documentados [Anteproyecto; DG Caps. IV, V
 | MR-20 Recepción blindada de la evidencia | PLUS-01, PLUS-02, PLUS-03 (RCV-04, RSC-OPIN-SENT), HU-34 a HU-36 | Implementado (PRD §21.1; diagramas en `docs/uml/`) |
 | MR-21 Custodia verificable ante auditorías externas | PLUS-04, PLUS-05, PLUS-06, HU-39 a HU-41 | Implementado (PRD §21.3; diagramas en `docs/uml/`) |
 | MR-22 Consulta inmediata del documento con evidencia | PLUS-07 a PLUS-11, HU-42, HU-43 | Implementado (PRD §21.4; diagrama en `docs/uml/`) |
+| MR-23 Integridad permanente y dictamen reproducible | PLUS-14, PLUS-15, HU-33, HU-44 a HU-48; RIE-03; protocolo y Tabla 1 del DOC-05 | Implementado (PRD §21.5; diagramas en `docs/uml/`) |

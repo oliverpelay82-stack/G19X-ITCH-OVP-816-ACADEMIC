@@ -1,0 +1,49 @@
+@startuml p5-casos-de-uso-integridad-reproducibilidad
+' P5 — Integridad permanente, dictamen reproducible y excepciones del DOC-05.
+' Trazabilidad: PLUS-14 (HU-44), PLUS-15 (HU-45); protocolo de auditoría del
+' DOC-05 (HU-46); DOC-05, Tabla 1, y HU-33 (HU-47, HU-48); RIE-03, RF-23,
+' RF-24, RF-27; ISO 30301, NOM-151-SCFI-2016.
+' Implementación: services/core-service/motor/integridad.py,
+' motor/reevaluacion_programada.py, motor/reportes.py, models/dictamen.py;
+' services/ai-service/controllers/analisis_controller.py y pipelines/diferidos.py
+
+title P5 — Integridad permanente y dictamen reproducible
+
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Analista de cumplimiento" as Analista
+actor "Auditor externo" as Auditor
+actor "Reloj del sistema" as Reloj
+
+rectangle "Motor de validación" {
+  usecase "Barrer la integridad de la bóveda\n(PLUS-14, RIE-03)" as UC1
+  usecase "Registrar la constancia del barrido\nen la bitácora sellada" as UC2
+  usecase "Imprimir el último sello de la cadena\nen cada reporte (PLUS-15)" as UC3
+  usecase "Guardar en el dictamen la versión de la\nlectura y de las instrucciones (DOC-05)" as UC4
+  usecase "Dictaminar «Documento ilegible,\nse requiere recarga» (DOC-05, Tabla 1)" as UC5
+  usecase "Diferir la auditoría si la IA no responde\ny reintentarla sola (DOC-05, Tabla 1)" as UC6
+  usecase "Ver la alerta «Procesamiento diferido»" as UC7
+}
+
+Reloj --> UC1
+UC1 ..> UC2 : <<include>>
+Reloj --> UC6
+Auditor --> UC3
+Auditor --> UC4
+Analista --> UC5
+Analista --> UC7
+UC6 ..> UC7 : <<include>>
+
+note right of UC1
+  Sin IA ni tokens: recalcula el SHA-256
+  de cada documento íntegro; una
+  discrepancia se registra como hoy
+  (dictamen RIE-03, alerta, bitácora).
+end note
+
+note right of UC5
+  No llama al modelo: no hay texto
+  que analizar y no se gasta cuota.
+end note
+@enduml

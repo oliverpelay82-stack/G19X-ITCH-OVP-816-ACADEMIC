@@ -64,6 +64,8 @@ Microservicios FastAPI desacoplados en `services/`, orquestados con Docker Compo
 - Índice de cumplimiento (C6, PRD §10.5): cumplidas / (cumplidas + incumplidas + pendientes); el bloqueo por criticidad no altera el porcentaje.
 - Las alertas se derivan de la evaluación (sin tabla); bandeja en `GET /api/v1/alertas`. La reevaluación programada (`REEVALUACION_INTERVALO_HORAS`) no ejecuta la IA.
 - Bitácora: `motor/bitacora.registrar` es el único punto de escritura y sella cada evento en cadena (PLUS-04/05). Los triggers impiden modificar la bitácora y los dictámenes, salvo la ratificación, una sola vez.
+- P5 (PRD §21.5): la reevaluación programada barre antes la integridad de toda la bóveda (`integridad.barrer`, PLUS-14, constancia VERIFICACION_INTEGRIDAD); cada reporte imprime el último sello de la cadena (PLUS-15); cada dictamen guarda `version_lectura` y `version_instrucciones`, protegidas por el trigger de RN-05.
+- Excepciones del DOC-05, Tabla 1: sin texto suficiente (`pipelines/legibilidad.py`) el ai-service no llama al modelo y emite un dictamen de origen NIVEL_3_ILEGIBLE (no se ratifica como conforme); si Groq no responde, la auditoría entra en la cola de `pipelines/diferidos.py`, el core la marca (`/documentos/{id}/procesamiento-diferido`) y un ciclo la reintenta con espera de 15 min a 24 h.
 
 ### Nivel 3 — Extracción de texto (ai-service)
 - Capa vectorial con PyMuPDF. Página escaneada: raster en grises a `OCR_DPI` (300), preprocesamiento OpenCV (normalización de la iluminación, filtro bilateral, Otsu con respaldo adaptativo) y Tesseract `spa`, en un pool único de `OCR_WORKERS` procesos (por defecto, los hilos lógicos).
@@ -122,7 +124,7 @@ Bandas del DOC-08 §6.2: ≥ 0.85 CONFORME; de 0.70 a 0.84 y por debajo de 0.70,
 ## 6. Verificación
 
 - **Core y rules:** `pytest tests/` desde `motor de validacion/` (requiere PostgreSQL con el seed). `tests/bd_pruebas.py` recrea `plurione_compliance_test`: **nunca correr pruebas contra `plurione_compliance`**, porque la bitácora y los dictámenes son inmutables. Las suites que cuentan eventos de bitácora cuentan solo los propios.
-- **ai-service:** `cd services/ai-service && pytest tests/` (offline). `tests/conftest.py` da a cada prueba una SQLite temporal. `test_niveles_3_4.py` requiere el servicio en vivo y consume tokens de Groq (se omite si el servicio no está).
+- **ai-service:** `cd services/ai-service && pytest tests/` (offline; con el servicio en marcha, agregar `--deselect tests/test_niveles_3_4.py::test_niveles_3_4` para no consumir tokens). `tests/conftest.py` da a cada prueba una SQLite temporal. `test_niveles_3_4.py` requiere el servicio en vivo y consume tokens de Groq (se omite si el servicio no está).
 - **Frontend:** `npm run lint`, `npm run test:ui` (equivalencia de marcado) y `npm run build`.
 - **Regresión visual** (servicios y `npm run dev` en marcha; Chrome): `python scripts/regresion_visual.py capturar base` antes del cambio, `capturar actual` después y `comparar`. Un cambio sin efecto visual da 0 capturas distintas (160 capturas). Unos cientos de píxeles en letras sueltas de una sola combinación de tamaño y tema son ruido de suavizado del navegador: se descartan repitiendo solo esa combinación (`TAMANOS` y `TEMAS` del módulo) y comparando contra la base. Comportamiento: `scripts/prueba_sondeo_colgado.py` y `scripts/prueba_carga_fallida.py`.
 - **CI** (`.github/workflows/ci.yml`): PostgreSQL 17 con `setup_postgres.py`, pytest de los tres servicios, y lint, `test:ui` y build del frontend.
@@ -136,6 +138,7 @@ Bandas del DOC-08 §6.2: ≥ 0.85 CONFORME; de 0.70 a 0.84 y por debajo de 0.70,
 | Nivel 1 e ingesta (P1) | `test_pipeline_nivel1`, `test_ingesta_robustez`, `test_ingesta_blindada` |
 | Dictámenes, semáforo, alertas, reportes, índice | `test_dictamenes_semaforo`, `test_tipos_anexos_alertas`, `test_indice_cumplimiento` |
 | Representación (P2) y custodia (P3) | `test_representacion_legal`, `test_cadena_custodia`; ai: `test_representacion` |
+| Integridad permanente y excepciones (P5) | `test_integridad_permanente`, `test_dictamen_reproducible`, `test_excepciones_doc05`; ai: `test_excepciones_doc05` |
 | Esquemas, errores y rules | `test_esquema_bd`, `test_esquema_rules`, `test_errores_core`, `test_errores_rules`, `test_rules_service`; ai: `test_errores_no_controlados` |
 | Nivel 3 (ai) | `test_iluminacion`, `test_sellos`, `test_visor_documento`, `test_optimizaciones`, `test_cache_y_lectura` |
 | Nivel 4 (ai) | `test_contenido_titularidad`, `test_vigencia_dictamen`, `test_opinion_cumplimiento`, `test_persistencia_dictamen` |
@@ -165,6 +168,9 @@ Bandas del DOC-08 §6.2: ≥ 0.85 CONFORME; de 0.70 a 0.84 y por debajo de 0.70,
 | `UMBRAL_CONFIANZA_CONFORME` / `UMBRAL_CONFIANZA_HITL` | `0.85` / `0.70` | Bandas del Nivel 5 |
 | `CORE_BASE_URL` / `RULES_BASE_URL` | `:8001` / `:8002` | Clientes del ai-service |
 | `REEVALUACION_INTERVALO_HORAS` (core) | `24` | Reevaluación programada; `0` la desactiva |
+| `BARRIDO_INTEGRIDAD` (core) | `true` | Barrido de integridad de la bóveda en cada reevaluación (PLUS-14) |
+| `LEGIBILIDAD_MIN_CARACTERES` / `LEGIBILIDAD_MIN_CONFIANZA` | `50` / `0.40` | Umbral de «Documento ilegible» (P5) |
+| `DIFERIDOS_INTERVALO_MINUTOS` / `DIFERIDOS_MAX_INTENTOS` | `15` / `6` | Ciclo de procesamiento diferido (P5); `0` lo desactiva |
 | `AUTO_SEED` (rules) / `DB_ECHO` (core, rules) | `true` / `false` | Precarga idempotente del catálogo / imprimir SQL |
 | `STORAGE_VAULT_PATH` | `storage_vault/` | Bóveda física |
 | `VITE_CORE_URL` / `VITE_RULES_URL` / `VITE_AI_URL` | `:8001` / `:8002` / `:8003` | URLs del frontend |

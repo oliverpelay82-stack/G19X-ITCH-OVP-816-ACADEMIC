@@ -107,6 +107,13 @@ def main_pruebas(mp: pytest.MonkeyPatch) -> int:
     verificar(carga.get("vigencia", {}).get("evaluaciones", [{}])[0].get("codigo_regla") == "RCV-02",
               "Viaja la evaluación RCV del Nivel 2")
     verificar(carga.get("usuario") == "ana.lopez", "Viaja el usuario que solicitó la auditoría")
+    # P5 (protocolo del DOC-05): el dictamen dice con qué lectura e instrucciones se emitió.
+    verificar(str(carga.get("version_lectura", "")).startswith("n3-") and
+              str(carga.get("version_instrucciones", "")).startswith("inst-"),
+              "Viajan la versión de la lectura y la huella de las instrucciones",
+              f"{carga.get('version_lectura')} · {carga.get('version_instrucciones')}")
+    verificar(cuerpo.get("versiones", {}).get("version_instrucciones") == carga.get("version_instrucciones"),
+              "La respuesta muestra las mismas versiones que se guardaron")
 
     print("\n[2] core-service caído durante el registro")
     preparar(mp, registro=CoreNoDisponibleError("Connection refused"))

@@ -114,6 +114,17 @@ UMBRAL_CARACTERES_PAGINA: int = int(os.getenv("UMBRAL_CARACTERES_PAGINA", "120")
 UMBRAL_CONFIANZA_CONFORME: float = float(os.getenv("UMBRAL_CONFIANZA_CONFORME", "0.85"))
 UMBRAL_CONFIANZA_HITL: float = float(os.getenv("UMBRAL_CONFIANZA_HITL", "0.70"))
 
+# P5 (DOC-05, Tabla 1): «Documento ilegible, se requiere recarga». Sin texto, o con
+# menos caracteres útiles por página que este mínimo y una confianza de OCR
+# menor que la indicada, la auditoría no llama al modelo. Criterio conservador.
+LEGIBILIDAD_MIN_CARACTERES: int = int(os.getenv("LEGIBILIDAD_MIN_CARACTERES", "50"))
+LEGIBILIDAD_MIN_CONFIANZA: float = float(os.getenv("LEGIBILIDAD_MIN_CONFIANZA", "0.40"))
+
+# P5 (DOC-05, Tabla 1): «Procesamiento diferido». Si la IA no responde, la
+# auditoría se reintenta sola cada tanto (0 desactiva el ciclo) hasta este máximo.
+DIFERIDOS_INTERVALO_MINUTOS: int = int(os.getenv("DIFERIDOS_INTERVALO_MINUTOS", "15"))
+DIFERIDOS_MAX_INTENTOS: int = int(os.getenv("DIFERIDOS_MAX_INTENTOS", "6"))
+
 # Límite de carga alineado con el Nivel 1 del core-service.
 MAX_FILE_SIZE_BYTES: int = 15 * 1024 * 1024
 

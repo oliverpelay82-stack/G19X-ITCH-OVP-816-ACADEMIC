@@ -71,7 +71,8 @@ def reporte_expediente(
         .limit(200)
         .all()
     )
-    datos = reportes.DatosExpediente(exp, evaluacion, dictamenes, eventos)
+    # PLUS-15: el último eslabón antes de esta exportación queda impreso como ancla externa.
+    datos = reportes.DatosExpediente(exp, evaluacion, dictamenes, eventos, cadena=bitacora.verificar_cadena(db))
     contenido = reportes.expediente_pdf(datos) if formato == "pdf" else reportes.expediente_xlsx(datos)
     _registrar(db, request, {"reporte": "DICTAMEN_EXPEDIENTE", "formato": formato,
                              "codigo_expediente": exp.codigo_expediente, "estado": evaluacion.estado}, exp.id)
@@ -91,7 +92,8 @@ def reporte_global(
     db: Session = Depends(get_db),
 ):
     evaluados = evaluar_lista(db, consultar_expedientes(db, tipo_expediente=tipo_expediente), causa="REPORTE_GLOBAL")
-    contenido = reportes.global_pdf(evaluados) if formato == "pdf" else reportes.global_xlsx(evaluados)
+    cadena = bitacora.verificar_cadena(db)  # PLUS-15: ancla del último eslabón antes de exportar
+    contenido = reportes.global_pdf(evaluados, cadena) if formato == "pdf" else reportes.global_xlsx(evaluados, cadena)
     _registrar(db, request, {"reporte": "CUMPLIMIENTO_GLOBAL", "formato": formato,
                              "tipo_expediente": tipo_expediente, "expedientes": len(evaluados)})
     return _archivo(contenido, formato, f"reporte_cumplimiento_{datetime.now().strftime('%Y%m%d_%H%M')}")

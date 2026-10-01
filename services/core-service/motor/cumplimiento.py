@@ -50,7 +50,7 @@ from sqlalchemy.orm import Session
 from clients import rules_client
 from config.catalogo import etiqueta_documento
 from models.bitacora import EVENTO_EVALUACION_REGLAS
-from models.dictamen import ORIGEN_NIVEL_1, DictamenAuditoria
+from models.dictamen import ORIGEN_NIVEL_1, ORIGEN_NIVEL_3_ILEGIBLE, DictamenAuditoria
 from models.documento import Documento
 from models.expediente import Expediente
 from motor import bitacora
@@ -99,6 +99,9 @@ ALERTA_INTEGRIDAD = "INTEGRIDAD_COMPROMETIDA"
 ALERTA_DICTAMEN_NO_CONFORME = "DICTAMEN_NO_CONFORME"
 ALERTA_REVISION_HUMANA = "PENDIENTE_RATIFICACION"
 ALERTA_SIN_AUDITAR = "PENDIENTE_AUDITORIA"
+# P5 (DOC-05, Tabla 1): excepciones del procesamiento.
+ALERTA_ILEGIBLE = "DOCUMENTO_ILEGIBLE"
+ALERTA_DIFERIDO = "PROCESAMIENTO_DIFERIDO"
 ALERTA_CONTENIDO = "CONTENIDO_NO_LOCALIZADO"
 # P2 (RSC-02, RN-03): el firmante del contrato no está acreditado por un poder o acta vigente.
 ALERTA_REPRESENTACION = "REPRESENTACION_NO_ACREDITADA"
@@ -124,6 +127,10 @@ class EstadoDocumento:
     fecha_caducidad: date | None = None
     dias_para_vencer: int | None = None
     anexo_de: str | None = None        # documento principal si es un anexo exigido (RIE-02)
+    # P5 (DOC-05, Tabla 1): «Documento ilegible, se requiere recarga» (dictamen
+    # de origen NIVEL_3_ILEGIBLE sin ratificar) y auditoría diferida.
+    ilegible: bool = False
+    procesamiento_diferido: dict | None = None
 
 
 @dataclass
@@ -331,6 +338,9 @@ def evaluar(
                 fecha_caducidad=vigencia.fecha_caducidad if vigencia else None,
                 dias_para_vencer=vigencia.dias if vigencia else None,
                 anexo_de=anexos_exigidos[tipo]["documento_principal"] if tipo in anexos_exigidos else None,
+                ilegible=bool(dictamen and dictamen.origen == ORIGEN_NIVEL_3_ILEGIBLE
+                              and not dictamen.revisado_por_humano),
+                procesamiento_diferido=doc.procesamiento_diferido or None,
             )
         )
 
@@ -393,7 +403,14 @@ def evaluar(
             f"Faltan documentos obligatorios: {', '.join(etiqueta_documento(t) for t in faltantes_no_criticos)}."
         )
     for e in pendientes:
-        causa = "sin auditar" if e.estado == SIN_DICTAMEN else "pendiente de ratificación por un analista"
+        if e.ilegible:
+            causa = "documento ilegible, se requiere recarga"
+        elif e.estado == SIN_DICTAMEN and e.procesamiento_diferido:
+            causa = ("procesamiento diferido: se agotaron los reintentos automáticos"
+                     if e.procesamiento_diferido.get("agotado")
+                     else "procesamiento diferido: la IA no respondió y la auditoría se reintentará sola")
+        else:
+            causa = "sin auditar" if e.estado == SIN_DICTAMEN else "pendiente de ratificación por un analista"
         motivos.append(f"{etiqueta_documento(e.tipo_documento)} ({e.nombre_archivo_original}): {causa}.")
     for e in proximos:
         motivos.append(
@@ -765,7 +782,43 @@ def _alertas(
                     tipo_documento=e.tipo_documento, regla="RCV-01", documento_id=e.documento_id,
                 ))
 
-        if e.estado == EN_REVISION:
+        if e.procesamiento_diferido:
+            diferido = e.procesamiento_diferido
+            agotado = bool(diferido.get("agotado"))
+            alertas.append(Alerta(
+                codigo=ALERTA_DIFERIDO,
+                severidad="MEDIA_ALTA" if agotado else "MEDIA",
+                titulo=f"Procesamiento diferido: {nombre}",
+                detalle=(
+                    f"La IA no respondió al auditar «{e.nombre_archivo_original}». "
+                    + ("Se agotaron los reintentos automáticos." if agotado else
+                       f"La auditoría se reintentará sola (intento {diferido.get('intentos', 0)} de "
+                       f"{diferido.get('max_intentos', '—')}).")
+                ),
+                recomendacion=(
+                    "Relanzar la auditoría desde la Bóveda o con «Auditar pendientes» cuando el servicio de IA "
+                    "responda." if agotado else
+                    "No se requiere acción: el resultado aparecerá aquí en cuanto el servicio de IA responda."
+                ),
+                tipo_documento=e.tipo_documento, documento_id=e.documento_id,
+            ))
+
+        if e.ilegible:
+            alertas.append(Alerta(
+                codigo=ALERTA_ILEGIBLE,
+                severidad="MEDIA_ALTA",
+                titulo=f"Documento ilegible: {nombre}",
+                detalle=(
+                    f"La lectura de «{e.nombre_archivo_original}» no obtuvo texto suficiente para verificarlo "
+                    "(escaneo de muy baja calidad o imagen borrosa)."
+                ),
+                recomendacion=(
+                    "Recargar el archivo con mejor resolución (escaneo a 300 ppp, sin sombras ni inclinación): "
+                    "sustituye al ilegible."
+                ),
+                tipo_documento=e.tipo_documento, documento_id=e.documento_id,
+            ))
+        elif e.estado == EN_REVISION:
             # El motivo que dio el motor explica por qué el caso espera al analista.
             observaciones_dictamen = dictamen.observaciones if dictamen else []
             motivo = next((o.split(":", 1)[1].strip() for o in observaciones_dictamen or []
@@ -784,7 +837,7 @@ def _alertas(
                 ),
                 tipo_documento=e.tipo_documento, documento_id=e.documento_id,
             ))
-        elif e.estado == SIN_DICTAMEN and e.obligatorio:
+        elif e.estado == SIN_DICTAMEN and e.obligatorio and not e.procesamiento_diferido:
             alertas.append(Alerta(
                 codigo=ALERTA_SIN_AUDITAR,
                 severidad="MEDIA",

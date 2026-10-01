@@ -39,7 +39,9 @@ from pipelines import (
     cache_chat, fragmentos, pasajes, persistencia_texto, presupuesto_tokens, repositorio_texto, respuestas_directas,
     verificacion_contenido,
 )
-from pipelines.extraccion_pipeline import FormatoNoSoportadoError, MotorOcrNoDisponibleError
+from pipelines.extraccion_pipeline import FormatoNoSoportadoError, MotorOcrNoDisponibleError, version_lectura
+from pipelines.version_instrucciones import version_instrucciones
+from pipelines import diferidos, legibilidad
 from schemas.analisis_schema import AnalisisSemanticoRequest, ChatDocumentoRequest
 
 router = APIRouter(prefix="/api/v1/ai", tags=["Nivel 4 — Análisis Semántico con IA"])
@@ -312,7 +314,14 @@ def _ms(inicio: float) -> int:
     return round((time.perf_counter() - inicio) * 1000)
 
 
-def _persistir_dictamen(documento_id: str, resultado: pipeline_analisis.ResultadoAnalisis, usuario: str) -> dict:
+def versiones_dictamen() -> dict[str, str]:
+    """Versión de la lectura del Nivel 3 y huella de las instrucciones (P5, dictamen reproducible)."""
+    return {"version_lectura": version_lectura(), "version_instrucciones": version_instrucciones()}
+
+
+def _persistir_dictamen(
+    documento_id: str, resultado: pipeline_analisis.ResultadoAnalisis, usuario: str, origen: str | None = None
+) -> dict:
     """
     Guarda el dictamen en el core-service (tabla dictamenes_auditoria y
     bitácora). Si el core no responde, el dictamen se devuelve igualmente pero
@@ -327,7 +336,8 @@ def _persistir_dictamen(documento_id: str, resultado: pipeline_analisis.Resultad
         "requiere_revision_humana": resultado.requiere_revision_humana,
         "tipo_documento_detectado": resultado.tipo_documento_detectado,
         "rfc_detectado": rfc,
-        "match_titular": resultado.match_titular,
+        # Un documento ilegible no se cotejó: no hay coincidencia que informar.
+        "match_titular": None if origen == ORIGEN_ILEGIBLE else resultado.match_titular,
         "fecha_emision": resultado.fecha_emision,
         "fecha_vencimiento": resultado.fecha_vencimiento,
         "vigencia": resultado.vigencia_nivel_2 or None,
@@ -335,6 +345,9 @@ def _persistir_dictamen(documento_id: str, resultado: pipeline_analisis.Resultad
         "verificaciones": resultado.verificaciones,
         "representacion": resultado.representacion,
         "modelo_utilizado": resultado.modelo_utilizado,
+        # P5: con qué lectura e instrucciones se emitió, para reproducirlo.
+        **versiones_dictamen(),
+        **({"origen": origen} if origen else {}),
         "usuario": usuario,
     }
     try:
@@ -374,6 +387,62 @@ def preparar_documento(documento_id: str):
 )
 def analizar_documento(peticion: AnalisisSemanticoRequest):
     """
+    Ejecuta el Nivel 4 sobre el documento indicado (ver ``auditar``).
+
+    P5 (DOC-05, Tabla 1): si el proveedor de IA no responde tras sus 3 intentos,
+    la auditoría de un documento de la bóveda queda en la cola de procesamiento
+    diferido, el core muestra la alerta y la respuesta es 503 con esa explicación.
+    """
+    try:
+        return auditar(peticion)
+    except GroqNoDisponibleError as exc:
+        if not peticion.documento_id:
+            raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=f"[Nivel 4] {exc}") from exc
+        diferida = diferidos.registrar_fallo(peticion.model_dump(mode="json"), str(exc))
+        core_client.marcar_diferido(diferida.documento_id, diferida.aviso())
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=("El servicio de IA no respondió tras 3 intentos. La auditoría quedó programada y se "
+                    "reintentará automáticamente (procesamiento diferido)."),
+        ) from exc
+
+
+ORIGEN_ILEGIBLE = "NIVEL_3_ILEGIBLE"
+
+
+def _auditoria_ilegible(
+    peticion: AnalisisSemanticoRequest, documento: repositorio_texto.TextoDocumento, motivo: str
+) -> dict:
+    """
+    P5 (DOC-05, Tabla 1): dictamen «Documento ilegible, se requiere recarga» sin
+    llamar al modelo. Queda En revisión, con origen NIVEL_3_ILEGIBLE, y el core
+    lo distingue de una revisión por contenido.
+    """
+    confianza = float(documento.traza.get("confidence_score") or 0.0)
+    tipo_registrado = (documento.metadatos or {}).get("tipo_documento")
+    resultado = pipeline_analisis.ResultadoAnalisis(
+        tipo_documento_detectado=tipo_registrado or "DESCONOCIDO",
+        rfc_detectado=None, rfc_valido=False, match_titular=False, razon_social_detectada=None,
+        fecha_emision=None, fecha_vencimiento=None, vigente=None, dias_para_vencimiento=None,
+        nivel_confianza=min(max(confianza, 0.0), 1.0),
+        estatus_preliminar="EN_REVISION",
+        requiere_revision_humana=True,
+        observaciones=[f"Documento ilegible, se requiere recarga: {motivo}"],
+        modelo_utilizado="sin modelo (lectura ilegible)",
+        recomendaciones=["Recargar el archivo con mejor resolución (escaneo a 300 ppp, sin sombras ni inclinación)."],
+    )
+    respuesta = resultado.a_dict()
+    respuesta["ilegible"] = True
+    respuesta["fuente_texto"] = documento.fuente
+    respuesta["versiones"] = versiones_dictamen()
+    respuesta["tiempos_ms"] = {"resolucion_texto": 0, "inferencia": 0}
+    respuesta["extraccion_nivel_3"] = _estado_lectura(peticion.documento_id, documento)
+    respuesta["persistencia"] = _persistir_dictamen(peticion.documento_id, resultado, peticion.usuario, ORIGEN_ILEGIBLE)
+    return respuesta
+
+
+def auditar(peticion: AnalisisSemanticoRequest) -> dict:
+    """
     Ejecuta el Nivel 4 sobre el documento indicado.
 
     La inferencia corre a temperatura 0.0 contra Groq Cloud, de modo
@@ -389,6 +458,12 @@ def analizar_documento(peticion: AnalisisSemanticoRequest):
     )
     paginas = (documento.traza.get("detalle_paginas") if documento else None) or None
     ms_texto = _ms(inicio)
+
+    # P5: sin texto suficiente no hay nada que analizar; tampoco se gasta cuota del modelo.
+    if documento and peticion.documento_id:
+        motivo = legibilidad.motivo_ilegible(documento.texto, documento.traza)
+        if motivo:
+            return _auditoria_ilegible(peticion, documento, motivo)
 
     confianza_extraccion = documento.traza.get("confidence_score") if documento else None
     tipo_registrado = (documento.metadatos or {}).get("tipo_documento") if documento else None
@@ -418,10 +493,6 @@ def analizar_documento(peticion: AnalisisSemanticoRequest):
         )
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=str(exc)) from exc
-    except GroqNoDisponibleError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=f"[Nivel 4] {exc}"
-        ) from exc
     except GroqRespuestaInvalidaError as exc:
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY, detail=f"[Nivel 4] {exc}"
@@ -435,6 +506,7 @@ def analizar_documento(peticion: AnalisisSemanticoRequest):
     respuesta["sellos"] = sellos_detectados
     respuesta["sello_digital_sat"] = bool(documento and documento.traza.get("sello_digital_sat"))
     respuesta["fuente_texto"] = fuente
+    respuesta["versiones"] = versiones_dictamen()
     respuesta["tiempos_ms"] = {"resolucion_texto": ms_texto, "inferencia": _ms(inicio)}
     if documento and documento.metadatos:
         respuesta["documento"] = {
@@ -615,3 +687,32 @@ def chat_documento(peticion: ChatDocumentoRequest):
         "tiempos_ms": {"resolucion_texto": ms_texto, "inferencia": _ms(inicio)},
     }
     return _con_documento(respuesta, documento, peticion.documento_id)
+
+
+# ── P5 (DOC-05, Tabla 1): ciclo de procesamiento diferido ──────────────
+
+class _SinReintento(Exception):
+    """El documento ya no puede auditarse (no existe, está alterado o no es legible por formato)."""
+
+
+class _ReintentarDespues(Exception):
+    """Algo externo no respondió (el proveedor o el core): se reintenta en la siguiente vuelta."""
+
+
+def _auditar_diferida(peticion: dict) -> None:
+    try:
+        auditar(AnalisisSemanticoRequest(**peticion))
+    except GroqNoDisponibleError as exc:
+        raise _ReintentarDespues(str(exc)) from exc
+    except HTTPException as exc:
+        if exc.status_code >= 500 and exc.status_code != status.HTTP_502_BAD_GATEWAY:
+            raise _ReintentarDespues(str(exc.detail)) from exc
+        raise _SinReintento(str(exc.detail)) from exc
+
+
+def procesar_diferidos() -> dict[str, int]:
+    """Una vuelta del ciclo en segundo plano (lo arranca main.py)."""
+    return diferidos.procesar_vencidas(
+        _auditar_diferida, core_client.marcar_diferido, _ReintentarDespues, (_SinReintento,)
+    )
+

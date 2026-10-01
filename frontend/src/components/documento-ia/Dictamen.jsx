@@ -425,6 +425,17 @@ export function DictamenTecnico({ dictamen, duracion }) {
         <MetaInferencia modelo={dictamen.modelo_utilizado} duracion={duracion} />
         <span>{nombreModelo(dictamen.modelo_utilizado)} · temperatura 0.0</span>
       </p>
+      {/* Con qué lectura e instrucciones se emitió el dictamen, para reproducirlo (protocolo del DOC-05). */}
+      {dictamen.versiones && (
+        <p className="verdict-foot">
+          <span>
+            Lectura <span className="mono">{dictamen.versiones.version_lectura}</span>
+          </span>
+          <span>
+            Instrucciones <span className="mono">{dictamen.versiones.version_instrucciones}</span>
+          </span>
+        </p>
+      )}
     </div>
   )
 }

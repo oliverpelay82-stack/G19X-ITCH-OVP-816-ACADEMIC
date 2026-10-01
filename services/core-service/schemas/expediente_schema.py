@@ -52,6 +52,10 @@ class EstadoDocumentoResponse(BaseModel):
     fecha_caducidad: Optional[date] = None
     dias_para_vencer: Optional[int] = None
     anexo_de: Optional[str] = Field(None, description="Documento principal del que es anexo obligatorio (RIE-02)")
+    ilegible: bool = Field(False, description="P5: su dictamen dice «Documento ilegible, se requiere recarga»")
+    procesamiento_diferido: Optional[dict] = Field(
+        None, description="P5: la auditoría quedó diferida porque la IA no respondió"
+    )
 
 
 class AlertaResponse(BaseModel):

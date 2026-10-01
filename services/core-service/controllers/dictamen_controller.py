@@ -17,7 +17,7 @@ from sqlalchemy.orm import Session
 
 from config.database import get_db
 from models.bitacora import EVENTO_DICTAMEN_IA, EVENTO_RATIFICACION_HUMANA
-from models.dictamen import ORIGEN_NIVEL_1, ORIGEN_NIVEL_4, ORIGEN_RIE_03, DictamenAuditoria
+from models.dictamen import ORIGEN_NIVEL_1, ORIGEN_NIVEL_3_ILEGIBLE, ORIGEN_NIVEL_4, ORIGEN_RIE_03, DictamenAuditoria
 from models.documento import Documento
 from models.expediente import Expediente
 from motor import bitacora, cumplimiento, integridad
@@ -153,7 +153,7 @@ def registrar_dictamen(dto: DictamenCreate, request: Request, db: Session = Depe
         expediente_id=documento.expediente_id,
         estatus=dto.estatus,
         estatus_preliminar=dto.estatus,
-        origen=ORIGEN_NIVEL_4,
+        origen=dto.origen or ORIGEN_NIVEL_4,
         nivel_confianza=dto.nivel_confianza,
         requiere_revision_humana=dto.requiere_revision_humana,
         reglas_aplicadas=reglas,
@@ -165,9 +165,13 @@ def registrar_dictamen(dto: DictamenCreate, request: Request, db: Session = Depe
         fecha_emision_extraida=dto.fecha_emision,
         fecha_vencimiento_extraida=dto.fecha_vencimiento,
         modelo_utilizado=dto.modelo_utilizado,
+        version_lectura=dto.version_lectura,
+        version_instrucciones=dto.version_instrucciones,
         representacion_legal=_representacion(dto.representacion),
         hash_sha256=documento.hash_sha256,
     )
+    # P5: con el dictamen guardado, el documento deja de estar diferido.
+    documento.procesamiento_diferido = None
     db.add(dictamen)
     db.flush()
     bitacora.registrar(
@@ -186,6 +190,9 @@ def registrar_dictamen(dto: DictamenCreate, request: Request, db: Session = Depe
             "reglas": [f"{r['codigo_regla']}:{r['resultado']}" for r in reglas],
             "match_titular": dto.match_titular,
             "modelo_utilizado": dto.modelo_utilizado,
+            "origen": dto.origen or ORIGEN_NIVEL_4,
+            "version_lectura": dto.version_lectura,
+            "version_instrucciones": dto.version_instrucciones,
             "hash_sha256": documento.hash_sha256,
         },
     )
@@ -248,6 +255,12 @@ def ratificar_dictamen(dictamen_id: str, dto: RatificacionRequest, request: Requ
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="[RIE-03] Una alteración criptográfica no admite ratificación: recargue el archivo original.",
+        )
+    if dictamen.origen == ORIGEN_NIVEL_3_ILEGIBLE and dto.nuevo_estatus == "CONFORME":
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Un documento ilegible no puede ratificarse como conforme: su contenido no se pudo leer. "
+                   "Recargue el archivo con mejor resolución.",
         )
     if dictamen.origen == ORIGEN_NIVEL_1:
         raise HTTPException(

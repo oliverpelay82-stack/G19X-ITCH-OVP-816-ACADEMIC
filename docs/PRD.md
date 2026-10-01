@@ -11,7 +11,7 @@
 | Desarrollo (Scrum Master / Desarrollador) | Oliver Villanueva Pelay, residente (No. de control 21520500) |
 | Stakeholder evaluador | Edgar Loheffelmman (PluriOne) |
 | Asesor interno | Dr. Wilfrido Campos Francisco |
-| Versión del documento | 2.1 — 30 de septiembre de 2026 (2.0: correcciones de la documentación; 1.9: revisión visual del frontend; 1.8: chat documental eficiente; 1.7: revisión del frontend; 1.6: índice de cumplimiento; 1.5: P3; 1.4: P2; 1.3: P1; 1.2: 28 de septiembre; 1.0: 27 de septiembre de 2026) |
+| Versión del documento | 2.3 — 30 de septiembre de 2026 (2.2: P5 documentado; 2.1: revisión de requerimientos; 2.0: correcciones de la documentación; 1.9: revisión visual del frontend; 1.8: chat documental eficiente; 1.7: revisión del frontend; 1.6: índice de cumplimiento; 1.5: P3; 1.4: P2; 1.3: P1; 1.2: 28 de septiembre; 1.0: 27 de septiembre de 2026) |
 | Estado del producto | En desarrollo: Sprints 1 y 2 implementados, Sprint 3 implementado parcialmente, Sprint 4 implementado salvo HU-31, Módulo 7 pendiente |
 | Documento hermano | [MRD.md](MRD.md) — requerimientos de mercado |
 
@@ -207,7 +207,7 @@ Prioridad tomada de las historias de usuario asociadas (Cap. VII); «—» cuand
 
 | ID | Requerimiento | Prioridad | Estado | Evidencia / nota |
 |---|---|---|---|---|
-| RF-18 | Alertas inmediatas ante documento ausente, vencido, anexo faltante o cláusula incumplida. | Alta | Implementado | Nueve categorías de alerta (sección 10.3); la cláusula incumplida es CONTENIDO_NO_LOCALIZADO. |
+| RF-18 | Alertas inmediatas ante documento ausente, vencido, anexo faltante o cláusula incumplida. | Alta | Implementado | Once categorías de alerta (sección 10.3; P5 suma DOCUMENTO_ILEGIBLE y PROCESAMIENTO_DIFERIDO); la cláusula incumplida es CONTENIDO_NO_LOCALIZADO. |
 | RF-19 | Semáforo Verde / Amarillo / Rojo por expediente. | Alta | Implementado | Reglas del semáforo en la sección 10.2. |
 | RF-20 | Notificaciones por correo electrónico ante estatus crítico o vencimiento próximo. | Media | **Pendiente** | Programado para la siguiente iteración del Módulo 5. |
 | RF-21 | Recomendación estructurada junto a cada alerta. | Media | Implementado | Campo `recomendacion` de cada alerta. |
@@ -270,9 +270,9 @@ Prioridad tomada de las historias de usuario asociadas (Cap. VII); «—» cuand
 | HU-30 | Consultar la bitácora completa de un expediente. | M7 | 4 | Alta | 5 | Implementado (historial del expediente en la interfaz, `HistorialExpediente.jsx`, sobre `GET /api/v1/bitacora`; eventos consecutivos iguales agrupados) |
 | HU-31 | Usuario de consulta: solo el semáforo de sus expedientes asignados. | M7 | 4 | Media | 4 | Pendiente (depende de RF-25/26) |
 | HU-32 | Validación completa de un expediente (reglas + IA) con un solo botón. | Integración | 4 | Alta | 14 | Implementado («Auditar pendientes» en el detalle del expediente: audita en secuencia, con reglas e IA, los documentos vigentes sin dictamen y muestra el avance por documento y el semáforo y las alertas antes y después) |
-| HU-33 | Manejo controlado de errores (documento ilegible, IA no disponible). | Integración | 4 | Alta | 9 | Parcial: una falla no detiene el resto del expediente (DG §8.7), pero faltan las dos excepciones del DOC-05, «Documento ilegible, se requiere recarga» y «Procesamiento diferido» (§10.4; se implementan en P5, §21.5) |
+| HU-33 | Manejo controlado de errores (documento ilegible, IA no disponible). | Integración | 4 | Alta | 9 | Implementado: una falla no detiene el resto del expediente (DG §8.7), y las dos excepciones del DOC-05, «Documento ilegible, se requiere recarga» y «Procesamiento diferido», se implementan en P5 (§21.5) |
 
-**Resumen:** 25 implementadas, 4 parciales y 4 pendientes de 33 (HU-33 pasa a parcial en la versión 2.1). Respecto de la versión 1.0 pasan a implementadas HU-30 y HU-32 (versión 1.1), HU-19 (versión 1.2) y HU-23 (versión 1.4). Las historias PLUS (HU-34 en adelante) se cuentan en la sección 21.
+**Resumen:** 26 implementadas, 3 parciales y 4 pendientes de 33 (HU-33 pasó a parcial en la versión 2.1 y se completó con P5). Respecto de la versión 1.0 pasan a implementadas HU-30 y HU-32 (versión 1.1), HU-19 (versión 1.2) y HU-23 (versión 1.4). Las historias PLUS (HU-34 en adelante) se cuentan en la sección 21.
 
 ---
 
@@ -374,11 +374,11 @@ Cada alerta incluye su recomendación correctiva (RF-21). Las alertas se derivan
 
 | Escenario | Acción del sistema | Estatus |
 |---|---|---|
-| Documento ilegible | La extracción no obtiene texto suficiente: el documento queda «Documento ilegible, se requiere recarga», distinto de la revisión humana por contenido, y se pide recargarlo con mejor resolución (DOC-05, Tabla 1). Implementación: §21.5. | Amarillo |
-| Servicio de IA no disponible | Hasta 3 reintentos con espera progresiva; si la falla persiste, el documento se marca para procesamiento posterior y se reintenta solo, dentro de la cuota diaria del proveedor (DOC-05, Tabla 1). Implementación: §21.5. | Alerta interna «Procesamiento diferido» |
+| Documento ilegible | La extracción no obtiene texto suficiente: el documento queda «Documento ilegible, se requiere recarga», distinto de la revisión humana por contenido, y se pide recargarlo con mejor resolución (DOC-05, Tabla 1). Implementado en P5 (§21.5). | Amarillo |
+| Servicio de IA no disponible | Hasta 3 reintentos con espera progresiva; si la falla persiste, el documento se marca para procesamiento posterior y se reintenta solo, dentro de la cuota diaria del proveedor (DOC-05, Tabla 1). Implementado en P5 (§21.5). | Alerta interna «Procesamiento diferido» |
 | Archivo protegido con contraseña | El Nivel 1 detecta la contraseña de apertura en la carga, custodia el archivo y emite un dictamen No conforme «Archivo protegido, no procesable» (PLUS-02). | Rojo |
 
-Una falla en un documento nunca detiene la validación del resto del expediente.
+Una falla en un documento nunca detiene la validación del resto del expediente. Las dos primeras excepciones se implementaron en P5 (§21.5), con dos categorías de alerta nuevas: «Documento ilegible» y «Procesamiento diferido».
 
 ### 10.5 Índice de cumplimiento del expediente (C6)
 
@@ -941,6 +941,48 @@ El chat es la herramienta con la que el auditor consulta un documento sin leerlo
 - **Evaluación:** la exactitud del chat se mide contra la verdad fundamental del Gold Standard, así que P4 queda cubierto por la misma validación cuantitativa.
 
 **Diagramas:** [actividad del turno del chat](uml/p4-actividad-chat-documental.puml).
+
+---
+
+### 21.5 P5 — Integridad permanente y dictamen reproducible
+
+Cuatro brechas del análisis de brechas (sección 5) aprobadas por el residente el 30/09/2026. Dos son extensiones PLUS; las otras dos cumplen lo que el DOC-05 ya exige (el protocolo de auditoría y las excepciones de su Tabla 1) y completan HU-33.
+
+| ID | Requerimiento | Fundamento | Estado |
+|---|---|---|---|
+| PLUS-14 | **Barrido programado de integridad.** En cada reevaluación programada (sin IA), el core recalcula el SHA-256 de todos los documentos íntegros de la bóveda. Una discrepancia o un binario ausente se registra igual que en una lectura (RIE-03): documento ALTERADO, dictamen No conforme de origen RIE-03 y evento ALERTA_INTEGRIDAD, con la nota «detectado en el barrido programado». Cada barrido deja la constancia VERIFICACION_INTEGRIDAD en la bitácora sellada (documentos revisados, alterados y duración). Se desactiva con `BARRIDO_INTEGRIDAD=false`. | RIE-03 (hoy solo al leer); ISO 30301 (integridad durante toda la conservación) | Implementado (`motor/integridad.barrer`; pruebas `test_integridad_permanente`) |
+| PLUS-15 | **Último sello de la cadena en cada reporte.** El PDF y el Excel del expediente, el global y la ficha de custodia imprimen el último eslabón de la bitácora antes de la exportación (secuencia, sello SHA-256, fecha) y el resultado de verificar la cadena. Cada copia en manos de un auditor funciona como ancla externa. | NOM-151-SCFI-2016 (trazabilidad); P3 | Implementado (`reportes._ancla`; la ficha de custodia ya lo imprimía) |
+| — | **Dictamen reproducible.** Cada dictamen del Nivel 4 guarda la versión de la lectura del Nivel 3 (`version_lectura()`: pipeline, Tesseract, idioma, DPI y lectura de sellos) y la huella de las instrucciones al modelo (SHA-256 abreviado de las instrucciones del sistema y de verificación). Ambas son campos opcionales nuevos del contrato de `POST /api/v1/dictamenes`, quedan protegidas por el trigger de RN-05 y se muestran en el registro técnico. | Protocolo de auditoría del DOC-05 («demostrar de forma transparente el fundamento de cada validación»); análisis de brechas 2.3 | Implementado (`pipelines/version_instrucciones.py`; también en la hoja «Evidencia» del Excel) |
+| — | **Excepciones del DOC-05 (Tabla 1).** *Documento ilegible:* si la lectura completa no tiene texto, o tiene menos de `LEGIBILIDAD_MIN_CARACTERES` (50) por página con una confianza de OCR menor a `LEGIBILIDAD_MIN_CONFIANZA` (0.40), el ai-service no llama al modelo y emite un dictamen En revisión de origen NIVEL_3, «Documento ilegible, se requiere recarga», con su alerta. *Procesamiento diferido:* si Groq no responde tras sus 3 intentos, la auditoría entra en una cola del ai-service y se reintenta sola con espera creciente (de 15 min a 24 h, hasta `DIFERIDOS_MAX_INTENTOS`), una a la vez y dentro del presupuesto de tokens; el core marca el documento y muestra la alerta «Procesamiento diferido» en lugar de «Sin auditar», y la quita al guardarse el dictamen. | DOC-05, Tabla 1; HU-33; riesgo del DOC-07 («documentos escaneados de baja calidad») | Implementado (`pipelines/legibilidad.py`, `pipelines/diferidos.py`; alertas DOCUMENTO_ILEGIBLE y PROCESAMIENTO_DIFERIDO en el core) |
+
+**Historias de usuario nuevas**
+
+| ID | Historia | Módulo | Prioridad | Estado |
+|---|---|---|---|---|
+| HU-44 | Como responsable de cumplimiento, quiero que el sistema detecte la alteración de un archivo aunque nadie lo haya abierto, y que deje constancia de cada verificación. | M7 | Alta | Implementado (PLUS-14) |
+| HU-45 | Como auditor externo, quiero que cada reporte traiga el último sello de la cadena de custodia, para comprobar después que la historia no se reescribió. | M6 | Alta | Implementado (PLUS-15) |
+| HU-46 | Como auditor externo, quiero saber con qué versión de la lectura y de las instrucciones se emitió cada dictamen, para explicar por qué dos dictámenes del mismo archivo difieren. | M3 | Media | Implementado |
+| HU-47 | Como analista, quiero distinguir un documento ilegible de uno con contenido dudoso, para pedir la recarga en lugar de revisarlo. | M3 | Alta | Implementado |
+| HU-48 | Como analista, quiero que una auditoría que falló porque la IA no respondió se reintente sola y que el expediente me lo indique. | Integración | Alta | Implementado |
+
+**Criterios de aceptación**
+
+- Un binario alterado o eliminado sin que nadie lo lea se detecta en el siguiente barrido, con el mismo dictamen, alerta y evento que una lectura (prueba que lo altera en la bóveda de pruebas).
+- El barrido no llama a la IA ni consume tokens, y registra exactamente un evento VERIFICACION_INTEGRIDAD por ejecución.
+- El último sello impreso en un reporte coincide con el último `hash_evento` sellado antes de la exportación.
+- Un dictamen nuevo trae `version_lectura` y `version_instrucciones`; la ratificación no puede modificarlos (trigger RN-05); los dictámenes previos quedan con esos campos vacíos.
+- Un documento sin texto suficiente no llama al modelo y queda «Documento ilegible, se requiere recarga», con su alerta y sin poder ratificarse como Conforme.
+- Con Groq simulado como no disponible, la auditoría queda diferida, el expediente muestra la alerta y, al volver Groq, el ciclo guarda el dictamen y retira la alerta.
+- Los contratos existentes solo ganan campos opcionales; las pruebas del core, rules y ai-service siguen pasando.
+
+**Consecuencias previstas**
+
+- **Datos existentes:** los dictámenes anteriores no tienen versión de lectura ni de instrucciones y así se muestran («no registrada»); no se reescriben (RN-04).
+- **Primer barrido:** al activarse, el barrido revisa toda la bóveda una vez; un archivo alterado o perdido antes de P5 aparecerá como alterado ese día.
+- **Cuota del proveedor:** los reintentos diferidos van de uno en uno y respetan el presupuesto de tokens (PLUS-11); con la cuota diaria agotada esperan al día siguiente.
+- **Umbrales de legibilidad:** los valores iniciales son conservadores (solo lo claramente ilegible) y se calibran con el Gold Standard escaneado.
+
+**Diagramas:** [casos de uso](uml/p5-casos-de-uso-integridad-reproducibilidad.puml), [barrido y ancla](uml/p5-actividad-barrido-integridad.puml) y [excepciones y reproducibilidad](uml/p5-actividad-excepciones-auditoria.puml).
 
 ---
 

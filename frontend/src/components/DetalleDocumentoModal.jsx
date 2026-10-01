@@ -48,11 +48,20 @@ function estadoEnExpediente(doc, expediente) {
           : estado.estado === 'SIN_DICTAMEN'
             ? 'Aún no tiene dictamen'
             : 'Sin fecha de vencimiento'
+  // P5 (DOC-05, Tabla 1): un documento ilegible se recarga, no se ratifica; uno
+  // diferido espera a que la IA responda.
+  const excepcion = estado.ilegible
+    ? 'ilegible: se requiere recargarlo con mejor resolución'
+    : estado.procesamiento_diferido
+      ? estado.procesamiento_diferido.agotado
+        ? 'la IA no respondió y se agotaron los reintentos automáticos'
+        : 'la IA no respondió; la auditoría se reintentará sola'
+      : null
   return {
     tono: estado.vigencia === 'VENCIDO' ? 'bad' : meta.tono,
     label: estado.vigencia === 'VENCIDO' ? 'Vencido' : meta.label,
-    nota: [vigencia, estado.revisado_por_humano && 'ratificado por un analista'].filter(Boolean).join(' · '),
-    ratificable: estado.estado === 'EN_REVISION' && !estado.revisado_por_humano,
+    nota: [vigencia, excepcion, estado.revisado_por_humano && 'ratificado por un analista'].filter(Boolean).join(' · '),
+    ratificable: estado.estado === 'EN_REVISION' && !estado.revisado_por_humano && !estado.ilegible,
   }
 }
 

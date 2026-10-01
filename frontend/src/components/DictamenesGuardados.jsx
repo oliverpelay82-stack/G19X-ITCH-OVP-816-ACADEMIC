@@ -27,6 +27,7 @@ const RESULTADO_REGLA = {
 /** Qué emitió el dictamen, cuando no fue el análisis con IA (integridad y validación de la carga). */
 const ORIGEN = {
   'RIE-03': 'Verificación de integridad',
+  NIVEL_3_ILEGIBLE: 'Lectura del documento · ilegible, se requiere recarga',
   NIVEL_1: 'Validación de la carga · PDF protegido',
 }
 
@@ -45,6 +46,9 @@ const DECISIONES = [
 ]
 
 const MIN_JUSTIFICACION = 10
+
+/** Orígenes cuyo dictamen no se ratifica: una alteración (RIE-03) y un documento ilegible (se recarga). */
+const SIN_RATIFICACION = new Set(['RIE-03', 'NIVEL_3_ILEGIBLE'])
 
 const meta = (estatus) => ESTATUS[estatus] || { tono: 'neutral', label: estatus || 'Sin estatus' }
 const pct = (n) => (n === null || n === undefined ? '—' : `${Math.round(n * 100)}%`)
@@ -297,7 +301,7 @@ export default function DictamenesGuardados({
   if (dictamenes?.length && solicitudRatificar !== solicitudAtendida) {
     setSolicitudAtendida(solicitudRatificar)
     const [primero] = dictamenes
-    if (primero.estatus === 'EN_REVISION' && !primero.revisado_por_humano && primero.origen !== 'RIE-03') {
+    if (primero.estatus === 'EN_REVISION' && !primero.revisado_por_humano && !SIN_RATIFICACION.has(primero.origen)) {
       setRatificando(true)
     }
   }
@@ -319,7 +323,7 @@ export default function DictamenesGuardados({
   const puedeRatificar =
     vigente.estatus === 'EN_REVISION' &&
     !vigente.revisado_por_humano &&
-    vigente.origen !== 'RIE-03' &&
+    !SIN_RATIFICACION.has(vigente.origen) &&
     doc.estado_integridad !== 'ALTERADO'
 
   const alRatificar = () => {

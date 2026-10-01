@@ -6,16 +6,22 @@ la huella registrada en la carga. Si no coinciden (o el binario desapareció),
 el documento se marca ALTERADO, recibe un dictamen NO_CONFORME de origen
 RIE-03, el incidente queda en la bitácora y el expediente se reevalúa. A partir
 de ese momento el documento queda bloqueado: no se sirve ni se analiza.
+
+P5 (PLUS-14): además de al leerse, toda la bóveda se verifica en el barrido
+programado (``barrer``), para que un archivo alterado que nadie abre también
+se detecte; cada barrido deja su constancia sellada en la bitácora.
 """
 from __future__ import annotations
 
 import hashlib
 import os
+import time
+from dataclasses import dataclass
 
 from sqlalchemy.orm import Session
 
 from config.boveda import ruta_en_boveda
-from models.bitacora import EVENTO_ALERTA_INTEGRIDAD
+from models.bitacora import EVENTO_ALERTA_INTEGRIDAD, EVENTO_VERIFICACION_INTEGRIDAD
 from models.dictamen import ORIGEN_RIE_03, DictamenAuditoria
 from models.documento import Documento
 from models.expediente import Expediente
@@ -50,8 +56,21 @@ def huella_actual(documento: Documento) -> str | None:
     ruta = ruta_binario(documento)
     if not os.path.isfile(ruta):
         return None
+    huella = hashlib.sha256()
     with open(ruta, "rb") as archivo:
-        return hashlib.sha256(archivo.read()).hexdigest()
+        for bloque in iter(lambda: archivo.read(1 << 20), b""):
+            huella.update(bloque)
+    return huella.hexdigest()
+
+
+MOTIVO_SIN_BINARIO = "El binario del documento no se encuentra en la bóveda (posible eliminación no autorizada)."
+
+
+def _motivo_discrepancia(hash_actual: str, hash_registrado: str) -> str:
+    return (
+        f"La huella SHA-256 del binario ({hash_actual[:16]}…) no coincide con la registrada en la carga "
+        f"({hash_registrado[:16]}…): alteración no autorizada del archivo."
+    )
 
 
 def _registrar_violacion(
@@ -111,18 +130,60 @@ def leer_verificado(
 
     ruta = ruta_binario(documento)
     if not os.path.isfile(ruta):
-        motivo = "El binario del documento no se encuentra en la bóveda (posible eliminación no autorizada)."
-        _registrar_violacion(db, documento, None, motivo, usuario, ip_origen)
-        raise DocumentoAlteradoError(documento, f"[RIE-03] {motivo}")
+        _registrar_violacion(db, documento, None, MOTIVO_SIN_BINARIO, usuario, ip_origen)
+        raise DocumentoAlteradoError(documento, f"[RIE-03] {MOTIVO_SIN_BINARIO}")
 
     with open(ruta, "rb") as archivo:
         contenido = archivo.read()
     hash_actual = hashlib.sha256(contenido).hexdigest()
     if hash_actual != documento.hash_sha256:
-        motivo = (
-            f"La huella SHA-256 del binario ({hash_actual[:16]}…) no coincide con la registrada en la carga "
-            f"({documento.hash_sha256[:16]}…): alteración no autorizada del archivo."
-        )
+        motivo = _motivo_discrepancia(hash_actual, documento.hash_sha256)
         _registrar_violacion(db, documento, hash_actual, motivo, usuario, ip_origen)
         raise DocumentoAlteradoError(documento, f"[RIE-03] {motivo}")
     return contenido
+
+
+# ── P5 (PLUS-14): barrido programado de integridad ─────────────────────
+
+
+@dataclass
+class ResultadoBarrido:
+    revisados: int
+    alterados: int
+    duracion_ms: int
+
+
+def barrer(db: Session) -> ResultadoBarrido:
+    """
+    Recalcula la huella de todos los documentos íntegros de la bóveda. Una
+    discrepancia o un binario ausente se registra igual que en una lectura
+    (dictamen RIE-03, ALERTA_INTEGRIDAD y reevaluación del expediente), con la
+    nota de que lo detectó el barrido. Al final sella la constancia
+    VERIFICACION_INTEGRIDAD. Solo lee los binarios: no los sirve ni llama a la IA.
+    """
+    inicio = time.perf_counter()
+    revisados = alterados = 0
+    ids = [i for (i,) in db.query(Documento.id).filter(Documento.estado_integridad == INTEGRO).all()]
+    for documento_id in ids:
+        documento = db.get(Documento, documento_id)
+        if documento is None or documento.estado_integridad != INTEGRO:
+            continue  # otra lectura lo marcó mientras avanzaba el barrido
+        revisados += 1
+        hash_actual = huella_actual(documento)
+        if hash_actual == documento.hash_sha256:
+            continue
+        motivo = MOTIVO_SIN_BINARIO if hash_actual is None else _motivo_discrepancia(hash_actual, documento.hash_sha256)
+        _registrar_violacion(
+            db, documento, hash_actual, f"{motivo} Detectado en el barrido programado de integridad.",
+            bitacora.USUARIO_SISTEMA, None,
+        )
+        alterados += 1
+    duracion_ms = round((time.perf_counter() - inicio) * 1000)
+    bitacora.registrar(
+        db,
+        EVENTO_VERIFICACION_INTEGRIDAD,
+        detalle={"origen": "BARRIDO_PROGRAMADO", "documentos_revisados": revisados,
+                 "alterados": alterados, "duracion_ms": duracion_ms},
+    )
+    db.commit()
+    return ResultadoBarrido(revisados, alterados, duracion_ms)

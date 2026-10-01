@@ -1,0 +1,77 @@
+@startuml p5-actividad-excepciones-auditoria
+' P5 — Excepciones del DOC-05 en la auditoría y dictamen reproducible.
+' Trazabilidad: DOC-05, Tabla 1 («Documento ilegible, se requiere recarga»;
+' «Procesamiento diferido»); HU-33, HU-46, HU-47, HU-48; protocolo de auditoría
+' del DOC-05 (reproducibilidad); RF-13, RF-18, RNF-02.
+' Implementación: services/ai-service/controllers/analisis_controller.py,
+' pipelines/diferidos.py; services/core-service/controllers/dictamen_controller.py,
+' controllers/documento_controller.py y motor/cumplimiento.py
+' Actualiza F3 (auditoría de un documento).
+
+title P5 — Ilegible, procesamiento diferido y dictamen reproducible
+
+|Analista|
+start
+:Audita un documento
+(o «Auditar pendientes»);
+
+|ai-service · Nivel 3|
+:Resuelve el texto completo
+(memoria, disco u OCR);
+if (¿Texto insuficiente?\n(sin texto, o menos de LEGIBILIDAD_MIN_CARACTERES\npor página con confianza OCR menor a\nLEGIBILIDAD_MIN_CONFIANZA)) then (sí)
+  :Dictamen EN_REVISION de origen NIVEL_3:
+  «Documento ilegible, se requiere recarga»
+  (sin llamar al modelo);
+else (no)
+  |ai-service · Nivel 4|
+  :Llama a Groq (3 intentos con espera
+  progresiva, los del SDK);
+  if (¿Respondió?) then (sí)
+    :Dictamen del Nivel 4 con la versión de la
+    lectura y la huella de las instrucciones;
+  else (no)
+    |ai-service · pipelines/diferidos.py|
+    :Encola la auditoría (documento, titular,
+    usuario, intentos, próximo intento);
+    :Avisa al core: procesamiento diferido;
+    |core-service|
+    :Marca el documento como diferido y
+    registra PROCESAMIENTO_DIFERIDO
+    en la bitácora sellada;
+    :Alerta «Procesamiento diferido»
+    en lugar de «Sin auditar»;
+    |Analista|
+    :Ve que la auditoría se reintentará sola;
+    stop
+  endif
+endif
+
+|core-service · POST /dictamenes|
+:Guarda el dictamen con su versión
+de lectura y de instrucciones
+(protegidas por el trigger RN-05);
+:Quita la marca de diferido;
+:Reevalúa el expediente;
+stop
+
+|ai-service · ciclo de reintentos|
+start
+repeat
+  :Cada DIFERIDOS_INTERVALO_MINUTOS toma las
+  auditorías vencidas, una a la vez;
+  if (¿Cabe en el presupuesto de tokens\ny en la cuota del día?) then (sí)
+    :Repite la auditoría completa;
+    if (¿Respondió Groq?) then (sí)
+      :Persiste el dictamen y sale de la cola;
+    else (no)
+      :intentos + 1; espera creciente
+      (de 15 min a 24 h);
+      if (¿Se agotaron los intentos?) then (sí)
+        :Avisa al core: requiere acción manual;
+      endif
+    endif
+  else (no)
+    :Pospone hasta el siguiente ciclo;
+  endif
+repeat while (servicio activo)
+@enduml

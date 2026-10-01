@@ -27,6 +27,10 @@ EVENTO_ARCHIVO_PROTEGIDO = "ARCHIVO_PROTEGIDO"
 EVENTO_EXPORTACION_REPORTE = "EXPORTACION_REPORTE"
 # P3 — primer evento sellado: resume con su huella el historial previo al sellado.
 EVENTO_SELLO_GENESIS = "SELLO_GENESIS"
+# P5 (PLUS-14): constancia de cada barrido programado de integridad de la bóveda.
+EVENTO_VERIFICACION_INTEGRIDAD = "VERIFICACION_INTEGRIDAD"
+# P5 (DOC-05, Tabla 1): la IA no respondió y la auditoría quedó en la cola de reintentos.
+EVENTO_PROCESAMIENTO_DIFERIDO = "PROCESAMIENTO_DIFERIDO"
 
 
 class BitacoraAuditoria(Base):

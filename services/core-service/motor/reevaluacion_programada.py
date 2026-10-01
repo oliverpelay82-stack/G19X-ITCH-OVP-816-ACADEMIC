@@ -11,6 +11,10 @@ defecto; 0 la desactiva) y registra cada cambio de semáforo en la bitácora con
 la causa ``REEVALUACION_PROGRAMADA``.
 
 No ejecuta la IA: solo recalcula el semáforo con los dictámenes ya emitidos.
+
+P5 (PLUS-14): antes de reevaluar barre la integridad de toda la bóveda
+(``integridad.barrer``), así un archivo alterado que nadie abre se refleja en
+el semáforo de ese mismo ciclo. ``BARRIDO_INTEGRIDAD=false`` lo desactiva.
 """
 import asyncio
 import os
@@ -18,7 +22,7 @@ from dataclasses import dataclass
 
 from config.database import SessionLocal
 from models.expediente import Expediente
-from motor import cumplimiento
+from motor import cumplimiento, integridad
 
 CAUSA = "REEVALUACION_PROGRAMADA"
 
@@ -27,6 +31,24 @@ CAUSA = "REEVALUACION_PROGRAMADA"
 class ResultadoReevaluacion:
     evaluados: int
     cambios: int
+    barrido: integridad.ResultadoBarrido | None = None
+
+
+def barrido_activo() -> bool:
+    """El barrido de integridad corre en cada ciclo salvo con ``BARRIDO_INTEGRIDAD=false``."""
+    return os.getenv("BARRIDO_INTEGRIDAD", "true").strip().lower() not in ("false", "0", "no")
+
+
+def barrer_integridad() -> integridad.ResultadoBarrido:
+    """Barrido en su propia sesión: cada alteración se confirma con su dictamen y su evento."""
+    db = SessionLocal()
+    try:
+        return integridad.barrer(db)
+    except Exception:
+        db.rollback()
+        raise
+    finally:
+        db.close()
 
 
 def intervalo_horas() -> float:
@@ -38,7 +60,8 @@ def intervalo_horas() -> float:
 
 
 def reevaluar_todos() -> ResultadoReevaluacion:
-    """Reevalúa y sincroniza todos los expedientes en una sola transacción."""
+    """Barre la integridad de la bóveda y reevalúa y sincroniza todos los expedientes."""
+    barrido = barrer_integridad() if barrido_activo() else None
     db = SessionLocal()
     try:
         cache = cumplimiento.CacheInventarios()
@@ -49,7 +72,7 @@ def reevaluar_todos() -> ResultadoReevaluacion:
                 cambios += 1
             evaluados += 1
         db.commit()
-        return ResultadoReevaluacion(evaluados, cambios)
+        return ResultadoReevaluacion(evaluados, cambios, barrido)
     except Exception:
         db.rollback()
         raise
@@ -62,7 +85,10 @@ async def ciclo(horas: float) -> None:
     while True:
         try:
             r = await asyncio.to_thread(reevaluar_todos)
-            print(f"[core-service] Reevaluación programada: {r.evaluados} expedientes, {r.cambios} cambios de semáforo.")
+            integridad_txt = (f" Integridad: {r.barrido.revisados} documentos, {r.barrido.alterados} alterados."
+                              if r.barrido else "")
+            print(f"[core-service] Reevaluación programada: {r.evaluados} expedientes, {r.cambios} cambios de semáforo."
+                  f"{integridad_txt}")
         except Exception as exc:  # la tarea no debe detener el servicio; se reintenta en el siguiente ciclo
             print(f"[core-service] Reevaluación programada fallida: {exc}")
         await asyncio.sleep(horas * 3600)

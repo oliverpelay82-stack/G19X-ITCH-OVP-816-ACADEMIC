@@ -62,11 +62,14 @@ EVENTO_LEGIBLE = {
     "ARCHIVO_PROTEGIDO": "PDF protegido con contraseña",
     "EXPORTACION_REPORTE": "Reporte exportado",
     "SELLO_GENESIS": "Inicio del sellado de la bitácora",
+    "VERIFICACION_INTEGRIDAD": "Verificación de integridad de la bóveda",
+    "PROCESAMIENTO_DIFERIDO": "Auditoría diferida (la IA no respondió)",
 }
 ORIGEN_LEGIBLE = {
     "NIVEL_4_IA": "Análisis con IA",
     "RIE-03": "Verificación de integridad",
     "NIVEL_1": "Validación de la carga",
+    "NIVEL_3_ILEGIBLE": "Lectura del documento (ilegible)",
 }
 RESULTADO_LEGIBLE = {
     "CUMPLE": "cumple", "NO_CUMPLE": "no cumple", "NO_LOCALIZADO": "no localizado",
@@ -97,6 +100,26 @@ class DatosExpediente:
     evaluacion: EvaluacionExpediente
     dictamenes: dict[str, DictamenAuditoria] = field(default_factory=dict)   # por documento_id
     eventos: list[BitacoraAuditoria] = field(default_factory=list)
+    cadena: dict[str, Any] = field(default_factory=dict)       # motor.bitacora.verificar_cadena (PLUS-15)
+
+
+def _ancla(cadena: dict[str, Any]) -> list[tuple[str, Any]]:
+    """
+    Constancia de la cadena de custodia (P5, PLUS-15): el último eslabón sellado
+    antes de esta exportación. Cada copia del reporte funciona como ancla
+    externa: si alguien reescribiera la bitácora, su último sello dejaría de
+    coincidir con el que quedó impreso.
+    """
+    if not cadena:
+        return []
+    return [
+        ("Cadena de custodia", _texto_cadena(cadena)),
+        ("Último eslabón", f"Secuencia {cadena['ultima_secuencia']}" if cadena.get("ultima_secuencia") else "—"),
+        ("Último sello (SHA-256)", cadena.get("ultimo_hash") or "—"),
+        ("Verificada el", cadena.get("verificado_en") or "—"),
+        ("Uso del sello", "Conserve este reporte: si la bitácora se reescribiera, su último sello dejaría de "
+                          "coincidir con el aquí impreso."),
+    ]
 
 
 def _fecha(valor: Any) -> str:
@@ -204,6 +227,8 @@ def _evidencia(datos: DatosExpediente) -> list[dict[str, Any]]:
             "reglas": reglas or "—",
             "hash": dictamen.hash_sha256,
             "modelo": dictamen.modelo_utilizado or "—",
+            "lectura": dictamen.version_lectura or "no registrada",
+            "instrucciones": dictamen.version_instrucciones or "no registrada",
             "fecha": _fecha(dictamen.creado_en),
             "ratificacion": ratificacion,
             "observaciones": " ".join(texto_llano(o) for o in dictamen.observaciones or [] if o),
@@ -269,8 +294,9 @@ def expediente_xlsx(datos: DatosExpediente) -> bytes:
     libro = Workbook()
     resumen = libro.active
     resumen.title = "Dictamen"
-    _hoja_ficha(resumen, "Dictamen de Cumplimiento Documental", _ficha_expediente(datos))
-    fila = len(_ficha_expediente(datos)) + 5
+    ficha = _ficha_expediente(datos) + _ancla(datos.cadena)
+    _hoja_ficha(resumen, "Dictamen de Cumplimiento Documental", ficha)
+    fila = len(ficha) + 5
     resumen.cell(row=fila, column=1, value="Motivos del semáforo").font = Font(bold=True)
     for i, motivo in enumerate(datos.evaluacion.motivos, start=fila + 1):
         resumen.cell(row=i, column=2, value=motivo).alignment = Alignment(wrap_text=True)
@@ -290,6 +316,7 @@ def expediente_xlsx(datos: DatosExpediente) -> bytes:
         ("documento", "Documento", 32), ("archivo", "Archivo", 34), ("estatus", "Estatus", 14),
         ("preliminar", "Estatus preliminar", 16), ("origen", "Origen", 12), ("confianza", "Confianza", 11),
         ("reglas", "Reglas aplicadas", 40), ("hash", "SHA-256", 68), ("modelo", "Modelo", 20),
+        ("lectura", "Versión de la lectura", 44), ("instrucciones", "Instrucciones al modelo", 20),
         ("fecha", "Fecha", 17), ("ratificacion", "Ratificación humana", 50), ("observaciones", "Observaciones", 70),
     ], _evidencia(datos))
 
@@ -306,7 +333,7 @@ def expediente_xlsx(datos: DatosExpediente) -> bytes:
     return _guardar(libro)
 
 
-def global_xlsx(evaluados: list[tuple[Expediente, EvaluacionExpediente]]) -> bytes:
+def global_xlsx(evaluados: list[tuple[Expediente, EvaluacionExpediente]], cadena: dict[str, Any] | None = None) -> bytes:
     libro = Workbook()
     resumen = libro.active
     resumen.title = "Resumen"
@@ -324,6 +351,7 @@ def global_xlsx(evaluados: list[tuple[Expediente, EvaluacionExpediente]]) -> byt
         *[(f"Alertas {SEVERIDAD_LEGIBLE.get(s, s).lower()}", n) for s, n in indicadores["alertas_por_severidad"]],
         *[(f"Expedientes {etiqueta_expediente(t).lower()}s", n) for t, n in indicadores["por_tipo"]],
         ("Reporte emitido", _ahora()),
+        *_ancla(cadena or {}),
     ])
     _hoja_tabla(libro.create_sheet("Expedientes"), [
         ("folio", "Folio", 26), ("nombre", "Nombre", 30), ("tipo", "Tipo", 14), ("titular", "Titular", 38),
@@ -557,10 +585,19 @@ def expediente_pdf(datos: DatosExpediente) -> bytes:
                 [ancho * p for p in (0.2, 0.3, 0.3, 0.2)], e, ["Fecha", "Evento", "Usuario", "IP de origen"],
             ),
         ]
+    historia += _seccion_ancla(datos.cadena, e, ancho)
     return _documento_pdf(historia, f"Dictamen {exp.codigo_expediente}")
 
 
-def global_pdf(evaluados: list[tuple[Expediente, EvaluacionExpediente]]) -> bytes:
+def _seccion_ancla(cadena: dict[str, Any], e, ancho: float) -> list:
+    """Sección final del PDF con la constancia de la cadena (PLUS-15); vacía si no se verificó."""
+    pares = _ancla(cadena)
+    if not pares:
+        return []
+    return [KeepTogether([Paragraph("Constancia de la cadena de custodia", e["seccion"]), _ficha(pares, e, ancho)])]
+
+
+def global_pdf(evaluados: list[tuple[Expediente, EvaluacionExpediente]], cadena: dict[str, Any] | None = None) -> bytes:
     e = _estilos()
     ancho = letter[0] - 32 * mm
     ind = _indicadores(evaluados)
@@ -594,6 +631,7 @@ def global_pdf(evaluados: list[tuple[Expediente, EvaluacionExpediente]]) -> byte
             _tabla([[a["folio"], a["severidad"], a["titulo"], a["recomendacion"]] for a in alertas],
                    [ancho * p for p in (0.2, 0.1, 0.28, 0.42)], e, ["Folio", "Severidad", "Alerta", "Recomendación"]),
         ]
+    historia += _seccion_ancla(cadena or {}, e, ancho)
     return _documento_pdf(historia, "Reporte de Cumplimiento Documental")
 
 

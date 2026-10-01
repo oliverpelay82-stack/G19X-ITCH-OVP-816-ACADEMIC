@@ -130,6 +130,9 @@ export function AuditoriaIa({
         onCambio?.()
         toast.error('Integridad comprometida', err.message)
       } else {
+        // P5: con la IA sin responder, la auditoría queda diferida y el expediente
+        // muestra su alerta; se refresca para verla de inmediato.
+        if (err?.status === 503) onCambio?.()
         avisarFallo(toast, err, 'No se pudo auditar el documento')
       }
     }

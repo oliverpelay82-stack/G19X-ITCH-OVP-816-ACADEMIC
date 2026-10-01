@@ -16,10 +16,11 @@ from sqlalchemy.orm import Session
 from config.boveda import ruta_en_boveda
 from config.catalogo import etiqueta_documento
 from config.database import get_db
-from models.bitacora import EVENTO_INGESTA_DOCUMENTO
+from models.bitacora import EVENTO_INGESTA_DOCUMENTO, EVENTO_PROCESAMIENTO_DIFERIDO
 from models.documento import Documento
 from models.expediente import Expediente
 from motor import archivo_protegido, bitacora, cumplimiento, integridad
+from schemas.dictamen_schema import ProcesamientoDiferidoRequest
 from schemas.documento_schema import DocumentoResponse, TipoDocumentoEnum
 
 router = APIRouter(prefix="/api/v1/documentos", tags=["Documentos"])
@@ -330,3 +331,45 @@ def descargar_contenido(documento_id: str, request: Request, db: Session = Depen
         media_type=documento.mime_type,
         headers={"X-Hash-SHA256": documento.hash_sha256},
     )
+
+
+@router.post(
+    "/{documento_id}/procesamiento-diferido",
+    response_model=DocumentoResponse,
+    summary="Marcar la auditoría de un documento como diferida (DOC-05, Tabla 1)",
+)
+def marcar_procesamiento_diferido(
+    documento_id: str, dto: ProcesamientoDiferidoRequest, request: Request, db: Session = Depends(get_db)
+):
+    """
+    El ai-service avisa que la IA no respondió tras sus reintentos y que la
+    auditoría quedó en su cola (o que se agotaron los reintentos). El documento
+    queda marcado, la bitácora sella el evento PROCESAMIENTO_DIFERIDO y el
+    expediente muestra la alerta «Procesamiento diferido» hasta que se guarde
+    su dictamen.
+    """
+    documento = _documento_o_404(db, documento_id)
+    marca = {
+        "motivo": dto.motivo,
+        "intentos": dto.intentos,
+        "max_intentos": dto.max_intentos,
+        "proximo_intento": dto.proximo_intento.isoformat() if dto.proximo_intento else None,
+        "agotado": dto.agotado,
+        "desde": (documento.procesamiento_diferido or {}).get("desde") or datetime.now(timezone.utc).isoformat(),
+    }
+    documento.procesamiento_diferido = marca
+    bitacora.registrar(
+        db,
+        EVENTO_PROCESAMIENTO_DIFERIDO,
+        expediente_id=documento.expediente_id,
+        documento_id=documento.id,
+        ip_origen=_ip(request),
+        detalle=marca,
+    )
+    expediente = db.query(Expediente).filter(Expediente.id == documento.expediente_id).first()
+    if expediente:
+        cumplimiento.reevaluar(db, expediente, causa="PROCESAMIENTO_DIFERIDO", ip_origen=_ip(request))
+    db.commit()
+    db.refresh(documento)
+    return documento
+

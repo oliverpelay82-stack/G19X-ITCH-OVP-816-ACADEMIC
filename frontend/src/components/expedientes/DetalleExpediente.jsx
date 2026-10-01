@@ -80,7 +80,7 @@ function tonoMotivo(causa) {
   if (/no conforme|cambió|vencido desde|protegido|faltan documentos obligatorios de severidad|no acreditada|requiere su anexo/.test(texto)) {
     return 'bad'
   }
-  if (/sin auditar|pendiente|vence el|faltan documentos/.test(texto)) return 'warn'
+  if (/sin auditar|pendiente|vence el|faltan documentos|ilegible|diferido/.test(texto)) return 'warn'
   return 'ok'
 }
 

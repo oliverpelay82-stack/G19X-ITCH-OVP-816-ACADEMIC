@@ -22,7 +22,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from config import settings
-from pipelines import extraccion_pipeline
+from pipelines import diferidos, extraccion_pipeline
+from controllers import analisis_controller
 from controllers.health_controller import precargar as precargar_salud
 from controllers.health_controller import router as health_router
 from controllers.extraccion_controller import router as extraccion_router
@@ -61,7 +62,11 @@ def _diagnostico_arranque() -> None:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     _diagnostico_arranque()
+    # P5 (DOC-05, Tabla 1): reintento automático de las auditorías diferidas.
+    detener_diferidos = diferidos.iniciar_ciclo(analisis_controller.procesar_diferidos)
     yield
+    if detener_diferidos:
+        detener_diferidos.set()
     extraccion_pipeline.cerrar()
     print("[ai-service] Pool de OCR cerrado; servicio detenido.")
 

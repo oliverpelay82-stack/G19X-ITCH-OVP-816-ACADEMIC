@@ -22,6 +22,8 @@ ORIGEN_NIVEL_4 = "NIVEL_4_IA"
 ORIGEN_RIE_03 = "RIE-03"
 # PDF protegido con contraseña detectado en la carga (PLUS-02, DOC-05 Tabla 1).
 ORIGEN_NIVEL_1 = "NIVEL_1"
+# P5 (DOC-05, Tabla 1): la lectura no obtuvo texto suficiente; el modelo no se invocó.
+ORIGEN_NIVEL_3_ILEGIBLE = "NIVEL_3_ILEGIBLE"
 
 
 class DictamenAuditoria(Base):
@@ -59,6 +61,10 @@ class DictamenAuditoria(Base):
     # acta, con su cita: {"rol": "FIRMANTES"|"APODERADOS", "personas": [...]}.
     # El cotejo RN-03 se calcula con estos datos en cada evaluación.
     representacion_legal = Column(JSON, nullable=True)
+    # P5 (protocolo de auditoría del DOC-05): con qué lectura del Nivel 3 y con qué
+    # instrucciones al modelo se emitió el dictamen, para poder reproducirlo.
+    version_lectura = Column(String(160), nullable=True)
+    version_instrucciones = Column(String(40), nullable=True)
 
     # Huella del archivo al momento de la evaluación (protocolo DOC-05 §5.6).
     hash_sha256 = Column(String(64), nullable=False)

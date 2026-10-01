@@ -108,3 +108,20 @@ def ultimo_dictamen(documento_id: str) -> dict[str, Any] | None:
     except (requests.RequestException, ValueError):
         return None
     return dictamenes[0] if dictamenes else None
+
+
+def marcar_diferido(documento_id: str, aviso: dict[str, Any]) -> bool:
+    """
+    P5 (DOC-05, Tabla 1): avisa al core que la auditoría del documento quedó
+    diferida (o que se agotaron sus reintentos). Es un aviso: si el core no
+    responde, la cola del ai-service sigue igual y lo repite en el siguiente fallo.
+    """
+    try:
+        respuesta = _sesion.post(
+            f"{settings.CORE_BASE_URL}/api/v1/documentos/{documento_id}/procesamiento-diferido",
+            json=aviso, timeout=(TIMEOUT_CONEXION_SEGUNDOS, 10),
+        )
+        return respuesta.ok
+    except requests.RequestException:
+        return False
+

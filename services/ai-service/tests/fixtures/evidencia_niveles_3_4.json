@@ -12,17 +12,17 @@
       "temperatura_auditoria": 0.0,
       "disponible": true,
       "modelos_instalados": [
-        "whisper-large-v3-turbo",
-        "allam-2-7b",
-        "meta-llama/llama-prompt-guard-2-86m",
-        "canopylabs/orpheus-v1-english",
-        "whisper-large-v3",
-        "canopylabs/orpheus-arabic-saudi",
-        "openai/gpt-oss-120b",
         "meta-llama/llama-prompt-guard-2-22m",
         "qwen/qwen3.8-27b",
+        "openai/gpt-oss-safeguard-20b",
+        "openai/gpt-oss-120b",
         "openai/gpt-oss-20b",
-        "openai/gpt-oss-safeguard-20b"
+        "meta-llama/llama-prompt-guard-2-86m",
+        "allam-2-7b",
+        "whisper-large-v3-turbo",
+        "canopylabs/orpheus-v1-english",
+        "whisper-large-v3",
+        "canopylabs/orpheus-arabic-saudi"
       ],
       "modelo_requerido": "qwen/qwen3.8-27b",
       "modelo_disponible": true,
@@ -37,7 +37,7 @@
         "osd",
         "spa"
       ],
-      "idioma_configurado": "spa+eng",
+      "idioma_configurado": "spa",
       "tessdata_prefix": "C:\\Users\\HP\\Desktop\\RESIDENCIA PLURIONE\\motor de validacion\\services\\ai-service\\tessdata",
       "dpi_rasterizado": 300
     },
@@ -47,10 +47,10 @@
     },
     "umbral_confianza_hitl": 0.7,
     "cache_extracciones": {
-      "documentos_en_cache": 0,
+      "documentos_en_cache": 1,
       "capacidad": 64,
-      "documentos_persistidos": 9,
-      "lecturas_completas": 9,
+      "documentos_persistidos": 19,
+      "lecturas_completas": 19,
       "lecturas_completas_en_curso": 0
     }
   },
@@ -65,40 +65,48 @@
     "requiere_revision_humana": false,
     "umbral_confianza_hitl": 0.7,
     "observaciones": [],
+    "sello_digital_sat": true,
+    "paginas_con_sello": [],
     "detalle_paginas": [
       {
         "pagina": 1,
         "metodo": "VECTORIAL",
         "caracteres": 818,
-        "confianza": 0.9879
+        "confianza": 0.9879,
+        "inicio": 0,
+        "sellos": []
       }
     ],
-    "fuente_texto": "persistencia",
+    "fuente_texto": "extraccion",
     "archivo": "constancia_vectorial.pdf",
-    "tamanio_bytes": 5322
+    "tamanio_bytes": 5323
   },
   "extraccion_ocr": {
     "metodo_extraccion": "OCR",
-    "confidence_score": 0.9396,
+    "confidence_score": 0.9366,
     "total_paginas": 1,
-    "total_caracteres": 811,
+    "total_caracteres": 812,
     "paginas_procesadas_con_ocr": 1,
     "paginas_omitidas_ocr": 0,
     "extraccion_parcial": false,
     "requiere_revision_humana": false,
     "umbral_confianza_hitl": 0.7,
     "observaciones": [],
+    "sello_digital_sat": true,
+    "paginas_con_sello": [],
     "detalle_paginas": [
       {
         "pagina": 1,
         "metodo": "OCR",
-        "caracteres": 811,
-        "confianza": 0.9396
+        "caracteres": 812,
+        "confianza": 0.9366,
+        "inicio": 0,
+        "sellos": []
       }
     ],
-    "fuente_texto": "persistencia",
+    "fuente_texto": "extraccion",
     "archivo": "constancia_escaneada.pdf",
-    "tamanio_bytes": 323801
+    "tamanio_bytes": 323964
   },
   "analisis_conforme": {
     "tipo_documento_detectado": "CONSTANCIA_SITUACION_FISCAL",
@@ -106,35 +114,42 @@
     "rfc_estructura_valida": true,
     "match_titular": true,
     "razon_social_detectada": "PLURIONE S.A. DE C.V.",
-    "fecha_emision": "2026-01-15",
-    "fecha_vencimiento": "2027-01-15",
+    "fecha_emision": "2026-09-10",
+    "fecha_vencimiento": "2027-09-30",
     "vigente": true,
-    "dias_para_vencimiento": 112,
+    "dias_para_vencimiento": 365,
     "nivel_confianza": 0.95,
     "estatus_preliminar": "CONFORME",
     "requiere_revision_humana": false,
     "umbral_confianza_conforme": 0.85,
     "umbral_confianza_hitl": 0.7,
     "observaciones": [
-      "El texto es legible y los campos clave están presentes. Se detecta una marca de agua o encabezado indicando que es un documento de prueba con datos ficticios, lo cual no afecta la extracción de los datos visibles.",
+      "El texto es legible y los campos clave están presentes. Se detecta una degradación menor en la cadena original del sello digital (espacio dentro del RFC), pero no afecta la extracción de los datos de identificación principales.",
       "Dictamen CONFORME: titularidad y vigencia verificadas con confianza suficiente."
     ],
     "modelo_utilizado": "qwen/qwen3.8-27b",
     "contexto_llm": {
       "estrategia_contexto": "completo",
-      "caracteres_documento": 811,
-      "caracteres_contexto": 811,
-      "fragmentos_relevantes": []
+      "caracteres_documento": 812,
+      "caracteres_contexto": 812,
+      "fragmentos_relevantes": [],
+      "uso_tokens": {
+        "prompt_tokens": 1650,
+        "completion_tokens": 168,
+        "total_tokens": 1818,
+        "desde_cache": false
+      },
+      "uso_tokens_verificacion": null
     },
     "vigencia_nivel_2": {
       "tipo_evaluado": "CSF_SAT",
       "origen_tipo": "detectado",
       "disponible": true,
       "tipo_documento": "CSF_SAT",
-      "fecha_referencia": "2026-09-25",
+      "fecha_referencia": "2026-09-30",
       "resultado": "VIGENTE",
       "es_vigente": true,
-      "dias_calculados": null,
+      "dias_calculados": 20,
       "evaluaciones": [
         {
           "codigo_regla": "RCV-01",
@@ -143,15 +158,32 @@
           "criterio": "DIAS_PARA_VENCIMIENTO",
           "resultado": "VIGENTE",
           "limite_dias": 30,
-          "dias_calculados": 112,
-          "detalle": "El documento vence en 112 días (2027-01-15)."
+          "dias_calculados": 365,
+          "detalle": "El documento vence en 365 días (2027-09-30)."
+        },
+        {
+          "codigo_regla": "RCV-03",
+          "nombre_regla": "Caducidad Estricta de la Constancia de Situación Fiscal",
+          "severidad": "ALTA",
+          "criterio": "ANTIGUEDAD_DESDE_EMISION",
+          "resultado": "VIGENTE",
+          "limite_dias": 90,
+          "dias_calculados": 20,
+          "detalle": "El documento tiene 20 días naturales de antigüedad, dentro del máximo de 90 días (le quedan 70)."
         }
       ]
     },
+    "titularidad": "RFC",
+    "tipo_coincide": null,
+    "verificaciones": [],
+    "recomendaciones": [],
+    "representacion": null,
+    "sellos": [],
+    "sello_digital_sat": false,
     "fuente_texto": "cliente",
     "tiempos_ms": {
       "resolucion_texto": 0,
-      "inferencia": 31
+      "inferencia": 809
     }
   },
   "analisis_no_conforme": {
@@ -160,36 +192,43 @@
     "rfc_estructura_valida": true,
     "match_titular": false,
     "razon_social_detectada": "PLURIONE S.A. DE C.V.",
-    "fecha_emision": "2026-01-15",
-    "fecha_vencimiento": "2027-01-15",
+    "fecha_emision": "2026-09-10",
+    "fecha_vencimiento": "2027-09-30",
     "vigente": true,
-    "dias_para_vencimiento": 112,
+    "dias_para_vencimiento": 365,
     "nivel_confianza": 0.95,
     "estatus_preliminar": "NO_CONFORME",
     "requiere_revision_humana": false,
     "umbral_confianza_conforme": 0.85,
     "umbral_confianza_hitl": 0.7,
     "observaciones": [
-      "El texto es legible y contiene todos los campos requeridos para la clasificación. Se detecta una discrepancia entre el RFC del expediente (XAXX010101000) y el del documento (PLU180514AB3), pero se extrae el dato presente en el documento según las instrucciones.",
+      "El texto es legible y contiene todos los campos requeridos para la clasificación. Se detecta una inconsistencia entre el RFC del expediente (XAXX010101000) y el del documento (PLU180514AB3), pero se extrae el dato presente en el documento según las instrucciones.",
       "El RFC del documento (PLU180514AB3) no coincide con el del titular registrado (XAXX010101000).",
       "Dictamen NO_CONFORME: el documento no pertenece al titular del expediente."
     ],
     "modelo_utilizado": "qwen/qwen3.8-27b",
     "contexto_llm": {
       "estrategia_contexto": "completo",
-      "caracteres_documento": 811,
-      "caracteres_contexto": 811,
-      "fragmentos_relevantes": []
+      "caracteres_documento": 812,
+      "caracteres_contexto": 812,
+      "fragmentos_relevantes": [],
+      "uso_tokens": {
+        "prompt_tokens": 1645,
+        "completion_tokens": 193,
+        "total_tokens": 1838,
+        "desde_cache": false
+      },
+      "uso_tokens_verificacion": null
     },
     "vigencia_nivel_2": {
       "tipo_evaluado": "CSF_SAT",
       "origen_tipo": "detectado",
       "disponible": true,
       "tipo_documento": "CSF_SAT",
-      "fecha_referencia": "2026-09-25",
+      "fecha_referencia": "2026-09-30",
       "resultado": "VIGENTE",
       "es_vigente": true,
-      "dias_calculados": null,
+      "dias_calculados": 20,
       "evaluaciones": [
         {
           "codigo_regla": "RCV-01",
@@ -198,33 +237,71 @@
           "criterio": "DIAS_PARA_VENCIMIENTO",
           "resultado": "VIGENTE",
           "limite_dias": 30,
-          "dias_calculados": 112,
-          "detalle": "El documento vence en 112 días (2027-01-15)."
+          "dias_calculados": 365,
+          "detalle": "El documento vence en 365 días (2027-09-30)."
+        },
+        {
+          "codigo_regla": "RCV-03",
+          "nombre_regla": "Caducidad Estricta de la Constancia de Situación Fiscal",
+          "severidad": "ALTA",
+          "criterio": "ANTIGUEDAD_DESDE_EMISION",
+          "resultado": "VIGENTE",
+          "limite_dias": 90,
+          "dias_calculados": 20,
+          "detalle": "El documento tiene 20 días naturales de antigüedad, dentro del máximo de 90 días (le quedan 70)."
         }
       ]
     },
+    "titularidad": "AJENA",
+    "tipo_coincide": null,
+    "verificaciones": [],
+    "recomendaciones": [],
+    "representacion": null,
+    "sellos": [],
+    "sello_digital_sat": false,
     "fuente_texto": "cliente",
     "tiempos_ms": {
       "resolucion_texto": 0,
-      "inferencia": 61
+      "inferencia": 1264
     }
   },
   "chat": {
     "pregunta": "Cual es el codigo postal del domicilio fiscal registrado?",
-    "respuesta": "El código postal del domicilio fiscal registrado es **31200**.\n\nCita textual: \"Codigo Postal: 31200\"",
+    "respuesta": "El código postal del domicilio fiscal registrado es **31200**.\n\nEste dato se encuentra en la sección de datos del domicilio, donde se especifica: «Codigo Postal: 31200».",
+    "citas": [
+      {
+        "texto": "Codigo Postal: 31200",
+        "verificada": true,
+        "fuente": "documento"
+      }
+    ],
+    "con_estado_del_sistema": false,
+    "origen_respuesta": "MODELO",
     "modelo_utilizado": "qwen/qwen3.8-27b",
-    "caracteres_de_contexto": 811,
+    "caracteres_de_contexto": 812,
     "contexto_truncado": false,
     "contexto_llm": {
       "estrategia_contexto": "completo",
-      "caracteres_documento": 811,
-      "caracteres_contexto": 811,
-      "fragmentos_relevantes": []
+      "caracteres_documento": 812,
+      "caracteres_contexto": 812,
+      "fragmentos_relevantes": [],
+      "uso_tokens": {
+        "prompt_tokens": 747,
+        "completion_tokens": 45,
+        "total_tokens": 792,
+        "desde_cache": false
+      },
+      "presupuesto_tokens": {
+        "limite": 7600,
+        "usados_ultimo_minuto": 3656,
+        "estimado": 1074,
+        "reducido": false
+      }
     },
     "fuente_texto": "cliente",
     "tiempos_ms": {
       "resolucion_texto": 0,
-      "inferencia": 496
+      "inferencia": 970
     }
   }
 }
