@@ -234,15 +234,22 @@ export default function App() {
   }, [expedientes])
 
   const seccion = SECCIONES[tabActiva]
+  // Detalle de una empresa (#/empresas/<RFC>): una tercera miga con su razón social.
+  const empresaAbierta =
+    tabActiva === 'titulares' && ruta.folio ? titulares.find((t) => t.rfc === ruta.folio) ?? null : null
   const migas = [
     { id: INICIO_GRUPO[seccion.grupo] === tabActiva ? null : INICIO_GRUPO[seccion.grupo], label: seccion.grupo },
-    { id: tabActiva, label: seccion.miga },
+    { id: empresaAbierta ? tabActiva : null, label: seccion.miga },
+    ...(empresaAbierta ? [{ id: null, label: empresaAbierta.razon_social }] : []),
   ]
 
   // Expediente desplegado según la URL (#/expedientes/<folio>), una vez cargada la lista.
   const focoExpediente = useMemo(
-    () => (ruta.folio ? expedientes.find((e) => e.codigo_expediente === ruta.folio)?.id ?? null : null),
-    [ruta.folio, expedientes]
+    () =>
+      ruta.seccion === 'expedientes' && ruta.folio
+        ? expedientes.find((e) => e.codigo_expediente === ruta.folio)?.id ?? null
+        : null,
+    [ruta.seccion, ruta.folio, expedientes]
   )
   const folioDe = useCallback(
     (expedienteId) => expedientes.find((e) => e.id === expedienteId)?.codigo_expediente ?? null,
@@ -316,6 +323,8 @@ export default function App() {
                 expedientes={expedientes}
                 onAbrirExpediente={abrirExpediente}
                 onAperturarExpediente={aperturarExpediente}
+                rfcAbierto={tabActiva === 'titulares' ? ruta.folio : null}
+                onVerEmpresa={(rfc) => ir('titulares', rfc)}
                 loading={loading}
                 onRefresh={refrescar}
                 isOnline={health.core.online}

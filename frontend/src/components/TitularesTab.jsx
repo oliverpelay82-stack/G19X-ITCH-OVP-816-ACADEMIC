@@ -27,6 +27,7 @@ import { createTitular } from '../services/api.js'
 import { categoriaTitular, getEstadoBadge } from '../constants.js'
 import { formatFechaCorta, iniciales, rfcRegistrable, validarRfc } from '../utils/format.js'
 import FolioExpediente from './FolioExpediente.jsx'
+import DetalleEmpresa, { EmpresaNoEncontrada } from './DetalleEmpresa.jsx'
 
 /** M1: el dígito verificador del RFC no coincide (RFC de prueba o mal escrito); se aceptó con advertencia. */
 function AvisoRfc({ titular }) {
@@ -98,6 +99,15 @@ function AccionExpediente({ titular, expediente, onAbrir, onAperturar, isOnline,
 }
 
 /** Tarjeta de perfil corporativo: identidad, datos regulatorios y su expediente. */
+/** Razón social que abre el detalle de la empresa (#/empresas/<RFC>). */
+function NombreEmpresa({ titular, onVer, className = '' }) {
+  return (
+    <button type="button" className={`enlace-empresa ${className}`} onClick={() => onVer(titular.rfc)} title={`Ver el detalle de ${titular.razon_social}`}>
+      {titular.razon_social}
+    </button>
+  )
+}
+
 function TarjetaTitular({ titular, expedientes, ...acciones }) {
   const [ultimo] = expedientes
   return (
@@ -107,8 +117,8 @@ function TarjetaTitular({ titular, expedientes, ...acciones }) {
           {iniciales(titular.razon_social)}
         </span>
         <div className="profile-identity">
-          <h3 className="profile-name" title={titular.razon_social}>
-            {titular.razon_social}
+          <h3 className="profile-name">
+            <NombreEmpresa titular={titular} onVer={acciones.onVer} />
           </h3>
           <p className="profile-sub">
             {tipoPersona(titular.tipo_persona)} · alta {formatFechaCorta(titular.creado_en)}
@@ -152,6 +162,8 @@ export default function TitularesTab({
   expedientes = [],
   onAbrirExpediente,
   onAperturarExpediente,
+  rfcAbierto = null,
+  onVerEmpresa,
   loading,
   onRefresh,
   isOnline = true,
@@ -250,7 +262,26 @@ export default function TitularesTab({
   const acciones = {
     onAbrir: (id) => onAbrirExpediente?.(id),
     onAperturar: aperturar,
+    onVer: (rfc) => onVerEmpresa?.(rfc),
     isOnline,
+  }
+
+  if (rfcAbierto && !loading) {
+    const titular = titulares.find((t) => t.rfc === rfcAbierto)
+    const volver = () => onVerEmpresa?.(null)
+    return titular ? (
+      <DetalleEmpresa
+        titular={titular}
+        expedientes={expedientesPorTitular.get(titular.id) || []}
+        aviso={<AvisoRfc titular={titular} />}
+        onVolver={volver}
+        onAbrir={acciones.onAbrir}
+        onAperturar={aperturar}
+        isOnline={isOnline}
+      />
+    ) : (
+      <EmpresaNoEncontrada rfc={rfcAbierto} onVolver={volver} />
+    )
   }
 
   const vacio = !loading && filtrados.length === 0
@@ -384,7 +415,7 @@ export default function TitularesTab({
                             <span className="avatar" aria-hidden="true">
                               {iniciales(t.razon_social)}
                             </span>
-                            <span className="identity-name">{t.razon_social}</span>
+                            <NombreEmpresa titular={t} onVer={acciones.onVer} className="identity-name" />
                           </div>
                         </td>
                         <td>

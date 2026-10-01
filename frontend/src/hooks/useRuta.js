@@ -2,7 +2,8 @@ import { useCallback, useEffect, useState } from 'react'
 
 /**
  * Navegación en la URL con hash, sin dependencias: #/expedientes,
- * #/expedientes/EXP-…-001 (el expediente desplegado), #/empresas, #/boveda,
+ * #/expedientes/EXP-…-001 (el expediente desplegado), #/empresas,
+ * #/empresas/<RFC> (el detalle de la empresa), #/boveda,
  * #/alertas, #/reportes y #/reglas. Recargar conserva la vista y un enlace
  * lleva directo a un expediente. #/ui queda reservado al catálogo del sistema
  * de diseño en desarrollo (src/dev/RaizDesarrollo.jsx).
@@ -15,6 +16,8 @@ const SECCION_POR_RUTA = {
   reportes: 'reportes',
   reglas: 'reglas',
 }
+// Secciones con detalle en el segundo segmento: el folio del expediente o el RFC de la empresa.
+const CON_DETALLE = new Set(['expedientes', 'titulares'])
 const RUTA_POR_SECCION = Object.fromEntries(Object.entries(SECCION_POR_RUTA).map(([ruta, s]) => [s, ruta]))
 
 /** Pantalla de inicio: Expedientes, el centro operativo del sistema. */
@@ -23,14 +26,15 @@ export const SECCION_INICIO = 'expedientes'
 function leer() {
   const [segmento = '', folio = ''] = window.location.hash.replace(/^#\/?/, '').split('/')
   const seccion = SECCION_POR_RUTA[segmento] || SECCION_INICIO
-  return { seccion, folio: seccion === 'expedientes' && folio ? decodeURIComponent(folio) : null }
+  return { seccion, folio: CON_DETALLE.has(seccion) && folio ? decodeURIComponent(folio) : null }
 }
 
 export const hashDe = (seccion, folio) =>
   `#/${RUTA_POR_SECCION[seccion] || RUTA_POR_SECCION[SECCION_INICIO]}${folio ? `/${encodeURIComponent(folio)}` : ''}`
 
 /**
- * [ruta, ir]: ruta = { seccion, folio }; ir(seccion, folio, { reemplazar })
+ * [ruta, ir]: ruta = { seccion, folio }, donde `folio` es el detalle abierto
+ * (folio del expediente o RFC de la empresa); ir(seccion, folio, { reemplazar })
  * navega. Con `reemplazar`, la entrada del historial se sustituye (abrir o
  * plegar un expediente no debe llenar el botón «Atrás»).
  */

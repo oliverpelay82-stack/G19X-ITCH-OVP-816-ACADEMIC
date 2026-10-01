@@ -28,6 +28,7 @@ Estos diagramas complementan los del DOCUMENTO GENERAL (Cap. IV, Figuras 1–6, 
 | P7 — Operación trazable, fecha cierta y calidad | [p7-actividad-peticion-sello.puml](p7-actividad-peticion-sello.puml) | Actividades | Todas las peticiones y reevaluación programada | PLUS-21, PLUS-22; ISO/IEC 27001 A.8.15, NOM-151 | MR-25 |
 | P7 — Operación trazable, fecha cierta y calidad | [p7-actividad-nueva-auditoria.puml](p7-actividad-nueva-auditoria.puml) | Actividades | Actualiza F3 | M7; protocolo del DOC-05 | MR-25 |
 | QA — Validación cuantitativa (Fase 5, no PLUS) | [qa-actividad-evaluacion.puml](qa-actividad-evaluacion.puml) | Actividades | — | §15; RNF-01 a RNF-03; [VALIDACION_CUANTITATIVA.md](../VALIDACION_CUANTITATIVA.md) | — |
+| Detalle de la empresa (interfaz, no PLUS) | [ui-actividad-detalle-empresa.puml](ui-actividad-detalle-empresa.puml) | Actividades | Empresas → F2 | §13.1; RF-01, RF-05, RF-18, RF-19, RF-21; HU-02, HU-04, HU-27 | MR-12, MR-18 |
 
 ## Generar las imágenes
 

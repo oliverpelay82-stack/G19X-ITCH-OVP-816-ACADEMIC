@@ -113,6 +113,71 @@
   white-space: nowrap;
 }
 
+/* Razón social que abre el detalle de la empresa: subrayado solo al pasar. */
+.enlace-empresa {
+  display: block;
+  max-width: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: var(--r-xs);
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.enlace-empresa:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--line-strong);
+}
+
+.enlace-empresa:focus-visible {
+  box-shadow: var(--focus-ring);
+  outline: none;
+}
+
+/* ── Empresas: detalle de la empresa (#/empresas/<RFC>) ─────────── */
+.empresa-detalle {
+  gap: var(--s-4);
+}
+
+.empresa-volver {
+  display: flex;
+}
+
+.empresa-nombre {
+  font-size: var(--fs-h1);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+  color: var(--text-primary);
+}
+
+.empresa-aperturar {
+  flex: none;
+  margin-left: auto;
+}
+
+.empresa-datos {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border-bottom: 0;
+}
+
+.empresa-folio {
+  white-space: nowrap;
+}
+
+.empresa-seccion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+
 /* ── Expedientes: tarjetas con semáforo ────────────────────────── */
 .exp-list {
   display: flex;

@@ -1,0 +1,45 @@
+@startuml ui-actividad-detalle-empresa
+' Detalle de la empresa (titular): todos sus expedientes con su semáforo y sus alertas.
+' Trazabilidad: RF-01, RF-05, RF-18, RF-19, RF-21; HU-02, HU-04, HU-27; MR-12, MR-18.
+' Implementación prevista: frontend/src/components/DetalleEmpresa.jsx,
+' frontend/src/components/TitularesTab.jsx y frontend/src/hooks/useRuta.js.
+' Sin cambios en el backend: GET /api/v1/expedientes ya trae la evaluación de cada expediente.
+
+title Detalle de la empresa
+
+|Analista|
+start
+:En Empresas, abre una empresa
+(tarjeta o fila de la tabla);
+|Interfaz|
+:Navega a #/empresas/<RFC>
+(el enlace se puede compartir y recargar);
+if (¿Existe un titular con ese RFC?) then (no)
+  :Avisa «Empresa no encontrada»
+  y ofrece volver a Empresas;
+  stop
+else (sí)
+endif
+:Toma los expedientes del titular
+del listado ya cargado (con su evaluación);
+:Muestra los datos de la empresa:
+razón social, RFC con su verificación,
+tipo de persona, categoría y alta;
+:Resume en una línea: expedientes por semáforo,
+documentos vigentes y alertas por severidad;
+:Lista sus expedientes de lo más grave a lo conforme:
+folio, tipo, semáforo, índice de cumplimiento,
+obligatorios presentes y alertas;
+:Muestra las alertas más graves de la empresa
+con su recomendación (RF-21);
+|Analista|
+if (¿Qué hace?) then (abre un expediente)
+  |Interfaz|
+  :Navega a #/expedientes/<folio>;
+else (apertura uno nuevo)
+  |Interfaz|
+  :Abre el alta de expediente
+  con la empresa preseleccionada;
+endif
+stop
+@enduml
