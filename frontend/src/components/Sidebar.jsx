@@ -60,7 +60,7 @@ export default function Sidebar({ tabActiva, onTabChange, contadores }) {
                   aria-current={activo ? 'page' : undefined}
                 >
                   <span className="squircle" aria-hidden="true">
-                    <Icono size={15} />
+                    <Icono size={16} />
                   </span>
                   <span className="nav-label">{label}</span>
                   {contador?.total > 0 && (

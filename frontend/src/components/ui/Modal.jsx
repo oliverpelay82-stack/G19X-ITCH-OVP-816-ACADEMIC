@@ -100,7 +100,7 @@ export default function Modal({ title, subtitle, onClose, children, footer, size
           <div className="modal-acciones">
             {acciones}
             <button type="button" className="icon-button icon-button--sm" onClick={() => cerrar.current()} aria-label="Cerrar">
-              <X size={15} />
+              <X size={16} />
             </button>
           </div>
         </header>

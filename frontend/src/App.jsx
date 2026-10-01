@@ -4,6 +4,7 @@ import Header from './components/Header.jsx'
 import MetricsCards from './components/MetricsCards.jsx'
 import ExpedientesTab from './components/ExpedientesTab.jsx'
 import { SkeletonRows } from './components/Skeleton.jsx'
+import PaletaComandos from './components/PaletaComandos.jsx'
 import useToast from './hooks/useToast.js'
 import useTheme from './hooks/useTheme.js'
 import useRuta from './hooks/useRuta.js'
@@ -270,6 +271,19 @@ export default function App() {
     document.title = `${seccion.titulo} · PluriOne`
   }, [seccion.titulo])
 
+  // D1: Ctrl+K (⌘K en Mac) abre o cierra la paleta de comandos desde cualquier vista.
+  const [paletaAbierta, setPaletaAbierta] = useState(false)
+  useEffect(() => {
+    const alPulsar = (e) => {
+      if ((e.ctrlKey || e.metaKey) && !e.altKey && e.key.toLowerCase() === 'k') {
+        e.preventDefault()
+        setPaletaAbierta((abierta) => !abierta)
+      }
+    }
+    window.addEventListener('keydown', alPulsar)
+    return () => window.removeEventListener('keydown', alPulsar)
+  }, [])
+
   return (
     <div className="app-shell">
       <Sidebar tabActiva={tabActiva} onTabChange={setTabActiva} contadores={contadores} />
@@ -286,6 +300,7 @@ export default function App() {
           actualizado={actualizado}
           isDark={isDark}
           onToggleTheme={toggleTheme}
+          onAbrirPaleta={() => setPaletaAbierta(true)}
         />
 
         <main className="app-content">
@@ -355,6 +370,19 @@ export default function App() {
             </Suspense>
           </div>
         </main>
+        {paletaAbierta && (
+          <PaletaComandos
+            onCerrar={() => setPaletaAbierta(false)}
+            secciones={SECCIONES}
+            expedientes={expedientes}
+            documentos={documentos}
+            onIr={setTabActiva}
+            onAbrirExpediente={abrirExpediente}
+            isDark={isDark}
+            onToggleTheme={toggleTheme}
+            onRefresh={refrescar}
+          />
+        )}
       </div>
     </div>
   )

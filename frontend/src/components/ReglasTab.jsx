@@ -63,6 +63,7 @@ function Switch({ checked, onClick, loading, label }) {
       aria-label={label}
       data-tooltip={checked ? 'Pausar regla' : 'Activar regla'}
     >
+      {/* Única excepción a la escala de iconos (12, 14 y 16): cabe en la perilla del interruptor. */}
       <span className="switch-thumb">{loading && <Loader2 className="spin" size={9} strokeWidth={1.75} />}</span>
     </button>
   )
@@ -198,14 +199,23 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
     handleToggle(regla)
   }
 
-  const handleToggle = async (regla) => {
+  const handleToggle = async (regla, { deshaciendo = false } = {}) => {
     setTogglingId(regla.id)
     try {
       await toggleRegla(regla.id, !regla.activo)
-      toast.exito(
-        regla.activo ? 'Regla pausada' : 'Regla activada',
-        `${regla.codigo_regla} · ${regla.nombre_regla}`
-      )
+      const detalle = `${regla.codigo_regla} · ${regla.nombre_regla}`
+      if (deshaciendo) {
+        // `regla` es el estado que se deshace: si había quedado activa, vuelve a pausarse.
+        toast.info('Cambio deshecho', `${detalle} · la regla sigue ${regla.activo ? 'pausada' : 'activa'}`)
+      } else {
+        // «Deshacer» devuelve la regla al estado que confirmó el analista (sin volver a preguntar).
+        toast.exito(regla.activo ? 'Regla pausada' : 'Regla activada', detalle, {
+          accion: {
+            etiqueta: 'Deshacer',
+            alHacer: () => handleToggle({ ...regla, activo: !regla.activo }, { deshaciendo: true }),
+          },
+        })
+      }
       onRefresh()
     } catch (err) {
       toast.error('No se pudo cambiar el estado', err.message)
@@ -364,7 +374,7 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
                           aria-expanded={familiaAbierta(grupo.familia)}
                           onClick={() => alternarFamilia(grupo.familia)}
                         >
-                          <ChevronRight size={13} className="chevron" aria-hidden="true" />
+                          <ChevronRight size={14} className="chevron" aria-hidden="true" />
                           <span className="mono group-code">{grupo.familia}</span>
                           <span className="group-name">{grupo.meta.nombre}</span>
                           <span className="group-meta">{grupo.meta.nivel}</span>

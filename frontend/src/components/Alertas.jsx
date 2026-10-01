@@ -1,6 +1,7 @@
 import { ArrowUpRight, Lightbulb } from 'lucide-react'
 import { Button, Tag } from './ui/index.js'
 import { ALERTA_META, getSeveridadMeta } from '../constants.js'
+import FolioExpediente from './FolioExpediente.jsx'
 
 /**
  * Alerta del motor con su recomendación correctiva (RF-18, RF-21) en la
@@ -25,7 +26,7 @@ export function AlertaItem({ alerta, expediente, onAbrirExpediente }) {
         <p className="alerta-titulo">{alerta.titulo}</p>
         <p className="alerta-detalle">{alerta.detalle}</p>
         <p className="alerta-recomendacion">
-          <Lightbulb size={13} aria-hidden="true" />
+          <Lightbulb size={14} aria-hidden="true" />
           <span>
             <span className="sr-only">Recomendación: </span>
             {alerta.recomendacion}
@@ -35,7 +36,9 @@ export function AlertaItem({ alerta, expediente, onAbrirExpediente }) {
       {expediente && (
         <div className="alerta-expediente">
           <span className="eyebrow">Expediente</span>
-          <span className="mono alerta-expediente-folio">{expediente.codigo}</span>
+          <FolioExpediente expediente={expediente.completo} className="mono alerta-expediente-folio">
+            {expediente.codigo}
+          </FolioExpediente>
           <span className="alerta-expediente-nombre" title={expediente.nombre}>
             {expediente.nombre}
           </span>

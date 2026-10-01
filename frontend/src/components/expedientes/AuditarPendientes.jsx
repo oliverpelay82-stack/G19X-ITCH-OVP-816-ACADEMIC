@@ -14,6 +14,44 @@ const PASO = {
 }
 
 /**
+ * D5 · Anillo de progreso de la auditoría: se llena con cada documento
+ * terminado (auditado o con error) y muestra «n de m» al centro. Al terminar
+ * se pone en verde si todos se auditaron, o en ámbar si alguno falló.
+ */
+function AnilloProgreso({ hechos, total, fallidos, terminado }) {
+  const radio = 15
+  const circunferencia = 2 * Math.PI * radio
+  const avance = total ? hechos / total : 0
+  const tono = !terminado ? 'curso' : fallidos ? 'warn' : 'ok'
+  return (
+    <div
+      className={`anillo-progreso anillo-progreso--${tono}`}
+      role="progressbar"
+      aria-valuemin={0}
+      aria-valuemax={total}
+      aria-valuenow={hechos}
+      aria-label="Avance de la auditoría"
+    >
+      <svg viewBox="0 0 36 36" aria-hidden="true">
+        <circle className="anillo-progreso-pista" cx="18" cy="18" r={radio} />
+        <circle
+          className="anillo-progreso-avance"
+          cx="18"
+          cy="18"
+          r={radio}
+          strokeDasharray={circunferencia}
+          strokeDashoffset={circunferencia * (1 - avance)}
+        />
+      </svg>
+      <span className="anillo-progreso-cifra tabular">
+        {hechos}
+        <span className="anillo-progreso-total">/{total}</span>
+      </span>
+    </div>
+  )
+}
+
+/**
  * Validación del expediente con un solo botón (HU-32): audita en secuencia,
  * con reglas e IA, los documentos vigentes que aún no tienen dictamen. Es una
  * ejecución manual: subir un archivo nunca lo analiza por sí solo. Un fallo en
@@ -70,6 +108,21 @@ export function AuditarPendientes({ exp, iaOnline, onTerminado }) {
           {pendientes.length} {pendientes.length === 1 ? 'documento sin auditar' : 'documentos sin auditar'}. Se validan
           con reglas e IA uno por uno.
         </p>
+      )}
+      {pasos && (
+        <div className="auditoria-avance">
+          <AnilloProgreso
+            hechos={pasos.filter((p) => p.estado === 'hecho' || p.estado === 'error').length}
+            total={pasos.length}
+            fallidos={pasos.filter((p) => p.estado === 'error').length}
+            terminado={Boolean(resultado)}
+          />
+          <p className="field-hint">
+            {resultado
+              ? 'Auditoría terminada.'
+              : `Auditando ${pasos.findIndex((p) => p.estado === 'auditando') + 1 || pasos.length} de ${pasos.length}…`}
+          </p>
+        </div>
       )}
       {pasos && (
         <ol className="auditoria-pasos" aria-live="polite">

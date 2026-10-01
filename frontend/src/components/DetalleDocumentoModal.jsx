@@ -280,7 +280,7 @@ export default function DetalleDocumentoModal({ documento, lista, expediente, ia
         disabled={posicion <= 0 || auditando}
         title={auditando ? 'Espera a que termine la auditoría' : 'Documento anterior (Alt+↑)'}
       >
-        <ChevronUp size={15} />
+        <ChevronUp size={16} />
       </IconButton>
       <span className="tabular modal-nav-pos">
         {posicion + 1} / {lista.length}
@@ -292,7 +292,7 @@ export default function DetalleDocumentoModal({ documento, lista, expediente, ia
         disabled={posicion >= lista.length - 1 || auditando}
         title={auditando ? 'Espera a que termine la auditoría' : 'Documento siguiente (Alt+↓)'}
       >
-        <ChevronDown size={15} />
+        <ChevronDown size={16} />
       </IconButton>
     </div>
   )

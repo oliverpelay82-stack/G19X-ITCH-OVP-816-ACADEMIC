@@ -117,7 +117,7 @@ function FormularioRatificacion({ dictamen, onRatificado, onCancelar }) {
     <form className="ratificacion" onSubmit={enviar} noValidate>
       <header className="ratificacion-head">
         <span className="squircle" aria-hidden="true">
-          <UserCheck size={15} />
+          <UserCheck size={16} />
         </span>
         <div>
           <p className="ratificacion-title">Resolver revisión humana</p>
@@ -367,7 +367,7 @@ export default function DictamenesGuardados({
       <section className="dictamenes-guardados" aria-label="Dictámenes guardados">
         <div className="dictamen-linea">
           <p className="dictamen-linea-texto">
-            <Save size={13} strokeWidth={1.75} aria-hidden="true" />
+            <Save size={14} strokeWidth={1.75} aria-hidden="true" />
             Es el resultado de esta auditoría, guardado <Momento valor={vigente.creado_en} />
           </p>
           {historial}

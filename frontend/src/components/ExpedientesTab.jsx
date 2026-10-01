@@ -354,7 +354,7 @@ export default function ExpedientesTab({
                       )}
                     </span>
                   </span>
-                  <Destello valor={exp.estado_cumplimiento} tono={meta.tono}>
+                  <Destello valor={exp.estado_cumplimiento} tono={meta.tono} ladoCheck="izquierda">
                     <Badge tono={meta.tono} punto grande>
                       {meta.label}
                     </Badge>
@@ -368,7 +368,7 @@ export default function ExpedientesTab({
                     }
                   >
                     <span className="exp-indice-valor tabular">
-                      {indice?.bloqueado && <Lock size={11} strokeWidth={1.75} aria-label="Bloqueado" />}
+                      {indice?.bloqueado && <Lock size={12} strokeWidth={1.75} aria-label="Bloqueado" />}
                       {formatIndice(indice?.porcentaje)}
                       <span className="cell-muted"> cumplimiento</span>
                     </span>

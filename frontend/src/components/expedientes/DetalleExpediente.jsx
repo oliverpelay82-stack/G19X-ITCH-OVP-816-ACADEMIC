@@ -120,7 +120,7 @@ function QueHacer({ alertas }) {
     <>
       {recomendaciones.map((r) => (
         <p key={r} className="exp-motivo-accion">
-          <Lightbulb size={13} aria-hidden="true" />
+          <Lightbulb size={14} aria-hidden="true" />
           <span>
             <span className="sr-only">Qué hacer: </span>
             {r}
@@ -295,7 +295,7 @@ export function DetalleExpediente({ exp, subiendo, onSubir, iaOnline, onRefresh,
                               onClick={() => onAbrirDocumento(documento, delExpediente)}
                             >
                               <span className="cell-ellipsis">{f.doc.nombre_archivo_original}</span>
-                              <Maximize2 size={11} aria-hidden="true" />
+                              <Maximize2 size={12} aria-hidden="true" />
                             </button>
                           ) : (
                             <span className="cell-ellipsis" title={f.doc.nombre_archivo_original}>

@@ -107,6 +107,232 @@
   color: var(--text-primary);
 }
 
+/* «Deshacer»: acción de texto del aviso, con el peso del título. */
+.toast-accion {
+  flex: none;
+  align-self: center;
+  padding: 2px var(--s-2);
+  border-radius: var(--r-xs);
+  font-size: var(--fs-small);
+  font-weight: 600;
+  color: var(--text-primary);
+  transition: background-color var(--dur) var(--ease);
+}
+
+.toast-accion:hover {
+  background: var(--bg-subtle);
+}
+
+.toast-accion:focus-visible {
+  box-shadow: var(--focus-ring);
+  outline: none;
+}
+
+/* D2: folio con vista previa del expediente. */
+.folio-previa {
+  cursor: default;
+  text-decoration: underline dotted var(--line-strong);
+  text-underline-offset: 3px;
+  border-radius: var(--r-xs);
+}
+
+.folio-previa:focus-visible {
+  box-shadow: var(--focus-ring);
+  outline: none;
+}
+
+.folio-tarjeta {
+  position: fixed;
+  z-index: 300;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: var(--s-3);
+  border: var(--border-default);
+  border-radius: var(--r-md);
+  background: var(--bg-surface-elevated);
+  box-shadow: var(--shadow-pop);
+  font-size: var(--fs-small);
+  color: var(--text-secondary);
+  pointer-events: none;
+  animation: rise-in var(--dur) var(--ease);
+}
+
+.folio-tarjeta-titulo {
+  font-size: var(--fs-body);
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.folio-tarjeta-sub {
+  color: var(--text-muted);
+}
+
+.folio-tarjeta-datos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-1) var(--s-3);
+}
+
+.folio-tarjeta-datos strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.folio-tarjeta-alerta {
+  padding-top: 6px;
+  border-top: var(--border-subtle);
+}
+
+/* D1: paleta de comandos (Ctrl+K). Panel en el tercio superior, como en
+   Linear o Raycast: el campo manda, los resultados se agrupan y la opción
+   activa se marca con el fondo sutil. */
+.paleta-velo {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 12vh var(--s-4) var(--s-4);
+  background: var(--overlay);
+  animation: fade-in var(--dur) var(--ease);
+}
+
+.paleta {
+  display: flex;
+  flex-direction: column;
+  width: min(600px, 100%);
+  max-height: min(520px, 76vh);
+  overflow: hidden;
+  border: var(--border-default);
+  border-radius: var(--r-lg);
+  background: var(--bg-surface-elevated);
+  box-shadow: var(--shadow-modal);
+  animation: rise-in var(--dur-slow) var(--ease);
+}
+
+.paleta-campo {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  border-bottom: var(--border-default);
+  color: var(--icon);
+}
+
+.paleta-campo input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: none;
+  font-size: var(--fs-title);
+  color: var(--text-primary);
+  outline: none;
+}
+
+.paleta-campo input:focus,
+.paleta-campo input:focus-visible {
+  outline: none; /* el campo es el único control: el panel ya indica el foco */
+  box-shadow: none;
+}
+
+.paleta-campo input::-webkit-search-cancel-button {
+  display: none; /* Escape ya cierra la paleta */
+}
+
+.paleta-campo input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.paleta-lista {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--s-2);
+}
+
+.paleta-grupo {
+  padding: var(--s-2) var(--s-2) var(--s-1);
+  font-size: var(--fs-micro);
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.paleta-opcion {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  min-height: 40px;
+  padding: 6px var(--s-2);
+  border-radius: var(--r-sm);
+  color: var(--icon);
+  cursor: pointer;
+}
+
+.paleta-opcion[aria-selected='true'] {
+  background: var(--bg-subtle);
+  color: var(--icon-hover);
+}
+
+.paleta-opcion-texto {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.paleta-opcion-titulo,
+.paleta-opcion-sub {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.paleta-opcion-titulo {
+  font-size: var(--fs-body);
+  color: var(--text-primary);
+}
+
+.paleta-opcion-sub {
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  color: var(--text-muted);
+}
+
+.paleta-intro {
+  flex: none;
+  color: var(--text-muted);
+}
+
+.paleta-vacia {
+  padding: var(--s-6) var(--s-4);
+  text-align: center;
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+}
+
+.paleta-pie {
+  padding: var(--s-2) var(--s-4);
+  border-top: var(--border-subtle);
+  font-size: var(--fs-micro);
+  color: var(--text-muted);
+}
+
+.paleta-tecla {
+  display: inline-block;
+  min-width: 18px;
+  padding: 0 4px;
+  border: var(--border-default);
+  border-radius: var(--r-xs);
+  background: var(--bg-subtle);
+  font-family: var(--font-sans);
+  font-size: var(--fs-micro);
+  line-height: 16px;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
 /* Tooltips */
 [data-tooltip] {
   position: relative;

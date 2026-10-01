@@ -61,7 +61,7 @@ export function Citas({ contexto }) {
                 aria-expanded={activa}
                 title={f.pagina ? `Ver la página ${f.pagina} en el documento` : undefined}
               >
-                <FileText size={11} strokeWidth={1.75} aria-hidden="true" />
+                <FileText size={12} strokeWidth={1.75} aria-hidden="true" />
                 <span className="citation-title">{f.titulo || f.inicio || 'Fragmento'}</span>
                 <span className="citation-pos tabular">{f.pagina ? `p. ${f.pagina}` : `${f.posicion_pct}%`}</span>
               </button>
@@ -112,7 +112,7 @@ export function MetaInferencia({ modelo, duracion, origen }) {
   if (!procedencia) {
     return (
       <span className="inference-meta" title={nombreModelo(modelo)}>
-        <Zap size={11} strokeWidth={1.75} aria-hidden="true" />
+        <Zap size={12} strokeWidth={1.75} aria-hidden="true" />
         <span className="tabular">{formatDuracion(duracion)}</span> · análisis con IA
       </span>
     )
@@ -120,7 +120,7 @@ export function MetaInferencia({ modelo, duracion, origen }) {
   const Icono = procedencia.icono
   return (
     <span className="inference-meta" title={procedencia.detalle}>
-      <Icono size={11} strokeWidth={1.75} aria-hidden="true" />
+      <Icono size={12} strokeWidth={1.75} aria-hidden="true" />
       <span className="tabular">{formatDuracion(duracion)}</span> · {procedencia.texto}
     </span>
   )

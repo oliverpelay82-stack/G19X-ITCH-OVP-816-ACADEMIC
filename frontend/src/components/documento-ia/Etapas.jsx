@@ -17,10 +17,10 @@ export function Stepper({ etapas, compacto }) {
         return (
           <li key={e.id} className={`step step--${estado}`}>
             <span className="step-marker" aria-hidden="true">
-              {estado === 'activo' && <Loader2 className="spin" size={11} strokeWidth={1.75} />}
-              {estado === 'hecho' && <Check size={11} strokeWidth={1.75} />}
-              {estado === 'error' && <X size={11} strokeWidth={1.75} />}
-              {estado === 'omitido' && <Minus size={11} strokeWidth={1.75} />}
+              {estado === 'activo' && <Loader2 className="spin" size={12} strokeWidth={1.75} />}
+              {estado === 'hecho' && <Check size={12} strokeWidth={1.75} />}
+              {estado === 'error' && <X size={12} strokeWidth={1.75} />}
+              {estado === 'omitido' && <Minus size={12} strokeWidth={1.75} />}
               {(estado === 'pendiente' || estado === 'espera') && <span className="step-num">{i + 1}</span>}
             </span>
             <span className="step-body">

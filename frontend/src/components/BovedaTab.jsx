@@ -13,6 +13,7 @@ import { uploadDocumento } from '../services/api.js'
 import { avisarCarga } from '../utils/nivel1.js'
 import { ESTADO_DOCUMENTO, TIPO_DOCUMENTO_LABEL, TIPO_EXPEDIENTE_LABEL, TIPOS_DOCUMENTO, tiposParaCarga } from '../constants.js'
 import { formatBytes, formatFecha, formatFechaCorta, hashCorto } from '../utils/format.js'
+import FolioExpediente from './FolioExpediente.jsx'
 
 const COLUMNAS = 7
 
@@ -259,7 +260,7 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
                           {tipoCorto(doc.tipo_documento)}
                         </Tag>
                       </td>
-                      <td className="mono cell-mono">{exp ? exp.codigo_expediente : <span className="cell-muted">—</span>}</td>
+                      <td className="mono cell-mono">{exp ? <FolioExpediente expediente={exp} /> : <span className="cell-muted">—</span>}</td>
                       <td>
                         <EstadoEnBoveda estado={estadoVigente.get(doc.id)} evaluado={Boolean(exp?.evaluacion)} />
                       </td>

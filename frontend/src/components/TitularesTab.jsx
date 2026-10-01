@@ -26,6 +26,7 @@ import useDebounce from '../hooks/useDebounce.js'
 import { createTitular } from '../services/api.js'
 import { categoriaTitular, getEstadoBadge } from '../constants.js'
 import { formatFechaCorta, iniciales, rfcRegistrable, validarRfc } from '../utils/format.js'
+import FolioExpediente from './FolioExpediente.jsx'
 
 /** M1: el dígito verificador del RFC no coincide (RFC de prueba o mal escrito); se aceptó con advertencia. */
 function AvisoRfc({ titular }) {
@@ -129,8 +130,8 @@ function TarjetaTitular({ titular, expedientes, ...acciones }) {
         <div className="profile-exp">
           <EstadoExpediente expediente={ultimo} />
           {ultimo && (
-            <span className="mono cell-muted profile-folio" title={ultimo.codigo_expediente}>
-              {ultimo.codigo_expediente}
+            <span className="mono cell-muted profile-folio">
+              <FolioExpediente expediente={ultimo} />
               {expedientes.length > 1 && ` +${expedientes.length - 1}`}
             </span>
           )}

@@ -71,12 +71,12 @@ export const CASOS = [
     nombre: 'IconButton compacto (visor, modal)',
     actual: (
       <button type="button" className="icon-button icon-button--sm" onClick={nada} aria-label="Cerrar el visor">
-        <X size={15} />
+        <X size={16} />
       </button>
     ),
     nuevo: (
       <IconButton etiqueta="Cerrar el visor" compacto onClick={nada}>
-        <X size={15} />
+        <X size={16} />
       </IconButton>
     ),
   },
@@ -84,12 +84,12 @@ export const CASOS = [
     nombre: 'IconButton de refresco con tooltip, ocupado (Header)',
     actual: (
       <button type="button" className="icon-button is-busy" onClick={nada} disabled data-tooltip="Actualizar datos" aria-label="Actualizar datos">
-        <RefreshCw size={15} className="refresh-icon" />
+        <RefreshCw size={16} className="refresh-icon" />
       </button>
     ),
     nuevo: (
       <IconButton etiqueta="Actualizar datos" tooltip ocupado onClick={nada} disabled>
-        <RefreshCw size={15} className="refresh-icon" />
+        <RefreshCw size={16} className="refresh-icon" />
       </IconButton>
     ),
   },
@@ -295,13 +295,13 @@ export const CASOS = [
     nombre: 'Tooltip sobre un botón de icono (Header)',
     actual: (
       <button type="button" className="icon-button" data-tooltip="Tema oscuro" aria-label="Tema oscuro">
-        <X size={15} />
+        <X size={16} />
       </button>
     ),
     nuevo: (
       <Tooltip texto="Tema oscuro" nombra>
         <button type="button" className="icon-button">
-          <X size={15} />
+          <X size={16} />
         </button>
       </Tooltip>
     ),

@@ -39,6 +39,7 @@ export default function AlertasTab({ expedientes, loading, onAbrirExpediente }) 
               razon_social: exp.titular?.razon_social || '',
               rfc: exp.titular?.rfc || '',
               tipo: exp.tipo_expediente,
+              completo: exp, // para la vista previa del folio (D2)
             },
           }))
         )

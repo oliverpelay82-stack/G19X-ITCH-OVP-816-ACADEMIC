@@ -35,7 +35,7 @@ export default function CambiosSemaforo() {
 
   return (
     <TarjetaGrafica
-      titulo="Cambios del semáforo"
+      titulo="Tendencia del semáforo"
       subtitulo={eventos ? `Últimos ${DIAS} días · ${mejoras} ${mejoras === 1 ? 'mejora' : 'mejoras'}, ${deterioros} ${deterioros === 1 ? 'deterioro' : 'deterioros'}` : `Últimos ${DIAS} días`}
     >
       {error && <p className="grafica-vacia">{error}</p>}

@@ -14,6 +14,7 @@ import HallazgosPorArea from './graficas/HallazgosPorArea.jsx'
 import Vencimientos from './graficas/Vencimientos.jsx'
 import { formatIndice, indiceDe } from '../utils/indice.js'
 import { ALERTA_META, getEstadoBadge, TIPO_EXPEDIENTE_LABEL, TIPOS_EXPEDIENTE } from '../constants.js'
+import FolioExpediente from './FolioExpediente.jsx'
 
 const COLUMNAS = 6
 
@@ -210,7 +211,7 @@ export default function ReportesTab({
                           <span className="cell-stack">
                             <span className="identity-name">{e.titular?.razon_social || 'Titular no disponible'}</span>
                             <span className="cell-sub mono">
-                              {e.codigo_expediente}
+                              <FolioExpediente expediente={e} />
                               {e.nombre ? ` · ${e.nombre}` : ''}
                             </span>
                           </span>

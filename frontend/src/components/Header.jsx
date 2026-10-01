@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ChevronRight, Moon, RefreshCw, Sun } from 'lucide-react'
+import { ChevronRight, Moon, RefreshCw, Search, Sun } from 'lucide-react'
 import SystemHealth from './SystemHealth.jsx'
 import { IconButton } from './ui/index.js'
 
@@ -49,6 +49,7 @@ export default function Header({
   actualizado,
   isDark,
   onToggleTheme,
+  onAbrirPaleta,
 }) {
   const desplazado = useDesplazado()
   // useTheme marca la raíz mientras dura la transición del tema.
@@ -87,8 +88,13 @@ export default function Header({
 
         <Actualizado momento={actualizado} />
 
+        {/* D1: la paleta de comandos también se abre con Ctrl+K (⌘K en Mac). */}
+        <IconButton etiqueta="Buscar o ir a… (Ctrl+K)" data-tooltip="Buscar · Ctrl+K" aria-haspopup="dialog" onClick={onAbrirPaleta}>
+          <Search size={16} />
+        </IconButton>
+
         <IconButton etiqueta="Actualizar datos" tooltip ocupado={refrescando} onClick={onRefresh} disabled={refrescando}>
-          <RefreshCw size={15} className="refresh-icon" />
+          <RefreshCw size={16} className="refresh-icon" />
         </IconButton>
 
         <IconButton
@@ -100,7 +106,7 @@ export default function Header({
         >
           {/* La clave nueva vuelve a montar el icono y, solo durante el cambio de
               tema (no al cargar la página), gira al entrar. */}
-          {isDark ? <Sun key="sol" size={15} className={claseIcono} /> : <Moon key="luna" size={15} className={claseIcono} />}
+          {isDark ? <Sun key="sol" size={16} className={claseIcono} /> : <Moon key="luna" size={16} className={claseIcono} />}
         </IconButton>
       </div>
     </header>

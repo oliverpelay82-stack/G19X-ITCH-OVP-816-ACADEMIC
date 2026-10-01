@@ -108,7 +108,7 @@ Bandas del DOC-08 §6.2: ≥ 0.85 CONFORME; de 0.70 a 0.84 y por debajo de 0.70,
 
 ## 5. Frontend (`frontend/`, React 19)
 
-- Estilo «White & Warm Minimalist»: blanco y neutros cálidos, sin gradientes, neones ni desenfoques. `Inter` para el texto y `JetBrains Mono` con cifras tabulares para huellas, folios, RFC y fechas. Iconos de `lucide-react` con `strokeWidth` 1.5.
+- Estilo «White & Warm Minimalist»: blanco y neutros cálidos, sin gradientes, neones ni desenfoques. `Inter` para el texto y `JetBrains Mono` con cifras tabulares para huellas, folios, RFC y fechas. Iconos de `lucide-react` con `strokeWidth` 1.5 y solo tres tamaños: 12, 14 y 16 (única excepción comentada: el cargador de la perilla del interruptor de reglas).
 - Usar exclusivamente tokens semánticos del sistema de diseño, definidos en `src/index.css` (`var(--ok)`, `var(--warn-bg)`, `var(--text-primary)`, `var(--s-4)`…), nunca valores hexadecimales literales en componentes; el tema oscuro redefine los mismos tokens. El color solo comunica estado y siempre va acompañado de su etiqueta.
 - Las vistas usan las primitivas de `src/components/ui/` (exportadas en `ui/index.js`), no las clases `btn`, `badge`, `tag` o `card` escritas a mano. Todo cambio de una primitiva lleva su caso en `scripts/equivalencia-ui.jsx`.
 - **Lenguaje llano (RNF-08):** ningún texto visible cita RF-, RN-, RNF-, HU-, DOC-, niveles del pipeline, el proveedor de IA ni códigos internos, salvo el código de una regla donde la identifica. El core redacta motivos, alertas y reportes con `motor/redaccion.py`.
@@ -120,6 +120,7 @@ Bandas del DOC-08 §6.2: ≥ 0.85 CONFORME; de 0.70 a 0.84 y por debajo de 0.70,
   - el éxito de una auditoría no se anuncia con un aviso flotante;
   - la meta de cada respuesta del chat indica su procedencia.
 - El catálogo `#/ui` (`src/dev/`) solo existe en desarrollo: nunca importar `src/dev/` de forma estática.
+- Fase B: `PaletaComandos.jsx` (Ctrl+K, montada en `App.jsx`; búsqueda en `utils/busqueda.js`), `FolioExpediente.jsx` para todo folio mostrado fuera de su expediente (`enfocable={false}` dentro de un botón), `toast.*(titulo, detalle, { accion })` para un cambio reversible (nunca para la ratificación), `Destello` con su check al pasar a conforme y el anillo de `AuditarPendientes`.
 - Carga por vista: `App.jsx` importa con `React.lazy` todas las vistas salvo Expedientes (la de inicio). Recharts solo se importa desde `components/graficas/` (Reportes).
 - Gráficas (`components/graficas/`): `comun.jsx` (tarjeta, leyenda, tooltip y «Ver datos»), `estilo.js` (ejes, retícula, separación, `animar()`) y la lógica sin React en archivos `.js`. Cada gráfica lleva leyenda con cifras, tooltip y tabla de datos. Sus colores son los tokens `--chart-*` de `index.css`, validados con un verificador de paletas; uno nuevo se valida antes de usarse. El texto nunca lleva el color de la serie. Los reportes PDF y Excel usan los mismos colores (`GRAFICA_ESTADO`, `GRAFICA_SEVERIDAD` en `motor/reportes.py`).
 

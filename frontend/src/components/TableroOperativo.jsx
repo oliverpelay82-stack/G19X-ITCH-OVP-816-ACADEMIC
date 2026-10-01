@@ -4,6 +4,7 @@ import { Card } from './ui/index.js'
 import { getBitacora } from '../services/api.js'
 import { ALERTA_META, getEstadoBadge, TIPO_DOCUMENTO_LABEL } from '../constants.js'
 import { formatFechaCorta } from '../utils/format.js'
+import FolioExpediente from './FolioExpediente.jsx'
 
 const MAX_FILAS = 6
 const DIAS_EVOLUCION = 30
@@ -50,7 +51,7 @@ function ProximosVencimientos({ expedientes, onAbrirExpediente }) {
                   <span className={`status-dot status-dot--${tono}`} aria-hidden="true" />
                   <span className="tablero-fila-texto">
                     <span className="tablero-fila-titulo">{TIPO_DOCUMENTO_LABEL[d.tipo_documento] || d.tipo_documento}</span>
-                    <span className="tablero-fila-sub mono">{d.expediente.codigo_expediente}</span>
+                    <FolioExpediente expediente={d.expediente} enfocable={false} className="tablero-fila-sub mono" />
                   </span>
                   <span className={`tablero-fila-dato cell-${tono} tabular`}>{textoVencimiento(d.dias_para_vencer ?? 0)}</span>
                   <ArrowUpRight size={12} aria-hidden="true" />
@@ -126,7 +127,7 @@ function PendientesAnalista({ expedientes, onAbrirExpediente }) {
                       onClick={() => onAbrirExpediente?.(expediente.id)}
                       title={expediente.titular?.razon_social || undefined}
                     >
-                      <span className="mono">{expediente.codigo_expediente}</span>
+                      <FolioExpediente expediente={expediente} enfocable={false} className="mono" />
                       {/* Espacio de no separación: el chip es inline-flex y recorta el espacio inicial del texto. */}
                       {n > 1 ? ` · ${n}` : ''}
                     </button>

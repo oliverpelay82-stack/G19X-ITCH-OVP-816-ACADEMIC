@@ -28,7 +28,7 @@ function AvisoEvidencia({ estado, onIrA, paginaActual }) {
   if (estado.buscando) {
     return (
       <p className="visor-aviso" role="status">
-        <Loader2 className="spin" size={13} aria-hidden="true" />
+        <Loader2 className="spin" size={14} aria-hidden="true" />
         Ubicando la cita en el documento… en un escaneo, la primera búsqueda reconoce las páginas.
       </p>
     )
@@ -179,20 +179,20 @@ export default function VisorDocumento({ doc, busqueda, onCerrar }) {
           </div>
         </div>
         <IconButton etiqueta="Cerrar el visor" compacto onClick={onCerrar}>
-          <X size={15} />
+          <X size={16} />
         </IconButton>
       </header>
 
       <div className="visor-controles">
         <div className="visor-paginacion">
           <IconButton etiqueta="Página anterior" compacto onClick={() => irA(pagina - 1)} disabled={pagina <= 1}>
-            <ChevronLeft size={15} />
+            <ChevronLeft size={16} />
           </IconButton>
           <span className="tabular visor-contador">
             {total ? `${pagina} / ${total}` : '— / —'}
           </span>
           <IconButton etiqueta="Página siguiente" compacto onClick={() => irA(pagina + 1)} disabled={!total || pagina >= total}>
-            <ChevronRight size={15} />
+            <ChevronRight size={16} />
           </IconButton>
         </div>
         <Segmented label="Zoom del visor" valor={zoom} onChange={setZoom} opciones={ZOOMS} />

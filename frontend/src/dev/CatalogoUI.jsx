@@ -147,7 +147,7 @@ export default function CatalogoUI() {
         </div>
         <div className="toolbar-grupo">
           <IconButton etiqueta={isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'} tooltip onClick={toggleTheme}>
-            {isDark ? <Sun size={15} /> : <Moon size={15} />}
+            {isDark ? <Sun size={16} /> : <Moon size={16} />}
           </IconButton>
           <Button icono={ArrowLeft} onClick={() => (window.location.hash = '')}>
             Volver al panel
@@ -276,13 +276,13 @@ export default function CatalogoUI() {
           </Muestra>
           <Muestra etiqueta="IconButton">
             <IconButton etiqueta="Cerrar" compacto>
-              <X size={15} />
+              <X size={16} />
             </IconButton>
             <IconButton etiqueta="Actualizar datos" tooltip ocupado={cargando} onClick={simularCarga}>
-              <RefreshCw size={15} className="refresh-icon" />
+              <RefreshCw size={16} className="refresh-icon" />
             </IconButton>
             <IconButton etiqueta="Deshabilitado" disabled>
-              <X size={15} />
+              <X size={16} />
             </IconButton>
           </Muestra>
         </Card>

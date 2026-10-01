@@ -129,7 +129,7 @@ export default function MetricsCards({ titulares, expedientes, documentos, loadi
       {tarjetas.map(({ id, icon: Icono, label, valor, pie, progreso, titulo }) => (
         <Card as="article" className="metric-card" key={id} title={titulo}>
           <span className="squircle" aria-hidden="true">
-            <Icono size={15} />
+            <Icono size={16} />
           </span>
           <div className="metric-text">
             <p className="metric-label">{label}</p>

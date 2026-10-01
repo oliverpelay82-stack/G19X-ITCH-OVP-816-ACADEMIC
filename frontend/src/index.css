@@ -429,6 +429,46 @@ code {
   background: var(--ok-solid);
 }
 
+/* D4: check que se traza (420 ms), se sostiene y se desvanece; sin confeti. */
+.check-dibujado {
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  margin-top: -7px;
+  fill: none;
+  stroke: var(--ok-solid);
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  pointer-events: none;
+  animation:
+    check-trazo 420ms var(--ease) 120ms forwards,
+    check-salida var(--dur-slow) var(--ease) 1800ms forwards;
+}
+
+.check-dibujado--derecha {
+  left: calc(100% + 4px);
+}
+
+.check-dibujado--izquierda {
+  right: calc(100% + 6px);
+}
+
+@keyframes check-trazo {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes check-salida {
+  to {
+    opacity: 0;
+  }
+}
+
 .destello--warn::after {
   background: var(--warn-solid);
 }
