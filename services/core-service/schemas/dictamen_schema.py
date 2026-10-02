@@ -43,9 +43,6 @@ class DictamenCreate(BaseModel):
     version_instrucciones: Optional[str] = Field(
         None, max_length=40, description="P5: huella de las instrucciones al modelo"
     )
-    qr_sat: Optional[dict[str, Any]] = Field(
-        None, description="P6 (PLUS-17): lectura del QR del SAT (url, dominio_sat, rfc_qr, coincide_rfc)"
-    )
     version_catalogo: Optional[str] = Field(
         None, max_length=20, description="P6 (M6): versión del catálogo de reglas (cat-…)"
     )
@@ -102,7 +99,6 @@ class DictamenResponse(BaseModel):
     modelo_utilizado: Optional[str] = None
     version_lectura: Optional[str] = None
     version_instrucciones: Optional[str] = None
-    qr_sat: Optional[dict[str, Any]] = None
     version_catalogo: Optional[str] = None
     version_reglas_tipo: Optional[str] = None
     representacion_legal: Optional[dict[str, Any]] = None
@@ -140,26 +136,6 @@ class HallazgoCadenaResponse(BaseModel):
     problema: str
 
 
-class SelloTiempoResponse(BaseModel):
-    """Sello de tiempo RFC 3161 sobre un eslabón de la bitácora (P7, PLUS-22)."""
-    id: str
-    secuencia: int
-    evento_id: str
-    hash_evento: str
-    autoridad: str
-    politica: Optional[str] = None
-    numero_serie: str
-    fecha_sello: str
-    origen: str
-    # Si la huella del eslabón cubierto sigue coincidiendo con la cadena (None: no se verificó).
-    coincide: Optional[bool] = None
-
-
-class SolicitudSelloTiempoResponse(BaseModel):
-    nuevo: bool
-    sello: SelloTiempoResponse
-
-
 class VerificacionCadenaResponse(BaseModel):
     """Resultado de recalcular la cadena de la bitácora (P3, PLUS-05)."""
     integra: bool
@@ -172,8 +148,6 @@ class VerificacionCadenaResponse(BaseModel):
     algoritmo: str
     total_hallazgos: int = 0
     hallazgos: list[HallazgoCadenaResponse] = Field(default_factory=list)
-    # P7 (PLUS-22): último sello de tiempo de un tercero y si sigue coincidiendo.
-    sello_tiempo: Optional[SelloTiempoResponse] = None
 
 
 class ProcesamientoDiferidoRequest(BaseModel):

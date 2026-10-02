@@ -90,15 +90,6 @@ if os.path.isdir(TESSDATA_PREFIX):
 # mínimo recomendado para texto de 8-10 pt en documentos fiscales escaneados.
 OCR_DPI: int = int(os.getenv("OCR_DPI", "300"))
 
-# Segunda lectura de las zonas con sellos en tinta de color (pipelines/sellos.py):
-# recupera el texto impreso que un sello tapa y registra la presencia de los
-# sellos. Rasteriza las páginas escaneadas a color (el triple de memoria por
-# hoja). Apagada por defecto: ningún DOC exige detectar sellos en tinta de color
-# (el DOC-08 pide el Sello Digital SAT, que se detecta en el texto) y en el acta
-# real medida la relectura no se activó en ninguna página. Se decide su retiro
-# con el Gold Standard escaneado (docs/VALIDACION_CUANTITATIVA.md §5).
-OCR_RELEER_SELLOS: bool = os.getenv("OCR_RELEER_SELLOS", "false").strip().lower() in ("1", "true", "si", "sí", "yes")
-
 # ── Umbrales del pipeline (DOC-05 y DOC-08) ─────────────────────────
 # Si una página vectorial rinde menos caracteres que esto, se asume que es una
 # imagen escaneada embebida y se deriva a la ruta de OCR.

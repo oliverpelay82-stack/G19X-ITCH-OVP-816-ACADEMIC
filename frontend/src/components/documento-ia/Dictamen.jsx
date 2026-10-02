@@ -190,41 +190,14 @@ function VerificacionContenido({ verificaciones }) {
   )
 }
 
-/**
- * Sellos que detectó el Nivel 3 (tinta de color) y el Sello Digital SAT
- * (DOC-08). Son evidencia informativa: un clic en la página los resalta en el
- * visor del documento.
- */
-function SellosDetectados({ sellos = [], selloDigital }) {
-  const evidencia = useEvidencia()
-  if (!sellos.length && !selloDigital) return null
-  const porPagina = new Map()
-  for (const s of sellos) porPagina.set(s.pagina, [...(porPagina.get(s.pagina) || []), s])
+/** Sello Digital SAT detectado en el texto (DOC-08): evidencia informativa. */
+function SelloDigitalSat() {
   return (
     <div className="sellos">
       <p className="eyebrow">Sellos</p>
       <div className="sellos-fila">
-        {selloDigital && <Badge>Sello Digital SAT</Badge>}
-        {[...porPagina.entries()].map(([pagina, zonas]) =>
-          evidencia ? (
-            <button
-              key={pagina}
-              type="button"
-              className="chip chip--xs"
-              onClick={() => evidencia.mostrarZonas(pagina, zonas)}
-              title="Ver el sello resaltado en el documento"
-            >
-              p. {pagina}
-              {zonas.length > 1 ? ` · ${zonas.length}` : ''}
-            </button>
-          ) : (
-            <Badge key={pagina}>p. {pagina}</Badge>
-          )
-        )}
+        <Badge>Sello Digital SAT</Badge>
       </div>
-      {sellos.length > 0 && (
-        <p className="field-hint">Sellos en tinta de color detectados en el documento original.</p>
-      )}
     </div>
   )
 }
@@ -236,7 +209,6 @@ function SellosDetectados({ sellos = [], selloDigital }) {
 function ResumenDictamen({ dictamen, vigencia, ids, onIr }) {
   const verificaciones = dictamen.verificaciones || []
   const localizados = verificaciones.filter((v) => v.resultado === 'CUMPLE').length
-  const paginasConSello = new Set((dictamen.sellos || []).map((s) => s.pagina)).size
   const titularidad = TITULARIDAD[dictamen.titularidad]
   const puntos = [
     titularidad && { etiqueta: 'Titularidad', ...titularidad, destino: ids.cotejo },
@@ -252,12 +224,6 @@ function ResumenDictamen({ dictamen, vigencia, ids, onIr }) {
       tono: localizados === verificaciones.length ? 'ok' : 'warn',
       texto: `${localizados} de ${verificaciones.length}`,
       destino: ids.contenido,
-    },
-    paginasConSello > 0 && {
-      etiqueta: 'Sellos',
-      tono: 'neutral',
-      texto: `${paginasConSello} ${paginasConSello === 1 ? 'página' : 'páginas'}`,
-      destino: ids.sellos,
     },
   ].filter(Boolean)
   return (
@@ -312,43 +278,6 @@ function vigenciaDe(dictamen) {
 }
 
 /** Bloque delimitado de la evidencia; sin `titulo` cuando el contenido trae el suyo. */
-/**
- * PLUS-17: lo que dice el QR del documento. El motor no consulta al SAT: el
- * analista abre el enlace oficial y valida el documento en el portal.
- */
-function CodigoQrSat({ qr }) {
-  if (!qr.encontrado) {
-    return <p className="cell-sub">No se encontró un código QR legible en la primera ni en la última página.</p>
-  }
-  if (!qr.dominio_sat) {
-    return (
-      <p className="qr-sat qr-sat--bad">
-        El código QR no lleva al portal del SAT{qr.dominio ? ` (${qr.dominio})` : ''}: el documento queda en revisión.
-      </p>
-    )
-  }
-  return (
-    <div className="qr-sat">
-      <p>
-        {qr.coincide_rfc === false ? (
-          <span className="qr-sat--bad">
-            El RFC del código QR (<span className="mono">{qr.rfc_qr}</span>) no coincide con el del titular.
-          </span>
-        ) : qr.coincide_rfc ? (
-          <>
-            El RFC del código QR coincide con el del titular (<span className="mono">{qr.rfc_qr}</span>).
-          </>
-        ) : (
-          'El código QR lleva al portal del SAT.'
-        )}
-      </p>
-      <a href={qr.url} target="_blank" rel="noopener noreferrer">
-        Validar en el portal del SAT
-      </a>
-    </div>
-  )
-}
-
 function Bloque({ id, titulo, etiqueta, children }) {
   return (
     <section id={id} className="ia-bloque ancla" aria-label={titulo || etiqueta}>
@@ -404,7 +333,6 @@ export function DictamenResultado({ dictamen, ids, onIrEvidencia }) {
 export function DictamenEvidencia({ dictamen, expediente, tipoRegistrado, ids }) {
   const { resto } = separarMotivo(dictamen.observaciones)
   const vigencia = vigenciaDe(dictamen)
-  const haySellos = (dictamen.sellos || []).length > 0 || dictamen.sello_digital_sat
   return (
     <div className="dictamen dictamen--evidencia">
       <Bloque id={ids.cotejo} titulo="Titularidad y tipo documental">
@@ -431,15 +359,9 @@ export function DictamenEvidencia({ dictamen, expediente, tipoRegistrado, ids })
         </KeyValueList>
       </Bloque>
 
-      {dictamen.qr_sat && (
-        <Bloque titulo="Código QR del SAT">
-          <CodigoQrSat qr={dictamen.qr_sat} />
-        </Bloque>
-      )}
-
-      {haySellos && (
+      {dictamen.sello_digital_sat && (
         <Bloque id={ids.sellos} etiqueta="Sellos">
-          <SellosDetectados sellos={dictamen.sellos} selloDigital={dictamen.sello_digital_sat} />
+          <SelloDigitalSat />
         </Bloque>
       )}
 

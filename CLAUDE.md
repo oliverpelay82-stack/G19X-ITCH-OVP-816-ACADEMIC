@@ -11,8 +11,6 @@ Residencia profesional para **PluriOne S.A. de C.V.** (Develop Talent & Technolo
 3. `docs/ANALISIS_BRECHAS_MOTOR.md` — brechas vigentes; `docs/VALIDACION_CUANTITATIVA.md` — metodología y resultados de QA.
 4. `docs/uml/` — diagramas PlantUML de cada requerimiento posterior al PRD 1.2 (índice en `docs/uml/README.md`).
 
-`docs/AUDITORIA_TECNICA.md` es un **documento histórico de referencia** (14/09/2026): las fuentes vivas de estado y brechas son `PRD.md` y `ANALISIS_BRECHAS_MOTOR.md`.
-
 **Prohibido inventar** tablas, nombres de producto, roles o categorías: toda decisión técnica se fundamenta en esos documentos.
 
 ---
@@ -46,7 +44,6 @@ Microservicios FastAPI desacoplados en `services/`, orquestados con Docker Compo
 - Bóveda física en `storage_vault/` (`STORAGE_VAULT_PATH` en Docker). El ai-service lee los binarios solo a través del core (`/documentos/{id}/contenido`, verificado por RIE-03) y persiste cada dictamen con `POST /api/v1/dictamenes`.
 - SQLite del ai-service, indexada por SHA-256: `extracciones` y `palabras_ocr` (columna `version` = `version_lectura()`), `inferencias` (respuestas del modelo a temperatura 0.0; las del chat llevan el prefijo `chat:`) y `fichas_documento` (lo verificado en la última auditoría, ligado a su `dictamen_id`).
 - **Folio de seguimiento (PLUS-21):** cada servicio registra `observabilidad.middleware` (acepta o crea `X-Request-ID`, lo devuelve y escribe una línea JSON por petición); los clientes entre servicios envían `headers=observabilidad.cabeceras()` y la bitácora guarda `id_peticion` en el detalle.
-- **Sello de tiempo (PLUS-22):** `motor/sello_tiempo.py` pide a una autoridad RFC 3161 el sello del `hash_evento` del último eslabón (solo viaja la huella), en cada reevaluación programada y con `POST /api/v1/bitacora/sello-tiempo`. Apagado por omisión (`SELLO_TIEMPO_URL` vacía: ninguna llamada externa); una falla nunca detiene la reevaluación. Tabla `sellos_tiempo` de solo inserción; `verificar_cadena` reporta un sello que ya no coincide con su eslabón.
 - **Estabilidad:** los clientes entre servicios usan `requests` síncrono con timeouts y excepciones traducidas (no migrar a async). Los contratos de API solo admiten campos opcionales nuevos; `GET /api/v1/health` lo consume `SystemHealth.jsx`. Cada `main.py` registra el middleware `errores_no_controlados` antes de CORS (un carácter nulo en los datos responde 422) y `cabeceras_seguridad` (`nosniff`, CORP `same-origin`, `Cache-Control: no-store` salvo que la ruta defina la suya; Q-c). Los `.env` nunca se versionan.
 - Proveedor de inferencia: Groq Cloud, `qwen/qwen3.8-27b` (cambio respecto de Azure documentado en PRD §19). Al modelo solo viaja el texto extraído, nunca el documento. Plan gratuito: **8,000 tokens por minuto y 200,000 por día**.
 
@@ -75,7 +72,7 @@ Microservicios FastAPI desacoplados en `services/`, orquestados con Docker Compo
 - Lectura vigente: `VERSION_PIPELINE` 3.3. **Subir `VERSION_PIPELINE` al cambiar cualquier paso de la extracción**: la persistencia se invalida por versión.
 - La auditoría (`/preparar` y `/analisis-semantico`) lee el documento completo. El chat de un documento sin auditar responde con la lectura parcial (`MAX_PAGINAS_OCR`) y programa la completa.
 - Una sola lectura como fuente de verdad: texto, confianza y palabras con recuadro salen de la misma llamada a Tesseract, así que el dictamen y el visor ven lo mismo.
-- Sellos en tinta de color (`pipelines/sellos.py`): apagados por defecto (`OCR_RELEER_SELLOS=false`), porque ningún DOC los exige; su retiro se decide con el Gold Standard escaneado. El Sello Digital SAT (DOC-08) se detecta en el texto.
+- Sello Digital SAT (DOC-08): `pipelines/sellos.py` lo detecta en el texto. La lectura de sellos en tinta de color se retiró (PRD §21.8); la versión de lectura conserva «sin-sellos» para no invalidar las extracciones guardadas.
 - Visor de evidencia (HU-20, RF-13): páginas renderizadas desde el binario verificado y localización de citas (`POST /api/v1/ai/documentos/{id}/localizar`).
 
 ### Nivel 4 — Análisis semántico (ai-service)
@@ -149,9 +146,9 @@ Bandas del DOC-08 §6.2: ≥ 0.85 CONFORME; de 0.70 a 0.84 y por debajo de 0.70,
 | Nivel 1 e ingesta (P1) | `test_pipeline_nivel1`, `test_ingesta_robustez`, `test_ingesta_blindada` |
 | Dictámenes, semáforo, alertas, reportes, índice | `test_dictamenes_semaforo`, `test_tipos_anexos_alertas`, `test_indice_cumplimiento` |
 | Representación (P2) y custodia (P3) | `test_representacion_legal`, `test_cadena_custodia`; ai: `test_representacion` |
-| Autenticidad y operación (P6) | `test_rfc_titular`, `test_senales_archivo`, `test_version_catalogo`, `test_rules_version_catalogo`, `test_antiguedad_pendientes`, `test_fechas_limite`, `test_rules_fechas_limite`; ai: `test_senales_qr`, `test_cuota_diaria` |
+| Autenticidad y operación (P6) | `test_rfc_titular`, `test_senales_archivo`, `test_version_catalogo`, `test_rules_version_catalogo`, `test_antiguedad_pendientes`, `test_fechas_limite`, `test_rules_fechas_limite`; ai: `test_revision_por_senales`, `test_cuota_diaria` |
 | Integridad permanente y excepciones (P5) | `test_integridad_permanente`, `test_dictamen_reproducible`, `test_excepciones_doc05`; ai: `test_excepciones_doc05` |
-| Operación trazable (P7) | `test_folio_seguimiento`, `test_sello_tiempo`, `test_version_catalogo`; ai: `test_folio_seguimiento` |
+| Operación trazable (P7) | `test_folio_seguimiento`, `test_version_catalogo`; ai: `test_folio_seguimiento` |
 | Esquemas, errores y rules | `test_esquema_bd`, `test_esquema_rules`, `test_errores_core`, `test_errores_rules`, `test_rules_service`; ai: `test_errores_no_controlados` |
 | Nivel 3 (ai) | `test_iluminacion`, `test_sellos`, `test_visor_documento`, `test_optimizaciones`, `test_cache_y_lectura` |
 | Nivel 4 (ai) | `test_contenido_titularidad`, `test_vigencia_dictamen`, `test_opinion_cumplimiento`, `test_persistencia_dictamen` |
@@ -176,7 +173,6 @@ Bandas del DOC-08 §6.2: ≥ 0.85 CONFORME; de 0.70 a 0.84 y por debajo de 0.70,
 | `CHAT_MENSAJES_HISTORIAL` / `CHAT_CARACTERES_TURNO_ASISTENTE` | `4` / `400` | Historial acotado de T2 |
 | `CHAT_TTL_CRITERIOS_SEGUNDOS` | `300` | Criterios del catálogo en memoria (T4) |
 | `OCR_LANG` / `OCR_DPI` / `OCR_WORKERS` | `spa` / `300` / hilos lógicos | OCR del Nivel 3 |
-| `OCR_RELEER_SELLOS` | `false` | Sellos en tinta de color |
 | `MAX_CARACTERES_CONTEXTO` / `MAX_CARACTERES_VERIFICACION` | `6500` / `9500` | Contexto de la auditoría y de la verificación |
 | `MAX_PAGINAS_OCR` | `6` | Lectura parcial del chat sin auditoría |
 | `UMBRAL_CONFIANZA_CONFORME` / `UMBRAL_CONFIANZA_HITL` | `0.85` / `0.70` | Bandas del Nivel 5 |
@@ -185,7 +181,6 @@ Bandas del DOC-08 §6.2: ≥ 0.85 CONFORME; de 0.70 a 0.84 y por debajo de 0.70,
 | `ZONA_HORARIA` | `America/Mexico_City` | Día de referencia de las vigencias y de la antigüedad (Q-a); requiere `tzdata` |
 | `RFC_DIGITO_ESTRICTO` (core) | `false` | M1: con `true`, un RFC cuyo dígito verificador no coincide se rechaza (hoy se acepta con advertencia) |
 | `BARRIDO_INTEGRIDAD` (core) | `true` | Barrido de integridad de la bóveda en cada reevaluación (PLUS-14) |
-| `SELLO_TIEMPO_URL` / `SELLO_TIEMPO_TIMEOUT` (core) | vacía / `10` | Autoridad RFC 3161 del sello de tiempo de la bitácora (PLUS-22); vacía la apaga |
 | `LEGIBILIDAD_MIN_CARACTERES` / `LEGIBILIDAD_MIN_CONFIANZA` | `50` / `0.40` | Umbral de «Documento ilegible» (P5) |
 | `DIFERIDOS_INTERVALO_MINUTOS` / `DIFERIDOS_MAX_INTENTOS` | `15` / `6` | Ciclo de procesamiento diferido (P5); `0` lo desactiva |
 | `AUTO_SEED` (rules) / `DB_ECHO` (core, rules) | `true` / `false` | Precarga idempotente del catálogo / imprimir SQL |

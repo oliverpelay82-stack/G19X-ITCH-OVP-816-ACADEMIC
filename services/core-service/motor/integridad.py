@@ -155,7 +155,7 @@ class ResultadoBarrido:
 
 def _calcular_senales(documento: Documento) -> int:
     """
-    P6 (PLUS-16, PLUS-18): señales del PDF de un documento custodiado antes de
+    P6 (PLUS-18): contenido activo del PDF de un documento custodiado antes de
     P6. Se leen del binario cuya huella acaba de comprobarse; un PDF que no
     puede analizarse queda marcado para no releerlo en cada barrido.
     """

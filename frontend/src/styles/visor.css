@@ -274,19 +274,13 @@
   gap: var(--s-3);
 }
 
-/* Sellos detectados por el Nivel 3: información, no estado (recuadro neutro) */
+/* Sello Digital SAT: información, no estado */
 .sellos-fila {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--s-1) var(--s-2);
   margin: var(--s-2) 0 var(--s-1);
-}
-
-.visor-recuadro--neutral {
-  border-color: var(--text-muted);
-  border-style: dashed;
-  background: color-mix(in srgb, var(--text-muted) 8%, transparent);
 }
 
 /* Resumen del dictamen y acciones recomendadas */

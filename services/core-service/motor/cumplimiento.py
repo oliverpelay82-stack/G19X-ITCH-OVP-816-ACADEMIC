@@ -104,7 +104,6 @@ ALERTA_SIN_AUDITAR = "PENDIENTE_AUDITORIA"
 ALERTA_ILEGIBLE = "DOCUMENTO_ILEGIBLE"
 ALERTA_DIFERIDO = "PROCESAMIENTO_DIFERIDO"
 # P6 (PRD §21.6): señales del archivo.
-ALERTA_POSIBLE_EDICION = "POSIBLE_EDICION"
 ALERTA_CONTENIDO_ACTIVO = "CONTENIDO_ACTIVO"
 ALERTA_OTRO_TITULAR = "ARCHIVO_DE_OTRO_TITULAR"
 ALERTA_NUEVA_AUDITORIA = "REQUIERE_NUEVA_AUDITORIA"
@@ -140,8 +139,7 @@ class EstadoDocumento:
     # de origen NIVEL_3_ILEGIBLE sin ratificar) y auditoría diferida.
     ilegible: bool = False
     procesamiento_diferido: dict | None = None
-    # P6: señales de edición que pesan para su tipo (PLUS-16) y contenido activo (PLUS-18).
-    senales_edicion: list[str] = field(default_factory=list)
+    # P6 (PLUS-18): contenido activo del PDF.
     contenido_activo: list[str] = field(default_factory=list)
     # M5: folios de expedientes de otros titulares que custodian el mismo archivo.
     en_otros_titulares: list[str] = field(default_factory=list)
@@ -411,7 +409,6 @@ def evaluar(
                 ilegible=bool(dictamen and dictamen.origen == ORIGEN_NIVEL_3_ILEGIBLE
                               and not dictamen.revisado_por_humano),
                 procesamiento_diferido=doc.procesamiento_diferido or None,
-                senales_edicion=senales_pdf.codigos_edicion(tipo, doc.senales_pdf),
                 contenido_activo=list((doc.senales_pdf or {}).get("contenido_activo") or []),
                 en_otros_titulares=otros_titulares.get(doc.hash_sha256, []),
                 dias_en_espera=_dias_en_espera(dictamen, hoy) if estado == EN_REVISION else None,
@@ -787,21 +784,6 @@ def _alertas(
                 recomendacion=("No abrir el original en un lector con JavaScript habilitado (el visor del motor "
                                "muestra páginas como imagen) y solicitar al emisor una versión sin contenido "
                                "activo: sustituye a esta."),
-                tipo_documento=e.tipo_documento, documento_id=e.documento_id,
-            ))
-        # P6 (PLUS-16): un documento del SAT con señales de retoque; la ratificación la resuelve.
-        if e.senales_edicion and not e.revisado_por_humano:
-            documento = vigentes.get(e.tipo_documento)
-            detalles = "; ".join(s["detalle"] for s in ((documento.senales_pdf or {}).get("edicion") or [])) \
-                if documento else ""
-            alertas.append(Alerta(
-                codigo=ALERTA_POSIBLE_EDICION,
-                severidad="MEDIA_ALTA",
-                titulo=f"Posible edición del archivo: {nombre}",
-                detalle=(f"El SAT emite este documento electrónicamente y «{e.nombre_archivo_original}» "
-                         f"muestra señales de modificación: {detalles}."),
-                recomendacion=("Validar el documento en el portal del SAT o pedir al titular que lo descargue de "
-                               "nuevo; después, ratificar su dictamen."),
                 tipo_documento=e.tipo_documento, documento_id=e.documento_id,
             ))
 

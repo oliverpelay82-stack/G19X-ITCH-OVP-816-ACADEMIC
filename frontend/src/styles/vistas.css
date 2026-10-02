@@ -438,13 +438,7 @@
   color: var(--warn);
 }
 
-/* P6: QR del SAT (PLUS-17) y señales del archivo (PLUS-16, PLUS-18). */
-.qr-sat {
-  display: grid;
-  gap: var(--s-2);
-}
-
-.qr-sat--bad,
+/* P6: contenido activo del PDF (PLUS-18). */
 .senal-archivo--warn {
   color: var(--warn);
 }

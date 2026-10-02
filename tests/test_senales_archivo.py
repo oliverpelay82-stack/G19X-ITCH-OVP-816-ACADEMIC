@@ -1,15 +1,13 @@
 """
-P6 — Señales del archivo PDF (PRD §21.6: PLUS-16, HU-50; PLUS-18, HU-52).
+P6 — Contenido activo del PDF (PRD §21.6: PLUS-18, HU-52).
 
-  1. Una constancia fiscal sin tocar no genera señales; guardada de nuevo
-     (guardado incremental o modificación posterior) queda con la alerta
-     «Posible edición del archivo» y con el motivo de revisión en el documento.
-  2. Un acta con las mismas señales solo las informa: procesar un escaneo es
-     lo normal.
+  1. Un PDF sin contenido activo no genera señales.
+  2. Una constancia fiscal hecha con un procesador de texto y guardada de
+     nuevo no va a revisión: las señales de edición (PLUS-16) se retiraron el
+     02/10/2026 porque dejaban en revisión los documentos de prueba.
   3. Un PDF con JavaScript se custodia, la carga advierte, el evento de ingesta
      sellado lo registra y aparece la alerta alta; sigue aunque se ratifique.
-  4. La ratificación resuelve la alerta de posible edición.
-  5. El barrido programado calcula las señales de lo custodiado antes de P6.
+  4. El barrido programado calcula las señales de lo custodiado antes de P6.
 
 Aislamiento: base de datos de pruebas plurione_compliance_test (tests/bd_pruebas.py).
 """
@@ -25,6 +23,7 @@ os.environ["REEVALUACION_INTERVALO_HORAS"] = "0"
 
 from fastapi.testclient import TestClient  # noqa: E402
 from pypdf import PdfWriter  # noqa: E402
+from pypdf.generic import ArrayObject, DictionaryObject, NameObject, TextStringObject  # noqa: E402
 from main import app  # noqa: E402
 from clients import rules_client  # noqa: E402
 from config.database import SessionLocal, engine, init_db  # noqa: E402
@@ -49,7 +48,11 @@ def _pdf(semilla: str, *, incremental=False, modificado=None, javascript=False, 
         meta["/ModDate"] = modificado
     escritor.add_metadata(meta)
     if javascript:
-        escritor.add_js("app.alert('P6');")
+        # Lo mismo que hacía PdfWriter.add_js (obsoleta en pypdf 7): JavaScript de documento en /Names.
+        accion = DictionaryObject({NameObject("/Type"): NameObject("/Action"), NameObject("/S"): NameObject("/JavaScript"),
+                                   NameObject("/JS"): TextStringObject("app.alert('P6');")})
+        escritor._root_object[NameObject("/Names")] = DictionaryObject({NameObject("/JavaScript"): DictionaryObject(
+            {NameObject("/Names"): ArrayObject([TextStringObject("p6"), accion])})})
     salida = io.BytesIO()
     escritor.write(salida)
     datos = salida.getvalue()
@@ -86,35 +89,19 @@ def _alertas(doc: dict, codigo: str) -> list[dict]:
     return [a for a in evaluacion["alertas"] if a["codigo"] == codigo and a["documento_id"] == doc["id"]]
 
 
-def test_constancia_sin_tocar_no_genera_senales():
+def test_un_pdf_sin_contenido_activo_no_genera_senales():
     doc = _subir(_expediente("SEN010101AAA"), _pdf("limpia"))
-    assert doc["senales_pdf"]["edicion"] == [] and doc["senales_pdf"]["contenido_activo"] == []
+    assert doc["senales_pdf"]["contenido_activo"] == [] and "edicion" not in doc["senales_pdf"]
     assert doc["senales_revision"] == [] and doc["advertencia_nivel_1"] is None
-    assert not _alertas(doc, "POSIBLE_EDICION")
 
 
-def test_constancia_retocada_queda_con_posible_edicion():
-    doc = _subir(_expediente("SEN020202AAA"), _pdf("retocada", incremental=True))
-
-    assert [e["codigo"] for e in doc["senales_pdf"]["edicion"]] == ["GUARDADO_INCREMENTAL"]
-    assert doc["senales_revision"][0].startswith("Posible edición del archivo")
-    [alerta] = _alertas(doc, "POSIBLE_EDICION")
-    assert alerta["severidad"] == "MEDIA_ALTA" and "guardado posterior" in alerta["detalle"]
-    consultado = client.get(f"/api/v1/documentos/{doc['id']}").json()
-    assert consultado["senales_revision"] == doc["senales_revision"], "El ai-service lo recibe al consultar"
-
-
-def test_modificacion_posterior_a_la_emision():
-    doc = _subir(_expediente("SEN030303AAA"), _pdf("modificada", modificado="D:20260915120000-06'00'"))
-    assert [e["codigo"] for e in doc["senales_pdf"]["edicion"]] == ["MODIFICADO_DESPUES_DE_EMISION"]
-    assert _alertas(doc, "POSIBLE_EDICION")
-
-
-def test_un_acta_con_senales_solo_las_informa():
-    doc = _subir(_expediente("SEN040404AAA"), _pdf("acta", incremental=True, productor="iLovePDF"),
-                 tipo="ACTA_CONSTITUTIVA")
-    assert len(doc["senales_pdf"]["edicion"]) == 2, "Se guardan para el registro"
-    assert doc["senales_revision"] == [] and not _alertas(doc, "POSIBLE_EDICION")
+def test_una_constancia_hecha_en_un_procesador_de_texto_no_va_a_revision():
+    """Regresión: con PLUS-16, una constancia de prueba hecha en Word y guardada de nuevo quedaba «Posible edición»."""
+    doc = _subir(_expediente("SEN020202AAA"), _pdf("de-prueba", incremental=True, productor="Microsoft® Word 2019",
+                                                  modificado="D:20260915120000-06'00'"))
+    assert doc["senales_revision"] == []
+    evaluacion = client.get(f"/api/v1/expedientes/{doc['expediente_id']}").json()["evaluacion"]
+    assert not [a for a in evaluacion["alertas"] if a["documento_id"] == doc["id"] and a["codigo"] == "POSIBLE_EDICION"]
 
 
 def test_pdf_con_javascript_se_custodia_y_se_advierte():
@@ -129,23 +116,18 @@ def test_pdf_con_javascript_se_custodia_y_se_advierte():
     assert ingesta["detalle"]["contenido_activo"] == ["JAVASCRIPT"] and ingesta["hash_evento"]
 
 
-def test_la_ratificacion_resuelve_la_posible_edicion_pero_no_el_contenido_activo():
-    exp_id = _expediente("SEN060606AAA")
-    retocada = _subir(exp_id, _pdf("ratificada", incremental=True))
-    activo = _subir(exp_id, _pdf("activo-ratificado", javascript=True), tipo="ACTA_CONSTITUTIVA")
-    for doc in (retocada, activo):
-        dictamen = client.post("/api/v1/dictamenes", json={"documento_id": doc["id"], "estatus": "EN_REVISION",
-                                                           "nivel_confianza": 0.8, "observaciones": ["P6."]}).json()
-        r = client.post(f"/api/v1/dictamenes/{dictamen['id']}/ratificar", json={
-            "nuevo_estatus": "CONFORME", "justificacion": "Validado en el portal del SAT.", "usuario": "p6"})
-        assert r.status_code == 200, r.text
-
-    assert not _alertas(retocada, "POSIBLE_EDICION")
+def test_el_contenido_activo_sigue_aunque_se_ratifique():
+    activo = _subir(_expediente("SEN060606AAA"), _pdf("activo-ratificado", javascript=True), tipo="ACTA_CONSTITUTIVA")
+    dictamen = client.post("/api/v1/dictamenes", json={"documento_id": activo["id"], "estatus": "EN_REVISION",
+                                                       "nivel_confianza": 0.8, "observaciones": ["P6."]}).json()
+    r = client.post(f"/api/v1/dictamenes/{dictamen['id']}/ratificar", json={
+        "nuevo_estatus": "CONFORME", "justificacion": "Revisado contra el original.", "usuario": "p6"})
+    assert r.status_code == 200, r.text
     assert _alertas(activo, "CONTENIDO_ACTIVO"), "El archivo sigue teniendo JavaScript"
 
 
 def test_el_barrido_calcula_las_senales_de_lo_custodiado_antes():
-    doc = _subir(_expediente("SEN070707AAA"), _pdf("anterior", incremental=True))
+    doc = _subir(_expediente("SEN070707AAA"), _pdf("anterior", javascript=True), tipo="ACTA_CONSTITUTIVA")
     db = SessionLocal()
     try:
         db.get(Documento, doc["id"]).senales_pdf = None   # como un documento custodiado antes de P6
@@ -155,29 +137,10 @@ def test_el_barrido_calcula_las_senales_de_lo_custodiado_antes():
         db.close()
 
     consultado = client.get(f"/api/v1/documentos/{doc['id']}").json()
-    assert [e["codigo"] for e in consultado["senales_pdf"]["edicion"]] == ["GUARDADO_INCREMENTAL"]
+    assert consultado["senales_pdf"]["contenido_activo"] == ["JAVASCRIPT"]
     constancias = client.get("/api/v1/bitacora", params={"evento": "VERIFICACION_INTEGRIDAD"}).json()
     constancia = max(constancias, key=lambda e: e["secuencia"])
     assert constancia["detalle"].get("senales_calculadas", 0) >= 1
-
-
-def test_el_dictamen_guarda_el_qr_y_el_trigger_lo_protege():
-    import pytest
-    from sqlalchemy import text
-    from sqlalchemy.exc import DBAPIError
-
-    doc = _subir(_expediente("SEN080808AAA"), _pdf("qr"))
-    qr = {"encontrado": True, "dominio_sat": True, "rfc_qr": "SEN080808AAA", "coincide_rfc": True,
-          "url": "https://siat.sat.gob.mx/app/qr/faces/pages/mobile/validadorqr.jsf?D3=1_SEN080808AAA"}
-    dictamen = client.post("/api/v1/dictamenes", json={"documento_id": doc["id"], "estatus": "EN_REVISION",
-                                                       "nivel_confianza": 0.8, "observaciones": ["P6."],
-                                                       "qr_sat": qr}).json()
-    guardado = client.get("/api/v1/dictamenes", params={"documento_id": doc["id"]}).json()[0]
-    assert guardado["qr_sat"]["url"] == qr["url"]
-    [evento] = client.get("/api/v1/bitacora", params={"documento_id": doc["id"], "evento": "DICTAMEN_IA"}).json()
-    assert evento["detalle"]["qr_sat"]["coincide_rfc"] is True and "url" not in evento["detalle"]["qr_sat"]
-    with pytest.raises(DBAPIError), engine.begin() as conexion:
-        conexion.execute(text("UPDATE dictamenes_auditoria SET qr_sat = NULL WHERE id = :id"), {"id": dictamen["id"]})
 
 
 # ── M5: el mismo archivo en el expediente de otro titular ─────────────

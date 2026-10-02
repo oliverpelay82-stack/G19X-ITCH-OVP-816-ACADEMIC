@@ -34,6 +34,8 @@ Estos diagramas complementan los del DOCUMENTO GENERAL (Cap. IV, Figuras 1–6, 
 | RF-02 — Carga en lote (DOC-04, no PLUS) | [rf02-actividad-carga-en-lote.puml](rf02-actividad-carga-en-lote.puml) | Actividades | Actualiza F1 | §7 RF-02, HU-03; RF-03, RF-04; PLUS-01, PLUS-02, PLUS-18; RN-01 | MR-11, MR-20 |
 | RNF-10 — Respaldo diario y prueba de restauración (DOC-04, no PLUS) | [rnf10-actividad-respaldo.puml](rnf10-actividad-respaldo.puml) | Actividades | — | §11 RNF-10; RF-03, RIE-03; PLUS-04, PLUS-05 | MR-10, MR-16, MR-17 |
 
+Los diagramas de P6 y P7 conservan el diseño original: las señales de edición (PLUS-16), el QR del SAT (PLUS-17) y el sello de tiempo (PLUS-22) se retiraron el 02/10/2026 ([PRD §21.8](../PRD.md)).
+
 ## Generar las imágenes
 
 Con Java 17 o posterior y el JAR de PlantUML (no se versiona en el repositorio):

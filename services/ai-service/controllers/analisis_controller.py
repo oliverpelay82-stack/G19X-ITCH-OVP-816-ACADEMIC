@@ -41,7 +41,7 @@ from pipelines import (
 )
 from pipelines.extraccion_pipeline import FormatoNoSoportadoError, MotorOcrNoDisponibleError, version_lectura
 from pipelines.version_instrucciones import version_instrucciones
-from pipelines import cuota_diaria, diferidos, legibilidad, qr_sat
+from pipelines import cuota_diaria, diferidos, legibilidad
 from schemas.analisis_schema import AnalisisSemanticoRequest, ChatDocumentoRequest
 
 router = APIRouter(prefix="/api/v1/ai", tags=["Nivel 4 — Análisis Semántico con IA"])
@@ -282,29 +282,12 @@ def _estado_lectura(documento_id: str | None, documento: repositorio_texto.Texto
     return traza
 
 
-def _sellos_del_documento(documento: repositorio_texto.TextoDocumento | None) -> list[dict]:
-    """Sellos en tinta de color detectados por el Nivel 3, con su página y recuadro normalizado."""
-    if documento is None:
-        return []
-    return [
-        {"pagina": p["pagina"], **sello}
-        for p in documento.traza.get("detalle_paginas") or []
-        for sello in p.get("sellos") or []
-    ]
-
-
-def _observaciones_de_sellos(documento: repositorio_texto.TextoDocumento | None, sellos: list[dict]) -> list[str]:
+def _observaciones_de_sellos(documento: repositorio_texto.TextoDocumento | None) -> list[str]:
     """
-    Presencia de sellos como evidencia del dictamen (DOC-08: «presencia de
-    Sello Digital SAT»; los sellos físicos identifican al fedatario o al
-    registro). Es informativa: no cambia el estatus, que siguen decidiendo las
-    reglas.
+    Presencia del Sello Digital SAT como evidencia del dictamen (DOC-08). Es
+    informativa: no cambia el estatus, que siguen decidiendo las reglas.
     """
     observaciones = []
-    if sellos:
-        paginas = ", ".join(str(n) for n in sorted({s["pagina"] for s in sellos}))
-        observaciones.append(f"Se detectaron sellos en tinta de color en la(s) página(s) {paginas}; "
-                             "su presencia puede verificarse en el visor del documento.")
     if documento and documento.traza.get("sello_digital_sat"):
         observaciones.append("El documento incluye el Sello Digital del SAT (cadena original o sello digital).")
     return observaciones
@@ -325,7 +308,7 @@ def versiones_dictamen() -> dict[str, str | None]:
 
 def _persistir_dictamen(
     documento_id: str, resultado: pipeline_analisis.ResultadoAnalisis, usuario: str, origen: str | None = None,
-    qr: dict | None = None, version_reglas_tipo: str | None = None,
+    version_reglas_tipo: str | None = None,
 ) -> dict:
     """
     Guarda el dictamen en el core-service (tabla dictamenes_auditoria y
@@ -353,7 +336,6 @@ def _persistir_dictamen(
         # P5: con qué lectura e instrucciones se emitió, para reproducirlo.
         **versiones_dictamen(),
         **({"origen": origen} if origen else {}),
-        **({"qr_sat": qr} if qr else {}),
         # M7: versión de las reglas de su tipo, para avisar si después cambian.
         "version_reglas_tipo": version_reglas_tipo,
         "usuario": usuario,
@@ -449,30 +431,11 @@ def _auditoria_ilegible(
     return respuesta
 
 
-def _qr_del_documento(
-    documento: repositorio_texto.TextoDocumento | None, tipo: str | None, rfc_referencia: str | None
-) -> dict | None:
-    """
-    PLUS-17: QR del SAT de una constancia, opinión 32-D o cédula. Lee el binario
-    verificado por el core; si el core no lo entrega, la auditoría sigue sin QR.
-    """
-    metadatos = (documento.metadatos or {}) if documento else {}
-    if tipo not in qr_sat.TIPOS_CON_QR or metadatos.get("mime_type", "application/pdf") != "application/pdf":
-        return None
-    try:
-        contenido = core_client.leer_binario(metadatos)
-    except (CoreNoDisponibleError, DocumentoNoEncontradoError, DocumentoAlteradoError):
-        return None
-    return qr_sat.leer(contenido, rfc_referencia)
-
-
-def _tope_revision(resultado: pipeline_analisis.ResultadoAnalisis, motivos: list[str], qr: dict | None) -> None:
+def _tope_revision(resultado: pipeline_analisis.ResultadoAnalisis, motivos: list[str]) -> None:
     """
     Una señal del archivo deja la auditoría En revisión (Nivel 5: la decide un
     analista); no cambia un No conforme. El primer motivo explica la revisión.
     """
-    if qr and qr.get("url"):
-        resultado.recomendaciones.append(f"Validar el documento en el portal del SAT con su código QR: {qr['url']}")
     if not motivos:
         return
     resultado.requiere_revision_humana = True
@@ -544,19 +507,15 @@ def auditar(peticion: AnalisisSemanticoRequest) -> dict:
 
     if nota_criterios:
         resultado.observaciones.append(nota_criterios)
-    # P6 (PLUS-16 a PLUS-18): las señales del archivo que calculó el core y el QR
-    # del SAT llevan la auditoría a revisión humana; nunca la rechazan.
-    qr = _qr_del_documento(documento, tipo_registrado, peticion.rfc_titular or resultado.rfc_detectado)
+    # P6 (PLUS-18): el contenido activo que detectó el core lleva la auditoría a
+    # revisión humana; nunca la rechaza.
     motivos_archivo = list(((documento.metadatos or {}).get("senales_revision") or []) if documento else [])
-    _tope_revision(resultado, motivos_archivo + qr_sat.motivos(qr), qr)
-    sellos_detectados = _sellos_del_documento(documento)
-    resultado.observaciones.extend(_observaciones_de_sellos(documento, sellos_detectados))
+    _tope_revision(resultado, motivos_archivo)
+    resultado.observaciones.extend(_observaciones_de_sellos(documento))
     respuesta = resultado.a_dict()
-    respuesta["sellos"] = sellos_detectados
     respuesta["sello_digital_sat"] = bool(documento and documento.traza.get("sello_digital_sat"))
     respuesta["fuente_texto"] = fuente
     respuesta["versiones"] = versiones_dictamen()
-    respuesta["qr_sat"] = qr
     respuesta["tiempos_ms"] = {"resolucion_texto": ms_texto, "inferencia": _ms(inicio)}
     if documento and documento.metadatos:
         respuesta["documento"] = {
@@ -571,7 +530,7 @@ def auditar(peticion: AnalisisSemanticoRequest) -> dict:
     # enviado por el cliente no pertenece a ningún expediente.
     if documento and peticion.documento_id:
         respuesta["persistencia"] = _persistir_dictamen(
-            peticion.documento_id, resultado, peticion.usuario, qr=qr,
+            peticion.documento_id, resultado, peticion.usuario,
             version_reglas_tipo=rules_client.version_reglas_tipo(tipo_registrado),
         )
         # T0 (PLUS-07): ficha de lo verificado, ligada al dictamen que el core acaba de guardar.

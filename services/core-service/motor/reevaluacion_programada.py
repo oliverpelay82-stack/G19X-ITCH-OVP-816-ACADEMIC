@@ -15,11 +15,6 @@ No ejecuta la IA: solo recalcula el semáforo con los dictámenes ya emitidos.
 P5 (PLUS-14): antes de reevaluar barre la integridad de toda la bóveda
 (``integridad.barrer``), así un archivo alterado que nadie abre se refleja en
 el semáforo de ese mismo ciclo. ``BARRIDO_INTEGRIDAD=false`` lo desactiva.
-
-P7 (PLUS-22): al terminar, si ``SELLO_TIEMPO_URL`` está configurada, pide el
-sello de tiempo del último eslabón de la bitácora. Una autoridad caída solo se
-informa: la reevaluación ya quedó confirmada y el sello se reintenta en el
-siguiente ciclo.
 """
 import asyncio
 import os
@@ -27,7 +22,7 @@ from dataclasses import dataclass
 
 from config.database import SessionLocal
 from models.expediente import Expediente
-from motor import cumplimiento, integridad, sello_tiempo
+from motor import cumplimiento, integridad
 
 CAUSA = "REEVALUACION_PROGRAMADA"
 
@@ -37,7 +32,6 @@ class ResultadoReevaluacion:
     evaluados: int
     cambios: int
     barrido: integridad.ResultadoBarrido | None = None
-    sello: str | None = None       # PLUS-22: resultado del sello de tiempo (None si está apagado)
 
 
 def barrido_activo() -> bool:
@@ -83,23 +77,7 @@ def reevaluar_todos() -> ResultadoReevaluacion:
         raise
     finally:
         db.close()
-    return ResultadoReevaluacion(evaluados, cambios, barrido, sellar_bitacora())
-
-
-def sellar_bitacora() -> str | None:
-    """Sello de tiempo del último eslabón, en su propia sesión; nunca propaga una falla de la autoridad."""
-    if not sello_tiempo.activo():
-        return None
-    db = SessionLocal()
-    try:
-        registro, nuevo = sello_tiempo.sellar(db, sello_tiempo.ORIGEN_PROGRAMADO)
-        return (f"secuencia {registro.secuencia} sellada el {registro.fecha_sello.isoformat(sep=' ')} UTC"
-                if nuevo else "sin eventos nuevos que sellar")
-    except Exception as exc:
-        db.rollback()
-        return f"fallido, se reintentará en el siguiente ciclo ({exc})"
-    finally:
-        db.close()
+    return ResultadoReevaluacion(evaluados, cambios, barrido)
 
 
 async def ciclo(horas: float) -> None:
@@ -109,9 +87,8 @@ async def ciclo(horas: float) -> None:
             r = await asyncio.to_thread(reevaluar_todos)
             integridad_txt = (f" Integridad: {r.barrido.revisados} documentos, {r.barrido.alterados} alterados."
                               if r.barrido else "")
-            sello_txt = f" Sello de tiempo: {r.sello}." if r.sello else ""
             print(f"[core-service] Reevaluación programada: {r.evaluados} expedientes, {r.cambios} cambios de semáforo."
-                  f"{integridad_txt}{sello_txt}")
+                  f"{integridad_txt}")
         except Exception as exc:  # la tarea no debe detener el servicio; se reintenta en el siguiente ciclo
             print(f"[core-service] Reevaluación programada fallida: {exc}")
         await asyncio.sleep(horas * 3600)

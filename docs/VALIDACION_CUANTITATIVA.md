@@ -198,6 +198,8 @@ La causa real del salto de ≈ 13 s (PRD §15.2, 26 páginas) a 24.3 s (14 pági
 | `OCR_LANG` | `spa+eng` | **`spa`** | Palabras en inglés (nombres comerciales) pueden leerse con más errores; se vigila con el CER |
 | `OCR_RELEER_SELLOS` | `true` | **`false`** | Raster en grises (un tercio de memoria por página con 8 procesos). La presencia de sellos en tinta de color deja de registrarse; ningún DOC la exige (el DOC-08 pide la del **Sello Digital SAT**, que se sigue detectando en el texto) |
 
+La lectura de sellos en tinta de color se retiró del código el 02/10/2026 (PRD §21.8); la tabla registra la configuración medida.
+
 Las tres cambian `version_lectura()`: los textos persistidos con la configuración anterior se ignoran y se releen una vez. Los dictámenes guardados no se tocan (son inmutables). El código de sellos queda inactivo, no se borra: su retiro (Nivel B) se decide con el Gold Standard escaneado.
 
 **Proyección para el RNF-02:** 11.1 s / 14 páginas → ≈ 16 s para 20 páginas, más 2 a 4 s del Nivel 4: **≈ 19–20 s frente a la meta de 25 s**, pendiente de la medición formal (§7.3).

@@ -151,7 +151,6 @@ export const ALERTA_META = {
   DOCUMENTO_ILEGIBLE: { label: 'Ilegible' },
   PROCESAMIENTO_DIFERIDO: { label: 'Diferido' },
   // P6: señales del archivo.
-  POSIBLE_EDICION: { label: 'Posible edición' },
   CONTENIDO_ACTIVO: { label: 'Contenido activo' },
   ARCHIVO_DE_OTRO_TITULAR: { label: 'Otro titular' },
   REQUIERE_NUEVA_AUDITORIA: { label: 'Nueva auditoría' },

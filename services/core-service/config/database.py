@@ -107,7 +107,7 @@ _MIGRACIONES_POSTGRES = [
     # P5 (DOC-05, protocolo de auditoría): versión de la lectura y de las instrucciones.
     "ALTER TABLE dictamenes_auditoria ADD COLUMN IF NOT EXISTS version_lectura VARCHAR(160)",
     "ALTER TABLE dictamenes_auditoria ADD COLUMN IF NOT EXISTS version_instrucciones VARCHAR(40)",
-    # P6 (PLUS-17): lectura del QR de verificación del SAT.
+    # P6 (PLUS-17, retirado): columna del QR del SAT; sin uso, la conserva el trigger de RN-05.
     "ALTER TABLE dictamenes_auditoria ADD COLUMN IF NOT EXISTS qr_sat JSON",
     # P6 (M6): versión del catálogo de reglas.
     "ALTER TABLE dictamenes_auditoria ADD COLUMN IF NOT EXISTS version_catalogo VARCHAR(20)",
@@ -115,7 +115,7 @@ _MIGRACIONES_POSTGRES = [
     "ALTER TABLE dictamenes_auditoria ADD COLUMN IF NOT EXISTS version_reglas_tipo VARCHAR(20)",
     # P5 (DOC-05, Tabla 1): marca de procesamiento diferido del documento.
     "ALTER TABLE documentos ADD COLUMN IF NOT EXISTS procesamiento_diferido JSON",
-    # P6 (PLUS-16, PLUS-18): señales de edición y contenido activo del PDF.
+    # P6 (PLUS-18): contenido activo del PDF (las señales de edición se retiraron).
     "ALTER TABLE documentos ADD COLUMN IF NOT EXISTS senales_pdf JSON",
     # P3 (PLUS-04): sello encadenado de la bitácora. Agregar columnas es DDL:
     # el trigger de inmutabilidad (por fila) no lo impide y los eventos previos
@@ -136,19 +136,6 @@ _MIGRACIONES_POSTGRES = [
     CREATE OR REPLACE TRIGGER trg_bitacora_inmutable
         BEFORE UPDATE OR DELETE ON bitacora_auditoria
         FOR EACH ROW EXECUTE FUNCTION bitacora_inmutable()
-    """,
-    # P7 (PLUS-22): los sellos de tiempo de la bitácora solo admiten inserciones.
-    """
-    CREATE OR REPLACE FUNCTION sello_tiempo_inmutable() RETURNS trigger AS $$
-    BEGIN
-        RAISE EXCEPTION 'sellos_tiempo es inmutable: operación % no permitida (PLUS-22)', TG_OP;
-    END;
-    $$ LANGUAGE plpgsql
-    """,
-    """
-    CREATE OR REPLACE TRIGGER trg_sello_tiempo_inmutable
-        BEFORE UPDATE OR DELETE ON sellos_tiempo
-        FOR EACH ROW EXECUTE FUNCTION sello_tiempo_inmutable()
     """,
     # RN-04 y RN-05: un dictamen no se borra, y su contenido original solo
     # admite una modificación: la ratificación humana, una única vez.

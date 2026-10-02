@@ -46,7 +46,7 @@ class Documento(Base):
     # limpia al guardarse el dictamen. {motivo, intentos, max_intentos,
     # proximo_intento, agotado, desde}.
     procesamiento_diferido = Column(JSON, nullable=True)
-    # P6 (PLUS-16, PLUS-18): señales del PDF calculadas en la carga o en el barrido
+    # P6 (PLUS-18): contenido activo del PDF calculadas en la carga o en el barrido
     # programado (motor/senales_pdf.py). Nulo: aún sin calcular.
     senales_pdf = Column(JSON, nullable=True)
     

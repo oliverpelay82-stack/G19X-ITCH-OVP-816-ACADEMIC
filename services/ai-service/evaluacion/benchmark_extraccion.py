@@ -8,7 +8,7 @@ en 25 s o menos (docs/VALIDACION_CUANTITATIVA.md §7.3).
     entre los procesos de OCR).
   * Dos configuraciones, cada una en su propio proceso porque el pool de OCR se
     crea al importar: la definitiva (§5.3) y la anterior (núcleos físicos,
-    ``spa+eng`` y relectura de sellos), sobre la lectura 3.3 de hoy.
+    ``spa+eng``; hasta el 02/10/2026 también releía los sellos en tinta de color), sobre la lectura 3.3 de hoy.
   * Documentos: el contrato de 20 páginas vectorial y escaneado (Gold Standard),
     el mismo escaneado a color con un sello en tinta en 1 de cada 4 páginas, y
     las actas reales que se indiquen con ``--actas`` (no se versionan: el
@@ -41,9 +41,9 @@ META_MS = 25_000
 ESPERA_ENTRE_AUDITORIAS_S = 61
 
 CONFIGURACIONES = {
-    "definitiva": {"OCR_WORKERS": str(os.cpu_count() or 2), "OCR_LANG": "spa", "OCR_RELEER_SELLOS": "false"},
-    "anterior": {"OCR_WORKERS": str(max(1, (os.cpu_count() or 2) // 2)), "OCR_LANG": "spa+eng",
-                 "OCR_RELEER_SELLOS": "true"},
+    # La relectura de sellos en tinta de color, que «anterior» también activaba, se retiró el 02/10/2026.
+    "definitiva": {"OCR_WORKERS": str(os.cpu_count() or 2), "OCR_LANG": "spa"},
+    "anterior": {"OCR_WORKERS": str(max(1, (os.cpu_count() or 2) // 2)), "OCR_LANG": "spa+eng"},
 }
 
 

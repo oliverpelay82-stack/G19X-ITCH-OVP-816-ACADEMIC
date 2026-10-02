@@ -71,7 +71,6 @@ EVENTO_LEGIBLE = {
     "SELLO_GENESIS": "Inicio del sellado de la bitácora",
     "VERIFICACION_INTEGRIDAD": "Verificación de integridad de la bóveda",
     "PROCESAMIENTO_DIFERIDO": "Auditoría diferida (la IA no respondió)",
-    "SELLO_TIEMPO": "Sello de tiempo de un tercero",
     "DESCARGA_DOCUMENTO": "Archivo original descargado",
     "ACTUALIZACION_TITULAR": "Datos de la empresa corregidos",
     "ACTUALIZACION_EXPEDIENTE": "Expediente renombrado",
@@ -136,26 +135,6 @@ def _ancla(cadena: dict[str, Any]) -> list[tuple[str, Any]]:
         ("Verificada el", cadena.get("verificado_en") or "—"),
         ("Uso del sello", "Conserve este reporte: si la bitácora se reescribiera, su último sello dejaría de "
                           "coincidir con el aquí impreso."),
-    ] + _sello_tiempo(cadena)
-
-
-def _sello_tiempo(cadena: dict[str, Any]) -> list[tuple[str, Any]]:
-    """
-    P7 (PLUS-22): el último sello de tiempo de un tercero sobre la bitácora.
-    Sin sello (la función está apagada por omisión) el reporte no cambia.
-    """
-    s = cadena.get("sello_tiempo") if cadena else None
-    if not s:
-        return []
-    estado = ("coincide con la cadena" if s.get("coincide")
-              else "YA NO COINCIDE con la cadena: la bitácora se reescribió después de esa fecha")
-    return [
-        ("Sello de tiempo de un tercero", f"{s['fecha_sello'].replace('T', ' ').rstrip('Z')[:19]} UTC · "
-                                          f"secuencia {s['secuencia']} · {estado}"),
-        ("Autoridad de sellado", f"{s['autoridad']} · número de serie {s['numero_serie']}"),
-        ("Comprobación del sello", "Descargue el token del sello y verifíquelo con el certificado de la autoridad "
-                                   "(openssl ts -verify). No sustituye la constancia de un prestador de servicios "
-                                   "de certificación acreditado."),
     ]
 
 
@@ -908,7 +887,7 @@ def ficha_custodia_xlsx(datos: DatosCustodia) -> bytes:
     pares = _ficha_custodia(datos) + [("Cadena de la bitácora", _texto_cadena(datos.cadena)),
                                       ("Último sello", datos.cadena.get("ultimo_hash") or "—"),
                                       ("Algoritmo", datos.cadena.get("algoritmo") or "—")]
-    pares += _sello_tiempo(datos.cadena) + [("Alcance normativo", LEYENDA_CUSTODIA)]
+    pares += [("Alcance normativo", LEYENDA_CUSTODIA)]
     _hoja_ficha(hoja, "Ficha de Custodia Documental", pares)
     _hoja_tabla(libro.create_sheet("Versiones"), [
         ("n", "#", 5), ("archivo", "Archivo", 40), ("fecha", "Ingesta", 17), ("hash", "SHA-256", 68),
@@ -971,7 +950,7 @@ def ficha_custodia_pdf(datos: DatosCustodia) -> bytes:
             ("Último sello", datos.cadena.get("ultimo_hash") or "—"),
             ("Verificada el", datos.cadena.get("verificado_en") or "—"),
             ("Algoritmo", datos.cadena.get("algoritmo") or "—"),
-        ] + _sello_tiempo(datos.cadena), e, ancho),
+        ], e, ancho),
     ]
     for h in (datos.cadena.get("hallazgos") or [])[:10]:
         historia.append(Paragraph(f"• Secuencia {_esc(h.get('secuencia'))}: {_esc(h.get('problema'))}", e["texto"]))

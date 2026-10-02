@@ -34,15 +34,6 @@ function AvisoEvidencia({ estado, onIrA, paginaActual }) {
     )
   }
   if (estado.error) return <p className="visor-aviso visor-aviso--warn">{estado.error}</p>
-  if (estado.zonas) {
-    const n = estado.resultado?.recuadros?.length || 0
-    return (
-      <p className="visor-aviso visor-aviso--neutral">
-        {n === 1 ? 'Sello en tinta de color' : `${n} sellos en tinta de color`} detectado{n === 1 ? '' : 's'} en la
-        página {estado.resultado?.pagina}. El sello forma parte del documento original; su texto no se transcribe.
-      </p>
-    )
-  }
   const r = estado.resultado
   if (!r?.encontrada) {
     return (

@@ -110,7 +110,7 @@ def levantar(puertos: dict[str, int], registros: Path, bd: str = BD_E2E,
     load_dotenv(SERVICIOS / "core-service" / ".env")
     _recrear_bd(bd)
     entorno = dict(os.environ, DB_NAME=bd, STORAGE_VAULT_PATH=tempfile.mkdtemp(prefix="plurione_boveda_aislada_"),
-                   REEVALUACION_INTERVALO_HORAS="0", SELLO_TIEMPO_URL="", PYTHONIOENCODING="utf-8")
+                   REEVALUACION_INTERVALO_HORAS="0", PYTHONIOENCODING="utf-8")
     if "rules-service" in puertos:
         entorno["RULES_BASE_URL"] = f"http://127.0.0.1:{puertos['rules-service']}"
     if "core-service" in puertos:

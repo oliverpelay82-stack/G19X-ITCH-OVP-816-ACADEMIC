@@ -59,7 +59,7 @@ class DocumentoResponse(BaseModel):
     # Solo en la respuesta de la carga: el PDF exige contraseña de apertura y
     # quedó custodiado como NO_CONFORME (PLUS-02).
     advertencia_nivel_1: str | None = None
-    # P6 (PLUS-16, PLUS-18): señales del PDF; nulo si aún no se calculan.
+    # P6 (PLUS-18): contenido activo del PDF; nulo si aún no se calcula.
     senales_pdf: dict | None = None
 
     model_config = ConfigDict(from_attributes=True)

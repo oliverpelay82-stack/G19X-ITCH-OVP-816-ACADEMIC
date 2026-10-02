@@ -143,10 +143,6 @@ _ANCHO_MINIMO_OCR = 1800
 # falló. Una página de texto queda entre 1 % y 10 % de tinta; una foto con
 # sombra o flash deja manchas negras que superan el 30 %.
 _MAX_TINTA_OTSU = 0.25
-# Fracción mínima de la tinta negra de una página con sellos que deben cubrir
-# las palabras leídas. Medido sobre un acta real de 14 páginas: entre 0.36 y
-# 0.99; una página cuyo texto la segmentación descartó por un sello denso: 0.0.
-MIN_COBERTURA_TINTA = 0.25
 
 
 def _normalizar_iluminacion(gris: np.ndarray) -> np.ndarray:
@@ -294,36 +290,15 @@ def _ocr_sobre_imagen(imagen: np.ndarray) -> tuple[str, float, list[list[Any]], 
     """
     Preprocesa la imagen (gris o BGR), ejecuta Tesseract y devuelve el texto,
     su confianza promedio, las palabras con su recuadro normalizado a [0, 1]
-    (``[x0, y0, x1, y1, texto, renglón]``) y los sellos en tinta de color
-    detectados (``{"tipo", "x0", "y0", "x1", "y1"}``). Texto y palabras salen
-    de la misma lectura: lo que analiza el Nivel 4 y lo que resalta el visor
-    coinciden.
-
-    Un sello denso estampado sobre el texto puede hacer que la segmentación de
-    Tesseract tome el bloque entero por una imagen y descarte su texto. Si las
-    palabras leídas cubren menos de ``MIN_COBERTURA_TINTA`` de la tinta negra
-    de una página con sellos, se relee con la tinta de los sellos atenuada y se
-    adopta esa lectura si recupera texto sin perder confianza.
+    (``[x0, y0, x1, y1, texto, renglón]``) y la lista de sellos de la página,
+    siempre vacía desde que se retiró la detección de sellos en tinta de color
+    (se conserva por la columna ``sellos`` de la persistencia). Texto y
+    palabras salen de la misma lectura: lo que analiza el Nivel 4 y lo que
+    resalta el visor coinciden.
     """
     binaria = preprocesar_imagen(imagen)
     palabras = _palabras(_tesseract(binaria), binaria.shape[1], binaria.shape[0])
-    encontrados: list[dict[str, Any]] = []
-
-    if imagen.ndim == 3 and settings.OCR_RELEER_SELLOS:
-        zonas = [z for z in sellos.zonas_de_color(imagen) if z.tipo]
-        alto, ancho = imagen.shape[:2]
-        encontrados = [
-            {"tipo": z.tipo, "x0": round(float(z.x0) / ancho, 4), "y0": round(float(z.y0) / alto, 4),
-             "x1": round(float(z.x1) / ancho, 4), "y1": round(float(z.y1) / alto, 4)}
-            for z in zonas
-        ]
-        if zonas and sellos.cobertura_tinta_negra(imagen, palabras) < MIN_COBERTURA_TINTA:
-            releida = preprocesar_imagen(sellos.atenuar_sellos(imagen, zonas))
-            nuevas = _palabras(_tesseract(releida), releida.shape[1], releida.shape[0])
-            if len(nuevas) > len(palabras) and _confianza(nuevas) >= _confianza(palabras) - 0.03:
-                palabras = nuevas
-
-    return _texto_por_bloques(palabras), _confianza(palabras), [p[:6] for p in palabras], encontrados
+    return _texto_por_bloques(palabras), _confianza(palabras), [p[:6] for p in palabras], []
 
 
 def reconocer_pagina(imagen: np.ndarray) -> tuple[str, float, list[list[Any]], list[dict[str, Any]]]:
@@ -356,23 +331,19 @@ def version_lectura() -> str:
         tesseract = str(pytesseract.get_tesseract_version())
     except Exception:  # noqa: BLE001 - sin Tesseract la versión simplemente no incluye el dato
         tesseract = "no-disponible"
-    sellos_activos = "sellos" if settings.OCR_RELEER_SELLOS else "sin-sellos"
-    return f"n3-{VERSION_PIPELINE}|tesseract-{tesseract}|{settings.OCR_LANG}|{settings.OCR_DPI}dpi|{sellos_activos}"
+    # «sin-sellos» se conserva tal cual al retirar la lectura de sellos en tinta de
+    # color (que estaba apagada): el texto no cambia, así que las extracciones
+    # guardadas y la versión de lectura de los dictámenes siguen siendo válidas.
+    return f"n3-{VERSION_PIPELINE}|tesseract-{tesseract}|{settings.OCR_LANG}|{settings.OCR_DPI}dpi|sin-sellos"
 
 
 def _rasterizar(pagina: "fitz.Page") -> np.ndarray:
     """
-    Rasteriza una página PDF a ``OCR_DPI`` ppp. Con ``OCR_RELEER_SELLOS`` la
-    página se rasteriza a color (BGR, ~24 MB por hoja carta a 300 ppp) porque
-    los sellos se distinguen del texto negro por su tinta; sin esa lectura, en
-    escala de grises (8 MB), que al OCR le basta: la diferencia media frente a
+    Rasteriza una página PDF a ``OCR_DPI`` ppp en escala de grises (8 MB por
+    hoja carta a 300 ppp), que al OCR le basta: la diferencia media frente a
     convertir después con OpenCV es de 0.03 niveles por píxel.
     """
     matriz = fitz.Matrix(settings.OCR_DPI / 72.0, settings.OCR_DPI / 72.0)
-    if settings.OCR_RELEER_SELLOS:
-        pixmap = pagina.get_pixmap(matrix=matriz, colorspace=fitz.csRGB, alpha=False)
-        rgb = np.frombuffer(pixmap.samples, dtype=np.uint8).reshape(pixmap.height, pixmap.width, 3)
-        return cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR)
     pixmap = pagina.get_pixmap(matrix=matriz, colorspace=fitz.csGRAY)
     return np.frombuffer(pixmap.samples, dtype=np.uint8).reshape(pixmap.height, pixmap.width)
 

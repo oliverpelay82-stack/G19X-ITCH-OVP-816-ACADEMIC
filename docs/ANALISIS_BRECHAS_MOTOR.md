@@ -6,7 +6,7 @@
 | Fecha | 29 de septiembre de 2026 (tras cerrar P1, P2 y P3; PRD versión 1.5). Actualizado el 30 de septiembre de 2026 (PRD 2.0): ver la sección 5. |
 | Fuentes | Ficha Técnica 045 (PDF de PluriOne); texto íntegro de DOC-01 a DOC-08 ([ESPECIFICACIONES_DOC01_A_DOC08.txt](ESPECIFICACIONES_DOC01_A_DOC08.txt)); [PRD.md](PRD.md) v1.5; código del repositorio, contra el que se verificó cada afirmación |
 | Criterio | Solo es brecha lo que exige alguno de esos documentos. Donde un requisito bancario va más allá de lo documentado, se indica. |
-| Documentos hermanos | [PRD.md](PRD.md), [MRD.md](MRD.md), [AUDITORIA_TECNICA.md](AUDITORIA_TECNICA.md) |
+| Documentos hermanos | [PRD.md](PRD.md), [MRD.md](MRD.md) |
 
 ---
 

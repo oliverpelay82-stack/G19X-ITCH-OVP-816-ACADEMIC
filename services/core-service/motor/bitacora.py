@@ -32,7 +32,6 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from models.bitacora import EVENTO_SELLO_GENESIS, BitacoraAuditoria
-from models.sello_tiempo import SelloTiempo
 from config import observabilidad
 
 USUARIO_SISTEMA = "SISTEMA"
@@ -181,14 +180,11 @@ def verificar_cadena(db: Session) -> dict[str, Any]:
     def hallazgo(secuencia: int | None, evento_id: str | None, problema: str) -> None:
         hallazgos.append({"secuencia": secuencia, "evento_id": evento_id, "problema": problema})
 
-    sello_tiempo = _verificar_sellos_tiempo(db, {e.secuencia: e for e in sellados}, hallazgo)
-
     if not sellados:
         previos = _previos(db)
         return {"integra": not hallazgos, "sellada": False, "eventos_sellados": 0, "eventos_previos": len(previos),
                 "ultimo_hash": None, "ultima_secuencia": None, "verificado_en": _fecha(_ahora(db)),
-                "algoritmo": ALGORITMO, "total_hallazgos": len(hallazgos), "hallazgos": hallazgos[:MAX_HALLAZGOS],
-                "sello_tiempo": sello_tiempo}
+                "algoritmo": ALGORITMO, "total_hallazgos": len(hallazgos), "hallazgos": hallazgos[:MAX_HALLAZGOS]}
 
     esperado, enlace = 1, HASH_INICIAL
     for e in sellados:
@@ -232,28 +228,4 @@ def verificar_cadena(db: Session) -> dict[str, Any]:
         "algoritmo": ALGORITMO,
         "total_hallazgos": len(hallazgos),
         "hallazgos": hallazgos[:MAX_HALLAZGOS],
-        "sello_tiempo": sello_tiempo,
     }
-
-
-def _verificar_sellos_tiempo(db: Session, por_secuencia: dict[int, BitacoraAuditoria], hallazgo) -> dict[str, Any] | None:
-    """
-    P7 (PLUS-22): cada sello de tiempo debe seguir coincidiendo con el eslabón
-    que cubrió. Si la cadena se reescribió completa (con los hashes
-    recalculados), el enlace no lo delata, pero el sello de la autoridad sí.
-    Devuelve el último sello con su resultado, o None si no hay ninguno.
-    """
-    from motor import sello_tiempo  # importa este módulo: se resuelve al usarse
-
-    sellos = db.query(SelloTiempo).order_by(SelloTiempo.secuencia, SelloTiempo.creado_en).all()
-    for s in sellos:
-        e = por_secuencia.get(s.secuencia)
-        if e is None or e.hash_evento != s.hash_evento:
-            hallazgo(s.secuencia, e.id if e else s.evento_id,
-                     f"El sello de tiempo del {s.fecha_sello.isoformat(sep=' ', timespec='seconds')} UTC cubre este "
-                     "eslabón, pero su huella ya no coincide: la bitácora se reescribió después de esa fecha.")
-    if not sellos:
-        return None
-    ultimo = sellos[-1]
-    e = por_secuencia.get(ultimo.secuencia)
-    return sello_tiempo.resumen(ultimo, coincide=e is not None and e.hash_evento == ultimo.hash_evento)

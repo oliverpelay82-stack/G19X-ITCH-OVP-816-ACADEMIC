@@ -21,18 +21,13 @@ function Dato({ label, children, ancho = false }) {
   )
 }
 
-/**
- * P6 (PLUS-16, PLUS-18): edición posterior a la emisión y contenido activo del
- * PDF. Las que llevan a revisión se destacan; en un escaneo o un acta las de
- * edición solo se informan.
- */
+/** P6 (PLUS-18): contenido activo del PDF (JavaScript, acciones automáticas, adjuntos…), que lleva a revisión. */
 function SenalesArchivo({ documento }) {
   const senales = documento.senales_pdf
-  if (!senales) return <span className="cell-sub">Se calcularán en la próxima verificación programada.</span>
+  if (!senales) return <span className="cell-sub">Se calculará en la próxima verificación programada.</span>
   if (senales.no_analizable) return <span className="cell-sub">No se pudo analizar la estructura del PDF.</span>
   const revision = documento.senales_revision || []
-  const informativas = revision.length ? [] : (senales.edicion || []).map((e) => e.detalle)
-  const programa = senales.productor || senales.creador
+  if (!revision.length) return <span>Sin contenido activo.</span>
   return (
     <span className="cell-stack">
       {revision.map((motivo) => (
@@ -40,9 +35,6 @@ function SenalesArchivo({ documento }) {
           {motivo}
         </span>
       ))}
-      {informativas.length > 0 && <span>Informativo: el PDF {informativas.join('; ')}.</span>}
-      {!revision.length && !informativas.length && <span>Sin señales de edición ni contenido activo.</span>}
-      {programa && <span className="cell-sub">Generado con {programa}</span>}
     </span>
   )
 }
@@ -140,23 +132,9 @@ function InspectorDocumento({ doc, expediente, iaOnline, onRefresh, onVisor, onO
     },
     [onVisor]
   )
-  // Zonas ya ubicadas por el Nivel 3 (sellos): no hay nada que buscar, solo resaltar.
-  const mostrarZonas = useCallback(
-    (pagina, recuadros) => {
-      setVisorAbierto(true)
-      onVisor(true)
-      setBusqueda({
-        clave: crypto.randomUUID(),
-        tono: 'neutral',
-        zonas: true,
-        resultado: { encontrada: true, completa: true, aproximada: false, pagina, recuadros },
-      })
-    },
-    [onVisor]
-  )
   const contexto = useMemo(
-    () => (iaOnline ? { mostrar, irAPagina, mostrarZonas } : null),
-    [iaOnline, mostrar, irAPagina, mostrarZonas]
+    () => (iaOnline ? { mostrar, irAPagina } : null),
+    [iaOnline, mostrar, irAPagina]
   )
 
   return (
@@ -375,7 +353,7 @@ export default function DetalleDocumentoModal({ documento, lista, expediente, ia
             )}
           </Dato>
           {documento.mime_type === 'application/pdf' && (
-            <Dato label="Señales del archivo" ancho>
+            <Dato label="Contenido activo" ancho>
               <SenalesArchivo documento={documento} />
             </Dato>
           )}

@@ -106,8 +106,6 @@ def _resumen_senales(senales_archivo: dict | None) -> dict:
     if not senales_archivo:
         return {}
     resumen = {}
-    if senales_archivo.get("edicion"):
-        resumen["senales_edicion"] = [e["codigo"] for e in senales_archivo["edicion"]]
     if senales_archivo.get("contenido_activo"):
         resumen["contenido_activo"] = senales_archivo["contenido_activo"]
     return resumen
@@ -238,7 +236,7 @@ def subir_documento(
 
     # 5.2 PLUS-02: un PDF con contraseña de apertura se custodia, pero como NO_CONFORME.
     protegido = content_type == "application/pdf" and archivo_protegido.pdf_protegido(contenido)
-    # 5.3 P6 (PLUS-16, PLUS-18): señales de edición y contenido activo. No rechazan:
+    # 5.3 P6 (PLUS-18): contenido activo del PDF. No rechaza:
     #     el archivo se custodia igual y la auditoría queda en revisión humana.
     senales_archivo = senales_pdf.analizar(contenido) if content_type == "application/pdf" and not protegido else None
 

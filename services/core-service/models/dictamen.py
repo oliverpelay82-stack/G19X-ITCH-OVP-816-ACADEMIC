@@ -65,7 +65,8 @@ class DictamenAuditoria(Base):
     # instrucciones al modelo se emitió el dictamen, para poder reproducirlo.
     version_lectura = Column(String(160), nullable=True)
     version_instrucciones = Column(String(40), nullable=True)
-    # P6 (PLUS-17): lectura del QR de verificación del SAT (enlace, dominio y cotejo del RFC).
+    # P6 (PLUS-17, retirado el 02/10/2026): lectura del QR del SAT. La columna se
+    # conserva (la protege el trigger de RN-05); ya no se escribe ni se expone.
     qr_sat = Column(JSON, nullable=True)
     # P6 (M6): versión del catálogo de reglas con que se emitió (cat-…).
     version_catalogo = Column(String(20), nullable=True)
