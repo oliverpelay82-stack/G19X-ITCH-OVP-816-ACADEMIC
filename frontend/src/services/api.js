@@ -131,6 +131,14 @@ export const renombrarExpediente = (id, nombre) =>
 export const getDocumentos = () => request(CORE_BASE_URL, '/documentos', { tiempoLimite: LIMITE_SONDEO_MS })
 export const uploadDocumento = (formData) =>
   request(CORE_BASE_URL, '/documentos/upload', { method: 'POST', body: formData, isFormData: true })
+/** Custodia un archivo con su tipo en un expediente (una carga individual o un elemento de un lote, RF-02). */
+export const custodiarArchivo = (expedienteId, archivo, tipoDocumento) => {
+  const formData = new FormData()
+  formData.append('expediente_id', expedienteId)
+  formData.append('tipo_documento', tipoDocumento)
+  formData.append('file', archivo)
+  return uploadDocumento(formData)
+}
 
 /* ── Dictámenes y bitácora (Core Service :8001) ─────────────────── */
 /** Historial de dictámenes de un documento, del más reciente al más antiguo. */

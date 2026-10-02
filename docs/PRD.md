@@ -11,7 +11,7 @@
 | Desarrollo (Scrum Master / Desarrollador) | Oliver Villanueva Pelay, residente (No. de control 21520500) |
 | Stakeholder evaluador | Edgar Loheffelmman (PluriOne) |
 | Asesor interno | Dr. Wilfrido Campos Francisco |
-| Versión del documento | 2.8 — 1 de octubre de 2026 (2.7: gráficas, Fase A; 2.6: P7 implementado; 2.5: P7 documentado; 2.4: P6; 2.3: P5 implementado; 2.2: P5 documentado; 2.1: revisión de requerimientos; 2.0: correcciones de la documentación; 1.9: revisión visual del frontend; 1.8: chat documental eficiente; 1.7: revisión del frontend; 1.6: índice de cumplimiento; 1.5: P3; 1.4: P2; 1.3: P1; 1.2: 28 de septiembre; 1.0: 27 de septiembre de 2026) |
+| Versión del documento | 2.9 — 2 de octubre de 2026 (2.9: RF-09, corrección de datos y RF-02; 2.8: Fase B del plan visual; 2.7: gráficas, Fase A; 2.6: P7 implementado; 2.5: P7 documentado; 2.4: P6; 2.3: P5 implementado; 2.2: P5 documentado; 2.1: revisión de requerimientos; 2.0: correcciones de la documentación; 1.9: revisión visual del frontend; 1.8: chat documental eficiente; 1.7: revisión del frontend; 1.6: índice de cumplimiento; 1.5: P3; 1.4: P2; 1.3: P1; 1.2: 28 de septiembre; 1.0: 27 de septiembre de 2026) |
 | Estado del producto | En desarrollo: Sprints 1 y 2 implementados, Sprint 3 implementado parcialmente, Sprint 4 implementado salvo HU-31, Módulo 7 pendiente |
 | Documento hermano | [MRD.md](MRD.md) — requerimientos de mercado |
 
@@ -171,7 +171,7 @@ Prioridad tomada de las historias de usuario asociadas (Cap. VII); «—» cuand
 | ID | Requerimiento | Prioridad | Estado | Evidencia / nota |
 |---|---|---|---|---|
 | RF-01 | Crear expedientes con identificador único, nombre descriptivo, empresa titular y clasificación temática (Jurídico, Corporativo o Regulatorio). | Alta | Implementado | `POST /api/v1/expedientes`; folio único y tipo. |
-| RF-02 | Carga de documentos individuales o en lote (PDF, PNG, JPG) asociados a un expediente. | Alta | Parcial | Carga individual; la carga en lote queda pendiente. |
+| RF-02 | Carga de documentos individuales o en lote (PDF, PNG, JPG) asociados a un expediente. | Alta | Implementado | Carga en lote implementada el 02/10/2026 ([rf02-actividad-carga-en-lote.puml](uml/rf02-actividad-carga-en-lote.puml)), en la Bóveda y en el detalle del expediente: la zona de carga admite varios archivos; cada uno pasa el Nivel 1 en el navegador y lleva su propio tipo, sin tipo por omisión (con uno solo para todos, cada archivo sustituiría al anterior, RF-04), y se avisa cuando dos comparten tipo. No se envían las huellas repetidas dentro del lote ni la copia de un archivo que el lote ya custodió (el core respondería 409, PLUS-01). Los archivos van uno a uno a `POST /documentos/upload`, sin endpoint nuevo: cada uno conserva el Nivel 1 del core, sus advertencias (PLUS-02, PLUS-18) y su evento INGESTA_DOCUMENTO. Una falla no detiene el lote: el rechazado queda en la lista con el motivo del core para reintentarlo, y un solo aviso resume el resultado. Prueba: `scripts/prueba_carga_lote.py`. |
 | RF-03 | Cálculo automático de la huella SHA-256 al cargar (ISO 30301, NOM-151). | Alta | Implementado | Nivel 1; verificación RIE-03 en cada lectura. |
 | RF-04 | Control de versiones con histórico accesible. | — | Implementado | El archivo más reciente de cada tipo sustituye al anterior, que se conserva con sus dictámenes. |
 | RF-05 | Búsqueda y filtrado por nombre, empresa, tipo de expediente, fecha de creación y estatus. | Alta | Implementado | Parámetros `q`, `tipo_expediente`, `estado`, `desde` y `hasta`. |
@@ -228,7 +228,7 @@ Prioridad tomada de las historias de usuario asociadas (Cap. VII); «—» cuand
 | RF-26 | Autorización por rol (RBAC). | Alta | **Pendiente** | Roles definidos (sección 5). |
 | RF-27 | Bitácora inmutable protegida por el motor de base de datos. | Alta | Implementado | Disparador `trg_bitacora_inmutable` y, desde P3, cada evento sellado en cadena y verificable (`/bitacora/verificar-cadena`); el usuario autenticado se registrará con RF-25. |
 
-**Resumen:** 21 implementados, 2 parciales, 3 pendientes y 1 fuera del alcance de 27 (versión 2.1: RF-10 pasa a parcial y RF-12 sale del alcance). La Tabla 34 del DG reporta 20, 4 y 3; la diferencia es RF-11, que pasa a implementado con la verificación de contenido del Nivel 4 (versión 1.2 de este documento).
+**Resumen:** 22 implementados, 1 parcial, 3 pendientes y 1 fuera del alcance de 27 (versión 2.1: RF-10 pasa a parcial y RF-12 sale del alcance; versión 2.9: RF-09 y RF-02 pasan a implementados). La Tabla 34 del DG reporta 20, 4 y 3; la diferencia es RF-11, que pasa a implementado con la verificación de contenido del Nivel 4 (versión 1.2 de este documento).
 
 ---
 
@@ -272,7 +272,7 @@ Prioridad tomada de las historias de usuario asociadas (Cap. VII); «—» cuand
 | HU-32 | Validación completa de un expediente (reglas + IA) con un solo botón. | Integración | 4 | Alta | 14 | Implementado («Auditar pendientes» en el detalle del expediente: audita en secuencia, con reglas e IA, los documentos vigentes sin dictamen y muestra el avance por documento y el semáforo y las alertas antes y después) |
 | HU-33 | Manejo controlado de errores (documento ilegible, IA no disponible). | Integración | 4 | Alta | 9 | Implementado: una falla no detiene el resto del expediente (DG §8.7), y las dos excepciones del DOC-05, «Documento ilegible, se requiere recarga» y «Procesamiento diferido», se implementan en P5 (§21.5) |
 
-**Resumen:** 26 implementadas, 3 parciales y 4 pendientes de 33 (HU-33 pasó a parcial en la versión 2.1 y se completó con P5). Respecto de la versión 1.0 pasan a implementadas HU-30 y HU-32 (versión 1.1), HU-19 (versión 1.2) y HU-23 (versión 1.4). Las historias PLUS (HU-34 en adelante) se cuentan en la sección 21.
+**Resumen:** 27 implementadas, 2 parciales y 4 pendientes de 33 (HU-33 pasó a parcial en la versión 2.1 y se completó con P5). Respecto de la versión 1.0 pasan a implementadas HU-30 y HU-32 (versión 1.1), HU-19 (versión 1.2), HU-23 (versión 1.4) y HU-24 (versión 2.9). Las historias PLUS (HU-34 en adelante) se cuentan en la sección 21.
 
 ---
 
@@ -752,13 +752,11 @@ Riesgos adicionales identificados en la implementación [DG §8.7 y §10.7]:
 
 1. Autenticación, usuarios y roles: RF-25, RF-26, HU-05, HU-06 y HU-31; registrar el usuario autenticado en la bitácora (HU-07).
 2. Notificaciones por correo electrónico: RF-20, HU-17.
-3. Criterios en lenguaje natural para tipos de documento dinámicos (RDS-02): RF-09, HU-24.
-4. Carga en lote (RF-02).
-5. Requerimientos no funcionales: cifrado AES-256 en reposo (RNF-04), TLS 1.3 en el borde y red interna aislada (RNF-05) y respaldos conjuntos automatizados (RNF-10); pruebas de concurrencia y disponibilidad (RNF-03, RNF-09).
-6. Después de P5 (revisión de requerimientos, versión 2.1): corrección de los datos de una empresa o un expediente con registro en la bitácora (ISO 30301, control de cambios de metadatos; hoy el API no permite editarlos) y ciclo de vida del expediente activo, cerrado y archivado, sin eliminar nada, para que un expediente concluido deje de evaluarse y de alertar (complementa la conservación de §12.6).
-7. Iteración posterior: revocación de poderes y vigencias ligadas entre documentos (fianza y convenio modificatorio atados a la vigencia del contrato), que exige el DOC-02.
+3. Requerimientos no funcionales: cifrado AES-256 en reposo (RNF-04), TLS 1.3 en el borde y red interna aislada (RNF-05) y respaldos conjuntos automatizados (RNF-10); pruebas de concurrencia y disponibilidad (RNF-03, RNF-09).
+4. Después de P5 (revisión de requerimientos, versión 2.1): ciclo de vida del expediente activo, cerrado y archivado, sin eliminar nada, para que un expediente concluido deje de evaluarse y de alertar (complementa la conservación de §12.6). La corrección de los datos de una empresa o un expediente con registro en la bitácora, que este punto también pedía, se implementó en la versión 2.9 (`PATCH /titulares/{id}` y `PATCH /expedientes/{id}`).
+5. Iteración posterior: revocación de poderes y vigencias ligadas entre documentos (fianza y convenio modificatorio atados a la vigencia del contrato), que exige el DOC-02.
 
-**Completados desde la versión 1.0 de este documento:** vista de la bitácora en la interfaz (HU-30), validación del expediente completo con un botón (HU-32) e integración continua con GitHub Actions (RNF-12) en la versión 1.1; verificación automática de cláusulas (RSC-01: RF-11 y HU-19) y la categoría de alerta CONTENIDO_NO_LOCALIZADO (RF-18) en la versión 1.2; la ingesta blindada (P1) en la versión 1.3, los datos del firmante con su cotejo contra el poder o el acta (RSC-02, RN-03, HU-23) en la versión 1.4, y la cadena de custodia sellada con su ficha de trazabilidad (P3) en la versión 1.5.
+**Completados desde la versión 1.0 de este documento:** vista de la bitácora en la interfaz (HU-30), validación del expediente completo con un botón (HU-32) e integración continua con GitHub Actions (RNF-12) en la versión 1.1; verificación automática de cláusulas (RSC-01: RF-11 y HU-19) y la categoría de alerta CONTENIDO_NO_LOCALIZADO (RF-18) en la versión 1.2; la ingesta blindada (P1) en la versión 1.3, los datos del firmante con su cotejo contra el poder o el acta (RSC-02, RN-03, HU-23) en la versión 1.4, y la cadena de custodia sellada con su ficha de trazabilidad (P3) en la versión 1.5; tipos de documento nuevos con su criterio para la IA (RF-09, HU-24), corrección de datos de captura y carga en lote (RF-02) en la versión 2.9.
 
 **Preguntas abiertas para el Product Owner**
 

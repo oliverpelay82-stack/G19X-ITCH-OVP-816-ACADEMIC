@@ -1,0 +1,60 @@
+@startuml rf02-actividad-carga-en-lote
+' RF-02 — Carga de documentos en lote en un expediente.
+' Trazabilidad: RF-02 («carga de documentos individuales o en lote»), HU-03; RF-03 y
+' Nivel 1 del DOC-05 (firma, tamaño y SHA-256 por archivo); RF-04 (un archivo del mismo
+' tipo sustituye al vigente); PLUS-01 (huella repetida → 409), PLUS-02 y PLUS-18
+' (advertencias de la carga); RN-01 (subir archivos nunca aprueba); MR-11, MR-20.
+' Implementación: frontend/src/components/DropZone.jsx (varios archivos),
+' frontend/src/utils/lote.js (revisión previa del lote, sin React), services/api.js
+' (custodiarArchivo), utils/nivel1.js (avisos por archivo), BovedaTab.jsx, ExpedientesTab.jsx
+' y expedientes/DetalleExpediente.jsx. Sin cambios en la API: cada archivo usa
+' POST /documentos/upload. Prueba de comportamiento: scripts/prueba_carga_lote.py.
+
+title RF-02 — Carga en lote
+
+|Analista|
+start
+:Elige el expediente destino y
+arrastra o selecciona varios archivos;
+|Interfaz|
+repeat
+  :Nivel 1 en el navegador:
+  firma binaria, tamaño y SHA-256;
+repeat while (¿Quedan archivos por analizar?) is (sí)
+->no;
+:Marca en su renglón:
+- formato o tamaño no admitido (no se envía);
+- huella repetida dentro del lote o de un archivo
+  que el lote ya custodió (no se envía);
+- dos archivos con el mismo tipo (aviso: el
+  último sustituye al primero, RF-04);
+|Analista|
+:Elige el tipo de cada archivo
+(sin tipo por omisión) y confirma;
+|Interfaz|
+repeat
+  |core-service|
+  :POST /documentos/upload con su tipo
+  (uno a la vez, en el orden de la lista);
+  :Nivel 1, unicidad de la huella en el
+  expediente (PLUS-01), custodia, evento
+  INGESTA_DOCUMENTO y semáforo (RN-01);
+  |Interfaz|
+  if (¿Aceptado?) then (sí)
+    :Sale de la lista; conserva sus
+    advertencias (PLUS-02, PLUS-18,
+    huella en otros expedientes);
+  else (no)
+    :Queda en la lista con el motivo
+    del core para reintentarlo;
+  endif
+repeat while (¿Quedan archivos?) is (sí)
+->no;
+:Un aviso de resumen
+(custodiados, con advertencia y rechazados)
+y se refresca el expediente;
+|Analista|
+:Audita los documentos nuevos
+(«Auditar pendientes»);
+stop
+@enduml

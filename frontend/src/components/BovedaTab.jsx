@@ -9,7 +9,7 @@ import { firmaDeMime, tipoCorto } from '../utils/documentos.js'
 import { SkeletonRows } from './Skeleton.jsx'
 import useToast from '../hooks/useToast.js'
 import useDebounce from '../hooks/useDebounce.js'
-import { uploadDocumento } from '../services/api.js'
+import { custodiarArchivo } from '../services/api.js'
 import { avisarCarga } from '../utils/nivel1.js'
 import { ESTADO_DOCUMENTO, TIPO_DOCUMENTO_LABEL, TIPO_EXPEDIENTE_LABEL, TIPOS_DOCUMENTO, tiposParaCarga } from '../constants.js'
 import { formatBytes, formatFecha, formatFechaCorta, hashCorto } from '../utils/format.js'
@@ -120,14 +120,12 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
   )
   const { ordenada, orden, ordenar } = useOrden(filtrados, clavesOrden)
 
-  const subir = async (archivo, tipo) => {
+  // En un lote (RF-02) la zona de carga avisa y lleva el progreso; aquí solo se envía.
+  const subir = async (archivo, tipo, { enLote = false } = {}) => {
+    if (enLote) return custodiarArchivo(expedienteId, archivo, tipo)
     setSubiendo(true)
     try {
-      const formData = new FormData()
-      formData.append('expediente_id', expedienteId)
-      formData.append('tipo_documento', tipo)
-      formData.append('file', archivo)
-      const documento = await uploadDocumento(formData)
+      const documento = await custodiarArchivo(expedienteId, archivo, tipo)
       avisarCarga(toast, documento, `${archivo.name} · huella registrada en la bóveda`)
       setIngestaAbierta(false)
       onRefresh()
@@ -307,6 +305,10 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
                 : TIPOS_DOCUMENTO
             }
             onArchivo={subir}
+            onLoteTerminado={({ custodiados, rechazados }) => {
+              if (custodiados) onRefresh()
+              if (!rechazados) setIngestaAbierta(false)
+            }}
             subiendo={subiendo}
             listoExtra={Boolean(expedienteId)}
             deshabilitado={!isOnline}

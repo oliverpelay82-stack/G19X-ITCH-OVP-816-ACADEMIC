@@ -203,7 +203,7 @@ function MotivosSemaforo({ estado, motivos = [], alertas = [] }) {
  * principal y la zona queda abierta; con todo completo se pliega tras un
  * botón (cargar un archivo del mismo tipo sustituye al vigente).
  */
-function CustodiarDocumento({ faltantes, subiendo, tipos, onArchivo }) {
+function CustodiarDocumento({ faltantes, subiendo, tipos, onArchivo, onLoteTerminado }) {
   const [abierta, setAbierta] = useState(false)
   const visible = faltantes > 0 || abierta || subiendo
   return (
@@ -217,7 +217,17 @@ function CustodiarDocumento({ faltantes, subiendo, tipos, onArchivo }) {
             : `Faltan ${faltantes} documentos obligatorios.`}
       </p>
       {visible ? (
-        <DropZone compacto subiendo={subiendo} tipos={tipos} onArchivo={onArchivo} />
+        <DropZone
+          compacto
+          subiendo={subiendo}
+          tipos={tipos}
+          onArchivo={onArchivo}
+          onLoteTerminado={(resultado) => {
+            // Los rechazados siguen en la lista: la zona no se pliega aunque ya no falten obligatorios.
+            if (resultado.rechazados) setAbierta(true)
+            onLoteTerminado(resultado)
+          }}
+        />
       ) : (
         <Button variante="secondary" compacto icono={Plus} onClick={() => setAbierta(true)}>
           Custodiar otro documento
@@ -355,7 +365,8 @@ export function DetalleExpediente({ exp, subiendo, onSubir, iaOnline, onRefresh,
             faltantes={faltantes.length}
             subiendo={subiendo}
             tipos={tiposCarga}
-            onArchivo={(archivo, tipo) => onSubir(exp.id, archivo, tipo)}
+            onArchivo={(archivo, tipo, opciones) => onSubir(exp.id, archivo, tipo, opciones)}
+            onLoteTerminado={({ custodiados }) => custodiados && onRefresh()}
           />
         </div>
 

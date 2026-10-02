@@ -6,7 +6,7 @@ import { SkeletonCards } from './Skeleton.jsx'
 import useToast from '../hooks/useToast.js'
 import DetalleDocumentoModal from './DetalleDocumentoModal.jsx'
 import useDebounce from '../hooks/useDebounce.js'
-import { createExpediente, uploadDocumento } from '../services/api.js'
+import { createExpediente, custodiarArchivo } from '../services/api.js'
 import { avisarCarga } from '../utils/nivel1.js'
 import { getEstadoBadge, TIPO_EXPEDIENTE_LABEL, TIPOS_EXPEDIENTE } from '../constants.js'
 import { formatRelativo, iniciales } from '../utils/format.js'
@@ -176,15 +176,12 @@ export default function ExpedientesTab({
     }
   }
 
-  /** Carga directa desde el detalle del expediente. */
-  const subirDocumento = async (expedienteId, archivo, tipoDocumento) => {
+  /** Carga directa desde el detalle del expediente; en un lote (RF-02) la zona de carga avisa y refresca al final. */
+  const subirDocumento = async (expedienteId, archivo, tipoDocumento, { enLote = false } = {}) => {
+    if (enLote) return custodiarArchivo(expedienteId, archivo, tipoDocumento)
     setSubiendoEn(expedienteId)
     try {
-      const formData = new FormData()
-      formData.append('expediente_id', expedienteId)
-      formData.append('tipo_documento', tipoDocumento)
-      formData.append('file', archivo)
-      const documento = await uploadDocumento(formData)
+      const documento = await custodiarArchivo(expedienteId, archivo, tipoDocumento)
       avisarCarga(toast, documento, `${archivo.name} → bóveda criptográfica`)
       onRefresh()
     } catch (err) {

@@ -121,3 +121,59 @@
   color: var(--text-secondary);
   overflow-wrap: anywhere;
 }
+
+/* Carga en lote (RF-02): un renglón por archivo con su veredicto y su tipo. */
+.lote {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  max-height: 360px;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.lote-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  padding: var(--s-3);
+  border: var(--border-default);
+  border-radius: var(--r-md);
+  background: var(--bg-surface);
+  animation: fade-in var(--dur) var(--ease);
+}
+
+.lote-item.is-error {
+  border-color: var(--bad-border);
+}
+
+.lote-item-fila {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2);
+}
+
+.lote-tipo {
+  flex: 1;
+  min-width: 0;
+}
+
+.lote-tipo select {
+  width: 100%;
+  min-width: 0;
+}
+
+.lote-calculando {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1);
+  font-size: var(--fs-small);
+  color: var(--text-secondary);
+}
+
+.lote-enviando {
+  color: var(--text-muted);
+}

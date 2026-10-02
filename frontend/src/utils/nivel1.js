@@ -44,17 +44,20 @@ export async function analizarNivel1(file) {
  *  - huella_en_otros_expedientes: el mismo archivo ya está custodiado en otros
  *    expedientes; se admite y solo se informa (PLUS-01).
  * Una carga repetida en el mismo expediente no llega aquí: el core responde 409.
+ * En un lote (RF-02), `exito` es null: el éxito lo resume un solo aviso y aquí
+ * solo se avisan las advertencias, precedidas por el `nombre` del archivo.
  */
-export function avisarCarga(toast, documento, exito) {
+export function avisarCarga(toast, documento, exito, nombre) {
+  const de = (texto) => (nombre ? `${nombre}: ${texto}` : texto)
   if (documento?.advertencia_nivel_1) {
     // P6 (PLUS-18): la misma advertencia de la carga explica también el contenido activo.
     const titulo = documento.senales_pdf?.contenido_activo?.length ? 'Contenido activo en el PDF' : 'PDF protegido con contraseña'
-    toast.alerta(titulo, documento.advertencia_nivel_1)
-  } else {
+    toast.alerta(titulo, de(documento.advertencia_nivel_1))
+  } else if (exito) {
     toast.exito('Documento custodiado', exito)
   }
   const otros = documento?.huella_en_otros_expedientes || []
   if (otros.length) {
-    toast.info('Archivo presente en otros expedientes', `El mismo archivo también está custodiado en ${otros.join(', ')}.`)
+    toast.info('Archivo presente en otros expedientes', de(`El mismo archivo también está custodiado en ${otros.join(', ')}.`))
   }
 }
