@@ -4,6 +4,7 @@ import { SkeletonCards } from './Skeleton.jsx'
 import { AlertaItem } from './Alertas.jsx'
 import FolioExpediente from './FolioExpediente.jsx'
 import useDebounce from '../hooks/useDebounce.js'
+import useDesplazamiento from '../hooks/useDesplazamiento.js'
 import { Button, Card, EmptyState, SearchBox, Segmented, Select } from './ui/index.js'
 import {
   ALERTA_META,
@@ -26,6 +27,7 @@ export default function AlertasTab({ expedientes, loading, onAbrirExpediente }) 
   const [filtroCodigo, setFiltroCodigo] = useState('TODAS')
   const [filtroTipo, setFiltroTipo] = useState('TODOS')
   const consulta = useDebounce(busqueda, 220)
+  const bandeja = useDesplazamiento()
 
   const alertas = useMemo(
     () =>
@@ -161,8 +163,10 @@ export default function AlertasTab({ expedientes, loading, onAbrirExpediente }) 
               </>
             )}
           </div>
-          <div className="bandeja-grupos">
-            {grupos.map(({ sev, items }) => {
+          <div className="bandeja-grupos" ref={bandeja}>
+            {grupos.map(({ sev, items }, g) => {
+              // Posición global de la primera alerta del grupo, para la entrada en cascada.
+              const inicio = grupos.slice(0, g).reduce((n, grupo) => n + grupo.items.length, 0)
               const meta = getSeveridadMeta(sev)
               const titulo = sev ? meta.label : 'Otras'
               return (
@@ -176,6 +180,8 @@ export default function AlertasTab({ expedientes, loading, onAbrirExpediente }) 
                       <AlertaItem
                         key={`${a.expediente.id}-${a.codigo}-${a.tipo_documento}-${i}`}
                         alerta={a}
+                        claveFlip={`${a.expediente.id}-${a.codigo}-${a.tipo_documento}`}
+                        indice={inicio + i}
                         expediente={unico ? undefined : a.expediente}
                         onAbrirExpediente={onAbrirExpediente}
                       />

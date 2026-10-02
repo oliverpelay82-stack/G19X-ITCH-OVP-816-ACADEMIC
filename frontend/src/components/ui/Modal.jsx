@@ -1,6 +1,7 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useLayoutEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
+import { animarSalida } from '../../utils/movimiento.js'
 
 /** Elementos que pueden recibir el foco con Tab dentro del panel. */
 const ENFOCABLES = [
@@ -32,12 +33,22 @@ function enfocables(panel) {
  * transform establecería un bloque contenedor que dejaría el velo
  * `position: fixed` recortado al tamaño de la pestaña.
  *
+ * Al cerrarse se desvanece: el velo deja una copia inerte que hace la
+ * salida (modal.css), sin que la vista que lo abrió retrase su cierre.
+ *
  * `size`: 'md' para formularios, 'lg' para el detalle de un documento, 'xl' con el visor.
  * `acciones`: controles de la cabecera junto al botón de cerrar (p. ej. navegación).
  */
 export default function Modal({ title, subtitle, onClose, children, footer, size = 'md', acciones }) {
   const panel = useRef(null)
+  const velo = useRef(null)
   const cerrar = useRef(onClose)
+
+  // Corre antes de que React retire el velo del documento.
+  useLayoutEffect(() => {
+    const nodo = velo.current
+    return () => animarSalida(nodo, 'modal-overlay--saliendo')
+  }, [])
 
   useEffect(() => {
     cerrar.current = onClose
@@ -82,7 +93,7 @@ export default function Modal({ title, subtitle, onClose, children, footer, size
   }, [])
 
   return createPortal(
-    <div className="modal-overlay" onMouseDown={() => cerrar.current()}>
+    <div className="modal-overlay" ref={velo} onMouseDown={() => cerrar.current()}>
       <div
         className={`modal modal--${size}`}
         onMouseDown={(e) => e.stopPropagation()}

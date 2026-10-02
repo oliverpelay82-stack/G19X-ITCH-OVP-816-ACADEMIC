@@ -277,6 +277,19 @@
   animation: desplegar var(--dur-slow) var(--ease);
 }
 
+/* Pliegue (Desplegable.jsx): la misma rejilla vuelve a 0fr mientras el
+   detalle se desvanece; recorta durante todo el pliegue. */
+.exp-desplegable.is-plegando {
+  grid-template-rows: 0fr;
+  animation: plegar var(--dur-slow) var(--ease);
+}
+
+.exp-desplegable.is-plegando .exp-detail {
+  overflow: clip;
+  opacity: 0;
+  animation: fade-out var(--dur-slow) var(--ease);
+}
+
 @keyframes recortar {
   from,
   to {

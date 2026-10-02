@@ -27,3 +27,4 @@
 @import './styles/visor.css';              /* Visor, inspector del documento y resumen del dictamen */
 @import './styles/detalle-expediente.css'; /* Navegación entre documentos, archivo vigente, alertas agrupadas, auditar pendientes e historial */
 @import './styles/tablero.css';            /* Tablero operativo */
+@import './styles/movimiento.css';           /* Entrada escalonada (va al final: fija el retraso sobre las animaciones de cada hoja) */

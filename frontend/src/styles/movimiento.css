@@ -1,0 +1,16 @@
+/* ══════════════════════ ENTRADA ESCALONADA ══════════════════════
+   Tarjetas, métricas, alertas, archivos del lote y filas de tabla entran en
+   cascada: cada elemento espera 30 ms más que el anterior según su posición
+   (--i, puesta en el componente), hasta el octavo; los demás entran con él.
+   Solo fija el retraso de la animación de entrada que cada hoja ya define,
+   por eso va al final de la cascada. El relleno «backwards» oculta el
+   elemento durante su espera sin fijar el estado final (no anula el hover). */
+.exp-card,
+.profile-card,
+.metric-card,
+.alerta,
+.lote-item,
+.data-table tbody tr[data-flip] {
+  animation-delay: calc(min(var(--i, 0), 7) * 30ms);
+  animation-fill-mode: backwards;
+}

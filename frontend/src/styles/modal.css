@@ -23,6 +23,17 @@
   animation: rise-in var(--dur-slow) var(--ease);
 }
 
+/* Salida: la copia inerte que deja el modal al cerrarse (animarSalida en
+   utils/movimiento.js). Más breve que la entrada, como toda salida. */
+.modal-overlay--saliendo {
+  pointer-events: none;
+  animation: fade-out var(--dur) var(--ease) forwards;
+}
+
+.modal-overlay--saliendo .modal {
+  animation: hundirse var(--dur) var(--ease) forwards;
+}
+
 .modal--md {
   max-width: 560px;
 }

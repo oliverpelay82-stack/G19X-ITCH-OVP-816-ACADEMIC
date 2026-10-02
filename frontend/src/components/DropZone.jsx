@@ -6,6 +6,10 @@ import useToast from '../hooks/useToast.js'
 import { analizarNivel1, avisarCarga } from '../utils/nivel1.js'
 import { estadoLote, resumenLote, revisarLote } from '../utils/lote.js'
 import { formatBytes, hashCorto } from '../utils/format.js'
+import { reducirMovimiento } from '../utils/movimiento.js'
+
+/** Lo que un archivo custodiado sigue en la lista: dibuja su check y sale (carga.css). */
+const SALIDA_CUSTODIADO_MS = 700
 
 /** Agrupa las opciones por `seccion` conservando su orden (sin sección, un solo grupo). */
 function agruparPorSeccion(tipos) {
@@ -121,16 +125,20 @@ export default function DropZone({
     if (inputRef.current) inputRef.current.value = ''
   }
 
+  // Un archivo ya custodiado solo se despide: no cuenta para el lote.
+  const vivos = useMemo(() => elementos.filter((e) => !e.custodiado), [elementos])
   // Tras enviar un lote, la lista sigue en modo lote aunque quede un archivo:
-  // conserva el motivo del rechazo y la memoria de las huellas ya custodiadas.
-  const enLote = elementos.length > 1 || custodiadas.size > 0 || elementos.some((e) => e.error)
-  const unico = enLote ? null : elementos[0]
+  // conserva el motivo del rechazo, la memoria de las huellas ya custodiadas
+  // y la despedida de los custodiados.
+  const enLote =
+    elementos.length > 1 || custodiadas.size > 0 || elementos.some((e) => e.error || e.custodiado)
+  const unico = enLote ? null : vivos[0]
   const archivo = unico?.archivo || null
   const analisis = unico?.analisis || null
   const analizando = Boolean(unico && !unico.analisis)
 
-  const revision = useMemo(() => revisarLote(elementos, custodiadas), [elementos, custodiadas])
-  const lote = useMemo(() => estadoLote(elementos, revision), [elementos, revision])
+  const revision = useMemo(() => revisarLote(vivos, custodiadas), [vivos, custodiadas])
+  const lote = useMemo(() => estadoLote(vivos, revision), [vivos, revision])
 
   // Si la carga falla, quien la hace ya avisó del error (onArchivo rechaza): el
   // archivo se conserva para reintentar y la promesa no queda sin capturar.
@@ -158,7 +166,11 @@ export default function DropZone({
         custodiados += 1
         nuevas.set(e.analisis.hash, e.archivo.name)
         avisarCarga(toast, documento, null, e.archivo.name)
-        setElementos((lista) => lista.filter((x) => x.id !== e.id))
+        actualizar(e.id, { enviando: false, custodiado: true })
+        window.setTimeout(
+          () => setElementos((lista) => lista.filter((x) => x.id !== e.id)),
+          reducirMovimiento() ? 0 : SALIDA_CUSTODIADO_MS
+        )
       } catch (err) {
         rechazados += 1
         actualizar(e.id, { enviando: false, error: err.message })
@@ -264,17 +276,25 @@ export default function DropZone({
 
       {enLote && (
         <ul className="lote" aria-label={`${elementos.length} archivos por custodiar`}>
-          {elementos.map((e) => {
+          {elementos.map((e, i) => {
             const { duplicadoDe, sustituyeA } = revision.get(e.id) || {}
-            const admitido = e.analisis?.conforme && !duplicadoDe
+            const admitido = e.analisis?.conforme && !duplicadoDe && !e.custodiado
             return (
-              <li key={e.id} className={`lote-item ${e.error ? 'is-error' : ''}`}>
+              <li
+                key={e.id}
+                className={`lote-item ${e.error ? 'is-error' : ''} ${e.custodiado ? 'is-custodiado' : ''}`}
+                style={{ '--i': i }}
+              >
                 <div className="analysis-file">
                   <span className="analysis-file-name" title={e.archivo.name}>
                     {e.archivo.name}
                   </span>
                   <span className="analysis-file-size mono">{formatBytes(e.archivo.size)}</span>
-                  {e.enviando ? (
+                  {e.custodiado ? (
+                    <svg className="lote-check" viewBox="0 0 16 16" role="img" aria-label="Custodiado">
+                      <path d="M3.5 8.5l3 3 6-7" pathLength="1" />
+                    </svg>
+                  ) : e.enviando ? (
                     <Loader2 className="spin lote-enviando" size={14} aria-label="Custodiando" />
                   ) : (
                     <IconButton etiqueta={`Quitar ${e.archivo.name} del lote`} compacto onClick={() => quitar(e.id)} disabled={enviandoLote}>

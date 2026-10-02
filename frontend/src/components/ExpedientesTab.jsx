@@ -13,6 +13,8 @@ import { formatRelativo, iniciales } from '../utils/format.js'
 import { formatIndice, indiceDe } from '../utils/indice.js'
 import { RANGO_ESTADO } from '../hooks/useOrden.js'
 import { DetalleExpediente } from './expedientes/DetalleExpediente.jsx'
+import Desplegable from './expedientes/Desplegable.jsx'
+import useDesplazamiento from '../hooks/useDesplazamiento.js'
 import Destello from './Destello.jsx'
 
 /** Estados de cumplimiento del expediente, en el orden del semáforo. */
@@ -64,6 +66,7 @@ export default function ExpedientesTab({
   const [expandido, setExpandido] = useState(null)
   const [subiendoEn, setSubiendoEn] = useState(null)
   const tarjetas = useRef(new Map())
+  const listaTarjetas = useDesplazamiento()
   // Documento abierto desde la tabla del expediente, con la lista de ese expediente para navegar.
   const [documentoAbierto, setDocumentoAbierto] = useState(null)
 
@@ -309,8 +312,8 @@ export default function ExpedientesTab({
       )}
 
       {!loading && filtrados.length > 0 && (
-        <div className="exp-list">
-          {ordenados.map((exp) => {
+        <div className="exp-list" ref={listaTarjetas}>
+          {ordenados.map((exp, i) => {
             const meta = getEstadoBadge(exp.estado_cumplimiento)
             const indice = indiceDe(exp)
             const obligatorios = exp.evaluacion?.obligatorios || []
@@ -321,6 +324,8 @@ export default function ExpedientesTab({
               <Card
                 as="article"
                 key={exp.id}
+                data-flip={exp.id}
+                style={{ '--i': i }}
                 className={`exp-card exp-card--${meta.tono} ${abierto ? 'is-open' : ''}`}
                 ref={(el) => (el ? tarjetas.current.set(exp.id, el) : tarjetas.current.delete(exp.id))}
               >
@@ -380,20 +385,18 @@ export default function ExpedientesTab({
                   </span>
                 </button>
 
-                {/* La envoltura despliega el detalle con altura animada (vistas.css). */}
-                {abierto && (
-                  <div className="exp-desplegable">
-                    <DetalleExpediente
-                      exp={exp}
-                      subiendo={subiendoEn === exp.id}
-                      onSubir={subirDocumento}
-                      iaOnline={iaOnline}
-                      onRefresh={onRefresh}
-                      documentos={documentos}
-                      onAbrirDocumento={(documento, lista) => setDocumentoAbierto({ documento, lista })}
-                    />
-                  </div>
-                )}
+                {/* La envoltura despliega y pliega el detalle con altura animada (vistas.css). */}
+                <Desplegable abierto={abierto}>
+                  <DetalleExpediente
+                    exp={exp}
+                    subiendo={subiendoEn === exp.id}
+                    onSubir={subirDocumento}
+                    iaOnline={iaOnline}
+                    onRefresh={onRefresh}
+                    documentos={documentos}
+                    onAbrirDocumento={(documento, lista) => setDocumentoAbierto({ documento, lista })}
+                  />
+                </Desplegable>
               </Card>
             )
           })}

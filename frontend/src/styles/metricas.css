@@ -7,6 +7,7 @@
 
 /* Icono y texto alineados arriba: el icono acompaña a la etiqueta. */
 .metric-card {
+  animation: rise-in var(--dur-slow) var(--ease);
   display: flex;
   align-items: flex-start;
   gap: var(--s-3);
@@ -85,5 +86,8 @@
   height: 100%;
   border-radius: var(--r-full);
   background: var(--text-tertiary);
+  transform-origin: left center;
   transition: width 0.5s var(--ease);
+  /* Al aparecer crece desde su origen, junto con la cifra que cuenta. */
+  animation: crecer calc(var(--dur-slow) * 2) var(--ease) 120ms backwards;
 }

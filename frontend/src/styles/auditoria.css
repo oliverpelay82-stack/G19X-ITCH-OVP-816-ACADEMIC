@@ -235,6 +235,19 @@
   animation: rise-in var(--dur-slow) var(--ease);
 }
 
+/* El resultado se revela por partes: veredicto, resumen y acciones. */
+.dictamen:not(.dictamen--evidencia) > * {
+  animation: rise-in var(--dur-slow) var(--ease) backwards;
+}
+
+.dictamen:not(.dictamen--evidencia) > :nth-child(2) {
+  animation-delay: 90ms;
+}
+
+.dictamen:not(.dictamen--evidencia) > :nth-child(3) {
+  animation-delay: 180ms;
+}
+
 .verdict {
   --verdict: var(--neutral);
   --verdict-bg: var(--neutral-bg);
@@ -379,7 +392,9 @@
   display: block;
   height: 100%;
   border-radius: var(--r-full);
+  transform-origin: left center;
   transition: width 0.5s var(--ease);
+  animation: crecer calc(var(--dur-slow) * 2) var(--ease) 90ms backwards;
 }
 
 .confidence-fill--ok {

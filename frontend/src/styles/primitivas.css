@@ -87,7 +87,13 @@
   font-weight: 500;
   white-space: nowrap;
   transition: background-color var(--dur) var(--ease), border-color var(--dur) var(--ease),
-    color var(--dur) var(--ease), box-shadow var(--dur) var(--ease), opacity var(--dur) var(--ease);
+    color var(--dur) var(--ease), box-shadow var(--dur) var(--ease), opacity var(--dur) var(--ease),
+    transform var(--dur) var(--ease);
+}
+
+/* Se hunde apenas al presionarse, como los botones de icono. */
+.btn:active:not(:disabled) {
+  transform: scale(0.98);
 }
 
 .btn:disabled {

@@ -7,6 +7,7 @@ import useOrden, { RANGO_ESTADO } from '../hooks/useOrden.js'
 import HallazgosCategoria from './HallazgosCategoria.jsx'
 import { SkeletonRows } from './Skeleton.jsx'
 import useDebounce from '../hooks/useDebounce.js'
+import useDesplazamiento from '../hooks/useDesplazamiento.js'
 import { Badge, Button, Card, EmptyRow, SearchBox, Select, Tag } from './ui/index.js'
 import AnilloSemaforo from './graficas/AnilloSemaforo.jsx'
 import CambiosSemaforo from './graficas/CambiosSemaforo.jsx'
@@ -73,6 +74,7 @@ export default function ReportesTab({
     []
   )
   const { ordenada, orden, ordenar } = useOrden(filtrados, clavesOrden)
+  const filas = useDesplazamiento()
 
   return (
     <div className="tab-panel reportes">
@@ -155,7 +157,7 @@ export default function ReportesTab({
                   <th className="col-right">Dictamen de cumplimiento</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody ref={filas}>
                 {loading && <SkeletonRows rows={4} cols={COLUMNAS} />}
                 {!loading && filtrados.length === 0 && (
                   <EmptyRow
@@ -172,10 +174,10 @@ export default function ReportesTab({
                   </EmptyRow>
                 )}
                 {!loading &&
-                  ordenada.map((e) => {
+                  ordenada.map((e, i) => {
                     const meta = getEstadoBadge(e.estado_cumplimiento)
                     return (
-                      <tr key={e.id}>
+                      <tr key={e.id} data-flip={e.id} style={{ '--i': i }}>
                         <td>
                           <span className="cell-stack">
                             <span className="identity-name">{e.titular?.razon_social || 'Titular no disponible'}</span>

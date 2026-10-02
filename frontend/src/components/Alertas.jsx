@@ -12,11 +12,11 @@ import FolioExpediente from './FolioExpediente.jsx'
  * detalle del expediente, cada recomendación va bajo su motivo
  * (DetalleExpediente).
  */
-export function AlertaItem({ alerta, expediente, onAbrirExpediente }) {
+export function AlertaItem({ alerta, expediente, onAbrirExpediente, claveFlip, indice = 0 }) {
   const sev = getSeveridadMeta(alerta.severidad)
   const categoria = ALERTA_META[alerta.codigo]?.label || alerta.codigo
   return (
-    <li className={`alerta alerta--${sev.tono}`}>
+    <li className={`alerta alerta--${sev.tono}`} data-flip={claveFlip} style={{ '--i': indice }}>
       <div className="alerta-cuerpo">
         <div className="alerta-head">
           <span className="sr-only">Severidad {sev.label.toLowerCase()}. </span>

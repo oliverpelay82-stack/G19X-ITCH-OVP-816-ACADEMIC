@@ -23,6 +23,7 @@ import {
 import { SkeletonCards, SkeletonRows } from './Skeleton.jsx'
 import useToast from '../hooks/useToast.js'
 import useDebounce from '../hooks/useDebounce.js'
+import useDesplazamiento from '../hooks/useDesplazamiento.js'
 import { createTitular } from '../services/api.js'
 import { categoriaTitular, getEstadoBadge } from '../constants.js'
 import { formatFechaCorta, iniciales, rfcRegistrable, validarRfc } from '../utils/format.js'
@@ -108,10 +109,10 @@ function NombreEmpresa({ titular, onVer, className = '' }) {
   )
 }
 
-function TarjetaTitular({ titular, expedientes, ...acciones }) {
+function TarjetaTitular({ titular, expedientes, indice = 0, ...acciones }) {
   const [ultimo] = expedientes
   return (
-    <Card as="article" className="profile-card">
+    <Card as="article" className="profile-card" data-flip={titular.id} style={{ '--i': indice }}>
       <header className="profile-head">
         <span className="avatar avatar--lg" aria-hidden="true">
           {iniciales(titular.razon_social)}
@@ -227,6 +228,8 @@ export default function TitularesTab({
     [expedientesPorTitular]
   )
   const { ordenada, orden, ordenar } = useOrden(filtrados, clavesOrden)
+  const rejilla = useDesplazamiento()
+  const filas = useDesplazamiento()
 
   const cerrarModal = () => {
     setModalAbierto(false)
@@ -356,10 +359,11 @@ export default function TitularesTab({
             <EmptyState {...vacioProps} />
           </Card>
         ) : (
-          <div className="card-grid">
-            {filtrados.map((t) => (
+          <div className="card-grid" ref={rejilla}>
+            {filtrados.map((t, i) => (
               <TarjetaTitular
                 key={t.id}
+                indice={i}
                 titular={t}
                 expedientes={expedientesPorTitular.get(t.id) || []}
                 {...acciones}
@@ -403,14 +407,14 @@ export default function TitularesTab({
                   <th aria-label="Acciones" />
                 </tr>
               </thead>
-              <tbody>
+              <tbody ref={filas}>
                 {loading && <SkeletonRows rows={5} cols={COLUMNAS} />}
                 {vacio && <EmptyRow columnas={COLUMNAS} {...vacioProps} />}
                 {!loading &&
-                  ordenada.map((t) => {
+                  ordenada.map((t, i) => {
                     const [ultimo] = expedientesPorTitular.get(t.id) || []
                     return (
-                      <tr key={t.id}>
+                      <tr key={t.id} data-flip={t.id} style={{ '--i': i }}>
                         <td>
                           <div className="identity">
                             <span className="avatar" aria-hidden="true">

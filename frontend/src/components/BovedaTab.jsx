@@ -9,6 +9,7 @@ import { firmaDeMime, tipoCorto } from '../utils/documentos.js'
 import { SkeletonRows } from './Skeleton.jsx'
 import useToast from '../hooks/useToast.js'
 import useDebounce from '../hooks/useDebounce.js'
+import useDesplazamiento from '../hooks/useDesplazamiento.js'
 import { custodiarArchivo } from '../services/api.js'
 import { avisarCarga } from '../utils/nivel1.js'
 import { ESTADO_DOCUMENTO, TIPO_DOCUMENTO_LABEL, TIPO_EXPEDIENTE_LABEL, TIPOS_DOCUMENTO, tiposParaCarga } from '../constants.js'
@@ -119,6 +120,7 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
     [mapaExpedientes, estadoVigente]
   )
   const { ordenada, orden, ordenar } = useOrden(filtrados, clavesOrden)
+  const filas = useDesplazamiento()
 
   // En un lote (RF-02) la zona de carga avisa y lleva el progreso; aquí solo se envía.
   const subir = async (archivo, tipo, { enLote = false } = {}) => {
@@ -198,7 +200,7 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
                 <th aria-label="Acciones" />
               </tr>
             </thead>
-            <tbody>
+            <tbody ref={filas}>
               {loading && <SkeletonRows rows={6} cols={COLUMNAS} />}
 
               {!loading && filtrados.length === 0 && (
@@ -229,12 +231,14 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
               )}
 
               {!loading &&
-                ordenada.map((doc) => {
+                ordenada.map((doc, i) => {
                   const exp = mapaExpedientes[doc.expediente_id]
                   const firma = firmaDeMime(doc.mime_type)
                   return (
                     <tr
                       key={doc.id}
+                      data-flip={doc.id}
+                      style={{ '--i': i }}
                       className={`row-clickable ${esVigente(doc) ? '' : 'is-sustituido'}`}
                       onClick={() => setDetalle(doc)}
                     >

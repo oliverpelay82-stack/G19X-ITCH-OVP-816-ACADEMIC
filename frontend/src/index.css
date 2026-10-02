@@ -342,6 +342,15 @@ code {
   }
 }
 
+@keyframes fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
 @keyframes rise-in {
   from {
     opacity: 0;
@@ -377,6 +386,43 @@ code {
   }
   to {
     grid-template-rows: 1fr;
+  }
+}
+
+/* Latido único de un contador que cambia (menú lateral). */
+@keyframes latido {
+  40% {
+    transform: scale(1.18);
+  }
+}
+
+/* Archivo ya custodiado: sale de la lista tras mostrar su check. */
+@keyframes lote-salida {
+  to {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+}
+
+/* Pliegue: el despliegue a la inversa. */
+@keyframes plegar {
+  from {
+    grid-template-rows: 1fr;
+  }
+  to {
+    grid-template-rows: 0fr;
+  }
+}
+
+/* Salida de un panel: se desvanece y baja apenas, el reverso de rise-in. */
+@keyframes hundirse {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(4px) scale(0.99);
   }
 }
 

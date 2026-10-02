@@ -38,6 +38,13 @@
 .dropzone-icon {
   margin-bottom: var(--s-1);
   color: var(--text-muted);
+  transition: transform var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+/* Con un archivo encima, el icono sube para recibirlo. */
+.dropzone.is-dragging .dropzone-icon {
+  transform: translateY(-3px);
+  color: var(--text-secondary);
 }
 
 .dropzone-title {
@@ -143,6 +150,26 @@
   border-radius: var(--r-md);
   background: var(--bg-surface);
   animation: fade-in var(--dur) var(--ease);
+}
+
+/* Custodiado: dibuja su check y sale de la lista (DropZone.jsx lo retira al terminar). */
+.lote-item.is-custodiado {
+  border-color: var(--ok-border);
+  animation: lote-salida var(--dur-slow) var(--ease) 460ms forwards;
+}
+
+.lote-check {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: var(--ok-solid);
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: check-trazo 420ms var(--ease) forwards;
 }
 
 .lote-item.is-error {

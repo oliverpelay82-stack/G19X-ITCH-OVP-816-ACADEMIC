@@ -51,6 +51,11 @@
   transition: background-color var(--dur) var(--ease);
 }
 
+/* Filas de datos (las que llevan clave de desplazamiento): entran en cascada (movimiento.css). */
+.data-table tbody tr[data-flip] {
+  animation: rise-in var(--dur-slow) var(--ease);
+}
+
 /* El lienzo (#fafaf9) sobre blanco no se distinguía: el gris suave sí. */
 .data-table tbody tr:not(.group-row):not(.empty-row):not(.skeleton-row):hover {
   background: var(--bg-subtle);

@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { BellRing, Building2, FileBarChart2 } from 'lucide-react'
 import { IconoBoveda, IconoExpediente, IconoReglas } from './IconosMotor.jsx'
 import LogoMotor from './LogoMotor.jsx'
@@ -26,6 +27,24 @@ const GRUPOS = [
 
 /** Versión del motor que se muestra en el pie (catálogo DOC-05). */
 const VERSION = 'Versión 1.0.0'
+
+/**
+ * Conteo del menú. Cuando cambia (no al cargar la primera vez) late una sola
+ * vez: la clave nueva remonta el elemento y repite la animación (shell.css).
+ */
+function Contador({ total, tono }) {
+  const [previo, setPrevio] = useState(total)
+  const [latidos, setLatidos] = useState(0)
+  if (previo !== total) {
+    setPrevio(total)
+    setLatidos((n) => n + 1)
+  }
+  return (
+    <span key={latidos} className={`nav-count${tono ? ` nav-count--${tono}` : ''} tabular${latidos ? ' is-latido' : ''}`}>
+      {total}
+    </span>
+  )
+}
 
 /**
  * Barra lateral esbelta: isotipo en micro-squircle, navegación agrupada en
@@ -65,11 +84,7 @@ export default function Sidebar({ tabActiva, onTabChange, contadores }) {
                     <Icono size={16} />
                   </span>
                   <span className="nav-label">{label}</span>
-                  {contador?.total > 0 && (
-                    <span className={contador.tono ? `nav-count nav-count--${contador.tono} tabular` : 'nav-count tabular'}>
-                      {contador.total}
-                    </span>
-                  )}
+                  {contador?.total > 0 && <Contador total={contador.total} tono={contador.tono} />}
                 </button>
               )
             })}

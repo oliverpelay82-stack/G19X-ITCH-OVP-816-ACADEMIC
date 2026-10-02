@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { conTransicion } from '../utils/movimiento.js'
 
 /**
  * Navegación en la URL con hash, sin dependencias: #/expedientes,
@@ -37,26 +38,37 @@ export const hashDe = (seccion, folio) =>
  * (folio del expediente o RFC de la empresa); ir(seccion, folio, { reemplazar })
  * navega. Con `reemplazar`, la entrada del historial se sustituye (abrir o
  * plegar un expediente no debe llenar el botón «Atrás»).
+ *
+ * Cambiar de sección (no de detalle) funde la vista saliente con la nueva
+ * (`conTransicion`, shell.css); abrir o plegar un expediente no la anima.
  */
 export default function useRuta() {
   const [ruta, setRuta] = useState(leer)
+  const seccionActual = useRef(ruta.seccion)
+
+  const aplicar = useCallback(() => {
+    const nueva = leer()
+    const cambiaSeccion = nueva.seccion !== seccionActual.current
+    seccionActual.current = nueva.seccion
+    if (cambiaSeccion) conTransicion(() => setRuta(nueva))
+    else setRuta(nueva)
+  }, [])
 
   useEffect(() => {
-    const alCambiar = () => setRuta(leer())
-    window.addEventListener('hashchange', alCambiar)
-    return () => window.removeEventListener('hashchange', alCambiar)
-  }, [])
+    window.addEventListener('hashchange', aplicar)
+    return () => window.removeEventListener('hashchange', aplicar)
+  }, [aplicar])
 
   const ir = useCallback((seccion, folio = null, { reemplazar = false } = {}) => {
     const destino = hashDe(seccion, folio)
     if (destino === window.location.hash) return
     if (reemplazar) {
       window.history.replaceState(null, '', destino)
-      setRuta(leer())
+      aplicar()
     } else {
       window.location.hash = destino
     }
-  }, [])
+  }, [aplicar])
 
   return [ruta, ir]
 }

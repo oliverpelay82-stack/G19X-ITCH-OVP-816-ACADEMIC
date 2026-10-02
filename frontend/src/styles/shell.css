@@ -28,6 +28,18 @@
   animation: rise-in var(--dur-slow) var(--ease);
 }
 
+/* Cambio de sección (conTransicion en utils/movimiento.js): la página
+   saliente se desvanece en su lugar, sin desplazarse, mientras la nueva hace
+   su propia entrada (rise-in). Cabecera y menú son iguales en ambas, así que
+   solo se nota el contenido. */
+::view-transition-old(root) {
+  animation: fade-out var(--dur) var(--ease) both;
+}
+
+::view-transition-new(root) {
+  animation: none;
+}
+
 .tab-panel {
   display: flex;
   flex-direction: column;
@@ -147,6 +159,11 @@
   line-height: 18px;
   text-align: center;
   color: var(--text-muted);
+}
+
+/* Cambio del conteo: un solo latido (Sidebar.jsx). */
+.nav-count.is-latido {
+  animation: latido var(--dur-slow) var(--ease);
 }
 
 .nav-count--warn {

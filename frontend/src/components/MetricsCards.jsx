@@ -122,8 +122,8 @@ export default function MetricsCards({ titulares, expedientes, documentos, loadi
 
   return (
     <section className="metrics-grid" aria-label="Indicadores del motor">
-      {tarjetas.map(({ id, icon: Icono, label, valor, pie, progreso, titulo }) => (
-        <Card as="article" className="metric-card" key={id} title={titulo}>
+      {tarjetas.map(({ id, icon: Icono, label, valor, pie, progreso, titulo }, i) => (
+        <Card as="article" className="metric-card" key={id} title={titulo} style={{ '--i': i }}>
           <span className="squircle" aria-hidden="true">
             <Icono size={16} />
           </span>
