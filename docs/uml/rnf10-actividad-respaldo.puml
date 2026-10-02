@@ -1,0 +1,54 @@
+@startuml rnf10-actividad-respaldo
+' RNF-10 — Respaldo diario conjunto de la evidencia, con prueba de restauración.
+' Trazabilidad: RNF-10 (respaldos automatizados diarios, RPO < 24 h; ampliado en el PRD 2.1:
+' base, bóveda y SQLite del ai-service en un mismo punto, con prueba de restauración);
+' RIE-03 y RF-03 (cada documento restaurado conserva su huella); PLUS-04/05 (la cadena de la
+' bitácora restaurada se verifica completa); MR-10, MR-16 (el respaldo no sale de la
+' infraestructura de PluriOne), MR-17.
+' Implementación: scripts/respaldo.py (crear, verificar, programar); prueba: scripts/prueba_respaldo.py. Sin tablas nuevas
+' ni cambios en los servicios: el respaldo corre en línea, con los servicios en marcha.
+
+title RNF-10 — Respaldo diario y prueba de restauración
+
+|Programador de tareas|
+start
+:Cada día (y al encender el equipo
+si la hora pasó con él apagado);
+|scripts/respaldo.py|
+partition "crear" {
+  :1. pg_dump de plurione_compliance (formato custom):
+  una instantánea consistente de la base en el instante T
+  (core y rules: documentos, dictámenes, bitácora, reglas);
+  :2. Bóveda → boveda.zip. Solo se agregan archivos
+  (el único borrado deshace una carga que nunca llegó a la base),
+  así que lo copiado después de T es un superconjunto:
+  todo documento de la instantánea tiene su archivo;
+  :3. SQLite del ai-service con la API de respaldo de SQLite
+  (copia consistente sin detener el servicio);
+  :4. MANIFIESTO.json: SHA-256 y tamaño de cada pieza,
+  conteos, último eslabón de la bitácora y versiones;
+}
+partition "verificar (prueba de restauración)" {
+  :Recalcula el SHA-256 de cada pieza contra el manifiesto;
+  :pg_restore en plurione_compliance_restauracion (recreada);
+  :Cada documento restaurado: su archivo está en boveda.zip
+  y su SHA-256 coincide con hash_sha256 (RIE-03);
+  :verificar_cadena del core sobre la base restaurada:
+  íntegra y con el mismo último eslabón del manifiesto;
+  :PRAGMA integrity_check de la SQLite;
+  :Borra la base de restauración;
+}
+if (¿Todo coincide?) then (sí)
+  :VERIFICACION.json «verificado»;
+  :Copia el paquete al destino secundario,
+  si está configurado (dentro de la infraestructura
+  de PluriOne: disco o recurso de red, MR-16);
+  :Retención: conserva los últimos N paquetes verificados;
+else (no)
+  :VERIFICACION.json con los hallazgos;
+  :Código de salida 1 (el programador
+  registra la falla); el paquete no
+  cuenta para la retención;
+endif
+stop
+@enduml

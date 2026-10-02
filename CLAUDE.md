@@ -135,6 +135,7 @@ Bandas del DOC-08 §6.2: ≥ 0.85 CONFORME; de 0.70 a 0.84 y por debajo de 0.70,
 - **Regresión visual** (servicios y `npm run dev` en marcha; Chrome): `python scripts/regresion_visual.py capturar base` antes del cambio, `capturar actual` después y `comparar`. Un cambio sin efecto visual da 0 capturas distintas (160 capturas). Unos cientos de píxeles en letras sueltas de una sola combinación de tamaño y tema son ruido de suavizado del navegador: se descartan repitiendo solo esa combinación (`TAMANOS` y `TEMAS` del módulo) y comparando contra la base. Comportamiento: `scripts/prueba_sondeo_colgado.py`, `scripts/prueba_carga_fallida.py` y `scripts/prueba_carga_lote.py` (RF-02; levanta core, rules y Vite aislados, en 8101, 8102 y 5174, sobre `plurione_compliance_e2e`).
 - **Extremo a extremo (Q-b):** `python scripts/e2e_api.py` levanta core y rules en los puertos 8101 y 8102 sobre `plurione_compliance_e2e` (recreada en cada corrida) y recorre el flujo completo por HTTP con un RFC real y uno ficticio; código 0 si todo pasa.
 - **Seguridad (Q-c):** `python scripts/zap_api.py` (Docker) corre OWASP ZAP sobre el OpenAPI de los tres servicios, levantados sobre `plurione_compliance_zap` y sin clave de Groq; un hallazgo alto sin justificar da código 1. Informe en `docs/resultados_validacion/seguridad_zap.md`.
+- **Respaldo (RNF-10):** `python scripts/prueba_respaldo.py` (core y rules sobre `plurione_compliance_e2e` con bóveda propia; respalda en línea y comprueba que la verificación detecta un archivo alterado o ausente, una pieza fuera del manifiesto y un eslabón ausente, más la retención). La prueba de `pytest` no sirve aquí: su base comparte documentos de suites con bóvedas distintas.
 - **CI** (`.github/workflows/ci.yml`): PostgreSQL 17 con `setup_postgres.py`, pytest de los tres servicios, los trabajos `e2e` y `zap`, y lint, `test:ui` y build del frontend.
 - **Validación cuantitativa** (`services/ai-service/evaluacion/`, `docs/VALIDACION_CUANTITATIVA.md`):
   - Gold Standard de 42 casos ficticios, más un contrato de 20 páginas, congelado por SHA-256 (`*.sha256`, `.gitattributes -text`). Un cambio de la anotación exige un commit propio.
@@ -189,6 +190,8 @@ Bandas del DOC-08 §6.2: ≥ 0.85 CONFORME; de 0.70 a 0.84 y por debajo de 0.70,
 | `DIFERIDOS_INTERVALO_MINUTOS` / `DIFERIDOS_MAX_INTENTOS` | `15` / `6` | Ciclo de procesamiento diferido (P5); `0` lo desactiva |
 | `AUTO_SEED` (rules) / `DB_ECHO` (core, rules) | `true` / `false` | Precarga idempotente del catálogo / imprimir SQL |
 | `STORAGE_VAULT_PATH` | `storage_vault/` | Bóveda física |
+| `RESPALDO_DIR` / `RESPALDO_SECUNDARIO` / `RESPALDO_RETENCION` | `../respaldos` / vacía / `14` | Destino de los respaldos (fuera del repositorio: contienen los originales), segunda copia dentro de la infraestructura (MR-16) y paquetes verificados que se conservan (RNF-10) |
+| `PG_BIN` | PATH o `C:/Program Files/PostgreSQL/*/bin` | Carpeta de `pg_dump` y `pg_restore` para `scripts/respaldo.py` |
 | `VITE_CORE_URL` / `VITE_RULES_URL` / `VITE_AI_URL` | `:8001` / `:8002` / `:8003` | URLs del frontend |
 
 ---
@@ -198,4 +201,5 @@ Bandas del DOC-08 §6.2: ≥ 0.85 CONFORME; de 0.70 a 0.84 y por debajo de 0.70,
 - Servicios: `cd services/<core|rules|ai>-service && python main.py`; frontend: `cd frontend && npm run dev`.
 - Todo con Docker Compose: `docker compose up -d --build` (PostgreSQL 5432 y los puertos de §3).
 - Base de datos (tablas de todos los servicios y seed): `python scripts/setup_postgres.py`; solo tablas: `python scripts/crear_tablas.py`; solo el catálogo: `python scripts/seed_reglas_validacion.py`.
+- Respaldo (RNF-10): `python scripts/respaldo.py crear` (paquete en `RESPALDO_DIR` con su prueba de restauración; código 0 solo si quedó verificado), `verificar RUTA` y `programar [--hora 02:00] [--quitar]` (tarea diaria de Windows que también corre al encender el equipo si la hora pasó). Restaurar en producción: `pg_restore` de `base.dump` en la base, `boveda.zip` en `storage_vault/` y `extracciones.sqlite3` en `services/ai-service/data/`, con los servicios detenidos.
 - Salud: `GET :8001|:8002|:8003/api/v1/health` (el del ai-service incluye `motor_inferencia`); Swagger en `/docs` de cada servicio.
