@@ -31,7 +31,7 @@ from fastapi import APIRouter, HTTPException, status
 
 from clients import core_client, groq_client, rules_client
 from clients.core_client import CoreNoDisponibleError, DocumentoAlteradoError, DocumentoNoEncontradoError
-from clients.groq_client import GroqNoDisponibleError, GroqRespuestaInvalidaError
+from clients.groq_client import GroqNoDisponibleError, GroqRespuestaInvalidaError, IaNoConfiguradaError
 from clients.rules_client import ReglasNoDisponiblesError
 from config import settings
 from pipelines import analisis_semantico as pipeline_analisis
@@ -755,7 +755,8 @@ class _ReintentarDespues(Exception):
 def _auditar_diferida(peticion: dict) -> None:
     try:
         auditar(AnalisisSemanticoRequest(**peticion))
-    except GroqNoDisponibleError as exc:
+    except (GroqNoDisponibleError, IaNoConfiguradaError) as exc:
+        # Sin clave también se reintenta: el administrador puede agregarla sin perder la cola.
         raise _ReintentarDespues(str(exc)) from exc
     except HTTPException as exc:
         if exc.status_code >= 500 and exc.status_code != status.HTTP_502_BAD_GATEWAY:

@@ -158,7 +158,7 @@ export default function App() {
         }
         if (estado.online && caidasAvisadas.current.has(clave)) {
           caidasAvisadas.current.delete(clave)
-          toast.exito(`Microservicio ${clave} restablecido`, `Latencia ${estado.latencia} ms`)
+          toast.exito(`${SERVICIO_LLANO[clave] || 'Un servicio'} vuelve a responder`, `Latencia ${estado.latencia} ms`)
         }
       }
     }
@@ -210,8 +210,6 @@ export default function App() {
     }
   }, [cargarTodo, chequearSalud])
 
-  // En el menú solo cuenta lo que pide acción: las alertas, en tono de
-  // advertencia si alguna es crítica o alta.
   // Atajo «/»: lleva el foco al buscador de la vista, salvo mientras se escribe o con un modal abierto.
   useEffect(() => {
     const alPulsar = (e) => {
@@ -226,6 +224,8 @@ export default function App() {
     return () => document.removeEventListener('keydown', alPulsar)
   }, [])
 
+  // En el menú solo cuenta lo que pide acción: las alertas, en tono de
+  // advertencia si alguna es crítica o alta.
   const contadores = useMemo(() => {
     const alertas = expedientes.flatMap((e) => e.evaluacion?.alertas || [])
     return {

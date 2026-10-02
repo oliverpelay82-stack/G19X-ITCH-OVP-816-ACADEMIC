@@ -37,6 +37,20 @@ class GroqRespuestaInvalidaError(RuntimeError):
     """El modelo respondió, pero su salida no es el JSON estricto solicitado."""
 
 
+class IaNoConfiguradaError(RuntimeError):
+    """
+    Falta la clave del proveedor de IA. No es una caída: reintentar no sirve,
+    así que no hereda de GroqNoDisponibleError ni entra en la cola diferida.
+    main.py la responde como 503 con este mensaje.
+    """
+
+
+MENSAJE_IA_NO_CONFIGURADA = (
+    "El análisis con IA no está configurado: falta la clave del servicio de IA en el archivo .env "
+    "de la raíz (ver README). Agréguela y reinicie el sistema."
+)
+
+
 class RespuestaJSON(dict):
     """Objeto JSON del modelo; ``uso`` lleva los tokens consumidos por la llamada."""
     uso: dict[str, Any] | None = None
@@ -92,6 +106,8 @@ def _client() -> OpenAI:
     exponencial que respeta la cabecera Retry-After de Groq). Es la única capa
     de reintentos: un bucle propio encima multiplicaba las peticiones.
     """
+    if not settings.GROQ_API_KEY:
+        raise IaNoConfiguradaError(MENSAJE_IA_NO_CONFIGURADA)
     return OpenAI(
         base_url=settings.GROQ_BASE_URL,
         api_key=settings.GROQ_API_KEY,

@@ -1,16 +1,16 @@
 # Framework Web
-fastapi>=0.115.0
-starlette>=0.48.0  # status.HTTP_422_UNPROCESSABLE_CONTENT (RFC 9110)
-uvicorn[standard]>=0.30.0
+fastapi==0.142.2
+starlette==1.7.0  # status.HTTP_422_UNPROCESSABLE_CONTENT (RFC 9110)
+uvicorn[standard]==0.54.0
 
 # Base de Datos (ORM y Drivers MySQL / PostgreSQL)
-sqlalchemy>=2.0.30
-pymysql>=1.2.0
-psycopg2-binary>=2.9.9
-cryptography>=43.0.0
-python-dotenv>=1.0.0
+sqlalchemy==2.1.2
+pymysql==1.2.3
+psycopg2-binary==2.9.13
+cryptography==50.0.2
+python-dotenv==1.2.4
 
 # Validación y DTOs
-pydantic>=2.8.0
+pydantic==2.13.5
 # Q-a: base de zonas horarias para zoneinfo (Windows e imágenes slim no la traen).
-tzdata>=2024.1
+tzdata==2026.4

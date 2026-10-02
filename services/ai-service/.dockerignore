@@ -1,0 +1,14 @@
+# Secretos y entorno local: en Docker la configuración llega por docker-compose.yml
+# y la clave de IA por el .env de la raíz.
+.env
+# Artefactos de Python.
+__pycache__/
+*.pyc
+.pytest_cache/
+# SQLite local (en Docker vive en el volumen plurione_ai_data).
+data/
+# Modelos de Tesseract locales (la imagen instala los del sistema).
+tessdata/
+# Pruebas y validación cuantitativa: no se ejecutan dentro del servicio.
+tests/
+evaluacion/

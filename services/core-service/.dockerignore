@@ -1,0 +1,6 @@
+# Secretos y entorno local: en Docker la configuración llega por docker-compose.yml.
+.env
+# Artefactos de Python.
+__pycache__/
+*.pyc
+.pytest_cache/

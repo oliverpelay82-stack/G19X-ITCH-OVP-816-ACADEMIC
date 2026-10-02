@@ -27,6 +27,7 @@ from controllers import analisis_controller
 from pipelines import diferidos, legibilidad, repositorio_texto
 
 client = TestClient(main.app)
+GENERAR_JSON_REAL = groq_client.generar_json
 DOC_ID = "doc-p5-001"
 TEXTO_LEGIBLE = "ACTA CONSTITUTIVA ... RFC PLU180514AB3 ... " + "Cláusula primera. " * 40
 
@@ -124,6 +125,18 @@ def test_si_groq_no_responde_la_auditoria_queda_diferida(entorno):
     assert diferida.proximo_intento - datetime.now(timezone.utc) > timedelta(minutes=14)
     [(documento, aviso)] = entorno["avisos"]
     assert documento == DOC_ID and aviso["agotado"] is False and aviso["max_intentos"] == settings.DIFERIDOS_MAX_INTENTOS
+
+
+def test_sin_clave_de_ia_responde_503_claro_y_no_encola(entorno, monkeypatch):
+    """Sin la clave del proveedor, el SDK lanzaba un error no controlado (500); no es una caída que se reintente."""
+    monkeypatch.setattr(groq_client, "generar_json", GENERAR_JSON_REAL)
+    monkeypatch.setattr(settings, "GROQ_API_KEY", "")
+    groq_client._client.cache_clear()
+
+    r = _auditar()
+
+    assert r.status_code == 503 and "no está configurado" in r.json()["detail"]
+    assert diferidos.obtener(DOC_ID) is None and entorno["avisos"] == []
 
 
 def test_el_ciclo_completa_la_auditoria_cuando_groq_vuelve(entorno):

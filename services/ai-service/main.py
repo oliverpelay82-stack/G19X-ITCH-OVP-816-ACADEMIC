@@ -21,6 +21,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from clients.groq_client import IaNoConfiguradaError
 from config import observabilidad
 from config import settings
 from pipelines import diferidos, extraccion_pipeline
@@ -82,6 +83,13 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan,
 )
+
+
+# Sin la clave del proveedor de IA, la auditoría y el chat con el modelo no
+# pueden ejecutarse: 503 con la instrucción para configurarla, no un error interno.
+@app.exception_handler(IaNoConfiguradaError)
+async def ia_no_configurada(request: Request, exc: IaNoConfiguradaError):
+    return JSONResponse(status_code=503, content={"detail": str(exc), "id_peticion": observabilidad.actual()})
 
 
 # Un error no controlado se responde aquí, dentro de la pila y antes de CORS

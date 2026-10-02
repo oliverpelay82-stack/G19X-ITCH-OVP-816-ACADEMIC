@@ -1,29 +1,29 @@
 # Framework Web
-fastapi>=0.115.0
-starlette>=0.48.0  # status.HTTP_422_UNPROCESSABLE_CONTENT (RFC 9110)
-uvicorn[standard]>=0.30.0
+fastapi==0.142.2
+starlette==1.7.0  # status.HTTP_422_UNPROCESSABLE_CONTENT (RFC 9110)
+uvicorn[standard]==0.54.0
 
 # Base de Datos (ORM y Drivers MySQL / PostgreSQL)
-sqlalchemy>=2.0.30
-pymysql>=1.2.0
-psycopg2-binary>=2.9.9
-cryptography>=43.0.0
-python-dotenv>=1.0.0
+sqlalchemy==2.1.2
+pymysql==1.2.3
+psycopg2-binary==2.9.13
+cryptography==50.0.2
+python-dotenv==1.2.4
 
 # Validación y DTOs
-pydantic>=2.8.0
-python-multipart>=0.0.12
+pydantic==2.13.5
+python-multipart==0.0.32
 
 
 # Cliente HTTP del rules-service (documentos obligatorios, RIE-01)
-requests>=2.32.0
+requests==2.34.2
 
 # Reportes exportables (RF-23, RF-24): Excel (.xlsx) y PDF
-openpyxl>=3.1.0
-reportlab>=4.2.0
+openpyxl==3.1.5
+reportlab==5.0.1
 
 # Nivel 1 — detección de PDF con contraseña de apertura (PLUS-02, DOC-05 Tabla 1).
 # El descifrado AES que usa pypdf se apoya en cryptography (ya declarada arriba).
-pypdf>=5.0.0
+pypdf==6.19.0
 # Q-a: base de zonas horarias para zoneinfo (Windows e imágenes slim no la traen).
-tzdata>=2024.1
+tzdata==2026.4
