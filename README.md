@@ -34,25 +34,33 @@ echo "GROQ_API_KEY=gsk_..." > .env
 docker compose up -d --build
 ```
 
+Sin la clave, el sistema funciona completo salvo la auditoría y el chat con IA, que responden con la instrucción para configurarla. `python scripts/prueba_entrega_docker.py [--con-ia]` comprueba la instalación desde un clon limpio del último commit.
+
 El rules-service carga el catálogo de reglas al arrancar (`AUTO_SEED=true`). La precarga es idempotente: solo inserta las reglas que faltan y no toca las editadas.
 
 ### En local
 
 Se necesitan Python 3.12, Node 20.19 o superior, PostgreSQL 17 y Tesseract (con los idiomas `spa` y `eng`). Cada servicio lee su propio `.env` (`DB_*` en core y rules; `GROQ_API_KEY`, `TESSERACT_CMD`, `CORE_BASE_URL` y `RULES_BASE_URL` en el ai-service; ver [`services/ai-service/README.md`](services/ai-service/README.md)).
 
+Un entorno virtual del proyecto (`.venv`) instala las mismas versiones que Docker, más las herramientas de prueba (`requirements-dev.txt`):
+
 ```bash
-pip install -r services/core-service/requirements.txt -r services/rules-service/requirements.txt -r services/ai-service/requirements.txt
+python -m venv .venv
+.venv\Scripts\activate                    # Windows (en Linux o macOS: source .venv/bin/activate)
+pip install -r requirements-dev.txt
 python scripts/setup_postgres.py          # base, tablas, catálogo de reglas y un expediente de demostración
 
 cd services/core-service  && python main.py   # :8001
 cd services/rules-service && python main.py   # :8002
 cd services/ai-service    && python main.py   # :8003
-cd frontend && npm install && npm run dev     # :5173
+cd frontend && npm ci && npm run dev          # :5173
 ```
 
 La documentación interactiva de cada API está en `/docs` (por ejemplo, `http://127.0.0.1:8001/docs`), y el estado de cada servicio en `GET /api/v1/health`.
 
 ## Pruebas
+
+Con el `.venv` activado:
 
 ```bash
 pytest tests/ -v                                # core y rules (usa la base plurione_compliance_test)

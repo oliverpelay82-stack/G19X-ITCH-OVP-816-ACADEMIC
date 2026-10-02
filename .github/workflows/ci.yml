@@ -54,12 +54,8 @@ jobs:
       - name: Tesseract OCR (español e inglés)
         run: sudo apt-get update && sudo apt-get install -y --no-install-recommends tesseract-ocr tesseract-ocr-spa tesseract-ocr-eng
 
-      - name: Dependencias de los tres servicios
-        run: |
-          pip install -r services/core-service/requirements.txt \
-                      -r services/rules-service/requirements.txt \
-                      -r services/ai-service/requirements.txt \
-                      pytest httpx
+      - name: Dependencias de los tres servicios y de las pruebas (versiones fijas)
+        run: pip install -r requirements-dev.txt
 
       - name: Base de datos, tablas y catálogo de reglas (DOC-05)
         run: python scripts/setup_postgres.py

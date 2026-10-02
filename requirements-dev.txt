@@ -1,0 +1,15 @@
+# Entorno de desarrollo y pruebas: las mismas versiones que instala Docker,
+# más las herramientas de prueba. Uso, desde esta carpeta:
+#   python -m venv .venv
+#   .venv\Scripts\python -m pip install -r requirements-dev.txt      (Windows)
+#   .venv/bin/python -m pip install -r requirements-dev.txt          (Linux/macOS)
+-r services/core-service/requirements.txt
+-r services/rules-service/requirements.txt
+-r services/ai-service/requirements.txt
+
+# Pruebas (pytest y TestClient de FastAPI) y comprobación estática.
+pytest==9.1.1
+httpx==0.28.1
+pyflakes==4.0.1
+# Pruebas de comportamiento de la interfaz (scripts/prueba_carga_*.py, regresión visual); usan el Chrome instalado.
+playwright==1.63.0
