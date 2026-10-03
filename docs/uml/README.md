@@ -21,12 +21,12 @@ Estos diagramas complementan los del DOCUMENTO GENERAL (Cap. IV, Figuras 1–6, 
 | P5 — Integridad permanente y dictamen reproducible | [p5-casos-de-uso-integridad-reproducibilidad.puml](p5-casos-de-uso-integridad-reproducibilidad.puml) | Casos de uso | F3, F6 y reevaluación programada | §21.5 PLUS-14, PLUS-15; HU-33, HU-44 a HU-48 | MR-11, MR-21, MR-23 |
 | P5 — Integridad permanente y dictamen reproducible | [p5-actividad-barrido-integridad.puml](p5-actividad-barrido-integridad.puml) | Actividades | Reevaluación programada y actualiza F6 | PLUS-14, PLUS-15; RIE-03, RF-23, RF-24, RF-27 | MR-11, MR-21, MR-23 |
 | P5 — Integridad permanente y dictamen reproducible | [p5-actividad-excepciones-auditoria.puml](p5-actividad-excepciones-auditoria.puml) | Actividades | Actualiza F3 | DOC-05 (Tabla 1 y protocolo); HU-33, HU-46 a HU-48; RF-13, RF-18 | MR-23 |
-| P6 — Autenticidad del archivo, catálogo y operación | [p6-casos-de-uso-autenticidad.puml](p6-casos-de-uso-autenticidad.puml) | Casos de uso | F1, F3 y Reportes | §21.6 M1, M5, M6, PLUS-16 a PLUS-20; HU-49 a HU-56 | MR-24 |
-| P6 — Autenticidad del archivo, catálogo y operación | [p6-actividad-senales-archivo.puml](p6-actividad-senales-archivo.puml) | Actividades | Actualiza F1 y F3 | PLUS-16 a PLUS-18, M5; NOM-151, ISO/IEC 27001 A.8.7, DOC-02 | MR-24 |
+| P6 — Autenticidad del archivo, catálogo y operación | [p6-casos-de-uso-autenticidad.puml](p6-casos-de-uso-autenticidad.puml) | Casos de uso | F1, F3 y Reportes | §21.6 M1, M5, M6, PLUS-18 a PLUS-20; HU-49, HU-52 a HU-56 | MR-24 |
+| P6 — Autenticidad del archivo, catálogo y operación | [p6-actividad-senales-archivo.puml](p6-actividad-senales-archivo.puml) | Actividades | Actualiza F1 y F3 | PLUS-18, M5; ISO/IEC 27001 A.8.7, DOC-02 | MR-24 |
 | P6 — Autenticidad del archivo, catálogo y operación | [p6-actividad-trazabilidad-operacion.puml](p6-actividad-trazabilidad-operacion.puml) | Actividades | F3, salud y Reportes | M6, PLUS-19, PLUS-20; protocolo del DOC-05, RNF-02 | MR-24 |
-| P7 — Operación trazable, fecha cierta y calidad | [p7-casos-de-uso-operacion-calidad.puml](p7-casos-de-uso-operacion-calidad.puml) | Casos de uso | Operación, F3 y CI | §21.7 PLUS-21, PLUS-22, M7, Q-b, Q-c; HU-57 a HU-61 | MR-25 |
-| P7 — Operación trazable, fecha cierta y calidad | [p7-actividad-peticion-sello.puml](p7-actividad-peticion-sello.puml) | Actividades | Todas las peticiones y reevaluación programada | PLUS-21, PLUS-22; ISO/IEC 27001 A.8.15, NOM-151 | MR-25 |
-| P7 — Operación trazable, fecha cierta y calidad | [p7-actividad-nueva-auditoria.puml](p7-actividad-nueva-auditoria.puml) | Actividades | Actualiza F3 | M7; protocolo del DOC-05 | MR-25 |
+| P7 — Operación trazable y calidad | [p7-casos-de-uso-operacion-calidad.puml](p7-casos-de-uso-operacion-calidad.puml) | Casos de uso | Operación, F3 y CI | §21.7 PLUS-21, M7, Q-b, Q-c; HU-57, HU-59 a HU-61 | MR-25 |
+| P7 — Operación trazable y calidad | [p7-actividad-folio-seguimiento.puml](p7-actividad-folio-seguimiento.puml) | Actividades | Todas las peticiones | PLUS-21; ISO/IEC 27001 A.8.15 | MR-25 |
+| P7 — Operación trazable y calidad | [p7-actividad-nueva-auditoria.puml](p7-actividad-nueva-auditoria.puml) | Actividades | Actualiza F3 | M7; protocolo del DOC-05 | MR-25 |
 | QA — Validación cuantitativa (Fase 5, no PLUS) | [qa-actividad-evaluacion.puml](qa-actividad-evaluacion.puml) | Actividades | — | §15; RNF-01 a RNF-03; [VALIDACION_CUANTITATIVA.md](../VALIDACION_CUANTITATIVA.md) | — |
 | Detalle de la empresa (interfaz, no PLUS) | [ui-actividad-detalle-empresa.puml](ui-actividad-detalle-empresa.puml) | Actividades | Empresas → F2 | §13.1; RF-01, RF-05, RF-18, RF-19, RF-21; HU-02, HU-04, HU-27 | MR-12, MR-18 |
 | Corrección de datos de captura (no PLUS) | [ui-actividad-correccion-datos.puml](ui-actividad-correccion-datos.puml) | Actividades | Empresas y F2 | §13.1; RF-01, RF-27; RN-04, RN-05; HU-02, HU-07 | MR-10 |
@@ -34,7 +34,7 @@ Estos diagramas complementan los del DOCUMENTO GENERAL (Cap. IV, Figuras 1–6, 
 | RF-02 — Carga en lote (DOC-04, no PLUS) | [rf02-actividad-carga-en-lote.puml](rf02-actividad-carga-en-lote.puml) | Actividades | Actualiza F1 | §7 RF-02, HU-03; RF-03, RF-04; PLUS-01, PLUS-02, PLUS-18; RN-01 | MR-11, MR-20 |
 | RNF-10 — Respaldo diario y prueba de restauración (DOC-04, no PLUS) | [rnf10-actividad-respaldo.puml](rnf10-actividad-respaldo.puml) | Actividades | — | §11 RNF-10; RF-03, RIE-03; PLUS-04, PLUS-05 | MR-10, MR-16, MR-17 |
 
-Los diagramas de P6 y P7 conservan el diseño original: las señales de edición (PLUS-16), el QR del SAT (PLUS-17) y el sello de tiempo (PLUS-22) se retiraron el 02/10/2026 ([PRD §21.8](../PRD.md)).
+Las señales de edición (PLUS-16), el QR del SAT (PLUS-17) y el sello de tiempo (PLUS-22) se retiraron el 02/10/2026 ([PRD §21.8](../PRD.md)); el 03/10/2026 los diagramas de P6 y P7 se actualizaron al código vigente y el de actividad de P7 pasó de `p7-actividad-peticion-sello.puml` a `p7-actividad-folio-seguimiento.puml`.
 
 ## Generar las imágenes
 

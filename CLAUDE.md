@@ -60,7 +60,7 @@ Microservicios FastAPI desacoplados en `services/`, orquestados con Docker Compo
 
 ### Nivel 2 — Reglas deterministas (rules y core)
 - Completitud contra los obligatorios del tipo de expediente que declara el rules-service (con respaldo DOC-02); los anexos RIE-02 se exigen solo si su documento principal está presente.
-- Tipos de documento (RF-09): los 22 del catálogo base más los declarados por reglas RDS (`GET /reglas/tipos-documento`; `motor/tipos_documento.py` los admite en la carga si están activos y registra sus nombres). La CHECK de `documentos.tipo_documento` valida el formato del código; la existencia la valida la API. En el frontend, `registrarTiposDeclarados` (constants.js) los incorpora al catálogo al recibir las reglas.
+- Tipos de documento (RF-09): los 23 del catálogo base (21 tipos del DOC-02, cuyas Tablas 2 a 4 suman 22 filas porque el poder notarial aparece en la corporativa y en la jurídica, más la opinión de cumplimiento 32-D y la carátula bancaria que ya custodiaba el expediente B2B; `config/catalogo.py`) más los declarados por reglas RDS (`GET /reglas/tipos-documento`; `motor/tipos_documento.py` los admite en la carga si están activos y registra sus nombres). La CHECK de `documentos.tipo_documento` valida el formato del código; la existencia la valida la API. En el frontend, `registrarTiposDeclarados` (constants.js) los incorpora al catálogo al recibir las reglas.
 - Vigencia RCV, recalculada en cada consulta (RN-02): RCV-01 (días para el vencimiento; alertas a 30, 15 y 5 días) y caducidad estricta desde la emisión: RCV-02 comprobante de domicilio (90 días), RCV-03 constancia fiscal (90), RCV-04 opinión 32-D (30).
 - Semáforo: NO_CONFORME si falta un obligatorio crítico o un anexo exigido, o si un documento vigente es NO_CONFORME o venció; EN_REVISION si hay obligatorios no críticos faltantes, documentos sin auditar, pendientes de ratificación o próximos a vencer; CONFORME solo con todo presente y conforme. **Subir archivos nunca aprueba un expediente.**
 - Índice de cumplimiento (C6, PRD §10.5): cumplidas / (cumplidas + incumplidas + pendientes); el bloqueo por criticidad no altera el porcentaje.
@@ -70,7 +70,7 @@ Microservicios FastAPI desacoplados en `services/`, orquestados con Docker Compo
 - Excepciones del DOC-05, Tabla 1: sin texto suficiente (`pipelines/legibilidad.py`) el ai-service no llama al modelo y emite un dictamen de origen NIVEL_3_ILEGIBLE (no se ratifica como conforme); si Groq no responde, la auditoría entra en la cola de `pipelines/diferidos.py`, el core la marca (`/documentos/{id}/procesamiento-diferido`) y un ciclo la reintenta con espera de 15 min a 24 h.
 
 ### Nivel 3 — Extracción de texto (ai-service)
-- Capa vectorial con PyMuPDF. Página escaneada: raster en grises a `OCR_DPI` (300), preprocesamiento OpenCV (normalización de la iluminación, filtro bilateral, Otsu con respaldo adaptativo) y Tesseract `spa`, en un pool único de `OCR_WORKERS` procesos (por defecto, los hilos lógicos).
+- Capa vectorial con PyMuPDF. Página escaneada: raster en grises a `OCR_DPI` (300), preprocesamiento OpenCV (normalización de la iluminación, filtro bilateral, Otsu con respaldo adaptativo) y Tesseract `spa`, en un pool único de `OCR_WORKERS` procesos (por defecto, los hilos lógicos). La lectura completa (auditoría) alimenta el pool en flujo continuo, con hasta 2 × `OCR_WORKERS` páginas en vuelo; la lectura parcial del chat va por tandas, porque su corte temprano depende del texto de cada tanda. Toda página pasa por `_ocr_sobre_imagen` (las pruebas que vigilan un OCR repetido parchean esa función).
 - Lectura vigente: `VERSION_PIPELINE` 3.3. **Subir `VERSION_PIPELINE` al cambiar cualquier paso de la extracción**: la persistencia se invalida por versión.
 - La auditoría (`/preparar` y `/analisis-semantico`) lee el documento completo. El chat de un documento sin auditar responde con la lectura parcial (`MAX_PAGINAS_OCR`) y programa la completa.
 - Una sola lectura como fuente de verdad: texto, confianza y palabras con recuadro salen de la misma llamada a Tesseract, así que el dictamen y el visor ven lo mismo.
@@ -154,7 +154,7 @@ Bandas del DOC-08 §6.2: ≥ 0.85 CONFORME; de 0.70 a 0.84 y por debajo de 0.70,
 | Integridad permanente y excepciones (P5) | `test_integridad_permanente`, `test_dictamen_reproducible`, `test_excepciones_doc05`; ai: `test_excepciones_doc05` |
 | Operación trazable (P7) | `test_folio_seguimiento`, `test_version_catalogo`; ai: `test_folio_seguimiento` |
 | Esquemas, errores y rules | `test_esquema_bd`, `test_esquema_rules`, `test_errores_core`, `test_errores_rules`, `test_rules_service`; ai: `test_errores_no_controlados` |
-| Nivel 3 (ai) | `test_iluminacion`, `test_sellos`, `test_visor_documento`, `test_optimizaciones`, `test_cache_y_lectura` |
+| Nivel 3 (ai) | `test_iluminacion`, `test_sellos`, `test_visor_documento`, `test_optimizaciones`, `test_cache_y_lectura`, `test_ocr_continuo` |
 | Nivel 4 (ai) | `test_contenido_titularidad`, `test_vigencia_dictamen`, `test_opinion_cumplimiento`, `test_persistencia_dictamen` |
 | Chat P4 (ai) | `test_respuestas_directas`, `test_pasajes`, `test_contexto_enfocado`, `test_contexto_chat`, `test_cache_chat`, `test_presupuesto_tokens` |
 | Evaluación (ai) | `test_metricas`, `test_gold_standard`, `test_entorno_evaluacion`, `test_bateria_chat`, `test_evaluar_precision` |
@@ -188,7 +188,7 @@ Bandas del DOC-08 §6.2: ≥ 0.85 CONFORME; de 0.70 a 0.84 y por debajo de 0.70,
 | `LEGIBILIDAD_MIN_CARACTERES` / `LEGIBILIDAD_MIN_CONFIANZA` | `50` / `0.40` | Umbral de «Documento ilegible» (P5) |
 | `DIFERIDOS_INTERVALO_MINUTOS` / `DIFERIDOS_MAX_INTENTOS` | `15` / `6` | Ciclo de procesamiento diferido (P5); `0` lo desactiva |
 | `AUTO_SEED` (rules) / `DB_ECHO` (core, rules) | `true` / `false` | Precarga idempotente del catálogo / imprimir SQL |
-| `STORAGE_VAULT_PATH` | `storage_vault/` | Bóveda física |
+| `STORAGE_VAULT_PATH` (core) | `storage_vault/` | Bóveda física; el ai-service no la monta (lee por el core, RIE-03) |
 | `RESPALDO_DIR` / `RESPALDO_SECUNDARIO` / `RESPALDO_RETENCION` | `../respaldos` / vacía / `14` | Destino de los respaldos (fuera del repositorio: contienen los originales), segunda copia dentro de la infraestructura (MR-16) y paquetes verificados que se conservan (RNF-10) |
 | `PG_BIN` | PATH o `C:/Program Files/PostgreSQL/*/bin` | Carpeta de `pg_dump` y `pg_restore` para `scripts/respaldo.py` |
 | `VITE_CORE_URL` / `VITE_RULES_URL` / `VITE_AI_URL` | `:8001` / `:8002` / `:8003` | URLs del frontend |

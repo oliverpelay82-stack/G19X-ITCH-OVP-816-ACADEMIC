@@ -1,9 +1,10 @@
 """
 RF-09 — Tipos de documento declarados por reglas dinámicas (RDS-01).
 
-El catálogo base de 22 tipos (config/catalogo.py, DOC-02) no es una lista
-cerrada: un tipo nuevo se declara con una regla RDS en el rules-service, que
-los publica en GET /reglas/tipos-documento. Este módulo los consulta con una
+El catálogo base de 23 tipos (config/catalogo.py: los 21 del DOC-02 más la
+opinión 32-D y la carátula bancaria) no es una lista cerrada: un tipo nuevo se
+declara con una regla RDS en el rules-service, que los publica en
+GET /reglas/tipos-documento. Este módulo los consulta con una
 caché breve para:
 
   * admitirlos en la carga (solo los activos), y

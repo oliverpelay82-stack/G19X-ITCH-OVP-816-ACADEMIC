@@ -11,7 +11,7 @@
 | Desarrollo (Scrum Master / Desarrollador) | Oliver Villanueva Pelay, residente (No. de control 21520500) |
 | Stakeholder evaluador | Edgar Loheffelmman (PluriOne) |
 | Asesor interno | Dr. Wilfrido Campos Francisco |
-| Versión del documento | 3.1 — 2 de octubre de 2026 (3.1: depuración del alcance, §21.8; 3.0: RNF-10, respaldos; 2.9: RF-09, corrección de datos y RF-02; 2.8: Fase B del plan visual; 2.7: gráficas, Fase A; 2.6: P7 implementado; 2.5: P7 documentado; 2.4: P6; 2.3: P5 implementado; 2.2: P5 documentado; 2.1: revisión de requerimientos; 2.0: correcciones de la documentación; 1.9: revisión visual del frontend; 1.8: chat documental eficiente; 1.7: revisión del frontend; 1.6: índice de cumplimiento; 1.5: P3; 1.4: P2; 1.3: P1; 1.2: 28 de septiembre; 1.0: 27 de septiembre de 2026) |
+| Versión del documento | 3.2 — 3 de octubre de 2026 (3.2: auditoría técnica y OCR en flujo continuo, §21.9; 3.1: depuración del alcance, §21.8; 3.0: RNF-10, respaldos; 2.9: RF-09, corrección de datos y RF-02; 2.8: Fase B del plan visual; 2.7: gráficas, Fase A; 2.6: P7 implementado; 2.5: P7 documentado; 2.4: P6; 2.3: P5 implementado; 2.2: P5 documentado; 2.1: revisión de requerimientos; 2.0: correcciones de la documentación; 1.9: revisión visual del frontend; 1.8: chat documental eficiente; 1.7: revisión del frontend; 1.6: índice de cumplimiento; 1.5: P3; 1.4: P2; 1.3: P1; 1.2: 28 de septiembre; 1.0: 27 de septiembre de 2026) |
 | Estado del producto | En desarrollo: Sprints 1 y 2 implementados, Sprint 3 implementado parcialmente, Sprint 4 implementado salvo HU-31, Módulo 7 pendiente |
 | Documento hermano | [MRD.md](MRD.md) — requerimientos de mercado |
 
@@ -116,7 +116,7 @@ Siete módulos funcionales [Anteproyecto, «Alcances»; DG Cap. IV §4.2, Cap. V
 | M6 Reportes y Panel de Control | Indicadores de cumplimiento y reportes exportables en PDF y Excel. |
 | M7 Administración y Seguridad | Autenticación, roles y permisos (RBAC) y bitácora inmutable de auditoría. |
 
-Tipos de documento: los tres inventarios del DOC-02 (22 tipos: corporativos, jurídicos y regulatorios) [DG Cap. I §1.4, Tablas 2–4], ampliables por el administrador [DG Cap. I, «Extensibilidad del Catálogo»].
+Tipos de documento: los tres inventarios del DOC-02 (corporativos, jurídicos y regulatorios) [DG Cap. I §1.4, Tablas 2–4]; el catálogo base del código tiene 23: 21 tipos del DOC-02, cuyas Tablas 2 a 4 suman 22 filas porque el poder notarial aparece en la corporativa y en la jurídica, más la opinión de cumplimiento 32-D y la carátula bancaria que ya custodiaba el expediente B2B, ampliables por el administrador [DG Cap. I, «Extensibilidad del Catálogo»].
 
 ### 4.2 Fuera del alcance
 
@@ -183,7 +183,7 @@ Prioridad tomada de las historias de usuario asociadas (Cap. VII); «—» cuand
 | RF-06 | Definir documentos obligatorios y opcionales por tipo de expediente sin alterar el código. | Alta | Implementado | Reglas RIE con `tipo_expediente` (sección 9.3). |
 | RF-07 | Configurar anexos obligatorios dependientes de un documento principal. | Alta | Implementado | Reglas RIE-02 con `documento_principal`. |
 | RF-08 | Severidad por regla (Crítica, Alta, Media-Alta o Media) y acción ante incumplimiento. | Alta | Implementado | Campos `severidad` y `accion` del catálogo. |
-| RF-09 | Interfaz para dar de alta nuevos tipos de documento y definir los criterios que evaluará la IA. | Alta | Implementado | Implementado el 01/10/2026 ([rf09-actividad-tipo-documento-nuevo.puml](uml/rf09-actividad-tipo-documento-nuevo.puml)). En Reglas, «Nuevo tipo de documento» pide el nombre (el código se deriva), lo que debe verificar la IA en lenguaje natural (RDS-02), qué hacer si no se cumple y, opcional, en qué tipo de expediente es obligatorio. Crea la regla RDS que declara el tipo en `reglas_validacion` (RDS-01, sin tablas nuevas) y, si es obligatorio, su regla RIE-01 (RF-06). El rules-service publica los tipos declarados (`GET /reglas/tipos-documento`); el core los admite en la carga si están activos y los nombra en alertas y reportes (`motor/tipos_documento.py`, caché de 60 s); la CHECK de `documentos.tipo_documento` valida el formato del código y no la lista de 22. El Nivel 4 verifica el criterio con su cita y RDS-03 lleva cada documento a revisión humana. Nota para el DOCUMENTO GENERAL: el diccionario de datos de `documentos.tipo_documento` («uno de los 22 tipos») ya no aplica. |
+| RF-09 | Interfaz para dar de alta nuevos tipos de documento y definir los criterios que evaluará la IA. | Alta | Implementado | Implementado el 01/10/2026 ([rf09-actividad-tipo-documento-nuevo.puml](uml/rf09-actividad-tipo-documento-nuevo.puml)). En Reglas, «Nuevo tipo de documento» pide el nombre (el código se deriva), lo que debe verificar la IA en lenguaje natural (RDS-02), qué hacer si no se cumple y, opcional, en qué tipo de expediente es obligatorio. Crea la regla RDS que declara el tipo en `reglas_validacion` (RDS-01, sin tablas nuevas) y, si es obligatorio, su regla RIE-01 (RF-06). El rules-service publica los tipos declarados (`GET /reglas/tipos-documento`); el core los admite en la carga si están activos y los nombra en alertas y reportes (`motor/tipos_documento.py`, caché de 60 s); la CHECK de `documentos.tipo_documento` valida el formato del código y no la lista de 23 del catálogo base. El Nivel 4 verifica el criterio con su cita y RDS-03 lleva cada documento a revisión humana. Nota para el DOCUMENTO GENERAL: el diccionario de datos de `documentos.tipo_documento` («uno de los 22 tipos») ya no aplica. |
 
 ### M3 — Análisis Inteligente de Documentos
 
@@ -321,7 +321,7 @@ Severidades: Crítica, Alta, Media-Alta y Media [RF-08]. Toda regla puede pausar
 | Regulatorio | Registro ante autoridad sectorial | RIE-01-REG-REGS | Crítica | Siempre |
 | Cualquiera | Anexo legal del contrato | RIE-02-CONT-ANX | Alta | Solo si el expediente contiene un contrato de prestación de servicios |
 
-Los demás documentos obligatorios de los inventarios del DOC-02 (poderes, estatutos, actas de asamblea, RFC y aviso de privacidad en el corporativo; certificaciones, fianzas y constancias de capacitación según el sector) forman parte del catálogo de 22 tipos y pueden declararse obligatorios desde la interfaz sin modificar el código.
+Los demás documentos obligatorios de los inventarios del DOC-02 (poderes, estatutos, actas de asamblea, RFC y aviso de privacidad en el corporativo; certificaciones, fianzas y constancias de capacitación según el sector) forman parte del catálogo base de 23 tipos y pueden declararse obligatorios desde la interfaz sin modificar el código.
 
 ---
 
@@ -433,7 +433,7 @@ Verificado en vivo el 29/09/2026: el expediente de desarrollo (Grupo Bimbo, No c
 | ID | Requerimiento | Estado |
 |---|---|---|
 | RNF-01 | Evaluación determinista de un expediente completo en ≤ 2 s. | **Cumple** (01/10/2026): p95 de `GET /expedientes/{id}` de 72.5 ms con 15 documentos y 58.5 ms con una lectura OCR de 20 páginas en curso (`scripts/benchmark_rendimiento.py`; VALIDACION_CUANTITATIVA §10.3). |
-| RNF-02 | Extracción y análisis con IA de un documento de hasta 20 páginas en ≤ 25 s. | **Cumple con documentos sintéticos; no con el acta real densa** (01/10/2026): contrato escaneado de 20 páginas, Nivel 3 en frío 8.9 s y total ≈ 11.4 s (reconstrucción; la medición formal sin la espera del grabador se repite con la cuota siguiente); el acta real escaneada tarda 35.4 s en el Nivel 3 por 26 páginas (≈ 30 s normalizado a 20 con el Nivel 4). La configuración anterior del OCR tardaba el doble (VALIDACION_CUANTITATIVA §10.3). |
+| RNF-02 | Extracción y análisis con IA de un documento de hasta 20 páginas en ≤ 25 s. | **Cumple con documentos sintéticos; no con el acta real densa** (01/10/2026): contrato escaneado de 20 páginas, Nivel 3 en frío 8.9 s y total ≈ 11.4 s (reconstrucción; la medición formal sin la espera del grabador se repite con la cuota siguiente); el acta real escaneada tarda 35.4 s en el Nivel 3 por 26 páginas (≈ 30 s normalizado a 20 con el Nivel 4). La configuración anterior del OCR tardaba el doble (VALIDACION_CUANTITATIVA §10.3). El 03/10/2026 la lectura completa pasó a flujo continuo (§21.9): en las mismas condiciones del equipo, el contrato escaneado baja de 10.9 s a 8.8 s y el acta real queda igual (39.1 s → 37.7 s, dentro del ruido), así que con escaneos reales densos el RNF-02 sigue sin cumplirse en este equipo. |
 | RNF-03 | ≥ 50 peticiones simultáneas sin degradación. | **Cumple el criterio de la validación** (01/10/2026): 50 simultáneas sin 5xx ni transacciones perdidas (100/100 cargas con documento y evento, cadena íntegra), p95 de consulta 1.07 s; la latencia se degrada (×17) con un solo proceso de uvicorn y las cargas se serializan por el candado de la bitácora (VALIDACION_CUANTITATIVA §10.3). |
 | RNF-04 | Cifrado AES-256 de la bóveda en reposo. | Pendiente. |
 | RNF-05 | TLS 1.3 en el borde (entre el cliente y el sistema, mediante un proxy inverso) y hacia el proveedor de inferencia; los microservicios y la base de datos en una red interna aislada, sin puertos expuestos. Redefinido en la versión 2.1: cifrar el tráfico entre contenedores de una misma red aislada añade certificados internos sin una protección equivalente; la segregación de redes cumple el objetivo (ISO/IEC 27001, A.8.22). | Parcial: cifrado solo hacia el proveedor de inferencia; proxy inverso y aislamiento de puertos pendientes. |
@@ -1084,7 +1084,7 @@ Cinco puntos que quedaban después de P6, decididos por el residente el 30/09/20
 - **Dictámenes previos:** sin `version_reglas_tipo`, no generan el aviso de nueva auditoría; la siguiente auditoría lo establece.
 - **Registro:** los servicios escriben una línea JSON por petición en su salida estándar, que el despliegue de PluriOne puede recolectar.
 
-**Diagramas:** [casos de uso](uml/p7-casos-de-uso-operacion-calidad.puml), [seguimiento de una petición y sello de tiempo](uml/p7-actividad-peticion-sello.puml) y [aviso de nueva auditoría](uml/p7-actividad-nueva-auditoria.puml).
+**Diagramas:** [casos de uso](uml/p7-casos-de-uso-operacion-calidad.puml), [seguimiento de una petición](uml/p7-actividad-folio-seguimiento.puml) (el sello de tiempo se retiró, §21.8) y [aviso de nueva auditoría](uml/p7-actividad-nueva-auditoria.puml).
 
 ---
 
@@ -1102,6 +1102,17 @@ Antes de la entrega, el residente pidió revisar todo el motor contra la documen
 En la misma revisión se corrigió lo que una instalación limpia en Docker hacía visible: la auditoría sin clave del proveedor de IA respondía un error interno (ahora 503 con la instrucción), los servicios no tenían `.dockerignore`, las dependencias no tenían versión fija y un aviso usaba nombres internos.
 
 ---
+### 21.9 Auditoría técnica del código (03/10/2026)
+
+El residente pidió una auditoría del repositorio (código sin uso, redundancias, dependencias ocultas y rendimiento de la IA y del OCR) y aprobó tres pasos. Ninguno agrega funciones ni cambia el contrato de la API.
+
+| Paso | Qué se hizo | Respaldo |
+|---|---|---|
+| Limpieza | Se retiraron `TipoDocumentoEnum` (repetía `config/catalogo.TIPOS_DOCUMENTO`), `extraccion_pipeline.palabras_ocr`, tres reglas CSS y las exportaciones que solo usaba su propio archivo. Se corrigieron la descripción del preprocesamiento de `GET /api/v1/ai/configuracion-ocr` y el candado de cada lectura completa, que quedaba en memoria para siempre. | Mantenibilidad (ISO/IEC 25010) |
+| Bóveda | El contenedor del ai-service ya no monta `storage_vault/`: lee cada binario por el core, que verifica su huella (RIE-03). | DOC-03: ISO/IEC 27001 (control de acceso), NOM-151 |
+| OCR en flujo continuo | En la lectura completa (auditoría), cada página escaneada entra al pool de OCR en cuanto se rasteriza, con hasta 2 × `OCR_WORKERS` páginas en vuelo. Antes iba por tandas de `OCR_WORKERS` que esperaban a la página más lenta. El texto es idéntico (misma función por página), así que `VERSION_PIPELINE` sigue en 3.3 y lo persistido es válido; la lectura parcial del chat sigue por tandas. | RNF-02 |
+
+Medición del Nivel 3 en frío, mismas condiciones del equipo y 5 corridas ([`rendimiento_ocr_continuo.json`](resultados_validacion/rendimiento_ocr_continuo.json)): contrato escaneado de 20 páginas, de 10.9 s a 8.8 s (−19 %); el mismo a color con sellos, de 14.2 s a 10.1 s (−29 %); acta real de 26 páginas, de 39.1 s a 37.7 s, dentro del ruido. El acta ya ocupa todos los hilos del equipo: lo que limita es el cómputo de Tesseract, no la espera entre tandas. Precisión del Gold Standard sin cambios (estatus 100 %, 0 falsas conformidades, 87/87 citas ancladas).
 
 ## 22. Glosario
 

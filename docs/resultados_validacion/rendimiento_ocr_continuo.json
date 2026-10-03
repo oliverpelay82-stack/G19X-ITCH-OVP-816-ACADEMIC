@@ -1,0 +1,197 @@
+{
+ "descripcion": "Nivel 3 en frío antes y después del flujo continuo de la lectura completa (PRD §21.9), mismas condiciones del equipo, configuración definitiva",
+ "equipo": {
+  "sistema": "Windows-11-10.0.26300-SP0",
+  "procesador": "AMD64 Family 23 Model 24 Stepping 1, AuthenticAMD",
+  "nucleos_logicos": 8,
+  "python": "3.12.10"
+ },
+ "version_lectura": "n3-3.3|tesseract-5.4.0.20240606|spa|300dpi|sin-sellos",
+ "corridas": 5,
+ "antes_tandas": {
+  "ejecutado_en": "2026-10-03T10:06:47-0600",
+  "resultados": [
+   {
+    "documento": "Contrato de 20 páginas, vectorial",
+    "paginas": 20,
+    "paginas_ocr": 0,
+    "metodo": "VECTORIAL",
+    "confianza": 0.99,
+    "corridas_ms": [
+     41,
+     25,
+     20,
+     22,
+     31
+    ],
+    "mediana_ms": 25,
+    "min_ms": 20,
+    "max_ms": 41,
+    "etapas_mediana_ms": {
+     "rasterizado": 0,
+     "preprocesamiento": 0,
+     "tesseract": 0
+    }
+   },
+   {
+    "documento": "Contrato de 20 páginas, escaneado",
+    "paginas": 20,
+    "paginas_ocr": 20,
+    "metodo": "OCR",
+    "confianza": 0.953,
+    "corridas_ms": [
+     12907,
+     10590,
+     11594,
+     10901,
+     10924
+    ],
+    "mediana_ms": 10924,
+    "min_ms": 10590,
+    "max_ms": 12907,
+    "etapas_mediana_ms": {
+     "rasterizado": 2479,
+     "preprocesamiento": 6412,
+     "tesseract": 47843
+    }
+   },
+   {
+    "documento": "Contrato de 20 páginas, escaneado a color con sellos en 5 páginas",
+    "paginas": 20,
+    "paginas_ocr": 20,
+    "metodo": "OCR",
+    "confianza": 0.952,
+    "corridas_ms": [
+     13053,
+     14211,
+     13554,
+     14779,
+     15507
+    ],
+    "mediana_ms": 14211,
+    "min_ms": 13053,
+    "max_ms": 15507,
+    "etapas_mediana_ms": {
+     "rasterizado": 4812,
+     "preprocesamiento": 6754,
+     "tesseract": 51573
+    }
+   },
+   {
+    "documento": "Acta real escaneada A",
+    "paginas": 26,
+    "paginas_ocr": 26,
+    "metodo": "OCR",
+    "confianza": 0.876,
+    "corridas_ms": [
+     53835,
+     52870,
+     35298,
+     34636,
+     39053
+    ],
+    "mediana_ms": 39053,
+    "min_ms": 34636,
+    "max_ms": 53835,
+    "etapas_mediana_ms": {
+     "rasterizado": 2724,
+     "preprocesamiento": 7694,
+     "tesseract": 223786
+    }
+   }
+  ]
+ },
+ "despues_flujo_continuo": {
+  "ejecutado_en": "2026-10-03T10:21:05-0600",
+  "resultados": [
+   {
+    "documento": "Contrato de 20 páginas, vectorial",
+    "paginas": 20,
+    "paginas_ocr": 0,
+    "metodo": "VECTORIAL",
+    "confianza": 0.99,
+    "corridas_ms": [
+     27,
+     28,
+     29,
+     27,
+     31
+    ],
+    "mediana_ms": 28,
+    "min_ms": 27,
+    "max_ms": 31,
+    "etapas_mediana_ms": {
+     "rasterizado": 0,
+     "preprocesamiento": 0,
+     "tesseract": 0
+    }
+   },
+   {
+    "documento": "Contrato de 20 páginas, escaneado",
+    "paginas": 20,
+    "paginas_ocr": 20,
+    "metodo": "OCR",
+    "confianza": 0.953,
+    "corridas_ms": [
+     9611,
+     8799,
+     8583,
+     8920,
+     8671
+    ],
+    "mediana_ms": 8799,
+    "min_ms": 8583,
+    "max_ms": 9611,
+    "etapas_mediana_ms": {
+     "rasterizado": 2637,
+     "preprocesamiento": 14521,
+     "tesseract": 44178
+    }
+   },
+   {
+    "documento": "Contrato de 20 páginas, escaneado a color con sellos en 5 páginas",
+    "paginas": 20,
+    "paginas_ocr": 20,
+    "metodo": "OCR",
+    "confianza": 0.952,
+    "corridas_ms": [
+     10453,
+     10499,
+     9567,
+     9810,
+     10116
+    ],
+    "mediana_ms": 10116,
+    "min_ms": 9567,
+    "max_ms": 10499,
+    "etapas_mediana_ms": {
+     "rasterizado": 3874,
+     "preprocesamiento": 19892,
+     "tesseract": 46572
+    }
+   },
+   {
+    "documento": "Acta real escaneada A",
+    "paginas": 26,
+    "paginas_ocr": 26,
+    "metodo": "OCR",
+    "confianza": 0.876,
+    "corridas_ms": [
+     34792,
+     37650,
+     37533,
+     40828,
+     39279
+    ],
+    "mediana_ms": 37650,
+    "min_ms": 34792,
+    "max_ms": 40828,
+    "etapas_mediana_ms": {
+     "rasterizado": 3965,
+     "preprocesamiento": 18850,
+     "tesseract": 252112
+    }
+   }
+  ]
+ }
+}

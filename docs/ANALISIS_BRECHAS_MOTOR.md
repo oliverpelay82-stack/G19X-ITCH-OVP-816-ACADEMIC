@@ -23,7 +23,7 @@
 | RCV, caducidad estricta | Vigencia legal fija desde la emisión | Cumple: RCV-02 domicilio (90 días), RCV-03 constancia fiscal (90), RCV-04 opinión 32-D (30). |
 | RSC-01 Cláusulas esenciales | Cláusula con cita; «omisión contractual relevante» si falta | Cumple: 16 reglas RSC con cita literal anclada al texto. |
 | RSC-02 Datos del firmante | Extraer al firmante; decide el analista | Cumple (P2), con el cotejo preparado para el analista. |
-| RDS-01 Alta dinámica de requisitos | Nuevo tipo de documento desde la interfaz | Parcial: se dan de alta reglas, pero los 22 tipos de documento son un catálogo fijo en el código. |
+| RDS-01 Alta dinámica de requisitos | Nuevo tipo de documento desde la interfaz | Parcial: se dan de alta reglas, pero los 23 tipos de documento son un catálogo fijo en el código. |
 | RDS-02 Criterio en lenguaje natural | La instrucción del usuario se guarda y se evalúa | Pendiente: no se aplica en el Nivel 4 (RF-09 y HU-24 parciales). |
 | RDS-03 Ejecución supervisada | Todo lo dinámico pasa por ratificación humana | Cumple. |
 

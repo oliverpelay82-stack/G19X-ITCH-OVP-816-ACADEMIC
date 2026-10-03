@@ -187,7 +187,5 @@ CORE_BASE_URL: str = os.getenv("CORE_BASE_URL", "http://127.0.0.1:8001").rstrip(
 # RCV-01 (días para el vencimiento) y RCV-02 (antigüedad máxima del comprobante
 # de domicilio fiscal, 90 días naturales desde su emisión).
 RULES_BASE_URL: str = os.getenv("RULES_BASE_URL", "http://127.0.0.1:8002").rstrip("/")
-_DEFAULT_VAULT = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))), "storage_vault"
-)
-STORAGE_VAULT_PATH: str = os.getenv("STORAGE_VAULT_PATH", _DEFAULT_VAULT)
+# Sin ruta a la bóveda: los binarios se leen solo por el core-service, que
+# verifica su huella en cada lectura (RIE-03).

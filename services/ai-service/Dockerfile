@@ -22,8 +22,7 @@ ENV GROQ_API_KEY="" \
     TESSERACT_CMD=/usr/bin/tesseract \
     TESSDATA_PREFIX=/usr/share/tesseract-ocr/5/tessdata \
     CORE_BASE_URL=http://plurione-core:8001 \
-    RULES_BASE_URL=http://plurione-rules:8002 \
-    STORAGE_VAULT_PATH=/app/storage_vault
+    RULES_BASE_URL=http://plurione-rules:8002
 
 EXPOSE 8003
 

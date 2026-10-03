@@ -27,7 +27,7 @@ Por eso, salvo que se pida el texto completo, el reconocimiento se detiene al
 acumular ese volumen o tras ``MAX_PAGINAS_OCR`` páginas escaneadas. Las páginas
 omitidas quedan registradas en la traza y en las observaciones.
 """
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import FIRST_COMPLETED, Future, ThreadPoolExecutor, wait
 from dataclasses import dataclass, field
 from functools import lru_cache
 from typing import Any
@@ -356,6 +356,13 @@ def _ocr_en_paralelo(imagenes: list[np.ndarray]) -> list[tuple[str, float, list[
     return list(_POOL_OCR.map(_ocr_sobre_imagen, imagenes))
 
 
+# Lectura completa en flujo continuo: páginas rasterizadas que pueden esperar su
+# OCR por cada proceso del pool. Con 2, cada proceso tiene siempre la siguiente
+# página lista al terminar la suya, y la memoria queda acotada (≈ 8 MB por hoja
+# a 300 ppp: 16 páginas en vuelo con 8 procesos).
+_EN_VUELO_POR_TRABAJADOR = 2
+
+
 # ── Heurística de calidad de la capa vectorial ──────────────────────
 def _confianza_vectorial(texto: str) -> float:
     """
@@ -458,29 +465,34 @@ def _procesar_pdf(
             )
 
         total_paginas = documento.page_count
-        # Páginas escaneadas ya rasterizadas que esperan su turno de OCR.
+        # Lectura parcial: páginas escaneadas ya rasterizadas que esperan su tanda
+        # de OCR (el corte temprano se decide con el texto de cada tanda).
         pendientes: list[tuple[int, np.ndarray]] = []
+        # Lectura completa: páginas ya enviadas al pool que aún no se recogen.
+        en_vuelo: dict[int, Future] = {}
+        tope_en_vuelo = _EN_VUELO_POR_TRABAJADOR * max(1, settings.OCR_WORKERS)
+
+        def agregar_ocr(numero: int, resultado: tuple[str, float, list[list[Any]], list[dict[str, Any]]]) -> None:
+            nonlocal caracteres_acumulados, paginas_ocr
+            texto_ocr, confianza, palabras, sellos_pagina = resultado
+            paginas.append(ResultadoPagina(
+                numero=numero, metodo="OCR", caracteres=len(texto_ocr), confianza=confianza,
+                texto=texto_ocr, palabras=palabras, sellos=sellos_pagina,
+            ))
+            caracteres_acumulados += len(texto_ocr)
+            paginas_ocr += 1
 
         def reconocer_tanda() -> None:
             """Reconoce en paralelo la tanda pendiente y acumula su texto."""
-            nonlocal caracteres_acumulados, paginas_ocr
-            for numero, (texto_ocr, confianza, palabras, sellos_pagina) in zip(
-                [n for n, _ in pendientes], _ocr_en_paralelo([img for _, img in pendientes])
-            ):
-                paginas.append(
-                    ResultadoPagina(
-                        numero=numero,
-                        metodo="OCR",
-                        caracteres=len(texto_ocr),
-                        confianza=confianza,
-                        texto=texto_ocr,
-                        palabras=palabras,
-                        sellos=sellos_pagina,
-                    )
-                )
-                caracteres_acumulados += len(texto_ocr)
-                paginas_ocr += 1
+            for (numero, _), resultado in zip(pendientes, _ocr_en_paralelo([img for _, img in pendientes])):
+                agregar_ocr(numero, resultado)
             pendientes.clear()
+
+        def recoger_terminadas() -> None:
+            """Espera a que termine al menos una página en vuelo y recoge todas las terminadas."""
+            terminadas, _ = wait(en_vuelo.values(), return_when=FIRST_COMPLETED)
+            for numero in [n for n, f in en_vuelo.items() if f in terminadas]:
+                agregar_ocr(numero, en_vuelo.pop(numero).result())
 
         for indice, pagina in enumerate(documento, start=1):
             texto_vectorial = "" if forzar_ocr else pagina.get_text("text").strip()
@@ -510,25 +522,39 @@ def _procesar_pdf(
 
             # Página ya reconocida por esta versión del Nivel 3: se reutiliza.
             if indice in paginas_conocidas:
-                texto_ocr, confianza, palabras, sellos_pagina = paginas_conocidas[indice]
-                paginas.append(ResultadoPagina(
-                    numero=indice, metodo="OCR", caracteres=len(texto_ocr), confianza=confianza,
-                    texto=texto_ocr, palabras=palabras, sellos=sellos_pagina,
-                ))
-                caracteres_acumulados += len(texto_ocr)
-                paginas_ocr += 1
+                agregar_ocr(indice, paginas_conocidas[indice])
                 continue
 
-            # Ruta OCR: se rasteriza aquí, en el hilo principal, porque
-            # PyMuPDF no es seguro entre hilos; el reconocimiento va en tandas.
+            # Ruta OCR: se rasteriza aquí, en el hilo principal, porque PyMuPDF
+            # no es seguro entre hilos.
+            if texto_completo:
+                # Flujo continuo (RNF-02): la página entra al pool en cuanto se
+                # rasteriza y cada proceso toma la siguiente al terminar la suya,
+                # sin esperar a la más lenta de una tanda. El texto de cada página
+                # es el mismo que por tandas: misma función y mismos parámetros.
+                try:
+                    if len(en_vuelo) >= tope_en_vuelo:
+                        recoger_terminadas()
+                    en_vuelo[indice] = _POOL_OCR.submit(_ocr_sobre_imagen, _rasterizar(pagina))
+                except BaseException:
+                    for futuro in en_vuelo.values():
+                        futuro.cancel()
+                    raise
+                continue
             pendientes.append((indice, _rasterizar(pagina)))
             if len(pendientes) >= settings.OCR_WORKERS:
                 reconocer_tanda()
 
         if pendientes:
             reconocer_tanda()
+        try:
+            while en_vuelo:
+                recoger_terminadas()
+        finally:
+            for futuro in en_vuelo.values():
+                futuro.cancel()
 
-    # Las páginas OCR se agregan por tandas; se restituye el orden del documento.
+    # Las páginas OCR se agregan al terminar; se restituye el orden del documento.
     paginas.sort(key=lambda p: p.numero)
 
     if omitidas:

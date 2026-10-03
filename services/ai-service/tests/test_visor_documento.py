@@ -144,9 +144,10 @@ def main(mp: pytest.MonkeyPatch) -> int:
               "Con esas posiciones, el visor busca primero en la página correcta")
     verificar(persistencia_texto.leer(sha) is not None, "La lectura queda guardada con la versión vigente")
     with pytest.MonkeyPatch.context() as sin_ocr:
-        def ocr_prohibido(imagenes):
+        # El reconocimiento de cada página, por tandas o en flujo continuo, pasa por aquí.
+        def ocr_prohibido(imagen):
             raise AssertionError("se repitió el OCR de una página ya reconocida")
-        sin_ocr.setattr(extraccion_pipeline, "_ocr_en_paralelo", ocr_prohibido)
+        sin_ocr.setattr(extraccion_pipeline, "_ocr_sobre_imagen", ocr_prohibido)
         texto_2, _, _ = repositorio_texto.obtener_por_contenido(escaneado, "escaneado.pdf", usar_cache=False,
                                                                  texto_completo=True)
     texto_1, _, _ = repositorio_texto.obtener_por_contenido(escaneado, "escaneado.pdf")

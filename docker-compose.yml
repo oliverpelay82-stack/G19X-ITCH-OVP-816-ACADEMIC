@@ -86,9 +86,8 @@ services:
       TESSDATA_PREFIX: /usr/share/tesseract-ocr/5/tessdata
       CORE_BASE_URL: http://plurione-core:8001
       RULES_BASE_URL: http://plurione-rules:8002
-      STORAGE_VAULT_PATH: /app/storage_vault
+    # Sin la bóveda: el ai-service lee cada binario por el core, que verifica su huella (RIE-03).
     volumes:
-      - ./storage_vault:/app/storage_vault
       - plurione_ai_data:/app/data
     depends_on:
       - plurione-core

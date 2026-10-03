@@ -1,0 +1,30 @@
+@startuml p7-actividad-folio-seguimiento
+' P7 — Seguimiento de una petición entre servicios (PLUS-21).
+' Trazabilidad: HU-57; ISO/IEC 27001 A.8.15.
+' Implementación: config/observabilidad.py (middleware) en cada main.py,
+' clientes entre servicios (observabilidad.cabeceras), motor/bitacora.registrar;
+' frontend/src/services/api.js.
+' El sello de tiempo RFC 3161 (PLUS-22) que también mostraba este diagrama se
+' retiró el 02/10/2026 (PRD §21.8); se conserva la cadena sellada (PLUS-04/05).
+
+title P7 — Folio de seguimiento
+
+|Frontend|
+start
+:Genera X-Request-ID por llamada;
+|ai-service|
+:Acepta el folio o crea uno;
+:Registro JSON: servicio, folio,
+ruta, estado, duración;
+:Llama al core y al rules-service
+con el mismo folio;
+|core-service|
+:Registra el evento en la bitácora
+con id_peticion en el detalle;
+:Devuelve X-Request-ID;
+|Frontend|
+if (¿Error?) then (sí)
+  :Muestra «Folio de seguimiento»;
+endif
+stop
+@enduml

@@ -621,6 +621,17 @@ El OCR cuesta 2 puntos de F1 en las entidades (el RFC de GS-CSF-03-ESC) y nada e
   - Para los escaneos reales densos, el RNF-02 **no se cumple en este equipo**. Las palancas de §5.2 ya están en su mejor valor.
   - Lo que queda fuera del alcance documentado: un equipo con más núcleos, OCR en la nube o reducir los ppp, que §5.1 descartó por pérdida de texto.
 
+**Lectura completa en flujo continuo (03/10/2026, PRD §21.9).** La auditoría ya no reconoce las páginas por tandas: cada una entra al pool en cuanto se rasteriza. Se midió antes y después en las mismas condiciones del equipo (5 corridas, configuración definitiva; [`rendimiento_ocr_continuo.json`](resultados_validacion/rendimiento_ocr_continuo.json)). Las cifras de la tabla anterior son del 01/10/2026: hoy el mismo código tardó más, por otra carga del equipo.
+
+| Documento | Páginas | Por tandas | Flujo continuo | Cambio |
+|---|---|---|---|---|
+| Contrato escaneado | 20 | 10.9 s (10.6–12.9) | **8.8 s** (8.6–9.6) | −19 % |
+| Contrato escaneado a color, con sellos | 20 | 14.2 s (13.1–15.5) | **10.1 s** (9.6–10.5) | −29 % |
+| Acta real escaneada (no versionada) | 26 | 39.1 s (34.6–53.8) | 37.7 s (34.8–40.8) | dentro del ruido |
+
+- **El texto es el mismo.** Las pruebas `test_ocr_continuo` comparan texto, posiciones de página y palabras contra la lectura por tandas, y la suite de precisión en modo reproducir encontró todas sus huellas en la casete.
+- **En el acta no hay ganancia.** Sus páginas densas ya ocupan los 8 hilos; con más páginas en paralelo, el tiempo acumulado de Tesseract sube (224 → 252 s) por contención. Lo que limita es el cómputo, no la espera entre tandas: la conclusión sobre el acta real no cambia.
+
 #### RNF-03 · Concurrencia (≥ 50 peticiones simultáneas) — **Cumple el criterio de §7.4, con degradación de latencia**
 
 50 peticiones liberadas por una barrera, contra la misma serie en secuencia:
