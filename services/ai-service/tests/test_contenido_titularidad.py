@@ -110,7 +110,10 @@ def main(mp: pytest.MonkeyPatch) -> int:
     r = analizar(tipo_registrado="COMP_DOMICILIO")
     verificar(r.tipo_coincide is False and r.estatus_preliminar == "EN_REVISION",
               "Una factura (OTRO) registrada como comprobante de domicilio: EN_REVISION", r.estatus_preliminar)
-    verificar(any("se registró como COMP_DOMICILIO" in o for o in r.observaciones), "La observación nombra ambos tipos")
+    # Sin el nombre del catálogo del core, el motivo usa el código registrado; el detectado va en palabras.
+    verificar(any(o.startswith("Dictamen EN_REVISION: Discrepancia de documento:") and "«COMP_DOMICILIO»" in o
+                  and "ninguna categoría del catálogo" in o for o in r.observaciones),
+              "El motivo nombra el tipo esperado y el detectado")
     simular(mp, extraccion(tipo="ACTA_CONSTITUTIVA", rfc=RFC))
     verificar(analizar(tipo_registrado="PODER_NOTARIAL").tipo_coincide is True,
               "Un poder protocolizado en el acta es compatible con PODER_NOTARIAL")

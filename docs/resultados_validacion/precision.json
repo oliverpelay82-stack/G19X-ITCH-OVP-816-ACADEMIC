@@ -1,19 +1,19 @@
 {
  "etiqueta": "precision",
  "modo": "reproducir",
- "ejecutado_en": "2026-10-01T21:57:28+00:00",
+ "ejecutado_en": "2026-10-03T18:41:46+00:00",
  "entorno": {
   "modelo": "qwen/qwen3.8-27b",
   "version_lectura": "n3-3.3|tesseract-5.4.0.20240606|spa|300dpi|sin-sellos",
   "ocr_workers": 8,
-  "gold_standard_sha256": "89789fa9864623ff57bc7eb697334663b5a6858453309ea270ac79088421abe5",
+  "gold_standard_sha256": "6354ef9b7b7bd923029f8a1430604ddbf22cfc431a680db2c9f2b7b163284978",
   "casete": "precision.json",
   "fecha_referencia": "2026-09-30",
   "python": "3.12.10",
   "sistema": "Windows-11-10.0.26300-SP0",
   "procesador": "AMD64 Family 23 Model 24 Stepping 1, AuthenticAMD"
  },
- "tokens_totales": 126019,
+ "tokens_totales": 126523,
  "total": {
   "casos": 42,
   "entidades": {
@@ -154,12 +154,12 @@
    }
   },
   "elementos": {
-   "pares": 101,
+   "pares": 98,
    "omision": {
-    "vp": 14,
+    "vp": 12,
     "fp": 0,
     "fn": 0,
-    "vn": 87,
+    "vn": 86,
     "precision": 1.0,
     "exhaustividad": 1.0,
     "f1": 1.0,
@@ -169,10 +169,10 @@
     ]
    },
    "presente": {
-    "vp": 87,
+    "vp": 86,
     "fp": 0,
     "fn": 0,
-    "vn": 14,
+    "vn": 12,
     "precision": 1.0,
     "exhaustividad": 1.0,
     "f1": 1.0,
@@ -184,11 +184,11 @@
    "abstenciones": 2,
    "no_evaluadas": 0,
    "citas_ancladas": {
-    "exitos": 87,
-    "total": 87,
+    "exitos": 86,
+    "total": 86,
     "valor": 1.0,
     "ic95": [
-     0.957711004649852,
+     0.9572402984808819,
      1.0
     ]
    },
@@ -228,16 +228,16 @@
      "aciertos": 4
     },
     "RSC-ACTA-ADMON": {
-     "pares": 6,
-     "aciertos": 6
+     "pares": 5,
+     "aciertos": 5
     },
     "RSC-ACTA-ESCR": {
-     "pares": 6,
-     "aciertos": 6
+     "pares": 5,
+     "aciertos": 5
     },
     "RSC-ACTA-RPC": {
-     "pares": 6,
-     "aciertos": 6
+     "pares": 5,
+     "aciertos": 5
     },
     "RSC-LIC-GIRO": {
      "pares": 1,
@@ -267,7 +267,7 @@
   },
   "personas": {
    "nombres": {
-    "vp": 46,
+    "vp": 45,
     "fp": 0,
     "fn": 0,
     "vn": 0,
@@ -280,12 +280,12 @@
     ]
    },
    "cargo": {
-    "exitos": 41,
-    "total": 46,
-    "valor": 0.8913,
+    "exitos": 40,
+    "total": 45,
+    "valor": 0.8889,
     "ic95": [
-     0.7696189698736853,
-     0.9526692391725731
+     0.7650062450910905,
+     0.9515959956217445
     ]
    }
   },
@@ -560,12 +560,12 @@
     }
    },
    "elementos": {
-    "pares": 72,
+    "pares": 69,
     "omision": {
-     "vp": 13,
+     "vp": 11,
      "fp": 0,
      "fn": 0,
-     "vn": 59,
+     "vn": 58,
      "precision": 1.0,
      "exhaustividad": 1.0,
      "f1": 1.0,
@@ -575,10 +575,10 @@
      ]
     },
     "presente": {
-     "vp": 59,
+     "vp": 58,
      "fp": 0,
      "fn": 0,
-     "vn": 13,
+     "vn": 11,
      "precision": 1.0,
      "exhaustividad": 1.0,
      "f1": 1.0,
@@ -590,12 +590,12 @@
     "abstenciones": 2,
     "no_evaluadas": 0,
     "citas_ancladas": {
-     "exitos": 59,
-     "total": 59,
+     "exitos": 58,
+     "total": 58,
      "valor": 1.0,
      "ic95": [
-      0.938868520215908,
-      1.0
+      0.9378800031047062,
+      0.9999999999999999
      ]
     },
     "falsas_conformidades": [],
@@ -634,16 +634,16 @@
       "aciertos": 3
      },
      "RSC-ACTA-ADMON": {
-      "pares": 4,
-      "aciertos": 4
+      "pares": 3,
+      "aciertos": 3
      },
      "RSC-ACTA-ESCR": {
-      "pares": 4,
-      "aciertos": 4
+      "pares": 3,
+      "aciertos": 3
      },
      "RSC-ACTA-RPC": {
-      "pares": 4,
-      "aciertos": 4
+      "pares": 3,
+      "aciertos": 3
      },
      "RSC-LIC-GIRO": {
       "pares": 1,
@@ -673,7 +673,7 @@
    },
    "personas": {
     "nombres": {
-     "vp": 32,
+     "vp": 31,
      "fp": 0,
      "fn": 0,
      "vn": 0,
@@ -686,12 +686,12 @@
      ]
     },
     "cargo": {
-     "exitos": 29,
-     "total": 32,
-     "valor": 0.9062,
+     "exitos": 28,
+     "total": 31,
+     "valor": 0.9032,
      "ic95": [
-      0.7578150066422116,
-      0.9675990373736805
+      0.7509971000182295,
+      0.966535963905356
      ]
     }
    },
@@ -2010,253 +2010,253 @@
    "id": "GS-CSF-01",
    "consultas_groq": 1,
    "tokens": 1826,
-   "latencia_ms": 4052
+   "latencia_ms": 4113
   },
   {
    "id": "GS-CSF-01-ESC",
    "consultas_groq": 1,
    "tokens": 1820,
-   "latencia_ms": 3357
+   "latencia_ms": 4391
   },
   {
    "id": "GS-CSF-02",
    "consultas_groq": 1,
    "tokens": 1825,
-   "latencia_ms": 10147
+   "latencia_ms": 10107
   },
   {
    "id": "GS-CSF-03",
    "consultas_groq": 1,
    "tokens": 1847,
-   "latencia_ms": 980
+   "latencia_ms": 943
   },
   {
    "id": "GS-CSF-03-ESC",
    "consultas_groq": 1,
    "tokens": 1842,
-   "latencia_ms": 2969
+   "latencia_ms": 3772
   },
   {
    "id": "GS-CSF-04",
    "consultas_groq": 1,
    "tokens": 1802,
-   "latencia_ms": 1219
+   "latencia_ms": 1154
   },
   {
    "id": "GS-OPIN-01",
    "consultas_groq": 1,
    "tokens": 1743,
-   "latencia_ms": 712
+   "latencia_ms": 660
   },
   {
    "id": "GS-OPIN-01-ESC",
    "consultas_groq": 1,
    "tokens": 1748,
-   "latencia_ms": 2252
+   "latencia_ms": 3120
   },
   {
    "id": "GS-OPIN-02",
    "consultas_groq": 1,
    "tokens": 1756,
-   "latencia_ms": 1202
+   "latencia_ms": 1180
   },
   {
    "id": "GS-OPIN-03",
    "consultas_groq": 1,
    "tokens": 1743,
-   "latencia_ms": 972
+   "latencia_ms": 932
   },
   {
    "id": "GS-OPIN-04",
    "consultas_groq": 1,
    "tokens": 1772,
-   "latencia_ms": 986
+   "latencia_ms": 940
   },
   {
    "id": "GS-DOM-01",
    "consultas_groq": 1,
    "tokens": 1715,
-   "latencia_ms": 845
+   "latencia_ms": 877
   },
   {
    "id": "GS-DOM-01-ESC",
    "consultas_groq": 1,
    "tokens": 1700,
-   "latencia_ms": 1756
+   "latencia_ms": 2370
   },
   {
    "id": "GS-DOM-02",
    "consultas_groq": 1,
    "tokens": 1715,
-   "latencia_ms": 1053
+   "latencia_ms": 1102
   },
   {
    "id": "GS-ACTA-01",
    "consultas_groq": 2,
    "tokens": 3968,
-   "latencia_ms": 2583
+   "latencia_ms": 2636
   },
   {
    "id": "GS-ACTA-01-ESC",
    "consultas_groq": 2,
    "tokens": 3983,
-   "latencia_ms": 10086
+   "latencia_ms": 11319
   },
   {
    "id": "GS-ACTA-02",
    "consultas_groq": 2,
    "tokens": 3810,
-   "latencia_ms": 3559
+   "latencia_ms": 3604
   },
   {
    "id": "GS-ACTA-03",
    "consultas_groq": 2,
    "tokens": 4092,
-   "latencia_ms": 2774
+   "latencia_ms": 2787
   },
   {
    "id": "GS-ACTA-03-ESC",
    "consultas_groq": 2,
    "tokens": 4088,
-   "latencia_ms": 5021
+   "latencia_ms": 6274
   },
   {
    "id": "GS-ACTA-04",
-   "consultas_groq": 2,
-   "tokens": 3111,
-   "latencia_ms": 21058
+   "consultas_groq": 3,
+   "tokens": 3615,
+   "latencia_ms": 22335
   },
   {
    "id": "GS-PODER-01",
    "consultas_groq": 2,
    "tokens": 3107,
-   "latencia_ms": 3279
+   "latencia_ms": 3292
   },
   {
    "id": "GS-PODER-01-ESC",
    "consultas_groq": 2,
    "tokens": 3125,
-   "latencia_ms": 17806
+   "latencia_ms": 18827
   },
   {
    "id": "GS-PODER-02",
    "consultas_groq": 2,
    "tokens": 3019,
-   "latencia_ms": 2058
+   "latencia_ms": 2108
   },
   {
    "id": "GS-PODER-03",
    "consultas_groq": 2,
    "tokens": 3208,
-   "latencia_ms": 3867
+   "latencia_ms": 3919
   },
   {
    "id": "GS-CONT-01",
    "consultas_groq": 2,
    "tokens": 4421,
-   "latencia_ms": 2821
+   "latencia_ms": 2881
   },
   {
    "id": "GS-CONT-01-ESC",
    "consultas_groq": 2,
    "tokens": 4381,
-   "latencia_ms": 7843
+   "latencia_ms": 9583
   },
   {
    "id": "GS-CONT-02",
    "consultas_groq": 2,
    "tokens": 4272,
-   "latencia_ms": 3971
+   "latencia_ms": 4014
   },
   {
    "id": "GS-CONT-03",
    "consultas_groq": 2,
    "tokens": 4203,
-   "latencia_ms": 11382
+   "latencia_ms": 11460
   },
   {
    "id": "GS-CONT-03-ESC",
    "consultas_groq": 2,
    "tokens": 4207,
-   "latencia_ms": 22595
+   "latencia_ms": 24073
   },
   {
    "id": "GS-CONT-04",
    "consultas_groq": 2,
    "tokens": 4152,
-   "latencia_ms": 33182
+   "latencia_ms": 33217
   },
   {
    "id": "GS-CONT-05",
    "consultas_groq": 2,
    "tokens": 4251,
-   "latencia_ms": 10515
+   "latencia_ms": 10573
   },
   {
    "id": "GS-CONT-06",
    "consultas_groq": 2,
    "tokens": 4086,
-   "latencia_ms": 6586
+   "latencia_ms": 6646
   },
   {
    "id": "GS-CONT-07",
    "consultas_groq": 2,
    "tokens": 4468,
-   "latencia_ms": 15836
+   "latencia_ms": 15885
   },
   {
    "id": "GS-CONT-07-ESC",
    "consultas_groq": 2,
    "tokens": 4471,
-   "latencia_ms": 45674
+   "latencia_ms": 47415
   },
   {
    "id": "GS-NDA-01",
    "consultas_groq": 2,
    "tokens": 3208,
-   "latencia_ms": 37350
+   "latencia_ms": 37389
   },
   {
    "id": "GS-NDA-01-ESC",
    "consultas_groq": 2,
    "tokens": 3200,
-   "latencia_ms": 6154
+   "latencia_ms": 7240
   },
   {
    "id": "GS-NDA-02",
    "consultas_groq": 2,
    "tokens": 3165,
-   "latencia_ms": 10428
+   "latencia_ms": 10460
   },
   {
    "id": "GS-NDA-03",
    "consultas_groq": 2,
    "tokens": 3109,
-   "latencia_ms": 2499
+   "latencia_ms": 2542
   },
   {
    "id": "GS-POL-01",
    "consultas_groq": 2,
    "tokens": 2569,
-   "latencia_ms": 9710
+   "latencia_ms": 9746
   },
   {
    "id": "GS-POL-01-ESC",
    "consultas_groq": 2,
    "tokens": 2581,
-   "latencia_ms": 2830
+   "latencia_ms": 4090
   },
   {
    "id": "GS-POL-02",
    "consultas_groq": 2,
    "tokens": 2571,
-   "latencia_ms": 2556
+   "latencia_ms": 2595
   },
   {
    "id": "GS-LIC-01",
    "consultas_groq": 2,
    "tokens": 2339,
-   "latencia_ms": 1354
+   "latencia_ms": 1392
   }
  ],
  "casos": [
@@ -4388,14 +4388,13 @@
    "tipo_registrado": "ACTA_CONSTITUTIVA",
    "estatus_esperado": "EN_REVISION",
    "estatus_dictaminado": "EN_REVISION",
-   "motivo_esperado": "El contenido es un poder notarial, no un acta: tipo incompatible con el registrado.",
+   "motivo_esperado": "El contenido es un poder notarial, no un acta: discrepancia de documento, sin evaluar los elementos ni la representación del acta (PRD §21.9).",
    "nivel_confianza": 0.95,
    "requiere_revision_humana": true,
    "observaciones": [
     "El texto es legible y claro, aunque contiene una marca de agua indicando que es un documento de prueba con datos ficticios. No se detecta RFC en el cuerpo del texto.",
     "El documento no incluye RFC; la titularidad se verificó por la razón social del titular.",
-    "El documento se registró como ACTA_CONSTITUTIVA pero su contenido corresponde a PODER_NOTARIAL; debe confirmarse que se cargó el documento correcto.",
-    "Dictamen EN_REVISION: el tipo de documento detectado no corresponde al tipo con el que se registró en el expediente."
+    "Dictamen EN_REVISION: Discrepancia de documento: Se esperaba el documento «ACTA_CONSTITUTIVA» pero la inteligencia artificial identificó «Poder General». No es posible validar los criterios de cumplimiento del documento solicitado."
    ],
    "campos": {
     "tipo_documento": {
@@ -4464,51 +4463,20 @@
      }
     }
    },
-   "elementos": {
-    "RSC-ACTA-ESCR": {
-     "presente_esperado": true,
-     "resultado": "CUMPLE",
-     "presente_dictaminado": true,
-     "cita_anclada": true
-    },
-    "RSC-ACTA-RPC": {
-     "presente_esperado": false,
-     "resultado": "NO_LOCALIZADO",
-     "presente_dictaminado": false,
-     "cita_anclada": null
-    },
-    "RSC-ACTA-ADMON": {
-     "presente_esperado": false,
-     "resultado": "NO_LOCALIZADO",
-     "presente_dictaminado": false,
-     "cita_anclada": null
-    }
-   },
+   "elementos": {},
    "personas": {
-    "esperadas": [
-     {
-      "nombre": "María Elena Ruiz Soto",
-      "cargo": "Apoderado"
-     }
-    ],
-    "extraidas": [
-     {
-      "nombre": "María Elena Ruiz Soto",
-      "cargo": "apoderado"
-     }
-    ],
+    "esperadas": [],
+    "extraidas": [],
     "conteo": {
-     "vp": 1,
+     "vp": 0,
      "fp": 0,
      "fn": 0,
      "vn": 0,
-     "precision": 1.0,
-     "exhaustividad": 1.0,
-     "f1": 1.0
+     "precision": null,
+     "exhaustividad": null,
+     "f1": null
     },
-    "cargo_correcto": [
-     true
-    ]
+    "cargo_correcto": []
    },
    "cer": null
   },

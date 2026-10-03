@@ -49,6 +49,10 @@ class DictamenCreate(BaseModel):
     version_reglas_tipo: Optional[str] = Field(
         None, max_length=20, description="P7 (M7): versión de las reglas del tipo de documento (tip-…)"
     )
+    nombre_documento_real: Optional[str] = Field(
+        None, max_length=200,
+        description="PRD §21.9: nombre del documento que identificó la IA cuando no es del tipo registrado",
+    )
     usuario: str = Field("SISTEMA", min_length=1, max_length=100)
     representacion: Optional[dict[str, Any]] = Field(
         None,
@@ -101,6 +105,7 @@ class DictamenResponse(BaseModel):
     version_instrucciones: Optional[str] = None
     version_catalogo: Optional[str] = None
     version_reglas_tipo: Optional[str] = None
+    nombre_documento_real: Optional[str] = None
     representacion_legal: Optional[dict[str, Any]] = None
     hash_sha256: str
     revisado_por_humano: bool

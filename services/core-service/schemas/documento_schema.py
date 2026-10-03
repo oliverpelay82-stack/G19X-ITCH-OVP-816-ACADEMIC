@@ -5,6 +5,7 @@ Equivalente a las clases DTO / Response en Spring Boot.
 from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field, computed_field
 
+from config.catalogo import etiqueta_documento
 from motor import senales_pdf as senales
 
 
@@ -29,6 +30,11 @@ class DocumentoResponse(BaseModel):
     senales_pdf: dict | None = None
 
     model_config = ConfigDict(from_attributes=True)
+
+    @computed_field(description="Nombre legible del tipo de documento (catálogo base o tipo declarado, RF-09)")
+    @property
+    def nombre_tipo_documento(self) -> str:
+        return etiqueta_documento(self.tipo_documento)
 
     @computed_field(description="P6: motivos por los que la auditoría queda en revisión humana (señales del archivo)")
     @property

@@ -72,6 +72,8 @@ class DictamenAuditoria(Base):
     version_catalogo = Column(String(20), nullable=True)
     # P7 (M7): versión de las reglas del tipo de documento con que se emitió (tip-…).
     version_reglas_tipo = Column(String(20), nullable=True)
+    # PRD §21.9: nombre del documento que identificó la IA cuando no es del tipo registrado.
+    nombre_documento_real = Column(String(200), nullable=True)
 
     # Huella del archivo al momento de la evaluación (protocolo DOC-05 §5.6).
     hash_sha256 = Column(String(64), nullable=False)

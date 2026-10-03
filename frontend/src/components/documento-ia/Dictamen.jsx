@@ -70,7 +70,8 @@ function Cotejo({ dictamen, expediente, tipoRegistrado }) {
     {
       campo: 'Tipo documental',
       esperado: TIPO_DOCUMENTO_LABEL[tipoRegistrado] || tipoRegistrado,
-      detectado: TIPO_IA_LABEL[dictamen.tipo_documento_detectado] || TIPO_IA_LABEL.OTRO,
+      // Con discrepancia, el nombre del documento real que dio la IA; si no, su categoría.
+      detectado: dictamen.nombre_documento_real || TIPO_IA_LABEL[dictamen.tipo_documento_detectado] || TIPO_IA_LABEL.OTRO,
       resultado: resultadoTipo(dictamen, tipoRegistrado),
     },
   ]
@@ -215,7 +216,14 @@ function ResumenDictamen({ dictamen, vigencia, ids, onIr }) {
     {
       etiqueta: 'Tipo',
       tono: dictamen.tipo_coincide === true ? 'ok' : dictamen.tipo_coincide === false ? 'bad' : 'neutral',
-      texto: dictamen.tipo_coincide === true ? 'Coincide' : dictamen.tipo_coincide === false ? 'Distinto' : 'Sin contraste',
+      texto:
+        dictamen.tipo_coincide === true
+          ? 'Coincide'
+          : dictamen.tipo_coincide === false
+            ? dictamen.nombre_documento_real
+              ? `Distinto («${dictamen.nombre_documento_real}»)`
+              : 'Distinto'
+            : 'Sin contraste',
       destino: ids.cotejo,
     },
     { etiqueta: 'Vigencia', tono: vigencia.tono, texto: vigencia.texto, destino: ids.fechas },
@@ -297,7 +305,8 @@ export function DictamenResultado({ dictamen, ids, onIrEvidencia }) {
     tono: 'neutral',
     label: dictamen.estatus_preliminar || 'Sin dictamen',
   }
-  const { motivo } = separarMotivo(dictamen.observaciones)
+  // El servicio da el motivo del estatus vigente; un dictamen guardado antes de ese campo lo toma de sus observaciones.
+  const motivo = dictamen.descripcion_coherente || separarMotivo(dictamen.observaciones).motivo
   const vigencia = vigenciaDe(dictamen)
   return (
     <div className="dictamen">

@@ -100,6 +100,26 @@ def test_el_dictamen_guarda_y_protege_la_version():
     assert client.get("/api/v1/dictamenes", params={"documento_id": sin_version["id"]}).json()[0]["version_catalogo"] is None
 
 
+def test_el_dictamen_guarda_y_protege_el_nombre_del_documento_real():
+    """PRD §21.9: el nombre que dio la IA a un archivo de otro tipo se guarda, se sella y no se modifica."""
+    doc = _documento("VCT080808AAA")
+    dictamen = _dictaminar(doc, tipo_documento_detectado="IDENTIFICACION_OFICIAL",
+                           nombre_documento_real="Credencial para Votar INE")
+    guardado = client.get("/api/v1/dictamenes", params={"documento_id": doc["id"]}).json()[0]
+    assert guardado["nombre_documento_real"] == "Credencial para Votar INE"
+    [evento] = client.get("/api/v1/bitacora", params={"documento_id": doc["id"], "evento": "DICTAMEN_IA"}).json()
+    assert evento["detalle"]["nombre_documento_real"] == "Credencial para Votar INE"
+    with pytest.raises(DBAPIError), engine.begin() as conexion:
+        conexion.execute(text("UPDATE dictamenes_auditoria SET nombre_documento_real = 'Otro' WHERE id = :id"),
+                         {"id": dictamen["id"]})
+    # Sin discrepancia el campo queda vacío y el evento no lo lleva.
+    otro = _documento("VCT090909AAA")
+    _dictaminar(otro)
+    assert client.get("/api/v1/dictamenes", params={"documento_id": otro["id"]}).json()[0]["nombre_documento_real"] is None
+    [evento] = client.get("/api/v1/bitacora", params={"documento_id": otro["id"], "evento": "DICTAMEN_IA"}).json()
+    assert "nombre_documento_real" not in evento["detalle"]
+
+
 def test_el_excel_muestra_la_version():
     doc = _documento("VCT040404AAA")
     _dictaminar(doc, version_catalogo=VERSION)

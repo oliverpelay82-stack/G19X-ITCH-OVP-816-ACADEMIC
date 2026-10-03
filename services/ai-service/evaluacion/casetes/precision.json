@@ -1426,6 +1426,20 @@
     "total_tokens": 2452
    }
   },
+  "b0803c090264b8e24b9d6339acc215e229f6de863a2f203e3d5c40da2c0e31cc": {
+   "grabado_en": "2026-10-03T18:39:20+00:00",
+   "latencia_ms": 1251,
+   "respuesta": {
+    "nombre_documento_real": "Poder General"
+   },
+   "tipo": "json",
+   "uso": {
+    "completion_tokens": 16,
+    "desde_cache": false,
+    "prompt_tokens": 488,
+    "total_tokens": 504
+   }
+  },
   "b1160aaaa4360edccd5c1f18a272efee298f335566396cf308f6dfd1d0afe259": {
    "grabado_en": "2026-10-01T21:21:43+00:00",
    "latencia_ms": 749,

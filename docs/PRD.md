@@ -1114,6 +1114,26 @@ El residente pidió una auditoría del repositorio (código sin uso, redundancia
 
 Medición del Nivel 3 en frío, mismas condiciones del equipo y 5 corridas ([`rendimiento_ocr_continuo.json`](resultados_validacion/rendimiento_ocr_continuo.json)): contrato escaneado de 20 páginas, de 10.9 s a 8.8 s (−19 %); el mismo a color con sellos, de 14.2 s a 10.1 s (−29 %); acta real de 26 páginas, de 39.1 s a 37.7 s, dentro del ruido. El acta ya ocupa todos los hilos del equipo: lo que limita es el cómputo de Tesseract, no la espera entre tandas. Precisión del Gold Standard sin cambios (estatus 100 %, 0 falsas conformidades, 87/87 citas ancladas).
 
+**Discrepancia de tipo documental (03/10/2026).** El Cap. I del DOC-01 asigna a la IA confirmar «que el documento sea del tipo que el usuario seleccionó». Cuando el tipo detectado no es compatible con el registrado (`TIPOS_COMPATIBLES`), el dictamen se contradecía: una INE registrada como Poder notarial salía No conforme por «la vigencia del documento ya expiró», calculada con las reglas del poder; el motivo podía hablar de la titularidad («el documento no incluye RFC…»), y se exigían al archivo los elementos RSC del poder y se extraían sus «apoderados» para el cotejo RN-03. Corrección, sin cambiar las instrucciones del modelo:
+
+- La discrepancia decide el dictamen: En revisión (la clasificación es del modelo y la confirma un analista; nunca se rechaza por ella), con el único motivo «Discrepancia de documento: Se esperaba el documento «X» pero la inteligencia artificial identificó «Y». No es posible validar los criterios de cumplimiento del documento solicitado».
+- Al archivo no se le aplican la vigencia RCV, los elementos RSC/RDS ni la representación del tipo esperado. El dictamen persistido no lleva sus fechas ni su representación, para que el core no recalcule con ellas la vigencia ni el cotejo del documento esperado.
+- La respuesta de `POST /api/v1/ai/analisis-semantico` agrega campos opcionales: `tipo_esperado`, `tipo_esperado_nombre`, `tipo_detectado`, `tipo_detectado_nombre`, `discrepancia_tipo` y `descripcion_coherente` (el motivo del estatus vigente, que la interfaz muestra junto al veredicto). La ficha del documento del core agrega `nombre_tipo_documento`.
+- En el mismo trabajo: cuando una señal del archivo (PLUS-18) pasaba un dictamen de Conforme a En revisión, su motivo de Conforme seguía apareciendo junto al veredicto; ahora se retira.
+
+**Nombre del documento real (03/10/2026, a pedido del residente).** Con discrepancia, el dictamen nombra el documento que se cargó, no solo su categoría: «Distinto» decía poco ante una INE o un formato de evaluación.
+
+- **Cuándo se consulta:** solo cuando hay discrepancia. Una consulta breve aparte (≈ 500 tokens, con el encabezado del documento) pide al modelo `nombre_documento_real`, un nombre canónico, formal y corto en español. La extracción no cambia, así que la caché de inferencias y las casetes del resto siguen válidas. La huella `version_instrucciones` incluye la consulta nueva.
+- **Sin un nombre válido** (falla o respuesta de más de 120 caracteres), se usa el de la categoría detectada.
+- **Dónde se usa el nombre:**
+  - el motivo («…identificó «Credencial para Votar»…»);
+  - la interfaz: «Distinto («…»)» en el resumen y en la columna «Detectado»;
+  - el chat: el estado del sistema lo indica solo con discrepancia, y las respuestas sin modelo a «¿qué le falta?», «resume» y «¿qué tipo de documento es?» empiezan con «Este documento ha sido identificado por el motor de IA como…».
+- **Core:** guarda el nombre en la columna nueva `dictamenes_auditoria.nombre_documento_real`, con migración idempotente y protegida por el trigger de RN-05, y lo sella en el evento DICTAMEN_IA.
+- **Gold Standard:** solo GS-ACTA-04 hace la consulta («Poder General», 504 tokens grabados); los 42 casos siguen en 100 % de estatus.
+
+Evidencia previa: con el modelo real, un contrato, un NDA y una constancia fiscal registrados como Poder notarial se clasificaron con su tipo real (3 de 3): el modelo no recibe el tipo esperado y no se sesga por él, así que no se modificaron sus instrucciones (la caché de inferencias y las casetes del Gold Standard siguen válidas). Pruebas: `test_discrepancia_tipo` (ai) y `test_tipos_documento_nuevos` (core). Respaldo: DOC-01 Cap. I; DOC-05, Nivel 5 (revisión humana); RNF-08.
+
 ## 22. Glosario
 
 | Término | Definición |

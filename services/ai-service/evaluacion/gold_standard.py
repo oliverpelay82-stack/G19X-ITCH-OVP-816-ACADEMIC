@@ -471,9 +471,9 @@ def casos() -> list[Caso]:
              escaneado=True, sello_notarial=True),
         Caso("GS-ACTA-04", "ACTA_CONSTITUTIVA", "Se registró como acta y es un poder notarial", _poder(),
              Esperado("PODER_NOTARIAL", None, TITULAR["razon_social"], "2025-01-10", None, "EN_REVISION",
-                      "El contenido es un poder notarial, no un acta: tipo incompatible con el registrado.",
-                      personas=_personas((APODERADA, "Apoderado")),
-                      elementos={"RSC-ACTA-ESCR": True, "RSC-ACTA-RPC": False, "RSC-ACTA-ADMON": False})),
+                      "El contenido es un poder notarial, no un acta: discrepancia de documento, sin evaluar los "
+                      "elementos ni la representación del acta (PRD §21.9).",
+                      personas=[], elementos={})),
         # ── Poder notarial ──
         Caso("GS-PODER-01", "PODER_NOTARIAL", "Poder general completo", _poder(),
              Esperado("PODER_NOTARIAL", None, TITULAR["razon_social"], "2025-01-10", None, "CONFORME",

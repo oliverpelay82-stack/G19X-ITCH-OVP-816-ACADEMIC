@@ -119,6 +119,9 @@ def ficha_de(resultado: Any, tipo_registrado: str | None, sello_digital_sat: boo
             ],
         },
         "sello_digital_sat": sello_digital_sat,
+        # PRD §21.9: con discrepancia de tipo, el documento real frente al esperado.
+        "nombre_documento_real": getattr(resultado, "nombre_documento_real", None),
+        "tipo_esperado_nombre": getattr(resultado, "tipo_esperado_nombre", None),
     }
 
 
@@ -272,11 +275,29 @@ def _resumen(ficha: dict, dictamen: dict, texto: str) -> str | None:
     return "\n".join(lineas)
 
 
+def discrepancia_de_tipo(ficha: dict[str, Any], dictamen: dict[str, Any]) -> str | None:
+    """
+    PRD §21.9: con discrepancia de tipo, el reconocimiento con que empieza toda respuesta
+    sobre lo que falta o lo que es el documento. None si el documento es del tipo registrado.
+    """
+    real = dictamen.get("nombre_documento_real") or ficha.get("nombre_documento_real")
+    if not real:
+        return None
+    esperado = ficha.get("tipo_esperado_nombre") or ficha.get("tipo_registrado") or "otro documento"
+    return (f"Este documento ha sido identificado por el motor de IA como **{real}**. Dado que el expediente "
+            f"requiere **{esperado}**, no se localizan los elementos correspondientes a la matriz de ese documento: "
+            f"el dictamen está {_estatus(dictamen)} por discrepancia de tipo. Se recomienda confirmar que se cargó "
+            f"el archivo correcto y, si no, custodiar el documento {esperado}.")
+
+
 def responder(pregunta: str, texto: str, ficha: dict[str, Any], dictamen: dict[str, Any]) -> str | None:
     """Respuesta con los datos del dictamen, o ``None`` si la pregunta debe ir al modelo."""
     nombre = intencion(pregunta)
     if nombre is None:
         return None
+    discrepancia = discrepancia_de_tipo(ficha, dictamen)
+    if discrepancia and nombre in ("faltantes", "resumen", "tipo"):
+        return discrepancia
     if nombre == "faltantes":
         return _faltantes(ficha, dictamen)
     if nombre == "resumen":

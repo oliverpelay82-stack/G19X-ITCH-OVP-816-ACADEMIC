@@ -518,6 +518,8 @@ Corrida oficial de `python -m evaluacion.evaluar_precision` sobre los 42 casos (
 
 101 pares (caso, regla anotada): 14 omisiones reales y 87 elementos presentes.
 
+> **Corrida del 03/10/2026 (PRD §21.9, discrepancia de tipo).** GS-ACTA-04 es un poder notarial registrado como acta. Desde ese cambio, al archivo ya no se le evalúan los elementos ni la representación del acta, y su anotación se ajustó en un commit propio. Quedan 98 pares (12 omisiones y 86 presentes): omisión P y R 100 %, presente F1 100 %, 0 falsas conformidades y citas ancladas 86/86. Personas: F1 100 %, cargo 40/45. El estatus de los 42 casos no cambia (100 %, κ 1.000), y la corrida en modo reproducir no consultó al modelo. Las tablas de esta sección conservan la corrida oficial del 01/10/2026.
+
 | Clase | VP | FP | FN | Precisión | Exhaustividad | F1 (IC 95 %) |
 |---|---|---|---|---|---|---|
 | Omisión (la métrica crítica) | 12 | 0 | **2** | 100 % | **85.7 %** | 92.3 % (78–100 %) |

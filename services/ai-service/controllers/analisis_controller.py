@@ -114,6 +114,17 @@ def _estado_en_sistema(
             f"vencimiento {dictamen.get('fecha_vencimiento_extraida') or 'no extraído por el motor'}; "
             f"vigencia según las reglas: {dictamen.get('vigencia_resultado') or 'no evaluada'}",
         ]
+        # PRD §21.9: solo con discrepancia de tipo (los demás estados, y sus claves de caché, no cambian).
+        if dictamen.get("nombre_documento_real"):
+            real = dictamen["nombre_documento_real"]
+            esperado = meta.get("nombre_tipo_documento") or meta.get("tipo_documento")
+            lineas.append(
+                f"Discrepancia de tipo: el motor identificó este archivo como «{real}», no como «{esperado}», que es el "
+                "documento que requiere el expediente; no se evaluaron los elementos de la matriz de ese documento. "
+                "Ante cualquier pregunta sobre lo que falta, lo que se recomienda o si cumple, empieza con: «Este "
+                f"documento ha sido identificado por el motor de IA como {real}. Dado que el expediente requiere "
+                f"{esperado}, no se localizan los elementos correspondientes a la matriz…»."
+            )
         if breve:
             return "\n".join(lineas)
         reglas = [r for r in dictamen.get("reglas_aplicadas") or [] if r.get("codigo_regla")]
@@ -317,6 +328,9 @@ def _persistir_dictamen(
     definitivo. Una alteración RIE-03 detectada en ese momento sí se propaga.
     """
     rfc = resultado.rfc_detectado if resultado.rfc_detectado and len(resultado.rfc_detectado) <= 13 else None
+    # Un archivo de otro tipo no aporta fechas ni representación al documento esperado:
+    # con ellas, el core recalcularía la vigencia del tipo esperado y el cotejo RN-03.
+    otro_tipo = resultado.discrepancia_tipo
     carga = {
         "documento_id": documento_id,
         "estatus": resultado.estatus_preliminar,
@@ -326,12 +340,14 @@ def _persistir_dictamen(
         "rfc_detectado": rfc,
         # Un documento ilegible no se cotejó: no hay coincidencia que informar.
         "match_titular": None if origen == ORIGEN_ILEGIBLE else resultado.match_titular,
-        "fecha_emision": resultado.fecha_emision,
-        "fecha_vencimiento": resultado.fecha_vencimiento,
-        "vigencia": resultado.vigencia_nivel_2 or None,
+        "fecha_emision": None if otro_tipo else resultado.fecha_emision,
+        "fecha_vencimiento": None if otro_tipo else resultado.fecha_vencimiento,
+        "vigencia": None if otro_tipo else (resultado.vigencia_nivel_2 or None),
         "observaciones": resultado.observaciones,
         "verificaciones": resultado.verificaciones,
-        "representacion": resultado.representacion,
+        "representacion": None if otro_tipo else resultado.representacion,
+        # PRD §21.9: qué documento es en realidad (solo con discrepancia; campo opcional del core).
+        **({"nombre_documento_real": resultado.nombre_documento_real} if otro_tipo else {}),
         "modelo_utilizado": resultado.modelo_utilizado,
         # P5: con qué lectura e instrucciones se emitió, para reproducirlo.
         **versiones_dictamen(),
@@ -441,6 +457,8 @@ def _tope_revision(resultado: pipeline_analisis.ResultadoAnalisis, motivos: list
     resultado.requiere_revision_humana = True
     if resultado.estatus_preliminar == "CONFORME":
         resultado.estatus_preliminar = "EN_REVISION"
+        # El motivo de CONFORME ya no explica el estatus: se mostraba junto al veredicto «En revisión».
+        resultado.observaciones = [o for o in resultado.observaciones if not o.startswith("Dictamen CONFORME:")]
         primero, *demas = motivos
         resultado.observaciones.append(f"Dictamen EN_REVISION: {primero[:1].lower()}{primero[1:]}")
         resultado.observaciones.extend(demas)
@@ -497,6 +515,7 @@ def auditar(peticion: AnalisisSemanticoRequest) -> dict:
             tipo_documento_registrado=tipo_registrado,
             criterios_contenido=criterios,
             paginas=paginas,
+            nombre_tipo_registrado=(documento.metadatos or {}).get("nombre_tipo_documento") if documento else None,
         )
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=str(exc)) from exc

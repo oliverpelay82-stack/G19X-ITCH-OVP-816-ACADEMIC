@@ -121,6 +121,8 @@ function reglaDecisiva(vigencia) {
  */
 export function vigenciaSegunReglas(vigencia, textoVencimiento) {
   if (vigencia?.disponible === false) return { tono: 'warn', texto: 'Reglas de vigencia no disponibles' }
+  // El documento no es del tipo registrado: las reglas de ese tipo no se le aplicaron.
+  if (vigencia?.evaluada === false) return { tono: 'neutral', texto: 'No evaluada: el documento es de otro tipo' }
   const meta = RESULTADO_VIGENCIA[vigencia?.resultado]
   const decisiva = meta && reglaDecisiva(vigencia)
   if (!decisiva) return null
@@ -135,6 +137,7 @@ export function vigenciaSegunReglas(vigencia, textoVencimiento) {
 /** Traza compacta de la etapa 3 a partir de la respuesta del análisis. */
 export function detalleReglas(vigencia) {
   if (vigencia?.disponible === false) return { estado: 'error', detalle: 'rules-service sin respuesta' }
+  if (vigencia?.evaluada === false) return { estado: 'omitido', detalle: 'Sin evaluar: el documento es de otro tipo' }
   const decisiva = vigencia?.resultado && reglaDecisiva(vigencia)
   if (!decisiva) return { estado: 'hecho', detalle: 'Sin reglas aplicables al tipo' }
   const meta = RESULTADO_VIGENCIA[vigencia.resultado]

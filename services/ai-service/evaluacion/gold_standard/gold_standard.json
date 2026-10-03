@@ -595,18 +595,9 @@
         "fecha_emision": "2025-01-10",
         "fecha_vencimiento": null,
         "estatus": "EN_REVISION",
-        "motivo": "El contenido es un poder notarial, no un acta: tipo incompatible con el registrado.",
-        "personas": [
-          {
-            "nombre": "María Elena Ruiz Soto",
-            "cargo": "Apoderado"
-          }
-        ],
-        "elementos": {
-          "RSC-ACTA-ESCR": true,
-          "RSC-ACTA-RPC": false,
-          "RSC-ACTA-ADMON": false
-        }
+        "motivo": "El contenido es un poder notarial, no un acta: discrepancia de documento, sin evaluar los elementos ni la representación del acta (PRD §21.9).",
+        "personas": [],
+        "elementos": {}
       },
       "sha256_archivo": "7c190d02a52f691a1a31774f430685785fd86dfd8bce33c607169bbc70bbf832",
       "texto_referencia": "DOCUMENTO DE PRUEBA - DATOS FICTICIOS. Sin validez oficial; generado para evaluar el motor.\nESCRITURA PÚBLICA NÚMERO 20,117\nPODER GENERAL\n\nEn la ciudad de Chihuahua, Chihuahua, a 10 de enero de 2025, ante mí, Lic. Ernesto Valdivia\nCortés,\nNotario Público número 27 de este Distrito Judicial Morelos, compareció\nPLURIONE S.A. DE C.V., representada por su Administrador Único Héctor Daniel Quiroga Salas,\nquien acredita su personalidad con la escritura pública número 12,845, y dijo que otorga\nPODER GENERAL a favor de María Elena Ruiz Soto, en adelante el apoderado,\nal tenor de las siguientes:\n\nCLÁUSULAS\nPRIMERA. El apoderado podrá ejercer el poder general para pleitos y cobranzas y para\nactos de administración, en los términos de los dos primeros párrafos del artículo 2554\ndel Código Civil Federal, con todas las facultades generales y las especiales que\nrequieran cláusula especial conforme a la ley.\nSEGUNDA. El presente poder se otorga por tiempo indefinido y podrá revocarse en cualquier\nmomento.\n\nLeído que fue el presente instrumento al compareciente, lo ratifica y firma ante mí. DOY FE.\nLic. Ernesto Valdivia Cortés   Notario Público número 27"

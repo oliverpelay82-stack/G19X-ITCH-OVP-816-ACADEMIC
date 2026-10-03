@@ -23,5 +23,8 @@ def version_instrucciones() -> str:
         verificacion_contenido.SYSTEM_PROMPT,
         inspect.getsource(verificacion_contenido._prompt),
         inspect.getsource(representacion.instrucciones),
+        # PRD §21.9: la consulta del nombre del documento real (solo con discrepancia de tipo).
+        analisis_semantico.SYSTEM_PROMPT_NOMBRE,
+        inspect.getsource(analisis_semantico._prompt_nombre),
     )
     return "inst-" + hashlib.sha256("\n".join(partes).encode("utf-8")).hexdigest()[:12]

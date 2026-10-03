@@ -113,6 +113,8 @@ _MIGRACIONES_POSTGRES = [
     "ALTER TABLE dictamenes_auditoria ADD COLUMN IF NOT EXISTS version_catalogo VARCHAR(20)",
     # P7 (M7): versión de las reglas del tipo de documento.
     "ALTER TABLE dictamenes_auditoria ADD COLUMN IF NOT EXISTS version_reglas_tipo VARCHAR(20)",
+    # PRD §21.9: nombre del documento identificado cuando no es del tipo registrado.
+    "ALTER TABLE dictamenes_auditoria ADD COLUMN IF NOT EXISTS nombre_documento_real VARCHAR(200)",
     # P5 (DOC-05, Tabla 1): marca de procesamiento diferido del documento.
     "ALTER TABLE documentos ADD COLUMN IF NOT EXISTS procesamiento_diferido JSON",
     # P6 (PLUS-18): contenido activo del PDF (las señales de edición se retiraron).
@@ -162,6 +164,7 @@ _MIGRACIONES_POSTGRES = [
            OR NEW.qr_sat::text IS DISTINCT FROM OLD.qr_sat::text
            OR NEW.version_catalogo IS DISTINCT FROM OLD.version_catalogo
            OR NEW.version_reglas_tipo IS DISTINCT FROM OLD.version_reglas_tipo
+           OR NEW.nombre_documento_real IS DISTINCT FROM OLD.nombre_documento_real
            OR NEW.hash_sha256 IS DISTINCT FROM OLD.hash_sha256
            OR NEW.creado_en IS DISTINCT FROM OLD.creado_en THEN
             RAISE EXCEPTION 'dictamenes_auditoria: solo la ratificación humana puede modificar un dictamen (RN-05)';

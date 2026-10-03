@@ -95,6 +95,12 @@ def test_un_tipo_declarado_se_custodia_y_cuenta_en_la_completitud():
     titulos = [a["titulo"] for a in evaluacion["alertas"]]
     assert any("Licencia de Operación" in t for t in titulos)
     assert catalogo.etiqueta_documento(NUEVO) == "Permiso de Impacto Ambiental"
+    # La ficha del documento trae el nombre legible: el ai-service lo usa para el motivo de una
+    # discrepancia de tipo («Se esperaba el documento «Permiso de Impacto Ambiental»…»).
+    ficha = client.get(f"/api/v1/documentos/{r.json()['id']}").json()
+    assert ficha["nombre_tipo_documento"] == "Permiso de Impacto Ambiental"
+    licencia = _subir(exp_id, "LICENCIA_OPERACION").json()
+    assert licencia["nombre_tipo_documento"] == "Licencia de Operación"
 
 
 @pytest.mark.parametrize("tipo", ["TIPO_INVENTADO", "DICTAMEN_PROTECCION_CIVIL", "tipo con espacios", "1X"])

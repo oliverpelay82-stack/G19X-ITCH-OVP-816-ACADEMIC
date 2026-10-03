@@ -78,7 +78,7 @@ Microservicios FastAPI desacoplados en `services/`, orquestados con Docker Compo
 - Visor de evidencia (HU-20, RF-13): páginas renderizadas desde el binario verificado y localización de citas (`POST /api/v1/ai/documentos/{id}/localizar`).
 
 ### Nivel 4 — Análisis semántico (ai-service)
-- Groq a temperatura 0.0 con JSON estricto. **El modelo solo extrae**; titularidad, vigencia y estatus preliminar los calculan reglas deterministas. Titularidad por RFC o por razón social normalizada; sin RFC y con otra razón social → EN_REVISION; tipo incompatible con el registrado (`TIPOS_COMPATIBLES`) → EN_REVISION.
+- Groq a temperatura 0.0 con JSON estricto. **El modelo solo extrae**; titularidad, vigencia y estatus preliminar los calculan reglas deterministas. Titularidad por RFC o por razón social normalizada; sin RFC y con otra razón social → EN_REVISION; tipo incompatible con el registrado (`TIPOS_COMPATIBLES`) → EN_REVISION con el único motivo «Discrepancia de documento…», que precede a cualquier otro: al archivo no se le aplican la vigencia, los elementos RSC/RDS ni la representación del tipo esperado, y el dictamen persistido no lleva sus fechas (PRD §21.9). La respuesta trae `descripcion_coherente`, el motivo del estatus vigente que muestra el veredicto. Solo con discrepancia, una consulta breve aparte (`SYSTEM_PROMPT_NOMBRE`, ≈ 500 tokens) obtiene `nombre_documento_real`, que llega al motivo, a la interfaz, al chat y a `dictamenes_auditoria.nombre_documento_real`. **No agregar campos a la extracción principal:** cambiar su prompt invalida la caché de inferencias y las casetes del Gold Standard.
 - Contexto: encabezado más fragmentos por BM25 (`pipelines/fragmentos.py`). BM25 léxico, sin embeddings: decisión documentada.
 - Verificación de contenido RSC/RDS: `CUMPLE` solo con una cita literal anclada al texto (`cita_literal`, semejanza ≥ 0.93 para errores de OCR; **las cifras deben coincidir exactamente** y una paráfrasis no pasa) y sin una observación que declare una deducción (`declara_deduccion`: «implícitamente», «se infiere»… → NO_VERIFICABLE). `NO_LOCALIZADO` o `NO_VERIFICABLE` → EN_REVISION; las RDS siempre pasan a ratificación (RDS-03). El sentido de la opinión 32-D (RSC-OPIN-SENT) se lee sin modelo; negativo → NO_CONFORME.
 - RSC-02 (P2): firmantes de contrato o NDA y apoderados de poder o acta, con su cita; el core coteja firmante y apoderado en cada evaluación (RN-03).
@@ -155,7 +155,7 @@ Bandas del DOC-08 §6.2: ≥ 0.85 CONFORME; de 0.70 a 0.84 y por debajo de 0.70,
 | Operación trazable (P7) | `test_folio_seguimiento`, `test_version_catalogo`; ai: `test_folio_seguimiento` |
 | Esquemas, errores y rules | `test_esquema_bd`, `test_esquema_rules`, `test_errores_core`, `test_errores_rules`, `test_rules_service`; ai: `test_errores_no_controlados` |
 | Nivel 3 (ai) | `test_iluminacion`, `test_sellos`, `test_visor_documento`, `test_optimizaciones`, `test_cache_y_lectura`, `test_ocr_continuo` |
-| Nivel 4 (ai) | `test_contenido_titularidad`, `test_vigencia_dictamen`, `test_opinion_cumplimiento`, `test_persistencia_dictamen` |
+| Nivel 4 (ai) | `test_contenido_titularidad`, `test_vigencia_dictamen`, `test_opinion_cumplimiento`, `test_persistencia_dictamen`, `test_discrepancia_tipo` |
 | Chat P4 (ai) | `test_respuestas_directas`, `test_pasajes`, `test_contexto_enfocado`, `test_contexto_chat`, `test_cache_chat`, `test_presupuesto_tokens` |
 | Evaluación (ai) | `test_metricas`, `test_gold_standard`, `test_entorno_evaluacion`, `test_bateria_chat`, `test_evaluar_precision` |
 

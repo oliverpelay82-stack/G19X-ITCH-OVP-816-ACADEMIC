@@ -123,6 +123,73 @@ TIPOS_COMPATIBLES: dict[str, set[str]] = {
     "CERTIFICACION": {"CERTIFICACION"},
 }
 
+# Nombre legible de cada tipo del Nivel 4 (el frontend usa los mismos en
+# documento-ia/formato.js, TIPO_IA_LABEL), para el motivo de una discrepancia.
+NOMBRES_TIPO_DETECTADO: dict[str, str] = {
+    "CONSTANCIA_SITUACION_FISCAL": "Constancia de Situación Fiscal",
+    "OPINION_CUMPLIMIENTO": "Opinión de Cumplimiento (32-D)",
+    "COMPROBANTE_DOMICILIO": "Comprobante de Domicilio",
+    "ACTA_CONSTITUTIVA": "Acta Constitutiva",
+    "ESTADO_CUENTA": "Estado de Cuenta Bancario",
+    "PODER_NOTARIAL": "Poder Notarial",
+    "CONTRATO": "Contrato",
+    "POLIZA": "Póliza de Seguro",
+    "LICENCIA": "Licencia",
+    "CERTIFICACION": "Certificación",
+    "IDENTIFICACION_OFICIAL": "Identificación Oficial",
+    "OTRO": "un documento que no corresponde a ninguna categoría del catálogo",
+}
+
+
+def descripcion_discrepancia(nombre_esperado: str, tipo_detectado: str, nombre_real: str | None = None) -> str:
+    """Motivo de un dictamen cuyo documento no es del tipo con que se registró."""
+    nombre = NOMBRES_TIPO_DETECTADO.get(tipo_detectado, tipo_detectado)
+    detectado = f"«{nombre_real}»" if nombre_real else nombre if tipo_detectado == "OTRO" else f"«{nombre}»"
+    return (f"Discrepancia de documento: Se esperaba el documento «{nombre_esperado}» pero la inteligencia "
+            f"artificial identificó {detectado}. No es posible validar los criterios de cumplimiento del documento "
+            "solicitado.")
+
+
+# Nombre del documento real: una consulta breve que se hace SOLO cuando hay discrepancia
+# de tipo (PRD §21.9). Va aparte de la extracción para no cambiar sus instrucciones: la
+# caché de inferencias y las casetes del Gold Standard de las demás auditorías siguen válidas.
+SYSTEM_PROMPT_NOMBRE = (
+    "Eres un auditor documental de expedientes corporativos mexicanos. Lees el inicio de un documento y "
+    "dices qué documento es, con el título que trae o, si no lo trae, con el nombre formal de su "
+    "intención legal. No inventes datos. Respondes exclusivamente con un objeto JSON válido."
+)
+# Un nombre más largo no es un nombre: es una descripción o una respuesta fuera de formato.
+_MAX_NOMBRE = 120
+
+
+def _prompt_nombre(encabezado: str) -> str:
+    return f"""¿Qué documento es este, a partir de su inicio?
+
+=== INICIO DEL DOCUMENTO ===
+{encabezado}
+=== FIN ===
+
+Devuelve EXACTAMENTE este objeto JSON:
+{{"nombre_documento_real": "nombre canónico, formal y breve en español, de 2 a 10 palabras (por ejemplo, Credencial para Votar o Formato de Evaluación de Residencia Profesional)"}}"""
+
+
+def nombre_documento_real(texto: str) -> tuple[str | None, dict[str, Any] | None]:
+    """
+    (nombre, uso de tokens) del documento a partir de su encabezado. Sin respuesta
+    válida del modelo devuelve ``None``: el motivo usa entonces el nombre de su categoría.
+    """
+    encabezado = texto.strip()[:settings.ENCABEZADO_CARACTERES]
+    try:
+        crudo = groq_client.generar_json(prompt=_prompt_nombre(encabezado), system=SYSTEM_PROMPT_NOMBRE)
+    except (groq_client.GroqNoDisponibleError, groq_client.GroqRespuestaInvalidaError):
+        return None, None
+    valor = crudo.get("nombre_documento_real")
+    if not isinstance(valor, str):
+        return None, groq_client.uso_de(crudo)
+    nombre = " ".join(valor.split()).strip(" «»\"'.")
+    return (nombre if 2 <= len(nombre) <= _MAX_NOMBRE else None), groq_client.uso_de(crudo)
+
+
 # Terminaciones societarias que no distinguen a una empresa de otra al comparar
 # razones sociales (S.A. de C.V., S.A.P.I. de C.V., S.C., A.C., S. de R.L.…).
 _SUFIJOS_SOCIETARIOS = re.compile(
@@ -242,6 +309,22 @@ class ResultadoAnalisis:
     recomendaciones: list[str] = field(default_factory=list)
     # P2 (RSC-02, HU-37): firmantes de un contrato o apoderados de un poder o acta.
     representacion: dict[str, Any] | None = None
+    # El documento no es del tipo con que se registró: no se le aplican las reglas de ese tipo.
+    tipo_esperado: str | None = None
+    tipo_esperado_nombre: str | None = None
+    discrepancia_tipo: bool = False
+    # Con discrepancia: el nombre del documento real (de la IA o, sin respuesta, de su categoría).
+    nombre_documento_real: str | None = None
+
+    def descripcion_coherente(self) -> str | None:
+        """El motivo del estatus vigente, sin el prefijo «Dictamen X:»: el texto del veredicto."""
+        motivos = [o for o in self.observaciones if re.match(r"^Dictamen [A-Z_]+:", o)]
+        motivo = next((o for o in motivos if o.startswith(f"Dictamen {self.estatus_preliminar}:")),
+                      motivos[0] if motivos else None)
+        if motivo is None:
+            return None
+        texto = motivo.split(":", 1)[1].strip()
+        return texto[:1].upper() + texto[1:]
 
     def a_dict(self) -> dict[str, Any]:
         return {
@@ -268,6 +351,14 @@ class ResultadoAnalisis:
             "verificaciones": self.verificaciones,
             "recomendaciones": self.recomendaciones,
             "representacion": self.representacion,
+            # Campos opcionales: el tipo esperado frente al detectado y el motivo del veredicto.
+            "tipo_esperado": self.tipo_esperado,
+            "tipo_esperado_nombre": self.tipo_esperado_nombre,
+            "tipo_detectado": self.tipo_documento_detectado,
+            "tipo_detectado_nombre": NOMBRES_TIPO_DETECTADO.get(self.tipo_documento_detectado),
+            "discrepancia_tipo": self.discrepancia_tipo,
+            "nombre_documento_real": self.nombre_documento_real,
+            "descripcion_coherente": self.descripcion_coherente(),
         }
 
 
@@ -340,6 +431,7 @@ def analizar(
     tipo_documento_registrado: str | None = None,
     criterios_contenido: list[dict[str, Any]] | None = None,
     paginas: list[dict[str, Any]] | None = None,
+    nombre_tipo_registrado: str | None = None,
 ) -> ResultadoAnalisis:
     """
     Somete el texto al modelo (Groq Cloud) y calcula el dictamen preliminar.
@@ -355,6 +447,13 @@ def analizar(
         consulta verifica que el documento contenga cada elemento.
     :param paginas: ``detalle_paginas`` del Nivel 3; cada fragmento enviado al
         modelo queda asociado a su página en la traza.
+    :param nombre_tipo_registrado: nombre legible del tipo registrado (catálogo
+        del core), para el motivo de una discrepancia de tipo.
+
+    Si el tipo detectado no es compatible con el registrado (``TIPOS_COMPATIBLES``),
+    el archivo no es el documento esperado: el dictamen queda En revisión con ese
+    único motivo y no se le aplican la vigencia, los elementos de contenido ni la
+    representación del tipo esperado, que describirían a otro documento.
     """
     # Q-a: el día en la zona del negocio, no en la del servidor (un contenedor corre en UTC).
     hoy = fecha_referencia or datetime.now(ZoneInfo(settings.ZONA_HORARIA)).date()
@@ -386,11 +485,13 @@ def analizar(
         prompt=_plantilla_prompt(seleccion.texto, rfc_titular, razon_social_titular, rol_representacion),
         system=SYSTEM_PROMPT,
     )
-    datos_representacion = representacion.procesar(rol_representacion, crudo, texto)
-
     observaciones = _texto_a_lista(crudo.get("observaciones"))
 
     tipo = _normalizar_tipo(crudo.get("tipo_documento_detectado"))
+    compatibles = TIPOS_COMPATIBLES.get((tipo_documento_registrado or "").upper())
+    tipo_coincide = None if compatibles is None else tipo in compatibles
+    discrepancia = tipo_coincide is False
+    datos_representacion = None if discrepancia else representacion.procesar(rol_representacion, crudo, texto)
     rfc_detectado = normalizar_rfc(crudo.get("rfc_detectado"))
     razon_social = crudo.get("razon_social_detectada")
     razon_social = razon_social.strip() if isinstance(razon_social, str) and razon_social.strip() else None
@@ -442,15 +543,21 @@ def analizar(
     if fecha_vencimiento:
         dias_restantes = (date.fromisoformat(fecha_vencimiento) - hoy).days
         vigente_local = dias_restantes >= 0
-    vigente, vigencia_pendiente, vigencia_nivel_2, notas_vigencia = _evaluar_vigencia(
-        tipo_registrado=tipo_documento_registrado,
-        tipo_detectado=tipo,
-        fecha_emision=fecha_emision,
-        fecha_vencimiento=fecha_vencimiento,
-        hoy=hoy,
-        vigente_local=vigente_local,
-        dias_restantes=dias_restantes,
-    )
+    if discrepancia:
+        # Las reglas RCV del tipo esperado no aplican a un documento de otro tipo.
+        vigente, vigencia_pendiente, notas_vigencia = None, False, []
+        vigencia_nivel_2 = {"evaluada": False, "tipo_evaluado": (tipo_documento_registrado or "").upper(),
+                            "detalle": "No se evaluó: el documento no es del tipo con que se registró."}
+    else:
+        vigente, vigencia_pendiente, vigencia_nivel_2, notas_vigencia = _evaluar_vigencia(
+            tipo_registrado=tipo_documento_registrado,
+            tipo_detectado=tipo,
+            fecha_emision=fecha_emision,
+            fecha_vencimiento=fecha_vencimiento,
+            hoy=hoy,
+            vigente_local=vigente_local,
+            dias_restantes=dias_restantes,
+        )
     observaciones.extend(notas_vigencia)
 
     if rfc_esperado is None:
@@ -460,19 +567,20 @@ def analizar(
     else:
         titularidad = "RFC" if match_titular else "AJENA"
 
-    compatibles = TIPOS_COMPATIBLES.get((tipo_documento_registrado or "").upper())
-    tipo_coincide = None if compatibles is None else tipo in compatibles
-    if tipo_coincide is False:
-        observaciones.append(
-            f"El documento se registró como {tipo_documento_registrado} pero su contenido corresponde a "
-            f"{tipo}; debe confirmarse que se cargó el documento correcto."
-        )
+    nombre_esperado = nombre_tipo_registrado or tipo_documento_registrado or ""
+    # Solo con discrepancia: una consulta breve nombra el documento real (≈ 600 tokens).
+    nombre_real, uso_nombre = nombre_documento_real(texto) if discrepancia else (None, None)
 
     # verificar() nunca lanza por Groq: una falla vuelve como disponible=False con su nota.
     verificacion = verificacion_en_curso.result()
-    if verificacion.nota:
-        observaciones.append(verificacion.nota)
-    verificacion.verificaciones.extend(representacion.verificacion(c, datos_representacion) for c in criterios_rsc_02)
+    if discrepancia:
+        # Los elementos de contenido del tipo esperado no se buscan en otro documento.
+        verificacion = verificacion_contenido.ResultadoVerificacion(disponible=True)
+    else:
+        if verificacion.nota:
+            observaciones.append(verificacion.nota)
+        verificacion.verificaciones.extend(
+            representacion.verificacion(c, datos_representacion) for c in criterios_rsc_02)
 
     estatus, requiere_hitl, motivos = _dictaminar(
         confianza=confianza,
@@ -481,17 +589,20 @@ def analizar(
         vigente=vigente,
         vigencia_pendiente=vigencia_pendiente,
         rfc_localizado=rfc_detectado is not None,
-        tipo_coincide=tipo_coincide,
         elementos_pendientes=[v["nombre_regla"] for v in verificacion.pendientes],
         elementos_incumplidos=verificacion.incumplidos,
         verificacion_incompleta=not verificacion.disponible,
         reglas_dinamicas=verificacion.incluye_reglas_dinamicas,
-        requiere_cotejo_firmante=bool(criterios_rsc_02),
+        requiere_cotejo_firmante=bool(criterios_rsc_02) and not discrepancia,
+        discrepancia=descripcion_discrepancia(nombre_esperado, tipo, nombre_real) if discrepancia else None,
     )
     observaciones.extend(motivos)
     recomendaciones = [
         v["recomendacion"] for v in verificacion.incumplidos + verificacion.pendientes if v.get("recomendacion")
     ]
+    if discrepancia:
+        recomendaciones = [f"Confirmar que se cargó el archivo correcto; si no, custodiar el documento "
+                           f"«{nombre_esperado}», que sustituye a este."]
 
     return ResultadoAnalisis(
         tipo_documento_detectado=tipo,
@@ -512,6 +623,7 @@ def analizar(
             **seleccion.traza(),
             "uso_tokens": groq_client.uso_de(crudo),
             "uso_tokens_verificacion": verificacion.uso_tokens,
+            **({"uso_tokens_nombre": uso_nombre} if uso_nombre else {}),
         },
         vigencia_nivel_2=vigencia_nivel_2,
         titularidad=titularidad,
@@ -519,6 +631,11 @@ def analizar(
         verificaciones=verificacion.verificaciones,
         recomendaciones=recomendaciones,
         representacion=datos_representacion,
+        tipo_esperado=(tipo_documento_registrado or "").upper() or None,
+        tipo_esperado_nombre=nombre_tipo_registrado or ((tipo_documento_registrado or "").upper() or None),
+        discrepancia_tipo=discrepancia,
+        nombre_documento_real=(nombre_real or ("Documento no clasificado" if tipo == "OTRO"
+                                               else NOMBRES_TIPO_DETECTADO.get(tipo, tipo))) if discrepancia else None,
     )
 
 
@@ -577,12 +694,12 @@ def _dictaminar(
     vigente: bool | None,
     vigencia_pendiente: bool = False,
     rfc_localizado: bool = True,
-    tipo_coincide: bool | None = None,
     elementos_pendientes: list[str] | None = None,
     elementos_incumplidos: list[dict[str, Any]] | None = None,
     verificacion_incompleta: bool = False,
     reglas_dinamicas: bool = False,
     requiere_cotejo_firmante: bool = False,
+    discrepancia: str | None = None,
 ) -> tuple[str, bool, list[str]]:
     """
     Reglas deterministas que convierten la extracción en un estatus preliminar.
@@ -595,6 +712,12 @@ def _dictaminar(
     humana en lugar de resolverse en contra del expediente.
     """
     motivos: list[str] = []
+
+    # El documento no es del tipo con que se registró: sus fechas, su RFC y su
+    # contenido describen a otro documento, así que no deciden el dictamen. La
+    # clasificación es del modelo: la confirma un analista, nunca se rechaza por ella.
+    if discrepancia:
+        return ESTATUS_EN_REVISION, True, motivos + [f"Dictamen EN_REVISION: {discrepancia}"]
 
     if vigente is False:
         return (
@@ -641,17 +764,6 @@ def _dictaminar(
             + [
                 "Dictamen EN_REVISION: el documento no incluye RFC y su razón social no coincide con la del "
                 "titular; un analista debe confirmar a quién pertenece."
-            ],
-        )
-
-    if tipo_coincide is False:
-        return (
-            ESTATUS_EN_REVISION,
-            True,
-            motivos
-            + [
-                "Dictamen EN_REVISION: el tipo de documento detectado no corresponde al tipo con el que se "
-                "registró en el expediente."
             ],
         )
 
