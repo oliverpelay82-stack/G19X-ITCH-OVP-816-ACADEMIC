@@ -49,20 +49,12 @@
   white-space: nowrap;
 }
 
-.tablero-grupo {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+/* «Por categoría»: una fila por categoría, separadas por una línea. */
+.tablero-lista > .dist-row {
   padding: 6px 0;
 }
 
-.tablero-grupo + .tablero-grupo {
+.tablero-lista > .dist-row + .dist-row {
   border-top: var(--border-subtle);
-}
-
-.tablero-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
 }
 

@@ -14,9 +14,11 @@ const pct = (n, total) => (total ? `${Math.round((n / total) * 100)}%` : '0%')
 
 /**
  * V1 · ¿Cómo estamos? El semáforo de todos los expedientes como anillo, con el
- * índice de cumplimiento promedio al centro (RF-22; C6 del DOC-05).
+ * índice de cumplimiento promedio al centro (RF-22; C6 del DOC-05). Un clic en
+ * un sector filtra por ese estado la tabla de Reportes (`seleccion`,
+ * `onSeleccionar`); otro clic en el mismo sector quita el filtro.
  */
-export default function AnilloSemaforo({ expedientes }) {
+export default function AnilloSemaforo({ expedientes, seleccion = null, onSeleccionar }) {
   const total = expedientes.length
   const datos = ESTADOS.map((e) => ({ ...e, n: expedientes.filter((x) => x.estado_cumplimiento === e.clave).length }))
   const indice = promedioIndice(expedientes)
@@ -34,14 +36,25 @@ export default function AnilloSemaforo({ expedientes }) {
               outerRadius={82}
               startAngle={90}
               endAngle={-270}
-              cornerRadius={3}
+              cornerRadius={5}
               isAnimationActive={animar()}
+              animationDuration={800}
+              onClick={(sector) => {
+                const clave = sector?.payload?.clave ?? sector?.clave
+                if (clave) onSeleccionar?.(clave === seleccion ? null : clave)
+              }}
               {...SEPARACION}
             >
               {datos
                 .filter((d) => d.n > 0)
                 .map((d) => (
-                  <Cell key={d.clave} fill={d.color} />
+                  // El sector elegido conserva su color; los demás se atenúan (la leyenda sigue nombrándolos).
+                  <Cell
+                    key={d.clave}
+                    fill={d.color}
+                    fillOpacity={seleccion && seleccion !== d.clave ? 0.35 : 1}
+                    style={onSeleccionar ? { cursor: 'pointer' } : undefined}
+                  />
                 ))}
             </Pie>
             <Tooltip

@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
-import { ArrowUpRight, BellOff, SearchX } from 'lucide-react'
+import { ArrowUpRight, BellOff, ChevronDown, SearchX } from 'lucide-react'
 import { SkeletonCards } from './Skeleton.jsx'
+import Desplegable from './expedientes/Desplegable.jsx'
 import { AlertaItem } from './Alertas.jsx'
 import FolioExpediente from './FolioExpediente.jsx'
 import useDebounce from '../hooks/useDebounce.js'
@@ -26,6 +27,15 @@ export default function AlertasTab({ expedientes, loading, onAbrirExpediente }) 
   const [filtroSeveridad, setFiltroSeveridad] = useState('TODAS')
   const [filtroCodigo, setFiltroCodigo] = useState('TODAS')
   const [filtroTipo, setFiltroTipo] = useState('TODOS')
+  // Grupos de severidad abiertos: las críticas, por defecto.
+  const [abiertos, setAbiertos] = useState(() => new Set(['CRITICA']))
+  const alternar = (clave) =>
+    setAbiertos((previos) => {
+      const siguientes = new Set(previos)
+      if (siguientes.has(clave)) siguientes.delete(clave)
+      else siguientes.add(clave)
+      return siguientes
+    })
   const consulta = useDebounce(busqueda, 220)
   const bandeja = useDesplazamiento()
 
@@ -164,29 +174,42 @@ export default function AlertasTab({ expedientes, loading, onAbrirExpediente }) 
             )}
           </div>
           <div className="bandeja-grupos" ref={bandeja}>
-            {grupos.map(({ sev, items }, g) => {
-              // Posición global de la primera alerta del grupo, para la entrada en cascada.
-              const inicio = grupos.slice(0, g).reduce((n, grupo) => n + grupo.items.length, 0)
+            {grupos.map(({ sev, items }) => {
               const meta = getSeveridadMeta(sev)
               const titulo = sev ? meta.label : 'Otras'
+              const clave = sev || 'OTRAS'
+              // Las críticas entran abiertas; las demás, plegadas. Filtrar por una severidad la abre.
+              const abierto = abiertos.has(clave) || filtroSeveridad === sev
+              const idLista = `alertas-${clave.toLowerCase()}`
               return (
-                <section key={sev || 'otras'} className="bandeja-grupo" aria-label={`Severidad ${titulo.toLowerCase()}`}>
-                  <h2 className="section-title section-title--icono">
-                    <span className={`status-dot status-dot--${meta.tono}`} aria-hidden="true" />
-                    {titulo} <span className="tabular cell-muted">· {items.length}</span>
+                <section key={clave} className="bandeja-grupo" aria-label={`Severidad ${titulo.toLowerCase()}`}>
+                  <h2 className="section-title">
+                    <button
+                      type="button"
+                      className="bandeja-grupo-cabecera"
+                      aria-expanded={abierto}
+                      aria-controls={idLista}
+                      onClick={() => alternar(clave)}
+                    >
+                      <ChevronDown size={14} strokeWidth={1.5} className="bandeja-grupo-flecha" aria-hidden="true" />
+                      <span className={`status-dot status-dot--${meta.tono}`} aria-hidden="true" />
+                      {titulo} <span className="tabular cell-muted">· {items.length}</span>
+                    </button>
                   </h2>
-                  <ul className="alerta-lista alerta-lista--bandeja">
-                    {items.map((a, i) => (
-                      <AlertaItem
-                        key={`${a.expediente.id}-${a.codigo}-${a.tipo_documento}-${i}`}
-                        alerta={a}
-                        claveFlip={`${a.expediente.id}-${a.codigo}-${a.tipo_documento}`}
-                        indice={inicio + i}
-                        expediente={unico ? undefined : a.expediente}
-                        onAbrirExpediente={onAbrirExpediente}
-                      />
-                    ))}
-                  </ul>
+                  <Desplegable abierto={abierto}>
+                    <ul id={idLista} className="alerta-lista alerta-lista--bandeja">
+                      {items.map((a, i) => (
+                        <AlertaItem
+                          key={`${a.expediente.id}-${a.codigo}-${a.tipo_documento}-${i}`}
+                          alerta={a}
+                          claveFlip={`${a.expediente.id}-${a.codigo}-${a.tipo_documento}`}
+                          indice={i}
+                          expediente={unico ? undefined : a.expediente}
+                          onAbrirExpediente={onAbrirExpediente}
+                        />
+                      ))}
+                    </ul>
+                  </Desplegable>
                 </section>
               )
             })}

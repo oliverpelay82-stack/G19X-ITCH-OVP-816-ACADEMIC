@@ -8,7 +8,7 @@ import HallazgosCategoria from './HallazgosCategoria.jsx'
 import { SkeletonRows } from './Skeleton.jsx'
 import useDebounce from '../hooks/useDebounce.js'
 import useDesplazamiento from '../hooks/useDesplazamiento.js'
-import { Badge, Button, Card, EmptyRow, SearchBox, Select, Tag } from './ui/index.js'
+import { Badge, Button, Card, EmptyRow, SearchBox, Segmented, Select, Tag } from './ui/index.js'
 import AnilloSemaforo from './graficas/AnilloSemaforo.jsx'
 import CambiosSemaforo from './graficas/CambiosSemaforo.jsx'
 import HallazgosPorArea from './graficas/HallazgosPorArea.jsx'
@@ -18,6 +18,8 @@ import { getEstadoBadge, TIPO_EXPEDIENTE_LABEL, TIPOS_EXPEDIENTE } from '../cons
 import FolioExpediente from './FolioExpediente.jsx'
 
 const COLUMNAS = 6
+/** Estados del semáforo, en el orden del anillo. */
+const ESTADOS_SEMAFORO = ['CONFORME', 'EN_REVISION', 'NO_CONFORME']
 
 /** Sección de la página con su título y, opcionalmente, una acción a la derecha. */
 function Seccion({ titulo, accion, children }) {
@@ -47,6 +49,8 @@ export default function ReportesTab({
 }) {
   const [tipoGlobal, setTipoGlobal] = useState('')
   const [busqueda, setBusqueda] = useState('')
+  // Estado del semáforo que filtra la tabla: lo elige un sector del anillo o el control de la tabla.
+  const [filtroEstado, setFiltroEstado] = useState(null)
   const consulta = useDebounce(busqueda, 220)
 
   const totalAlertas = useMemo(() => expedientes.reduce((n, e) => n + (e.evaluacion?.alertas?.length || 0), 0), [expedientes])
@@ -55,12 +59,26 @@ export default function ReportesTab({
     const q = consulta.trim().toLowerCase()
     return expedientes.filter(
       (e) =>
-        !q ||
-        [e.codigo_expediente, e.nombre, e.titular?.razon_social, e.titular?.rfc]
-          .filter(Boolean)
-          .some((t) => t.toLowerCase().includes(q))
+        (!filtroEstado || e.estado_cumplimiento === filtroEstado) &&
+        (!q ||
+          [e.codigo_expediente, e.nombre, e.titular?.razon_social, e.titular?.rfc]
+            .filter(Boolean)
+            .some((t) => t.toLowerCase().includes(q)))
     )
-  }, [expedientes, consulta])
+  }, [expedientes, consulta, filtroEstado])
+
+  const opcionesEstado = useMemo(
+    () => [
+      { id: 'TODOS', label: 'Todos', conteo: expedientes.length },
+      ...ESTADOS_SEMAFORO.map((estado) => ({
+        id: estado,
+        label: getEstadoBadge(estado).label,
+        tono: getEstadoBadge(estado).tono,
+        conteo: expedientes.filter((e) => e.estado_cumplimiento === estado).length,
+      })),
+    ],
+    [expedientes]
+  )
 
   // Orden por columna: el estado va de lo más grave a lo conforme; el cumplimiento, del menor al mayor.
   const clavesOrden = useMemo(
@@ -105,9 +123,9 @@ export default function ReportesTab({
           lista: son clases sin orden, más de las que un color distingue. */}
       <Seccion titulo={`Hallazgos · ${totalAlertas}`}>
         <div className="report-grid">
-          <AnilloSemaforo expedientes={expedientes} />
+          <AnilloSemaforo expedientes={expedientes} seleccion={filtroEstado} onSeleccionar={setFiltroEstado} />
           <HallazgosPorArea expedientes={expedientes} />
-          <HallazgosCategoria expedientes={expedientes} onAbrirExpediente={onAbrirExpediente} />
+          <HallazgosCategoria expedientes={expedientes} />
         </div>
       </Seccion>
 
@@ -121,8 +139,16 @@ export default function ReportesTab({
       <Seccion
         titulo="Dictamen por expediente"
         accion={
-          <div className="toolbar-buscador">
-            <SearchBox value={busqueda} onChange={setBusqueda} placeholder="Folio, nombre, empresa o RFC…" label="Buscar expediente" />
+          <div className="toolbar-grupo">
+            <Segmented
+              label="Filtrar por estado"
+              valor={filtroEstado || 'TODOS'}
+              onChange={(id) => setFiltroEstado(id === 'TODOS' ? null : id)}
+              opciones={opcionesEstado}
+            />
+            <div className="toolbar-buscador">
+              <SearchBox value={busqueda} onChange={setBusqueda} placeholder="Folio, nombre, empresa o RFC…" label="Buscar expediente" />
+            </div>
           </div>
         }
       >
@@ -164,11 +190,19 @@ export default function ReportesTab({
                     columnas={COLUMNAS}
                     icon={expedientes.length === 0 ? FileBarChart2 : SearchX}
                     titulo={expedientes.length === 0 ? 'Aún no hay expedientes' : 'Sin coincidencias'}
-                    descripcion={expedientes.length === 0 ? 'Los reportes se generan a partir de los expedientes.' : 'Ajusta la búsqueda.'}
+                    descripcion={
+                      expedientes.length === 0 ? 'Los reportes se generan a partir de los expedientes.' : 'Ajusta la búsqueda o el estado.'
+                    }
                   >
                     {expedientes.length > 0 && (
-                      <Button compacto onClick={() => setBusqueda('')}>
-                        Limpiar búsqueda
+                      <Button
+                        compacto
+                        onClick={() => {
+                          setBusqueda('')
+                          setFiltroEstado(null)
+                        }}
+                      >
+                        Limpiar filtros
                       </Button>
                     )}
                   </EmptyRow>

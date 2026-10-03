@@ -331,6 +331,46 @@
   gap: var(--s-3);
 }
 
+/* Grupos de severidad plegables: las críticas entran abiertas (AlertasTab). */
+.bandeja-grupo-cabecera {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: 0;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.bandeja-grupo-cabecera:focus-visible {
+  outline: 2px solid var(--line-strong);
+  outline-offset: 2px;
+}
+
+.bandeja-grupo-flecha {
+  color: var(--text-muted);
+  transition: transform var(--dur) var(--ease);
+}
+
+.bandeja-grupo-cabecera[aria-expanded='false'] .bandeja-grupo-flecha {
+  transform: rotate(-90deg);
+}
+
+/* La lista recorta su contenido solo mientras se despliega o se pliega (vistas.css, .exp-desplegable). */
+.bandeja-grupo .exp-desplegable > .alerta-lista {
+  min-height: 0;
+  animation: recortar var(--dur-slow) var(--ease);
+}
+
+.bandeja-grupo .exp-desplegable.is-plegando > .alerta-lista {
+  overflow: clip;
+  opacity: 0;
+  animation: fade-out var(--dur-slow) var(--ease);
+}
+
 .alerta-cuerpo {
   display: flex;
   flex: 1;
@@ -492,7 +532,8 @@
 
 .dist-row {
   display: grid;
-  grid-template-columns: 110px minmax(0, 1fr) 32px;
+  /* Etiqueta de la categoría, barra y conteo en palabras («2 documentos»). */
+  grid-template-columns: minmax(0, 132px) minmax(0, 1fr) auto;
   align-items: center;
   gap: var(--s-2);
   font-size: var(--fs-small);
@@ -526,6 +567,7 @@
 .dist-value {
   text-align: right;
   color: var(--text-primary);
+  white-space: nowrap;
 }
 
 @media (max-width: 1100px) {
