@@ -6,11 +6,13 @@ alertas y recomendaciones, y de los reportes de auditoría exportables.
 Puerto: 8001.
 """
 import asyncio
+import re
 import traceback
 from contextlib import asynccontextmanager, suppress
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse
 
 from config import observabilidad
@@ -47,6 +49,27 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan,
 )
+
+
+class _GZipSalvoBinarios(GZipMiddleware):
+    """
+    Comprime las respuestas JSON (la lista de expedientes con su evaluación es la
+    más pesada). No toca los originales de la bóveda ni los reportes: un PDF ya va
+    comprimido y un Excel es un ZIP, así que volver a comprimirlos (hasta 15 MB en
+    cada auditoría del ai-service) gastaría CPU sin reducir su tamaño.
+    """
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] == "http" and _RUTA_BINARIA.search(scope.get("path", "")):
+            await self.app(scope, receive, send)
+            return
+        await super().__call__(scope, receive, send)
+
+
+_RUTA_BINARIA = re.compile(r"/documentos/[^/]+/contenido$|/reportes/")
+# Primero en registrarse, la capa más interna: ve la respuesta completa con su tamaño y
+# solo comprime la de más de 1 KB (por fuera, el cuerpo le llegaría por partes y comprimiría todo).
+app.add_middleware(_GZipSalvoBinarios, minimum_size=1000, compresslevel=5)
 
 
 # Un error no controlado se responde aquí, dentro de la pila y antes de CORS

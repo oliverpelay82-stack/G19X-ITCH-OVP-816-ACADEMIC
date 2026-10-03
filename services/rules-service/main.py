@@ -10,6 +10,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse
 
 from config import observabilidad
@@ -38,6 +39,10 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan,
 )
+
+# Compresión de las respuestas JSON de más de 1 KB (el catálogo de reglas). Primero en
+# registrarse, la capa más interna: ve la respuesta completa y su tamaño real.
+app.add_middleware(GZipMiddleware, minimum_size=1000, compresslevel=5)
 
 
 # Un error no controlado se responde aquí, dentro de la pila y antes de CORS
