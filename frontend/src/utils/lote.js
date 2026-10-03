@@ -36,7 +36,7 @@ export function revisarLote(elementos, custodiadas = new Map()) {
 }
 
 /** El archivo pasó el Nivel 1 del navegador y no repite una huella del lote. */
-export function admisible(elemento, revision) {
+function admisible(elemento, revision) {
   return Boolean(elemento.analisis?.conforme) && !revision.get(elemento.id)?.duplicadoDe
 }
 

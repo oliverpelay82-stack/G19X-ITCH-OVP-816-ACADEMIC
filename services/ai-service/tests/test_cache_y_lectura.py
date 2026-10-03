@@ -171,6 +171,9 @@ def prueba_lectura_completa(mp: pytest.MonkeyPatch) -> None:
                   and r.json()["extraccion_nivel_3"]["lectura_completa"],
                   "Preparar (auditoría) lee todas las páginas antes de responder, sin tarea de fondo",
                   f"HTTP {r.status_code} · lecturas {lecturas}")
+        verificar(not repositorio_texto._candados_lectura,
+                  "Al terminar la lectura completa no queda su candado en memoria",
+                  f"{len(repositorio_texto._candados_lectura)} candados")
         r = client.post("/api/v1/ai/analisis-semantico", json={"documento_id": DOC_ID, "rfc_titular": RFC})
         verificar(r.status_code == 200 and lecturas == [True] and not programadas,
                   "El análisis reutiliza esa lectura completa: el OCR no se repite", f"HTTP {r.status_code}")

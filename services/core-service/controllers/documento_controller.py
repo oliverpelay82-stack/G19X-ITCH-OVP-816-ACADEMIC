@@ -154,7 +154,7 @@ def subir_documento(
     """
     Carga de archivo con Pipeline de Validación Nivel 1:
     1. Valida que el expediente exista.
-    2. Valida el tipo documental: catálogo base (TipoDocumentoEnum) o declarado
+    2. Valida el tipo documental: catálogo base (config/catalogo.TIPOS_DOCUMENTO) o declarado
        por una regla RDS activa del rules-service (RF-09).
     3. Valida tamaño de archivo (máx. 15 MB) y rechaza archivos vacíos.
     4. Valida MIME Type y cabecera binaria (Magic Bytes) para evitar archivos corruptos o extensiones falsas.

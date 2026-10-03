@@ -100,8 +100,11 @@ def configuracion_ocr():
         "tamanio_maximo_mb": settings.MAX_FILE_SIZE_BYTES // (1024 * 1024),
         "preprocesamiento": [
             "Rasterizado directo en escala de grises (PyMuPDF csGRAY; cv2.cvtColor para fotos JPEG/PNG)",
+            "Normalización de la iluminación: división entre el fondo estimado (cierre morfológico)",
+            "Ampliación de imágenes de menos de 1800 px de ancho (interpolación cúbica)",
             "Filtro bilateral de reducción de ruido (cv2.bilateralFilter)",
             "Binarización automática de Otsu (cv2.threshold + THRESH_OTSU)",
+            "Respaldo con CLAHE y umbral adaptativo gaussiano si Otsu deja más de 25 % de tinta",
             "Corrección de polaridad tinta/fondo",
         ],
     }

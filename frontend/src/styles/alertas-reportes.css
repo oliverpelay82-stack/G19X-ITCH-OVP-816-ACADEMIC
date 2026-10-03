@@ -90,13 +90,6 @@
   background: var(--bg-surface);
 }
 
-.indice-cabecera {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--s-3);
-}
-
 .indice-cifra {
   display: flex;
   align-items: baseline;
@@ -495,13 +488,6 @@
   display: flex;
   align-items: center;
   gap: var(--s-2);
-}
-
-.dist-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--cell-y);
-  list-style: none;
 }
 
 .dist-row {

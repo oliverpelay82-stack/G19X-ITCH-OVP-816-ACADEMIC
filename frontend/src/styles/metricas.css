@@ -80,7 +80,7 @@
   overflow: hidden;
 }
 
-/* Neutra por lo mismo que .progress-fill. */
+/* Neutra: la barra mide proporción, no cumplimiento; el estado lo comunica el semáforo. */
 .metric-bar-fill {
   display: block;
   height: 100%;

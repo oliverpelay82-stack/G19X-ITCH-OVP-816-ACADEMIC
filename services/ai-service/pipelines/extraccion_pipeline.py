@@ -85,7 +85,8 @@ class ResultadoPagina:
     # (vacío en páginas vectoriales, cuyas palabras da PyMuPDF al vuelo).
     palabras: list[list[Any]] = field(default_factory=list)
     inicio: int = 0        # posición de la página dentro del texto consolidado
-    # Sellos en tinta de color: {"tipo", "x0", "y0", "x1", "y1"} normalizados.
+    # Siempre vacío desde que se retiró la lectura de sellos en tinta de color
+    # (PRD §21.8); se conserva por el contrato de la API y la columna de SQLite.
     sellos: list[dict[str, Any]] = field(default_factory=list)
 
 
@@ -309,11 +310,6 @@ def reconocer_pagina(imagen: np.ndarray) -> tuple[str, float, list[list[Any]], l
     idéntico y la lectura completa puede reutilizarlo.
     """
     return _POOL_OCR.submit(_ocr_sobre_imagen, imagen).result()
-
-
-def palabras_ocr(imagen: np.ndarray) -> list[list[Any]]:
-    """Solo las palabras con recuadro de ``reconocer_pagina``."""
-    return reconocer_pagina(imagen)[2]
 
 
 # Versión del Nivel 3. Forma parte de la llave de la persistencia: si cambia el

@@ -149,29 +149,45 @@ def _programar_lectura_completa(documento_id: str, forzar_ocr: bool, parcial: Te
     _ejecutor_fondo.submit(_leer_completo, clave, parcial)
 
 
+def _liberar_candado(clave: tuple[str, bool], candado: Lock) -> None:
+    """
+    Retira el candado de un documento cuya lectura completa terminó, para que el
+    diccionario no crezca con cada documento leído. Si otra petición ya lo tomó,
+    se queda: lo retira ella al terminar. Una petición que llegue después crea
+    uno nuevo y encuentra la lectura completa ya persistida, sin repetir el OCR.
+    """
+    with _candado:
+        if _candados_lectura.get(clave) is candado and not candado.locked():
+            del _candados_lectura[clave]
+
+
 def _completar(clave: tuple[str, bool], parcial: TextoDocumento) -> TextoDocumento:
     """
     Lectura de todas las páginas de un documento leído parcialmente. Si otra
     petición la está haciendo, espera y reutiliza su resultado (ya persistido).
     """
     documento_id, forzar_ocr = clave
-    with _candado_lectura(clave):
-        guardada = persistencia_texto.leer(parcial.sha256, forzar_ocr) if parcial.sha256 else None
-        if guardada and guardada.completo:
-            completo = replace(parcial, texto=guardada.texto, traza=guardada.traza, completo=True,
-                               fuente="persistencia")
-        else:
-            contenido = core_client.leer_binario(parcial.metadatos or {"id": documento_id})
-            texto, traza, _ = _extraer(
-                contenido,
-                (parcial.metadatos or {}).get("nombre_archivo_original", "documento"),
-                forzar_ocr,
-                True,
-                parcial.sha256,
-            )
-            completo = replace(parcial, texto=texto, traza=traza, completo=True, fuente="extraccion")
-        cache_texto.actualizar(clave, replace(completo, fuente=parcial.fuente))
-        return completo
+    candado = _candado_lectura(clave)
+    try:
+        with candado:
+            guardada = persistencia_texto.leer(parcial.sha256, forzar_ocr) if parcial.sha256 else None
+            if guardada and guardada.completo:
+                completo = replace(parcial, texto=guardada.texto, traza=guardada.traza, completo=True,
+                                   fuente="persistencia")
+            else:
+                contenido = core_client.leer_binario(parcial.metadatos or {"id": documento_id})
+                texto, traza, _ = _extraer(
+                    contenido,
+                    (parcial.metadatos or {}).get("nombre_archivo_original", "documento"),
+                    forzar_ocr,
+                    True,
+                    parcial.sha256,
+                )
+                completo = replace(parcial, texto=texto, traza=traza, completo=True, fuente="extraccion")
+            cache_texto.actualizar(clave, replace(completo, fuente=parcial.fuente))
+            return completo
+    finally:
+        _liberar_candado(clave, candado)
 
 
 def _leer_completo(clave: tuple[str, bool], parcial: TextoDocumento) -> None:

@@ -9,7 +9,7 @@ hallazgo sobre el documento original y no solo sobre el texto extraído.
   * ``pagina_jpeg`` — la página renderizada desde el binario verificado (RIE-03).
   * ``localizar`` — página y recuadros de una cita. En una página con capa de
     texto se usan las palabras de PyMuPDF; en una escaneada, las del OCR con su
-    recuadro (``extraccion_pipeline.palabras_ocr``), guardadas en SQLite para no
+    recuadro (``extraccion_pipeline.reconocer_pagina``), guardadas en SQLite para no
     repetir el reconocimiento. La comparación literal es la misma que valida las
     citas (``verificacion_contenido.compactar``). Si el OCR de la imagen difiere
     del texto analizado, se resalta la zona más parecida y se marca como

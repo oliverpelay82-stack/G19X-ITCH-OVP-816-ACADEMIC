@@ -22,7 +22,7 @@ const CON_DETALLE = new Set(['expedientes', 'titulares'])
 const RUTA_POR_SECCION = Object.fromEntries(Object.entries(SECCION_POR_RUTA).map(([ruta, s]) => [s, ruta]))
 
 /** Pantalla de inicio: Expedientes, el centro operativo del sistema. */
-export const SECCION_INICIO = 'expedientes'
+const SECCION_INICIO = 'expedientes'
 
 function leer() {
   const [segmento = '', folio = ''] = window.location.hash.replace(/^#\/?/, '').split('/')
@@ -30,7 +30,7 @@ function leer() {
   return { seccion, folio: CON_DETALLE.has(seccion) && folio ? decodeURIComponent(folio) : null }
 }
 
-export const hashDe = (seccion, folio) =>
+const hashDe = (seccion, folio) =>
   `#/${RUTA_POR_SECCION[seccion] || RUTA_POR_SECCION[SECCION_INICIO]}${folio ? `/${encodeURIComponent(folio)}` : ''}`
 
 /**

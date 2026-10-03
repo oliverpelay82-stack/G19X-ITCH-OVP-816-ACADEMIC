@@ -13,14 +13,14 @@ function bytesAHex(buffer) {
 }
 
 /** Huella SHA-256 del archivo completo (NOM-151-SCFI-2016). */
-export async function calcularSha256(file) {
+async function calcularSha256(file) {
   const buffer = await file.arrayBuffer()
   const digest = await crypto.subtle.digest('SHA-256', buffer)
   return bytesAHex(digest)
 }
 
 /** Lee la cabecera y la coteja contra el catálogo de firmas admitidas. */
-export async function detectarMagicBytes(file) {
+async function detectarMagicBytes(file) {
   const cabecera = new Uint8Array(await file.slice(0, 8).arrayBuffer())
   return MAGIC_BYTES.find((firma) => firma.signature.every((byte, i) => cabecera[i] === byte)) || null
 }

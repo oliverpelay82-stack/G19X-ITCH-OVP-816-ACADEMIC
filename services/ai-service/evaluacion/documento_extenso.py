@@ -164,7 +164,7 @@ def paginas() -> list[list[str]]:
     for inicio in range(0, len(bloques), 3):                                   # 8 páginas de cláusulas
         resultado.append(["# CLÁUSULAS"] + [r for b in bloques[inicio:inicio + 3] for r in b])
     for numero, (servicio, descripcion, niveles, indicador, meta) in enumerate(_SERVICIOS, start=1):
-        pagina = [f"# ANEXO A. CATÁLOGO DE SERVICIOS Y NIVELES DE SERVICIO", "",
+        pagina = ["# ANEXO A. CATÁLOGO DE SERVICIOS Y NIVELES DE SERVICIO", "",
                   f"# A.{numero} {servicio}", descripcion, "", "Niveles de servicio por prioridad del incidente:"]
         pagina += [f"Prioridad {pr}: tiempo de respuesta de {resp}; tiempo de solución de {sol}."
                    for pr, resp, sol in niveles]
@@ -186,7 +186,7 @@ def paginas() -> list[list[str]]:
     resultado.append(["# ANEXO C. MATRIZ DE ESCALAMIENTO", "",
                       "Nivel 1: Mesa de ayuda de EL PRESTADOR, disponible las 24 horas en el teléfono 614 410 2200.",
                       "Nivel 2: Coordinador del servicio, Ing. Samuel Cárdenas Olvera, correo scardenas@ejemplo.mx.",
-                      f"Nivel 3: Gerente de cuenta, Lic. Patricia Nájera Fuentes, correo pnajera@ejemplo.mx.",
+                      "Nivel 3: Gerente de cuenta, Lic. Patricia Nájera Fuentes, correo pnajera@ejemplo.mx.",
                       f"Nivel 4: Representante legal de EL PRESTADOR, {gs.REP_PRESTADOR}.", "",
                       "Por EL CLIENTE, el administrador del contrato es el Ing. Tomás Ugalde Rivas, Gerente de",
                       "Tecnologías de la Información, correo tugalde@ejemplo.mx.", "",

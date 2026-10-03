@@ -15,7 +15,6 @@
     grid-template-columns: auto minmax(0, 1fr) auto auto;
   }
 
-  .exp-summary .progress,
   .exp-updated {
     display: none;
   }

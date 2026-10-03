@@ -293,7 +293,7 @@ def main() -> int:
     try:
         if args.core_url or args.rules_url:
             comprobar(bool(args.core_url and args.rules_url), "Indique --core-url y --rules-url juntos")
-            print(f"[!] Contra servicios ya levantados: los titulares, expedientes y eventos quedan en su base.")
+            print("[!] Contra servicios ya levantados: los titulares, expedientes y eventos quedan en su base.")
             cliente = Cliente(args.core_url, args.rules_url)
         else:
             registros = Path(tempfile.mkdtemp(prefix="plurione_e2e_"))

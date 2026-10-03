@@ -129,7 +129,7 @@ export const renombrarExpediente = (id, nombre) =>
 
 /* ── M1: Documentos / Bóveda (Core Service :8001) ───────────────── */
 export const getDocumentos = () => request(CORE_BASE_URL, '/documentos', { tiempoLimite: LIMITE_SONDEO_MS })
-export const uploadDocumento = (formData) =>
+const uploadDocumento = (formData) =>
   request(CORE_BASE_URL, '/documentos/upload', { method: 'POST', body: formData, isFormData: true })
 /** Custodia un archivo con su tipo en un expediente (una carga individual o un elemento de un lote, RF-02). */
 export const custodiarArchivo = (expedienteId, archivo, tipoDocumento) => {
@@ -201,8 +201,6 @@ export const getReglas = (params) => request(RULES_BASE_URL, '/reglas', { params
 export const createRegla = (data) => request(RULES_BASE_URL, '/reglas', { method: 'POST', body: data })
 export const toggleRegla = (id, activo) =>
   request(RULES_BASE_URL, `/reglas/${id}/activo`, { method: 'PATCH', params: { activo } })
-
-export { ApiError }
 
 
 /* ── Nivel 3 y 4: Análisis con IA (AI Service :8003) ────────────── */

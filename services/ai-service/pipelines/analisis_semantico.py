@@ -91,7 +91,7 @@ CONSULTA_AUDITORIA = (
 )
 
 # Equivalencia entre el catálogo del Nivel 4 y el catálogo oficial de tipos del
-# core-service (TipoDocumentoEnum), que es el que usan las reglas de vigencia.
+# core-service (config/catalogo.TIPOS_DOCUMENTO), que es el que usan las reglas de vigencia.
 TIPO_A_CATALOGO_CORE: dict[str, str] = {
     "CONSTANCIA_SITUACION_FISCAL": "CSF_SAT",
     "COMPROBANTE_DOMICILIO": "COMP_DOMICILIO",
