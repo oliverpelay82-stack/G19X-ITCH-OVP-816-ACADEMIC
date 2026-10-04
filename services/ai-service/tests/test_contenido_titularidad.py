@@ -284,3 +284,13 @@ def test_un_cumple_deducido_no_se_acepta_aunque_la_cita_sea_literal(monkeypatch)
 ])
 def test_frases_de_deduccion(observacion, deducida):
     assert verificacion_contenido.declara_deduccion(observacion) is deducida
+
+
+def test_las_instrucciones_exigen_el_elemento_expreso():
+    """
+    Regla 1 (04/10/2026, VALIDACION_CUANTITATIVA §10.2): una mención de paso o una
+    definición no prueban el elemento, y lo que habría que deducir no se da por
+    presente. Con esta regla el modelo negó los dos CUMPLE deducidos del Gold Standard.
+    """
+    regla = verificacion_contenido.SYSTEM_PROMPT.split("\n2.")[0]
+    assert "forma expresa" in regla and "mención de paso" in regla and "deducirlo" in regla

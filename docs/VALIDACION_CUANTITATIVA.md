@@ -543,11 +543,22 @@ Corrida oficial de `python -m evaluacion.evaluar_precision` sobre los 42 casos (
 
   - El estatus (42/42), las entidades y el chat (37/38 y 8/8, los mismos tokens) no cambian.
   - **Límite:** si el modelo deduce un elemento sin decirlo en su observación, la salvaguarda no lo detecta. Si vuelve a aparecer una falsa conformidad en documentos reales, el paso siguiente es exigir el elemento expreso en las instrucciones, lo que obliga a regrabar.
+- **Instrucciones que exigen el elemento expreso (04/10/2026, aprobado por el residente).** La regla 1 de `verificacion_contenido.SYSTEM_PROMPT` pide ahora una cláusula o declaración que pacte o enuncie el elemento, y excluye la mención de paso («los servicios objeto de este contrato»), la definición y el antecedente que solo prepara la obligación. Las 28 verificaciones se regrabaron (39,498 tokens; la extracción no cambió y se reprodujo del casete).
+  - Ahora es el **modelo** el que niega los dos elementos: GS-CONT-05 («menciona genéricamente “los servicios objeto de este contrato”, pero no describe ni define expresamente qué servicios») y GS-NDA-02 («no contiene una cláusula expresa que prohíba o restrinja la divulgación»). Ningún CUMPLE declara ya una deducción (antes, 2), así que la salvaguarda queda como segunda línea sin haber tenido que actuar.
+  - Ningún elemento presente se perdió: 82 CUMPLE y 14 «false» en las 96 respuestas. El false de más es RSC-ACTA-ESCR de GS-ACTA-04, el poder registrado como acta («es un poder general, no un acta»), que no entra en los pares desde la discrepancia de tipo.
+  - Métricas sin cambio: 98 pares, omisión P y R 100 %, presente F1 100 %, 0 falsas conformidades, citas ancladas 86/86, estatus 42/42 (κ 1.000).
+  - Chat: las auditorías de las baterías se regrabaron (14,233 tokens). Corta 37/38 y 646 tokens/turno; extensa 8/8 y 867 tokens/turno: la misma exactitud que T2+T1 ([`chat_verif_expresa.json`](resultados_validacion/chat_verif_expresa.json), [`chat_verif_expresa_extensa.json`](resultados_validacion/chat_verif_expresa_extensa.json)). Los tres casetes se reproducen sin consultar al modelo.
+
+| Elementos RSC | Omisiones detectadas | Omisiones indebidas | Falsas conformidades | CUMPLE deducidos que corrige la salvaguarda |
+|---|---|---|---|---|
+| Instrucciones del 01/10 + salvaguarda | 12/12 | 0 | 0 | 2 |
+| **Elemento expreso (04/10) + salvaguarda** | **12/12** | **0** | **0** | **0** |
 
 #### PE-3 · Firmantes y apoderados (RSC-02)
 
 - **Nombres:** 46/46 personas encontradas, sin ninguna inventada (P = R = F1 = 100 %).
 - **Cargo:** 41/46 (89 %, IC 77–95 %). Los 5 fallos son el mismo: en las 5 actas (3 vectoriales y 2 escaneadas), la apoderada se extrae sin cargo, porque el acta la nombra solo por su poder («Se otorga a María Elena Ruiz Soto poder general…») y no la llama «apoderada».
+- **Corrección (04/10/2026):** si el modelo deja vacío el cargo de una persona de un poder o un acta y su cita verificada le confiere un poder, el cargo es «Apoderado» (`representacion._cargo`; lo dice el renglón citado, no se deduce de otra parte). Sin tocar las instrucciones: cargo 45/45 en la corrida vigente de 98 pares (antes 40/45).
 - **Impacto:** el cotejo RN-03 usa el nombre y el rol (APODERADOS), no el cargo, así que no se afecta. Lo que ve el analista es un cargo vacío.
 
 #### OCR (CER sobre texto conocido)

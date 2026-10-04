@@ -94,6 +94,26 @@ def test_cada_persona_trae_su_cita_anclada_y_con_su_nombre():
     assert not personas["Pedro Gómez Salas"]["cita_verificada"], "La cita existe pero no contiene su nombre"
 
 
+def test_el_apoderado_nombrado_solo_por_su_poder_recibe_el_cargo():
+    acta = PODER + "Se otorga a María Elena Ruiz Soto poder general para actos de administración.\n"
+    datos = representacion.procesar(representacion.APODERADOS, {"apoderados": [
+        {"nombre": "María Elena Ruiz Soto", "cargo": None,
+         "cita": "Se otorga a María Elena Ruiz Soto poder general para actos de administración."},
+        {"nombre": "Juan Pérez López", "cargo": "Administrador único",                 # el del modelo se respeta
+         "cita": "a favor del señor JUAN PEREZ LOPEZ, quien acepta el cargo."},
+        {"nombre": "Pedro Gómez Salas", "cargo": None,                                   # cita sin verificar
+         "cita": "Se otorga a Pedro Gómez Salas poder especial."},
+    ]}, acta)
+
+    cargos = {p["nombre"]: p["cargo"] for p in datos["personas"]}
+    assert cargos == {"María Elena Ruiz Soto": "Apoderado", "Juan Pérez López": "Administrador único",
+                      "Pedro Gómez Salas": None}
+    # Un firmante sin cargo no lo recibe: en un contrato, «poder» no lo hace apoderado de nadie.
+    firmante = representacion.procesar(representacion.FIRMANTES, {"firmantes": [
+        {"nombre": "Ana María Ruiz", "cargo": None, "cita": "representada por la C. Ana María Ruiz."}]}, CONTRATO)
+    assert firmante["personas"][0]["cargo"] is None
+
+
 def test_la_regla_rsc_02_resume_a_los_firmantes_verificados():
     datos = {"rol": "FIRMANTES", "personas": [
         {"nombre": "Juan Pérez López", "cargo": "Apoderado legal", "empresa": RAZON, "cita": "Juan Pérez López",

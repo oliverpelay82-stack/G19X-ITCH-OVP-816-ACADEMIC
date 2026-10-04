@@ -18,6 +18,7 @@ datos de los dictámenes de ambos documentos.
 """
 from __future__ import annotations
 
+import re
 from typing import Any
 
 from pipelines import verificacion_contenido
@@ -96,6 +97,23 @@ def nombre_en_cita(nombre: str, cita: str) -> bool:
     return bool(palabras) and all(p in compacta for p in palabras)
 
 
+# El renglón que confiere un poder («Se otorga a … poder general…»): nombra al apoderado
+# sin llamarlo así, y el modelo deja su cargo vacío (validación cuantitativa §10.2, PE-3).
+_CONFIERE_PODER = re.compile(r"\b(?:poder(?:es)?|apoderad[oa]s?)\b")
+CARGO_APODERADO = "Apoderado"
+
+
+def _cargo(rol: str, cargo: str | None, cita_anclada: str | None) -> str | None:
+    """
+    El cargo que extrajo el modelo; si lo dejó vacío y la cita verificada de un
+    poder o un acta le confiere un poder a esa persona, «Apoderado». Lo dice el
+    propio renglón citado: no se deduce de otra parte del documento.
+    """
+    if cargo or rol != APODERADOS or not cita_anclada:
+        return cargo
+    return CARGO_APODERADO if _CONFIERE_PODER.search(" ".join(verificacion_contenido.compactar_palabras(cita_anclada))) else None
+
+
 def procesar(rol: str | None, crudo: dict[str, Any], texto: str) -> dict[str, Any] | None:
     """Personas extraídas por el modelo, con su cita anclada en el texto del documento."""
     if rol is None:
@@ -118,7 +136,7 @@ def procesar(rol: str | None, crudo: dict[str, Any], texto: str) -> dict[str, An
         verificada = bool(anclada and nombre_en_cita(nombre, anclada[0]))
         persona = {
             "nombre": nombre,
-            "cargo": _texto(p.get("cargo")),
+            "cargo": _cargo(rol, _texto(p.get("cargo")), anclada[0] if verificada else None),
             "cita": anclada[0] if verificada else cita_modelo,
             "cita_verificada": verificada,
         }

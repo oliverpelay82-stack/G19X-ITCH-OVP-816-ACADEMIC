@@ -1,7 +1,7 @@
 {
  "etiqueta": "precision",
  "modo": "reproducir",
- "ejecutado_en": "2026-10-03T18:41:46+00:00",
+ "ejecutado_en": "2026-10-04T15:28:58+00:00",
  "entorno": {
   "modelo": "qwen/qwen3.8-27b",
   "version_lectura": "n3-3.3|tesseract-5.4.0.20240606|spa|300dpi|sin-sellos",
@@ -13,7 +13,7 @@
   "sistema": "Windows-11-10.0.26300-SP0",
   "procesador": "AMD64 Family 23 Model 24 Stepping 1, AuthenticAMD"
  },
- "tokens_totales": 126523,
+ "tokens_totales": 128365,
  "total": {
   "casos": 42,
   "entidades": {
@@ -181,7 +181,7 @@
      1.0
     ]
    },
-   "abstenciones": 2,
+   "abstenciones": 0,
    "no_evaluadas": 0,
    "citas_ancladas": {
     "exitos": 86,
@@ -280,12 +280,12 @@
     ]
    },
    "cargo": {
-    "exitos": 40,
+    "exitos": 45,
     "total": 45,
-    "valor": 0.8889,
+    "valor": 1.0,
     "ic95": [
-     0.7650062450910905,
-     0.9515959956217445
+     0.9213457380593594,
+     1.0
     ]
    }
   },
@@ -587,7 +587,7 @@
       1.0
      ]
     },
-    "abstenciones": 2,
+    "abstenciones": 0,
     "no_evaluadas": 0,
     "citas_ancladas": {
      "exitos": 58,
@@ -686,12 +686,12 @@
      ]
     },
     "cargo": {
-     "exitos": 28,
+     "exitos": 31,
      "total": 31,
-     "valor": 0.9032,
+     "valor": 1.0,
      "ic95": [
-      0.7509971000182295,
-      0.966535963905356
+      0.889740999265246,
+      0.9999999999999999
      ]
     }
    },
@@ -1074,12 +1074,12 @@
      ]
     },
     "cargo": {
-     "exitos": 12,
+     "exitos": 14,
      "total": 14,
-     "valor": 0.8571,
+     "valor": 1.0,
      "ic95": [
-      0.600580922361363,
-      0.9599069262620787
+      0.7846829880728186,
+      1.0
      ]
     }
    },
@@ -1477,12 +1477,12 @@
      ]
     },
     "cargo": {
-     "exitos": 12,
+     "exitos": 14,
      "total": 14,
-     "valor": 0.8571,
+     "valor": 1.0,
      "ic95": [
-      0.600580922361363,
-      0.9599069262620787
+      0.7846829880728186,
+      1.0
      ]
     }
    },
@@ -1865,12 +1865,12 @@
      ]
     },
     "cargo": {
-     "exitos": 12,
+     "exitos": 14,
      "total": 14,
-     "valor": 0.8571,
+     "valor": 1.0,
      "ic95": [
-      0.600580922361363,
-      0.9599069262620787
+      0.7846829880728186,
+      1.0
      ]
     }
    },
@@ -2010,253 +2010,253 @@
    "id": "GS-CSF-01",
    "consultas_groq": 1,
    "tokens": 1826,
-   "latencia_ms": 4113
+   "latencia_ms": 8058
   },
   {
    "id": "GS-CSF-01-ESC",
    "consultas_groq": 1,
    "tokens": 1820,
-   "latencia_ms": 4391
+   "latencia_ms": 5902
   },
   {
    "id": "GS-CSF-02",
    "consultas_groq": 1,
    "tokens": 1825,
-   "latencia_ms": 10107
+   "latencia_ms": 12116
   },
   {
    "id": "GS-CSF-03",
    "consultas_groq": 1,
    "tokens": 1847,
-   "latencia_ms": 943
+   "latencia_ms": 2999
   },
   {
    "id": "GS-CSF-03-ESC",
    "consultas_groq": 1,
    "tokens": 1842,
-   "latencia_ms": 3772
+   "latencia_ms": 5613
   },
   {
    "id": "GS-CSF-04",
    "consultas_groq": 1,
    "tokens": 1802,
-   "latencia_ms": 1154
+   "latencia_ms": 5221
   },
   {
    "id": "GS-OPIN-01",
    "consultas_groq": 1,
    "tokens": 1743,
-   "latencia_ms": 660
+   "latencia_ms": 2688
   },
   {
    "id": "GS-OPIN-01-ESC",
    "consultas_groq": 1,
    "tokens": 1748,
-   "latencia_ms": 3120
+   "latencia_ms": 4735
   },
   {
    "id": "GS-OPIN-02",
    "consultas_groq": 1,
    "tokens": 1756,
-   "latencia_ms": 1180
+   "latencia_ms": 3177
   },
   {
    "id": "GS-OPIN-03",
    "consultas_groq": 1,
    "tokens": 1743,
-   "latencia_ms": 932
+   "latencia_ms": 2962
   },
   {
    "id": "GS-OPIN-04",
    "consultas_groq": 1,
    "tokens": 1772,
-   "latencia_ms": 940
+   "latencia_ms": 2968
   },
   {
    "id": "GS-DOM-01",
    "consultas_groq": 1,
    "tokens": 1715,
-   "latencia_ms": 877
+   "latencia_ms": 4971
   },
   {
    "id": "GS-DOM-01-ESC",
    "consultas_groq": 1,
    "tokens": 1700,
-   "latencia_ms": 2370
+   "latencia_ms": 4441
   },
   {
    "id": "GS-DOM-02",
    "consultas_groq": 1,
    "tokens": 1715,
-   "latencia_ms": 1102
+   "latencia_ms": 3115
   },
   {
    "id": "GS-ACTA-01",
    "consultas_groq": 2,
-   "tokens": 3968,
-   "latencia_ms": 2636
+   "tokens": 4053,
+   "latencia_ms": 5878
   },
   {
    "id": "GS-ACTA-01-ESC",
    "consultas_groq": 2,
-   "tokens": 3983,
-   "latencia_ms": 11319
+   "tokens": 4055,
+   "latencia_ms": 9539
   },
   {
    "id": "GS-ACTA-02",
    "consultas_groq": 2,
-   "tokens": 3810,
-   "latencia_ms": 3604
+   "tokens": 3892,
+   "latencia_ms": 7791
   },
   {
    "id": "GS-ACTA-03",
    "consultas_groq": 2,
-   "tokens": 4092,
-   "latencia_ms": 2787
+   "tokens": 4175,
+   "latencia_ms": 4797
   },
   {
    "id": "GS-ACTA-03-ESC",
    "consultas_groq": 2,
-   "tokens": 4088,
-   "latencia_ms": 6274
+   "tokens": 4181,
+   "latencia_ms": 8576
   },
   {
    "id": "GS-ACTA-04",
    "consultas_groq": 3,
-   "tokens": 3615,
-   "latencia_ms": 22335
+   "tokens": 3672,
+   "latencia_ms": 9311
   },
   {
    "id": "GS-PODER-01",
    "consultas_groq": 2,
-   "tokens": 3107,
-   "latencia_ms": 3292
+   "tokens": 3195,
+   "latencia_ms": 4960
   },
   {
    "id": "GS-PODER-01-ESC",
    "consultas_groq": 2,
-   "tokens": 3125,
-   "latencia_ms": 18827
+   "tokens": 3209,
+   "latencia_ms": 7002
   },
   {
    "id": "GS-PODER-02",
    "consultas_groq": 2,
-   "tokens": 3019,
-   "latencia_ms": 2108
+   "tokens": 3109,
+   "latencia_ms": 18950
   },
   {
    "id": "GS-PODER-03",
    "consultas_groq": 2,
-   "tokens": 3208,
-   "latencia_ms": 3919
+   "tokens": 3305,
+   "latencia_ms": 5428
   },
   {
    "id": "GS-CONT-01",
    "consultas_groq": 2,
-   "tokens": 4421,
-   "latencia_ms": 2881
+   "tokens": 4405,
+   "latencia_ms": 12303
   },
   {
    "id": "GS-CONT-01-ESC",
    "consultas_groq": 2,
-   "tokens": 4381,
-   "latencia_ms": 9583
+   "tokens": 4410,
+   "latencia_ms": 24313
   },
   {
    "id": "GS-CONT-02",
    "consultas_groq": 2,
-   "tokens": 4272,
-   "latencia_ms": 4014
+   "tokens": 4274,
+   "latencia_ms": 15680
   },
   {
    "id": "GS-CONT-03",
    "consultas_groq": 2,
-   "tokens": 4203,
-   "latencia_ms": 11460
+   "tokens": 4251,
+   "latencia_ms": 5522
   },
   {
    "id": "GS-CONT-03-ESC",
    "consultas_groq": 2,
-   "tokens": 4207,
-   "latencia_ms": 24073
+   "tokens": 4255,
+   "latencia_ms": 12050
   },
   {
    "id": "GS-CONT-04",
    "consultas_groq": 2,
-   "tokens": 4152,
-   "latencia_ms": 33217
+   "tokens": 4177,
+   "latencia_ms": 25163
   },
   {
    "id": "GS-CONT-05",
    "consultas_groq": 2,
-   "tokens": 4251,
-   "latencia_ms": 10573
+   "tokens": 4307,
+   "latencia_ms": 28629
   },
   {
    "id": "GS-CONT-06",
    "consultas_groq": 2,
-   "tokens": 4086,
-   "latencia_ms": 6646
+   "tokens": 4111,
+   "latencia_ms": 32672
   },
   {
    "id": "GS-CONT-07",
    "consultas_groq": 2,
-   "tokens": 4468,
-   "latencia_ms": 15885
+   "tokens": 4486,
+   "latencia_ms": 32320
   },
   {
    "id": "GS-CONT-07-ESC",
    "consultas_groq": 2,
-   "tokens": 4471,
-   "latencia_ms": 47415
+   "tokens": 4489,
+   "latencia_ms": 33967
   },
   {
    "id": "GS-NDA-01",
    "consultas_groq": 2,
-   "tokens": 3208,
-   "latencia_ms": 37389
+   "tokens": 3311,
+   "latencia_ms": 23408
   },
   {
    "id": "GS-NDA-01-ESC",
    "consultas_groq": 2,
-   "tokens": 3200,
-   "latencia_ms": 7240
+   "tokens": 3303,
+   "latencia_ms": 22578
   },
   {
    "id": "GS-NDA-02",
    "consultas_groq": 2,
-   "tokens": 3165,
-   "latencia_ms": 10460
+   "tokens": 3253,
+   "latencia_ms": 19970
   },
   {
    "id": "GS-NDA-03",
    "consultas_groq": 2,
-   "tokens": 3109,
-   "latencia_ms": 2542
+   "tokens": 3153,
+   "latencia_ms": 4483
   },
   {
    "id": "GS-POL-01",
    "consultas_groq": 2,
-   "tokens": 2569,
-   "latencia_ms": 9746
+   "tokens": 2698,
+   "latencia_ms": 33346
   },
   {
    "id": "GS-POL-01-ESC",
    "consultas_groq": 2,
-   "tokens": 2581,
-   "latencia_ms": 4090
+   "tokens": 2662,
+   "latencia_ms": 6485
   },
   {
    "id": "GS-POL-02",
    "consultas_groq": 2,
-   "tokens": 2571,
-   "latencia_ms": 2595
+   "tokens": 2700,
+   "latencia_ms": 11022
   },
   {
    "id": "GS-LIC-01",
    "consultas_groq": 2,
-   "tokens": 2339,
-   "latencia_ms": 1392
+   "tokens": 2420,
+   "latencia_ms": 6786
   }
  ],
  "casos": [
@@ -3806,7 +3806,7 @@
      },
      {
       "nombre": "María Elena Ruiz Soto",
-      "cargo": null
+      "cargo": "Apoderado"
      }
     ],
     "conteo": {
@@ -3820,7 +3820,7 @@
     },
     "cargo_correcto": [
      true,
-     false
+     true
     ]
    },
    "cer": null
@@ -3945,7 +3945,7 @@
      },
      {
       "nombre": "María Elena Ruiz Soto",
-      "cargo": null
+      "cargo": "Apoderado"
      }
     ],
     "conteo": {
@@ -3959,7 +3959,7 @@
     },
     "cargo_correcto": [
      true,
-     false
+     true
     ]
    },
    "cer": 0.0051
@@ -4084,7 +4084,7 @@
      },
      {
       "nombre": "María Elena Ruiz Soto",
-      "cargo": null
+      "cargo": "Apoderado"
      }
     ],
     "conteo": {
@@ -4098,7 +4098,7 @@
     },
     "cargo_correcto": [
      true,
-     false
+     true
     ]
    },
    "cer": null
@@ -4223,7 +4223,7 @@
      },
      {
       "nombre": "María Elena Ruiz Soto",
-      "cargo": null
+      "cargo": "Apoderado"
      }
     ],
     "conteo": {
@@ -4237,7 +4237,7 @@
     },
     "cargo_correcto": [
      true,
-     false
+     true
     ]
    },
    "cer": null
@@ -4362,7 +4362,7 @@
      },
      {
       "nombre": "María Elena Ruiz Soto",
-      "cargo": null
+      "cargo": "Apoderado"
      }
     ],
     "conteo": {
@@ -4376,7 +4376,7 @@
     },
     "cargo_correcto": [
      true,
-     false
+     true
     ]
    },
    "cer": 0.0046
@@ -5993,7 +5993,7 @@
    "elementos": {
     "RSC-01-CONT-OBJ": {
      "presente_esperado": false,
-     "resultado": "NO_VERIFICABLE",
+     "resultado": "NO_LOCALIZADO",
      "presente_dictaminado": false,
      "cita_anclada": null
     },
@@ -6887,7 +6887,7 @@
    "elementos": {
     "RSC-01-NDA-NODIV": {
      "presente_esperado": false,
-     "resultado": "NO_VERIFICABLE",
+     "resultado": "NO_LOCALIZADO",
      "presente_dictaminado": false,
      "cita_anclada": null
     },

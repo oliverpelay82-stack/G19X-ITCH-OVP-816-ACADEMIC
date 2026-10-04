@@ -1,0 +1,550 @@
+{
+  "etiqueta": "verif_expresa",
+  "bateria": "extensa",
+  "modo": "grabar",
+  "ejecutado_en": "2026-10-04T15:24:54+00:00",
+  "entorno": {
+    "modelo": "qwen/qwen3.8-27b",
+    "version_lectura": "n3-3.3|tesseract-5.4.0.20240606|spa|300dpi|sin-sellos",
+    "ocr_workers": 8,
+    "gold_standard_sha256": "6354ef9b7b7bd923029f8a1430604ddbf22cfc431a680db2c9f2b7b163284978",
+    "casete": "chat.json",
+    "fecha_referencia": "2026-09-30",
+    "python": "3.12.10",
+    "sistema": "Windows-11-10.0.26300-SP0",
+    "procesador": "AMD64 Family 23 Model 24 Stepping 1, AuthenticAMD"
+  },
+  "resumen": {
+    "turnos": 8,
+    "tokens_promedio": 866.8,
+    "tokens_promedio_con_modelo": 1733.5,
+    "prompt_promedio": 823.9,
+    "completion_promedio": 42.9,
+    "tokens_totales": 6934,
+    "turnos_por_minuto": 9.23,
+    "sin_modelo": 4,
+    "latencia_p50_ms": 256.0,
+    "latencia_p95_ms": 2271.7000000000003,
+    "aciertos": 8,
+    "exactitud": 1.0,
+    "exactitud_ic95": [
+      0.6755843804891231,
+      1.0
+    ],
+    "citas": 9,
+    "citas_verificadas": 9,
+    "proporcion_citas_verificadas": 1.0
+  },
+  "por_categoria": {
+    "FACTUAL": {
+      "turnos": 2,
+      "tokens_promedio": 1488.5,
+      "tokens_promedio_con_modelo": 2977.0,
+      "prompt_promedio": 1437.5,
+      "completion_promedio": 51.0,
+      "tokens_totales": 2977,
+      "turnos_por_minuto": 5.37,
+      "sin_modelo": 1,
+      "latencia_p50_ms": 1316.5,
+      "latencia_p95_ms": 2484.25,
+      "aciertos": 2,
+      "exactitud": 1.0,
+      "exactitud_ic95": [
+        0.34237195288961925,
+        1.0
+      ],
+      "citas": 3,
+      "citas_verificadas": 3,
+      "proporcion_citas_verificadas": 1.0
+    },
+    "INTERPRETATIVA": {
+      "turnos": 1,
+      "tokens_promedio": 1341.0,
+      "tokens_promedio_con_modelo": 1341.0,
+      "prompt_promedio": 1264.0,
+      "completion_promedio": 77.0,
+      "tokens_totales": 1341,
+      "turnos_por_minuto": 5.97,
+      "sin_modelo": 0,
+      "latencia_p50_ms": 1636.0,
+      "latencia_p95_ms": 1636.0,
+      "aciertos": 1,
+      "exactitud": 1.0,
+      "exactitud_ic95": [
+        0.20654329147389294,
+        1.0
+      ],
+      "citas": 1,
+      "citas_verificadas": 1,
+      "proporcion_citas_verificadas": 1.0
+    },
+    "LOCALIZACION": {
+      "turnos": 3,
+      "tokens_promedio": 872.0,
+      "tokens_promedio_con_modelo": 1308.0,
+      "prompt_promedio": 817.3,
+      "completion_promedio": 54.7,
+      "tokens_totales": 2616,
+      "turnos_por_minuto": 9.17,
+      "sin_modelo": 1,
+      "latencia_p50_ms": 464.0,
+      "latencia_p95_ms": 632.3,
+      "aciertos": 3,
+      "exactitud": 1.0,
+      "exactitud_ic95": [
+        0.43849391955098227,
+        1.0
+      ],
+      "citas": 4,
+      "citas_verificadas": 4,
+      "proporcion_citas_verificadas": 1.0
+    },
+    "SUGERIDA": {
+      "turnos": 2,
+      "tokens_promedio": 0.0,
+      "tokens_promedio_con_modelo": 0,
+      "prompt_promedio": 0.0,
+      "completion_promedio": 0.0,
+      "tokens_totales": 0,
+      "turnos_por_minuto": null,
+      "sin_modelo": 2,
+      "latencia_p50_ms": 23.0,
+      "latencia_p95_ms": 27.5,
+      "aciertos": 2,
+      "exactitud": 1.0,
+      "exactitud_ic95": [
+        0.34237195288961925,
+        1.0
+      ],
+      "citas": 1,
+      "citas_verificadas": 1,
+      "proporcion_citas_verificadas": 1.0
+    }
+  },
+  "sueltas": {
+    "turnos": 8,
+    "tokens_promedio": 866.8,
+    "tokens_promedio_con_modelo": 1733.5,
+    "prompt_promedio": 823.9,
+    "completion_promedio": 42.9,
+    "tokens_totales": 6934,
+    "turnos_por_minuto": 9.23,
+    "sin_modelo": 4,
+    "latencia_p50_ms": 256.0,
+    "latencia_p95_ms": 2271.7000000000003,
+    "aciertos": 8,
+    "exactitud": 1.0,
+    "exactitud_ic95": [
+      0.6755843804891231,
+      1.0
+    ],
+    "citas": 9,
+    "citas_verificadas": 9,
+    "proporcion_citas_verificadas": 1.0
+  },
+  "conversaciones": {
+    "turnos": 0,
+    "tokens_promedio": null,
+    "tokens_promedio_con_modelo": 0,
+    "prompt_promedio": null,
+    "completion_promedio": null,
+    "tokens_totales": 0,
+    "turnos_por_minuto": null,
+    "sin_modelo": 0,
+    "latencia_p50_ms": null,
+    "latencia_p95_ms": null,
+    "aciertos": 0,
+    "exactitud": null,
+    "exactitud_ic95": null,
+    "citas": 0,
+    "citas_verificadas": 0,
+    "proporcion_citas_verificadas": null
+  },
+  "repeticion": {
+    "turnos": 8,
+    "tokens_promedio": 0.0,
+    "tokens_promedio_con_modelo": 0,
+    "prompt_promedio": 0.0,
+    "completion_promedio": 0.0,
+    "tokens_totales": 0,
+    "turnos_por_minuto": null,
+    "sin_modelo": 8,
+    "latencia_p50_ms": 45.5,
+    "latencia_p95_ms": 56.2,
+    "aciertos": 8,
+    "exactitud": 1.0,
+    "exactitud_ic95": [
+      0.6755843804891231,
+      1.0
+    ],
+    "citas": 9,
+    "citas_verificadas": 9,
+    "proporcion_citas_verificadas": 1.0
+  },
+  "auditorias": [
+    {
+      "documento": "GS-CONT-EXT-ESC",
+      "estatus": "EN_REVISION",
+      "estatus_esperado": "EN_REVISION",
+      "consultas_groq": 2,
+      "tokens": {
+        "prompt_tokens": 6276,
+        "completion_tokens": 861,
+        "total_tokens": 7137
+      },
+      "latencia_groq_ms": [
+        1952,
+        2630
+      ],
+      "latencia_endpoint_ms": 22264
+    }
+  ],
+  "turnos": [
+    {
+      "documento": "GS-CONT-EXT-ESC",
+      "pregunta": "¿Qué le falta a este documento?",
+      "categoria": "SUGERIDA",
+      "ruta_prevista": "T0",
+      "turnos_previos": 0,
+      "respuesta": "Según el dictamen del motor, el documento está **en revisión** (pendiente de ratificación).\nSe localizaron, con su cita, todos los elementos que el catálogo exige a este tipo de documento: Objeto del contrato, Vigencia y terminación anticipada, Penalización por incumplimiento, Confidencialidad y no divulgación, Firmas de las partes, Datos del firmante y representación legal.\nQueda pendiente que el analista confirme que el **firmante** corresponde con un **apoderado** con facultades vigentes en el poder notarial o el acta constitutiva del expediente.",
+      "acierta": true,
+      "citas": 0,
+      "citas_verificadas": 0,
+      "origen_respuesta": "DATOS_DEL_DICTAMEN",
+      "caracteres_de_contexto": 0,
+      "consultas_groq": 0,
+      "tokens": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "total_tokens": 0
+      },
+      "latencia_groq_ms": [],
+      "latencia_endpoint_ms": 28
+    },
+    {
+      "documento": "GS-CONT-EXT-ESC",
+      "pregunta": "Resume los datos clave de este archivo",
+      "categoria": "SUGERIDA",
+      "ruta_prevista": "T0",
+      "turnos_previos": 0,
+      "respuesta": "Es un(a) **contrato** a nombre de **PLURIONE S.A. DE C.V.** con RFC **PLU180514AB3**.\n- Fecha de emisión: **2 de marzo de 2026**.\n- Firmantes: **María Elena Ruiz Soto** (Apoderada legal, PLURIONE S.A. DE C.V.); **Jorge Alberto Treviño Garza** (Representante legal, SERVICIOS INTEGRALES DEL NORTE S.A. DE C.V.).\n- Elementos exigidos localizados: 6 de 6.\n- Dictamen del motor: **en revisión** (pendiente de ratificación).\nTitular según el documento: «Contrato que celebran, por una parte, PLURIONE S.A. DE C.V., con RFC PLU180514AB3, en lo».",
+      "acierta": true,
+      "citas": 1,
+      "citas_verificadas": 1,
+      "origen_respuesta": "DATOS_DEL_DICTAMEN",
+      "caracteres_de_contexto": 0,
+      "consultas_groq": 0,
+      "tokens": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "total_tokens": 0
+      },
+      "latencia_groq_ms": [],
+      "latencia_endpoint_ms": 18
+    },
+    {
+      "documento": "GS-CONT-EXT-ESC",
+      "pregunta": "¿Quiénes firman el contrato?",
+      "categoria": "FACTUAL",
+      "ruta_prevista": "T0",
+      "turnos_previos": 0,
+      "respuesta": "Según el dictamen del motor, firman el documento:\n- **María Elena Ruiz Soto**, Apoderada legal (PLURIONE S.A. DE C.V.): «María Elena Ruiz Soto, Apoderada legal»\n- **Jorge Alberto Treviño Garza**, Representante legal (SERVICIOS INTEGRALES DEL NORTE S.A. DE C.V.): «Jorge Alberto Treviño Garza, Representante legal»",
+      "acierta": true,
+      "citas": 2,
+      "citas_verificadas": 2,
+      "origen_respuesta": "DATOS_DEL_DICTAMEN",
+      "caracteres_de_contexto": 0,
+      "consultas_groq": 0,
+      "tokens": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "total_tokens": 0
+      },
+      "latencia_groq_ms": [],
+      "latencia_endpoint_ms": 19
+    },
+    {
+      "documento": "GS-CONT-EXT-ESC",
+      "pregunta": "¿Hasta cuándo está vigente el contrato?",
+      "categoria": "FACTUAL",
+      "ruta_prevista": "T0",
+      "turnos_previos": 0,
+      "respuesta": "El contrato está vigente del **2 de marzo de 2026 al 1 de marzo de 2027**, con posibilidad de renovación por periodos iguales mediante convenio escrito.\n\nEsto se sustenta en la cláusula sexta, que establece: «El presente contrato estará vigente del 2 de marzo de 2026 al 1 de marzo de 2027 y podrá renovarse por periodos iguales mediante convenio por escrito firmado con treinta días de anticipación».",
+      "acierta": true,
+      "citas": 1,
+      "citas_verificadas": 1,
+      "origen_respuesta": "MODELO",
+      "caracteres_de_contexto": 6428,
+      "consultas_groq": 1,
+      "tokens": {
+        "prompt_tokens": 2875,
+        "completion_tokens": 102,
+        "total_tokens": 2977
+      },
+      "latencia_groq_ms": [
+        2544
+      ],
+      "latencia_endpoint_ms": 2614
+    },
+    {
+      "documento": "GS-CONT-EXT-ESC",
+      "pregunta": "¿Cuál es el monto mensual total de los servicios?",
+      "categoria": "LOCALIZACION",
+      "ruta_prevista": "T1",
+      "turnos_previos": 0,
+      "respuesta": "Pasaje del documento, página 17:\n«Monto mensual total de los servicios: $185,000.00 (ciento ochenta y cinco mil pesos 00/100 M.N.)»\nEs el texto literal del documento, sin interpretación; la lectura corresponde al analista.",
+      "acierta": true,
+      "citas": 1,
+      "citas_verificadas": 1,
+      "origen_respuesta": "PASAJE_DEL_DOCUMENTO",
+      "caracteres_de_contexto": 0,
+      "consultas_groq": 0,
+      "tokens": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "total_tokens": 0
+      },
+      "latencia_groq_ms": [],
+      "latencia_endpoint_ms": 48
+    },
+    {
+      "documento": "GS-CONT-EXT-ESC",
+      "pregunta": "¿Cuál es el tiempo de respuesta de la mesa de ayuda para un incidente de prioridad crítica?",
+      "categoria": "LOCALIZACION",
+      "ruta_prevista": "T1",
+      "turnos_previos": 0,
+      "respuesta": "El tiempo de respuesta para un incidente de prioridad crítica es de **15 minutos**.\n\nEsto se sustenta en el texto: «Prioridad Crítica: tiempo de respuesta de 15 minutos; tiempo de solución de 4 horas».",
+      "acierta": true,
+      "citas": 1,
+      "citas_verificadas": 1,
+      "origen_respuesta": "MODELO",
+      "caracteres_de_contexto": 2359,
+      "consultas_groq": 1,
+      "tokens": {
+        "prompt_tokens": 1207,
+        "completion_tokens": 50,
+        "total_tokens": 1257
+      },
+      "latencia_groq_ms": [
+        392
+      ],
+      "latencia_endpoint_ms": 464
+    },
+    {
+      "documento": "GS-CONT-EXT-ESC",
+      "pregunta": "¿Qué deductiva se aplica si la disponibilidad de los servidores baja del 99.5 %?",
+      "categoria": "LOCALIZACION",
+      "ruta_prevista": "T1",
+      "turnos_previos": 0,
+      "respuesta": "Si la disponibilidad de los servidores baja del **99.5 %**, se aplica una deductiva del **5 %** si el valor queda **hasta 99.0 %**, o del **10 %** si es **menor a 99.0 %**.\n\nEl documento lo establece literalmente: «Disponibilidad de los servidores menor a 99.5 % y hasta 99.0 %: cinco por ciento» y «Disponibilidad de los servidores menor a 99.0 %: diez por ciento».",
+      "acierta": true,
+      "citas": 2,
+      "citas_verificadas": 2,
+      "origen_respuesta": "MODELO",
+      "caracteres_de_contexto": 2475,
+      "consultas_groq": 1,
+      "tokens": {
+        "prompt_tokens": 1245,
+        "completion_tokens": 114,
+        "total_tokens": 1359
+      },
+      "latencia_groq_ms": [
+        578
+      ],
+      "latencia_endpoint_ms": 651
+    },
+    {
+      "documento": "GS-CONT-EXT-ESC",
+      "pregunta": "¿Puede el prestador subcontratar los servicios?",
+      "categoria": "INTERPRETATIVA",
+      "ruta_prevista": "MODELO",
+      "turnos_previos": 0,
+      "respuesta": "**No**, el prestador no puede subcontratar total ni parcialmente los servicios sin la **autorización previa y por escrito** del cliente.\n\nEl documento lo establece explícitamente en la cláusula DÉCIMA SÉPTIMA: «EL PRESTADOR no podrá subcontratar total ni parcialmente los servicios sin la autorización previa y por escrito de EL CLIENTE».",
+      "acierta": true,
+      "citas": 1,
+      "citas_verificadas": 1,
+      "origen_respuesta": "MODELO",
+      "caracteres_de_contexto": 2692,
+      "consultas_groq": 1,
+      "tokens": {
+        "prompt_tokens": 1264,
+        "completion_tokens": 77,
+        "total_tokens": 1341
+      },
+      "latencia_groq_ms": [
+        1565
+      ],
+      "latencia_endpoint_ms": 1636
+    }
+  ],
+  "turnos_repeticion": [
+    {
+      "documento": "GS-CONT-EXT-ESC",
+      "pregunta": "que le falta a este documento",
+      "categoria": "SUGERIDA",
+      "ruta_prevista": "T0",
+      "turnos_previos": 0,
+      "respuesta": "Según el dictamen del motor, el documento está **en revisión** (pendiente de ratificación).\nSe localizaron, con su cita, todos los elementos que el catálogo exige a este tipo de documento: Objeto del contrato, Vigencia y terminación anticipada, Penalización por incumplimiento, Confidencialidad y no divulgación, Firmas de las partes, Datos del firmante y representación legal.\nQueda pendiente que el analista confirme que el **firmante** corresponde con un **apoderado** con facultades vigentes en el poder notarial o el acta constitutiva del expediente.",
+      "acierta": true,
+      "citas": 0,
+      "citas_verificadas": 0,
+      "origen_respuesta": "DATOS_DEL_DICTAMEN",
+      "caracteres_de_contexto": 0,
+      "consultas_groq": 0,
+      "tokens": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "total_tokens": 0
+      },
+      "latencia_groq_ms": [],
+      "latencia_endpoint_ms": 24
+    },
+    {
+      "documento": "GS-CONT-EXT-ESC",
+      "pregunta": "resume los datos clave de este archivo",
+      "categoria": "SUGERIDA",
+      "ruta_prevista": "T0",
+      "turnos_previos": 0,
+      "respuesta": "Es un(a) **contrato** a nombre de **PLURIONE S.A. DE C.V.** con RFC **PLU180514AB3**.\n- Fecha de emisión: **2 de marzo de 2026**.\n- Firmantes: **María Elena Ruiz Soto** (Apoderada legal, PLURIONE S.A. DE C.V.); **Jorge Alberto Treviño Garza** (Representante legal, SERVICIOS INTEGRALES DEL NORTE S.A. DE C.V.).\n- Elementos exigidos localizados: 6 de 6.\n- Dictamen del motor: **en revisión** (pendiente de ratificación).\nTitular según el documento: «Contrato que celebran, por una parte, PLURIONE S.A. DE C.V., con RFC PLU180514AB3, en lo».",
+      "acierta": true,
+      "citas": 1,
+      "citas_verificadas": 1,
+      "origen_respuesta": "DATOS_DEL_DICTAMEN",
+      "caracteres_de_contexto": 0,
+      "consultas_groq": 0,
+      "tokens": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "total_tokens": 0
+      },
+      "latencia_groq_ms": [],
+      "latencia_endpoint_ms": 18
+    },
+    {
+      "documento": "GS-CONT-EXT-ESC",
+      "pregunta": "quienes firman el contrato",
+      "categoria": "FACTUAL",
+      "ruta_prevista": "T0",
+      "turnos_previos": 0,
+      "respuesta": "Según el dictamen del motor, firman el documento:\n- **María Elena Ruiz Soto**, Apoderada legal (PLURIONE S.A. DE C.V.): «María Elena Ruiz Soto, Apoderada legal»\n- **Jorge Alberto Treviño Garza**, Representante legal (SERVICIOS INTEGRALES DEL NORTE S.A. DE C.V.): «Jorge Alberto Treviño Garza, Representante legal»",
+      "acierta": true,
+      "citas": 2,
+      "citas_verificadas": 2,
+      "origen_respuesta": "DATOS_DEL_DICTAMEN",
+      "caracteres_de_contexto": 0,
+      "consultas_groq": 0,
+      "tokens": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "total_tokens": 0
+      },
+      "latencia_groq_ms": [],
+      "latencia_endpoint_ms": 24
+    },
+    {
+      "documento": "GS-CONT-EXT-ESC",
+      "pregunta": "hasta cuando esta vigente el contrato",
+      "categoria": "FACTUAL",
+      "ruta_prevista": "T0",
+      "turnos_previos": 0,
+      "respuesta": "El contrato está vigente del **2 de marzo de 2026 al 1 de marzo de 2027**, con posibilidad de renovación por periodos iguales mediante convenio escrito.\n\nEsto se sustenta en la cláusula sexta, que establece: «El presente contrato estará vigente del 2 de marzo de 2026 al 1 de marzo de 2027 y podrá renovarse por periodos iguales mediante convenio por escrito firmado con treinta días de anticipación».",
+      "acierta": true,
+      "citas": 1,
+      "citas_verificadas": 1,
+      "origen_respuesta": "CACHE",
+      "caracteres_de_contexto": 6428,
+      "consultas_groq": 0,
+      "tokens": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "total_tokens": 0
+      },
+      "latencia_groq_ms": [],
+      "latencia_endpoint_ms": 49
+    },
+    {
+      "documento": "GS-CONT-EXT-ESC",
+      "pregunta": "cual es el monto mensual total de los servicios",
+      "categoria": "LOCALIZACION",
+      "ruta_prevista": "T1",
+      "turnos_previos": 0,
+      "respuesta": "Pasaje del documento, página 17:\n«Monto mensual total de los servicios: $185,000.00 (ciento ochenta y cinco mil pesos 00/100 M.N.)»\nEs el texto literal del documento, sin interpretación; la lectura corresponde al analista.",
+      "acierta": true,
+      "citas": 1,
+      "citas_verificadas": 1,
+      "origen_respuesta": "PASAJE_DEL_DOCUMENTO",
+      "caracteres_de_contexto": 0,
+      "consultas_groq": 0,
+      "tokens": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "total_tokens": 0
+      },
+      "latencia_groq_ms": [],
+      "latencia_endpoint_ms": 48
+    },
+    {
+      "documento": "GS-CONT-EXT-ESC",
+      "pregunta": "cual es el tiempo de respuesta de la mesa de ayuda para un incidente de prioridad critica",
+      "categoria": "LOCALIZACION",
+      "ruta_prevista": "T1",
+      "turnos_previos": 0,
+      "respuesta": "El tiempo de respuesta para un incidente de prioridad crítica es de **15 minutos**.\n\nEsto se sustenta en el texto: «Prioridad Crítica: tiempo de respuesta de 15 minutos; tiempo de solución de 4 horas».",
+      "acierta": true,
+      "citas": 1,
+      "citas_verificadas": 1,
+      "origen_respuesta": "CACHE",
+      "caracteres_de_contexto": 2359,
+      "consultas_groq": 0,
+      "tokens": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "total_tokens": 0
+      },
+      "latencia_groq_ms": [],
+      "latencia_endpoint_ms": 59
+    },
+    {
+      "documento": "GS-CONT-EXT-ESC",
+      "pregunta": "que deductiva se aplica si la disponibilidad de los servidores baja del 99.5 %",
+      "categoria": "LOCALIZACION",
+      "ruta_prevista": "T1",
+      "turnos_previos": 0,
+      "respuesta": "Si la disponibilidad de los servidores baja del **99.5 %**, se aplica una deductiva del **5 %** si el valor queda **hasta 99.0 %**, o del **10 %** si es **menor a 99.0 %**.\n\nEl documento lo establece literalmente: «Disponibilidad de los servidores menor a 99.5 % y hasta 99.0 %: cinco por ciento» y «Disponibilidad de los servidores menor a 99.0 %: diez por ciento».",
+      "acierta": true,
+      "citas": 2,
+      "citas_verificadas": 2,
+      "origen_respuesta": "CACHE",
+      "caracteres_de_contexto": 2475,
+      "consultas_groq": 0,
+      "tokens": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "total_tokens": 0
+      },
+      "latencia_groq_ms": [],
+      "latencia_endpoint_ms": 51
+    },
+    {
+      "documento": "GS-CONT-EXT-ESC",
+      "pregunta": "puede el prestador subcontratar los servicios",
+      "categoria": "INTERPRETATIVA",
+      "ruta_prevista": "MODELO",
+      "turnos_previos": 0,
+      "respuesta": "**No**, el prestador no puede subcontratar total ni parcialmente los servicios sin la **autorización previa y por escrito** del cliente.\n\nEl documento lo establece explícitamente en la cláusula DÉCIMA SÉPTIMA: «EL PRESTADOR no podrá subcontratar total ni parcialmente los servicios sin la autorización previa y por escrito de EL CLIENTE».",
+      "acierta": true,
+      "citas": 1,
+      "citas_verificadas": 1,
+      "origen_respuesta": "CACHE",
+      "caracteres_de_contexto": 2692,
+      "consultas_groq": 0,
+      "tokens": {
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "total_tokens": 0
+      },
+      "latencia_groq_ms": [],
+      "latencia_endpoint_ms": 43
+    }
+  ]
+}

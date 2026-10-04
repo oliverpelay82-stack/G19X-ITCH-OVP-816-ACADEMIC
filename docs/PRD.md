@@ -11,7 +11,7 @@
 | Desarrollo (Scrum Master / Desarrollador) | Oliver Villanueva Pelay, residente (No. de control 21520500) |
 | Stakeholder evaluador | Edgar Loheffelmman (PluriOne) |
 | Asesor interno | Dr. Wilfrido Campos Francisco |
-| Versión del documento | 3.2 — 3 de octubre de 2026 (3.2: auditoría técnica y OCR en flujo continuo, §21.9; 3.1: depuración del alcance, §21.8; 3.0: RNF-10, respaldos; 2.9: RF-09, corrección de datos y RF-02; 2.8: Fase B del plan visual; 2.7: gráficas, Fase A; 2.6: P7 implementado; 2.5: P7 documentado; 2.4: P6; 2.3: P5 implementado; 2.2: P5 documentado; 2.1: revisión de requerimientos; 2.0: correcciones de la documentación; 1.9: revisión visual del frontend; 1.8: chat documental eficiente; 1.7: revisión del frontend; 1.6: índice de cumplimiento; 1.5: P3; 1.4: P2; 1.3: P1; 1.2: 28 de septiembre; 1.0: 27 de septiembre de 2026) |
+| Versión del documento | 3.3 — 4 de octubre de 2026 (3.3: PLUS-23, elementos expresos y cargo del apoderado, §21.9; 3.2: auditoría técnica y OCR en flujo continuo, §21.9; 3.1: depuración del alcance, §21.8; 3.0: RNF-10, respaldos; 2.9: RF-09, corrección de datos y RF-02; 2.8: Fase B del plan visual; 2.7: gráficas, Fase A; 2.6: P7 implementado; 2.5: P7 documentado; 2.4: P6; 2.3: P5 implementado; 2.2: P5 documentado; 2.1: revisión de requerimientos; 2.0: correcciones de la documentación; 1.9: revisión visual del frontend; 1.8: chat documental eficiente; 1.7: revisión del frontend; 1.6: índice de cumplimiento; 1.5: P3; 1.4: P2; 1.3: P1; 1.2: 28 de septiembre; 1.0: 27 de septiembre de 2026) |
 | Estado del producto | En desarrollo: Sprints 1 y 2 implementados, Sprint 3 implementado parcialmente, Sprint 4 implementado salvo HU-31, Módulo 7 pendiente |
 | Documento hermano | [MRD.md](MRD.md) — requerimientos de mercado |
 
@@ -1103,7 +1103,8 @@ Antes de la entrega, el residente pidió revisar todo el motor contra la documen
 En la misma revisión se corrigió lo que una instalación limpia en Docker hacía visible: la auditoría sin clave del proveedor de IA respondía un error interno (ahora 503 con la instrucción), los servicios no tenían `.dockerignore`, las dependencias no tenían versión fija y un aviso usaba nombres internos.
 
 ---
-### 21.9 Auditoría técnica del código (03/10/2026)
+
+### 21.9 Auditoría técnica del código (03/10/2026)
 
 El residente pidió una auditoría del repositorio (código sin uso, redundancias, dependencias ocultas y rendimiento de la IA y del OCR) y aprobó tres pasos. Ninguno agrega funciones ni cambia el contrato de la API.
 
@@ -1134,6 +1135,11 @@ Medición del Nivel 3 en frío, mismas condiciones del equipo y 5 corridas ([`re
 - **Gold Standard:** solo GS-ACTA-04 hace la consulta («Poder General», 504 tokens grabados); los 42 casos siguen en 100 % de estatus.
 
 Evidencia previa: con el modelo real, un contrato, un NDA y una constancia fiscal registrados como Poder notarial se clasificaron con su tipo real (3 de 3): el modelo no recibe el tipo esperado y no se sesga por él, así que no se modificaron sus instrucciones (la caché de inferencias y las casetes del Gold Standard siguen válidas). Pruebas: `test_discrepancia_tipo` (ai) y `test_tipos_documento_nuevos` (core). Respaldo: DOC-01 Cap. I; DOC-05, Nivel 5 (revisión humana); RNF-08.
+
+**Elementos expresos y cargo del apoderado (04/10/2026, aprobado por el residente).** Dos pendientes de la validación cuantitativa (§10.2 de `VALIDACION_CUANTITATIVA.md`):
+
+- **Verificación de contenido (RSC-01, RF-11, HU-19):** la regla 1 de las instrucciones de verificación exige que el elemento esté pactado o enunciado de forma expresa; una mención de paso, una definición o un antecedente no lo prueban, y si el modelo tendría que deducirlo lo marca como no presente. Antes, dos omisiones del Gold Standard se daban por cumplidas y solo las corregía la salvaguarda `declara_deduccion`; ahora el propio modelo las niega y la salvaguarda queda como segunda línea. Cambia `version_instrucciones` (los dictámenes nuevos lo registran, P5) y se regrabaron las verificaciones de los casetes; la extracción no cambió. Métricas: 0 falsas conformidades y 0 omisiones indebidas, estatus 42/42.
+- **Cargo del apoderado (RSC-02, HU-23):** un acta que nombra a la apoderada solo por el poder que le confiere («Se otorga a … poder general…») dejaba su cargo vacío. Si el modelo no da cargo y la cita verificada de esa persona le confiere un poder, el cargo es «Apoderado». No cambia las instrucciones ni el cotejo RN-03, que usa nombre y rol. Cargo 45/45 en el Gold Standard (antes 40/45).
 
 **Compresión de las respuestas (03/10/2026, a pedido del residente).** El core y el rules-service comprimen con GZip las respuestas JSON de más de 1 KB, como la lista de expedientes con su evaluación, que el panel consulta cada 15 s. Los originales de la bóveda y los reportes no se comprimen de nuevo: ya van comprimidos. No se agregó una caché de las métricas de Reportes, porque no existe ese endpoint: Reportes calcula todo con `GET /expedientes`, el mismo que usan Expedientes y Alertas. Cachearlo mostraría el semáforo anterior tras una carga, auditoría o ratificación, y retrasaría el recálculo de la vigencia (RN-02) y el registro de sus cambios en la bitácora. Respaldo: RNF-01; ISO/IEC 25010 (eficiencia).
 

@@ -1,5 +1,116 @@
 {
  "entradas": {
+  "006367a8c057387e5c41ba6764d649c15ec556065fd7b6b1a76ccce07e10f42d": {
+   "grabado_en": "2026-10-04T15:16:24+00:00",
+   "latencia_ms": 13921,
+   "respuesta": {
+    "verificaciones": [
+     {
+      "cita": "EL PRESTADOR se obliga a prestar a EL CLIENTE los servicios de soporte técnico y mantenimiento de su infraestructura de cómputo descritos en el Anexo A.",
+      "codigo_regla": "RSC-01-CONT-OBJ",
+      "cumple": true,
+      "observacion": "El objeto está definido expresamente en la cláusula primera."
+     },
+     {
+      "cita": null,
+      "codigo_regla": "RSC-01-CONT-VIG",
+      "cumple": false,
+      "observacion": "El documento no establece la vigencia, duración ni el procedimiento de terminación anticipada o rescisión."
+     },
+     {
+      "cita": "EL PRESTADOR pagará a EL CLIENTE una pena convencional equivalente al diez por ciento del monto mensual de la contraprestación por cada mes de incumplimiento.",
+      "codigo_regla": "RSC-01-CONT-PEN",
+      "cumple": true,
+      "observacion": "Se establece una pena convencional en la cláusula cuarta."
+     },
+     {
+      "cita": "Las partes se obligan recíprocamente a no divulgar la información confidencial que reciban con motivo de este contrato, durante su vigencia y dos años posteriores a su terminación.",
+      "codigo_regla": "RSC-01-CONT-CONF",
+      "cumple": true,
+      "observacion": "Existe una cláusula expresa de confidencialidad."
+     },
+     {
+      "cita": "EL CLIENTE PLURIONE S.A. DE C.V. María Elena Ruiz Soto, Apoderada legal EL PRESTADOR SERVICIOS INTEGRALES DEL NORTE S.A. DE C.V. Jorge Alberto Treviño Garza, Representante legal",
+      "codigo_regla": "RSC-01-CONT-FIRM",
+      "cumple": true,
+      "observacion": "Se identifican las partes y se incluye el apartado de firmas de sus representantes."
+     }
+    ]
+   },
+   "tipo": "json",
+   "uso": {
+    "completion_tokens": 472,
+    "desde_cache": false,
+    "prompt_tokens": 1253,
+    "total_tokens": 1725
+   }
+  },
+  "05c50e63a3f24aa16d6904f315a9ea5a941064ce7844c9afd1b15070ba2800f2": {
+   "grabado_en": "2026-10-04T15:14:05+00:00",
+   "latencia_ms": 15763,
+   "respuesta": {
+    "verificaciones": [
+     {
+      "cita": "ESCRITURA PÚBLICA NÚMERO 20,117 ... ante mí, Lic. Ernesto Valdivia Cortés, Notario Público número 27",
+      "codigo_regla": "RSC-PODER-NOT",
+      "cumple": true,
+      "observacion": "El documento es una escritura pública ante notario y especifica el número de la misma."
+     },
+     {
+      "cita": "PLURIONE S.A. DE C.V. ... otorga PODER GENERAL a favor de María Elena Ruiz Soto",
+      "codigo_regla": "RSC-PODER-PART",
+      "cumple": true,
+      "observacion": "Se identifican claramente al poderdante (PLURIONE S.A. DE C.V.) y al apoderado (María Elena Ruiz Soto)."
+     },
+     {
+      "cita": null,
+      "codigo_regla": "RSC-PODER-FAC",
+      "cumple": false,
+      "observacion": "El texto no enumera facultades específicas como pleitos y cobranzas, administración o dominio, sino que limita la representación a asuntos encomendados por escrito."
+     }
+    ]
+   },
+   "tipo": "json",
+   "uso": {
+    "completion_tokens": 290,
+    "desde_cache": false,
+    "prompt_tokens": 809,
+    "total_tokens": 1099
+   }
+  },
+  "079a462b37b0ec2f245011b9dbe7c42c12189dffbb49653500bfcedddf467b36": {
+   "grabado_en": "2026-10-04T15:12:29+00:00",
+   "latencia_ms": 909,
+   "respuesta": {
+    "verificaciones": [
+     {
+      "cita": "ESCRITURA PÚBLICA NÚMERO 12,845 ... ante mí, Lic. Ernesto Valdivia Cortés, Notario Público número 27",
+      "codigo_regla": "RSC-ACTA-ESCR",
+      "cumple": true,
+      "observacion": "El documento identifica expresamente el número de escritura y al notario público."
+     },
+     {
+      "cita": "inscrito en el Registro Público de Comercio de Chihuahua bajo el Folio Mercantil Electrónico número 48213\"1",
+      "codigo_regla": "RSC-ACTA-RPC",
+      "cumple": true,
+      "observacion": "Se incluye la constancia de inscripción con el folio mercantil específico."
+     },
+     {
+      "cita": "La administración de la sociedad estará a cargo de un Administrador Único, quien tendrá la representación legal... Se designa como Administrador Único a Héctor Daniel Quiroga Salas.",
+      "codigo_regla": "RSC-ACTA-ADMON",
+      "cumple": true,
+      "observacion": "Se designa el órgano de administración, la persona que lo ejerce y se detallan las facultades de representación."
+     }
+    ]
+   },
+   "tipo": "json",
+   "uso": {
+    "completion_tokens": 304,
+    "desde_cache": false,
+    "prompt_tokens": 1241,
+    "total_tokens": 1545
+   }
+  },
   "0a62775c6e9a2692acd77d4f5964a0823385a0d4b48eed9f3b882ce3de36fc6c": {
    "grabado_en": "2026-10-01T21:17:21+00:00",
    "latencia_ms": 41682,
@@ -43,6 +154,96 @@
     "desde_cache": false,
     "prompt_tokens": 1266,
     "total_tokens": 1854
+   }
+  },
+  "0bbb5212a36b55220377963348f0ecd8e1019e773c298bd42e372604b1dd6dad": {
+   "grabado_en": "2026-10-04T15:18:26+00:00",
+   "latencia_ms": 24638,
+   "respuesta": {
+    "verificaciones": [
+     {
+      "cita": "EL PRESTADOR se obliga a prestar a EL CLIENTE los servicios de soporte técnico y mantenimiento de su infraestructura de cómputo descritos en el Anexo A.",
+      "codigo_regla": "RSC-01-CONT-OBJ",
+      "cumple": true,
+      "observacion": "El objeto está definido expresamente en la cláusula primera."
+     },
+     {
+      "cita": "El presente contrato estará vigente del 2 de marzo de 2026 al 1 de marzo de 2027. Cualquiera de las partes podrá darlo por terminado anticipadamente mediante aviso por escrito con treinta días naturales de anticipación",
+      "codigo_regla": "RSC-01-CONT-VIG",
+      "cumple": true,
+      "observacion": "Se establecen la vigencia y el procedimiento de terminación anticipada en la cláusula tercera."
+     },
+     {
+      "cita": "EL PRESTADOR pagará a EL CLIENTE una pena convencional equivalente al diez por ciento del monto mensual de la contraprestación por cada mes de incumplimiento.",
+      "codigo_regla": "RSC-01-CONT-PEN",
+      "cumple": true,
+      "observacion": "La cláusula quinta establece una pena convencional por incumplimiento."
+     },
+     {
+      "cita": "Las partes se obligan recíprocamente a no divulgar la información confidencial que reciban con motivo de este contrato, durante su vigencia y dos años posteriores a su terminación.",
+      "codigo_regla": "RSC-01-CONT-CONF",
+      "cumple": true,
+      "observacion": "La cláusula cuarta pacta la obligación de confidencialidad."
+     },
+     {
+      "cita": "EL CLIENTE PLURIONE S.A. DE C.V. María Elena Ruiz Soto, Apoderada legal... EL PRESTADOR SERVICIOS INTEGRALES DEL NORTE S.A. DE C.V. Jorge Alberto Treviño Garza, Representante legal",
+      "codigo_regla": "RSC-01-CONT-FIRM",
+      "cumple": true,
+      "observacion": "El documento identifica a las partes y contiene el apartado de firmas de sus representantes al final."
+     }
+    ]
+   },
+   "tipo": "json",
+   "uso": {
+    "completion_tokens": 529,
+    "desde_cache": false,
+    "prompt_tokens": 1343,
+    "total_tokens": 1872
+   }
+  },
+  "0cb99a990d88c8ff557e456db406fc31cd5d7eaf94b53ae4a476fe3971b94503": {
+   "grabado_en": "2026-10-04T15:17:23+00:00",
+   "latencia_ms": 26949,
+   "respuesta": {
+    "verificaciones": [
+     {
+      "cita": "EL PRESTADOR se obliga a prestar a EL CLIENTE los servicios de soporte técnico y mantenimiento de su infraestructura de cómputo descritos en el Anexo A.",
+      "codigo_regla": "RSC-01-CONT-OBJ",
+      "cumple": true,
+      "observacion": "El objeto está definido expresamente en la cláusula primera."
+     },
+     {
+      "cita": "El presente contrato estará vigente del 2 de marzo de 2026 al 1 de marzo de 2027. Cualquiera de las partes podrá darlo por terminado anticipadamente mediante aviso por escrito con treinta días naturales de anticipación",
+      "codigo_regla": "RSC-01-CONT-VIG",
+      "cumple": true,
+      "observacion": "Se establecen la vigencia y el procedimiento de terminación anticipada en la cláusula tercera."
+     },
+     {
+      "cita": "EL PRESTADOR pagará a EL CLIENTE una pena convencional equivalente al diez por ciento del monto mensual de la contraprestación por cada mes de incumplimiento.",
+      "codigo_regla": "RSC-01-CONT-PEN",
+      "cumple": true,
+      "observacion": "La cláusula quinta establece una pena convencional por incumplimiento."
+     },
+     {
+      "cita": "Las partes se obligan recíprocamente a no divulgar la información confidencial que reciban con motivo de este contrato, durante su vigencia y dos años posteriores a su terminación.",
+      "codigo_regla": "RSC-01-CONT-CONF",
+      "cumple": true,
+      "observacion": "La cláusula cuarta pacta la obligación de confidencialidad."
+     },
+     {
+      "cita": null,
+      "codigo_regla": "RSC-01-CONT-FIRM",
+      "cumple": false,
+      "observacion": "El texto identifica a las partes y sus representantes, pero no contiene el apartado de firmas ni las firmas de los representantes."
+     }
+    ]
+   },
+   "tipo": "json",
+   "uso": {
+    "completion_tokens": 480,
+    "desde_cache": false,
+    "prompt_tokens": 1228,
+    "total_tokens": 1708
    }
   },
   "11847985fadd2b36c2aa2e15137195629eb408fdd21d4eef3c516cd583451472": {
@@ -366,6 +567,51 @@
     "total_tokens": 1015
    }
   },
+  "302782e3b09d5312187fec66d87d70159f0b1f38a7ae7bf4b748f93f3483c48d": {
+   "grabado_en": "2026-10-04T15:16:52+00:00",
+   "latencia_ms": 18085,
+   "respuesta": {
+    "verificaciones": [
+     {
+      "cita": null,
+      "codigo_regla": "RSC-01-CONT-OBJ",
+      "cumple": false,
+      "observacion": "El texto menciona genéricamente 'los servicios objeto de este contrato' en la declaración II, pero no describe ni define expresamente qué servicios específicos se prestarán."
+     },
+     {
+      "cita": "El presente contrato estará vigente del 2 de marzo de 2026 al 1 de marzo de 2027. Cualquiera de las partes podrá darlo por terminado anticipadamente mediante aviso por escrito con treinta días naturales de anticipación",
+      "codigo_regla": "RSC-01-CONT-VIG",
+      "cumple": true,
+      "observacion": "Se establece la fecha de inicio y fin, así como el procedimiento para la terminación anticipada."
+     },
+     {
+      "cita": "EL PRESTADOR pagará a EL CLIENTE una pena convencional equivalente al diez por ciento del monto mensual de la contraprestación por cada mes de incumplimiento",
+      "codigo_regla": "RSC-01-CONT-PEN",
+      "cumple": true,
+      "observacion": "Se pacta expresamente una pena convencional por incumplimiento."
+     },
+     {
+      "cita": "Las partes se obligan recíprocamente a no divulgar la información confidencial que reciban con motivo de este contrato, durante su vigencia y dos años posteriores a su terminación",
+      "codigo_regla": "RSC-01-CONT-CONF",
+      "cumple": true,
+      "observacion": "Existe una cláusula expresa de confidencialidad y no divulgación."
+     },
+     {
+      "cita": "EL CLIENTE PLURIONE S.A. DE C.V. María Elena Ruiz Soto, Apoderada legal EL PRESTADOR SERVICIOS INTEGRALES DEL NORTE S.A. DE C.V. Jorge Alberto Treviño Garza, Representante legal",
+      "codigo_regla": "RSC-01-CONT-FIRM",
+      "cumple": true,
+      "observacion": "Se identifican las partes y se incluye el apartado de firmas de sus representantes legales."
+     }
+    ]
+   },
+   "tipo": "json",
+   "uso": {
+    "completion_tokens": 518,
+    "desde_cache": false,
+    "prompt_tokens": 1287,
+    "total_tokens": 1805
+   }
+  },
   "3072a21ce84c0a7da56271b338e49fea7c2a5a0e92fa3fc7bfcfdfce6e611d02": {
    "grabado_en": "2026-10-01T21:20:38+00:00",
    "latencia_ms": 1995,
@@ -386,6 +632,48 @@
     "total_tokens": 1786
    }
   },
+  "307a1b6230721ab994b7512e51bdf818e282dd22242b41beedd71e27196408d8": {
+   "grabado_en": "2026-10-04T15:20:21+00:00",
+   "latencia_ms": 1743,
+   "respuesta": {
+    "verificaciones": [
+     {
+      "cita": "COBERTURAS CONTRATADAS Incendio de edificio y contenidos Suma asegurada: $5,000,000.00 Robo con violencia Suma asegurada: $750,000.00",
+      "codigo_regla": "RSC-POL-COB",
+      "cumple": true,
+      "observacion": "El documento enumera expresamente las coberturas contratadas y asigna una suma asegurada específica a cada una."
+     }
+    ]
+   },
+   "tipo": "json",
+   "uso": {
+    "completion_tokens": 131,
+    "desde_cache": false,
+    "prompt_tokens": 749,
+    "total_tokens": 880
+   }
+  },
+  "331c52d1fe064b082342bfd7e2a638bf74a5237eb5cd345b464c84e26ace3740": {
+   "grabado_en": "2026-10-04T15:20:30+00:00",
+   "latencia_ms": 7158,
+   "respuesta": {
+    "verificaciones": [
+     {
+      "cita": "COBERTURAS CONTRATADAS\nIncendio de edificio y contenidos        Suma asegurada: $5,000,000.00\nRobo con violencia                        Suma asegurada: $750,000.00\nResponsabilidad civil general             Suma asegurada: $2,000,000.00",
+      "codigo_regla": "RSC-POL-COB",
+      "cumple": true,
+      "observacion": "El documento enumera expresamente las coberturas contratadas y asigna una suma asegurada específica a cada una."
+     }
+    ]
+   },
+   "tipo": "json",
+   "uso": {
+    "completion_tokens": 159,
+    "desde_cache": false,
+    "prompt_tokens": 753,
+    "total_tokens": 912
+   }
+  },
   "3c9df4ac00cd1c7273be4909543f53f1d9b1a70cb42a929d6bfa220a45b1ef91": {
    "grabado_en": "2026-10-01T21:05:15+00:00",
    "latencia_ms": 1065,
@@ -404,6 +692,39 @@
     "desde_cache": false,
     "prompt_tokens": 1598,
     "total_tokens": 1756
+   }
+  },
+  "3ef91326e82c1d8253bb2be47f23f16b4e54543ec9f026b7543ce0f2b3ebac6d": {
+   "grabado_en": "2026-10-04T15:12:38+00:00",
+   "latencia_ms": 1878,
+   "respuesta": {
+    "verificaciones": [
+     {
+      "cita": "ESCRITURA PÚBLICA NÚMERO 12,845 ... ante mí, Lic. Ernesto Valdivia Cortés, Notario Público número 27",
+      "codigo_regla": "RSC-ACTA-ESCR",
+      "cumple": true,
+      "observacion": "El documento identifica expresamente el número de escritura y al notario público."
+     },
+     {
+      "cita": null,
+      "codigo_regla": "RSC-ACTA-RPC",
+      "cumple": false,
+      "observacion": "No se encuentra constancia, folio ni datos de inscripción en el Registro Público de la Propiedad y del Comercio."
+     },
+     {
+      "cita": "La administración de la sociedad estará a cargo de un Administrador Único, quien tendrá la representación legal de la sociedad con poder general para pleitos y cobranzas, actos de administración y actos de dominio.",
+      "codigo_regla": "RSC-ACTA-ADMON",
+      "cumple": true,
+      "observacion": "Se designa el órgano de administración (Administrador Único) y se detallan sus facultades de representación legal."
+     }
+    ]
+   },
+   "tipo": "json",
+   "uso": {
+    "completion_tokens": 286,
+    "desde_cache": false,
+    "prompt_tokens": 1177,
+    "total_tokens": 1463
    }
   },
   "40ec518bfbd7c47c4de4361e4bdf491c1699e8d66fe1f1496a9b0782884923fb": {
@@ -484,6 +805,39 @@
     "total_tokens": 1723
    }
   },
+  "436399fce4b6fc79d4726b3bdd229703d76f2e3ebd28d93dcee3edf5de82b620": {
+   "grabado_en": "2026-10-04T15:12:23+00:00",
+   "latencia_ms": 2282,
+   "respuesta": {
+    "verificaciones": [
+     {
+      "cita": "ESCRITURA PÚBLICA NÚMERO 12,845 ... ante mí, Lic. Ernesto Valdivia Cortés, Notario Público número 27",
+      "codigo_regla": "RSC-ACTA-ESCR",
+      "cumple": true,
+      "observacion": "El documento identifica expresamente el número de escritura y al notario público."
+     },
+     {
+      "cita": "inscrito en el Registro Público de Comercio de Chihuahua bajo el Folio Mercantil Electrónico número 48213*1",
+      "codigo_regla": "RSC-ACTA-RPC",
+      "cumple": true,
+      "observacion": "Se incluye la constancia de inscripción con el folio mercantil específico."
+     },
+     {
+      "cita": "La administración de la sociedad estará a cargo de un Administrador Único, quien tendrá la representación legal... Se designa como Administrador Único a Héctor Daniel Quiroga Salas.",
+      "codigo_regla": "RSC-ACTA-ADMON",
+      "cumple": true,
+      "observacion": "Se designa el órgano de administración (Administrador Único), se nombra a la persona y se detallan las facultades de representación."
+     }
+    ]
+   },
+   "tipo": "json",
+   "uso": {
+    "completion_tokens": 308,
+    "desde_cache": false,
+    "prompt_tokens": 1237,
+    "total_tokens": 1545
+   }
+  },
   "43a3a6766a195facd851bc1586a0d4c013b696592fe499aa75de6fbef8001eca": {
    "grabado_en": "2026-09-30T18:59:13+00:00",
    "latencia_ms": 1161,
@@ -536,6 +890,51 @@
     "desde_cache": false,
     "prompt_tokens": 1593,
     "total_tokens": 1772
+   }
+  },
+  "47924fa883fc890f1f8af1d00ed5ff29830bab5db27c4df7855332c5d6051739": {
+   "grabado_en": "2026-10-04T15:15:35+00:00",
+   "latencia_ms": 2232,
+   "respuesta": {
+    "verificaciones": [
+     {
+      "cita": "EL PRESTADOR se obliga a prestar a EL CLIENTE los servicios de soporte técnico y mantenimiento de su infraestructura de cómputo descritos en el Anexo A.",
+      "codigo_regla": "RSC-01-CONT-OBJ",
+      "cumple": true,
+      "observacion": "El objeto está definido expresamente en la cláusula primera."
+     },
+     {
+      "cita": "El presente contrato estará vigente del 2 de marzo de 2026 al 1 de marzo de 2027. Cualquiera de las partes podrá darlo por terminado anticipadamente mediante aviso por escrito con treinta días naturales de anticipación",
+      "codigo_regla": "RSC-01-CONT-VIG",
+      "cumple": true,
+      "observacion": "Se establecen la vigencia y el procedimiento de terminación anticipada en la cláusula tercera."
+     },
+     {
+      "cita": null,
+      "codigo_regla": "RSC-01-CONT-PEN",
+      "cumple": false,
+      "observacion": "El documento no contiene cláusulas de penas convencionales ni penalizaciones por incumplimiento."
+     },
+     {
+      "cita": "Las partes se obligan recíprocamente a no divulgar la información confidencial que reciban con motivo de este contrato, durante su vigencia y dos años posteriores a su terminación.",
+      "codigo_regla": "RSC-01-CONT-CONF",
+      "cumple": true,
+      "observacion": "La obligación de confidencialidad está pactada en la cláusula cuarta."
+     },
+     {
+      "cita": "EL CLIENTE PLURIONE S.A. DE C.V. María Elena Ruiz Soto, Apoderada legal EL PRESTADOR SERVICIOS INTEGRALES DEL NORTE S.A. DE C.V. Jorge Alberto Treviño Garza, Representante legal",
+      "codigo_regla": "RSC-01-CONT-FIRM",
+      "cumple": true,
+      "observacion": "El documento identifica a las partes y contiene el apartado de firmas de sus representantes."
+     }
+    ]
+   },
+   "tipo": "json",
+   "uso": {
+    "completion_tokens": 500,
+    "desde_cache": false,
+    "prompt_tokens": 1271,
+    "total_tokens": 1771
    }
   },
   "4a6ebcf00355714cba82be40c830776b73ab4d12e9df3323630ce55fd121eba0": {
@@ -605,6 +1004,39 @@
     "total_tokens": 2130
    }
   },
+  "4f0f05b5dee89925d2e410e05d60d5d3603adde329273c497566cf2d6c7e4a47": {
+   "grabado_en": "2026-10-04T15:12:42+00:00",
+   "latencia_ms": 1282,
+   "respuesta": {
+    "verificaciones": [
+     {
+      "cita": "ESCRITURA PÚBLICA NÚMERO 12,845 ... ante mí, Lic. Ernesto Valdivia Cortés, Notario Público número 27",
+      "codigo_regla": "RSC-ACTA-ESCR",
+      "cumple": true,
+      "observacion": "El documento especifica el número de escritura y la identidad del notario."
+     },
+     {
+      "cita": "inscrito en el Registro Público de Comercio de Chihuahua bajo el Folio Mercantil Electrónico número 48213*1",
+      "codigo_regla": "RSC-ACTA-RPC",
+      "cumple": true,
+      "observacion": "Se incluye la constancia de inscripción con el folio mercantil específico."
+     },
+     {
+      "cita": "La administración de la sociedad estará a cargo de un Administrador Único, quien tendrá la representación legal... Se designa como Administrador Único a Héctor Daniel Quiroga Salas.",
+      "codigo_regla": "RSC-ACTA-ADMON",
+      "cumple": true,
+      "observacion": "Se designa el órgano de administración, la persona que lo ejerce y se detallan las facultades de representación."
+     }
+    ]
+   },
+   "tipo": "json",
+   "uso": {
+    "completion_tokens": 304,
+    "desde_cache": false,
+    "prompt_tokens": 1302,
+    "total_tokens": 1606
+   }
+  },
   "55245d8324d8d5e71b74a0043c2b39ee09a9266615a5e1506b24b5b310cc669a": {
    "grabado_en": "2026-10-01T21:11:20+00:00",
    "latencia_ms": 1835,
@@ -639,6 +1071,39 @@
     "total_tokens": 2140
    }
   },
+  "556f1a66c8ef1e5e893a628ab0a6cf60c5b63059a10c3b6b09c8129a69eb93cc": {
+   "grabado_en": "2026-10-04T15:13:23+00:00",
+   "latencia_ms": 1474,
+   "respuesta": {
+    "verificaciones": [
+     {
+      "cita": "ESCRITURA PÚBLICA NÚMERO 12,845 ... ante mí, Lic. Ernesto Valdivia Cortés, Notario Público número 27",
+      "codigo_regla": "RSC-ACTA-ESCR",
+      "cumple": true,
+      "observacion": "El documento identifica expresamente el número de escritura y al notario público."
+     },
+     {
+      "cita": "El primer testimonio de esta escritura quedó inscrito en el Registro Público de Comercio de Chihuahua bajo el Folio Mercantil Electrónico número 4821 3*1",
+      "codigo_regla": "RSC-ACTA-RPC",
+      "cumple": true,
+      "observacion": "Se incluye la constancia de inscripción con el folio mercantil específico."
+     },
+     {
+      "cita": "La administración de la sociedad estará a cargo de un Administrador Único, quien tendrá la representación legal de la sociedad con poder general para pleitos y cobranzas, actos de administración y actos de dominio.",
+      "codigo_regla": "RSC-ACTA-ADMON",
+      "cumple": true,
+      "observacion": "Se designa el órgano de administración (Administrador Único) y se detallan sus facultades de representación legal."
+     }
+    ]
+   },
+   "tipo": "json",
+   "uso": {
+    "completion_tokens": 315,
+    "desde_cache": false,
+    "prompt_tokens": 1307,
+    "total_tokens": 1622
+   }
+  },
   "55e04cbd6c64ba6e8e6bdb29cc642493c1fa50f0450ab87b5222a713f20093f1": {
    "grabado_en": "2026-10-01T21:10:23+00:00",
    "latencia_ms": 1077,
@@ -665,6 +1130,51 @@
     "desde_cache": false,
     "prompt_tokens": 1776,
     "total_tokens": 2010
+   }
+  },
+  "58740f2a1971fdf5607657fb7bdcec47f2aeb4bcfcf906473e843b6130d7052c": {
+   "grabado_en": "2026-10-04T15:17:54+00:00",
+   "latencia_ms": 26683,
+   "respuesta": {
+    "verificaciones": [
+     {
+      "cita": "EL PRESTADOR se obliga a prestar a EL CLIENTE los servicios de soporte técnico y mantenimiento de su infraestructura de cómputo descritos en el Anexo A.",
+      "codigo_regla": "RSC-01-CONT-OBJ",
+      "cumple": true,
+      "observacion": "El objeto está definido expresamente en la cláusula primera."
+     },
+     {
+      "cita": "El presente contrato estará vigente del 2 de marzo de 2026 al 1 de marzo de 2027. Cualquiera de las partes podrá darlo por terminado anticipadamente mediante aviso por escrito con treinta días naturales de anticipación",
+      "codigo_regla": "RSC-01-CONT-VIG",
+      "cumple": true,
+      "observacion": "Se establecen la vigencia y el procedimiento de terminación anticipada en la cláusula tercera."
+     },
+     {
+      "cita": "EL PRESTADOR pagará a EL CLIENTE una pena convencional equivalente al diez por ciento del monto mensual de la contraprestación por cada mes de incumplimiento.",
+      "codigo_regla": "RSC-01-CONT-PEN",
+      "cumple": true,
+      "observacion": "La cláusula quinta establece una pena convencional por incumplimiento."
+     },
+     {
+      "cita": "Las partes se obligan recíprocamente a no divulgar la información confidencial que reciban con motivo de este contrato, durante su vigencia y dos años posteriores a su terminación.",
+      "codigo_regla": "RSC-01-CONT-CONF",
+      "cumple": true,
+      "observacion": "La cláusula cuarta pacta la obligación de confidencialidad."
+     },
+     {
+      "cita": "EL CLIENTE PLURIONE S.A. DE C.V. María Elena Ruiz Soto, Apoderada legal... EL PRESTADOR SERVICIOS INTEGRALES DEL NORTE S.A. DE C.V. Jorge Alberto Treviño Garza, Representante legal",
+      "codigo_regla": "RSC-01-CONT-FIRM",
+      "cumple": true,
+      "observacion": "El documento identifica a las partes y contiene el apartado de firmas de sus representantes al final."
+     }
+    ]
+   },
+   "tipo": "json",
+   "uso": {
+    "completion_tokens": 529,
+    "desde_cache": false,
+    "prompt_tokens": 1343,
+    "total_tokens": 1872
    }
   },
   "5bfa2eb841853b280f74d23e9555fff6c675fd4ace265ede616444b1d64e4d69": {
@@ -834,6 +1344,39 @@
     "total_tokens": 1700
    }
   },
+  "6efa378e510bf469d29f31a055aa4e46799b113a5d8d0eebe3a6813584027ee8": {
+   "grabado_en": "2026-10-04T15:19:18+00:00",
+   "latencia_ms": 16538,
+   "respuesta": {
+    "verificaciones": [
+     {
+      "cita": "SEGUNDA. NO DIVULGACIÓN. La parte receptora se obliga a no divulgar, publicar ni transmitir a terceros la información confidencial",
+      "codigo_regla": "RSC-01-NDA-NODIV",
+      "cumple": true,
+      "observacion": "El documento contiene una cláusula expresa que prohíbe la divulgación de la información confidencial."
+     },
+     {
+      "cita": "Acuerdo que celebran PLURIONE S.A. DE C.V., con RFC PLU180514AB3, representada por María Elena Ruiz Soto, y SERVICIOS INTEGRALES DEL NORTE S.A. DE C.V., con RFC SIN150302KL7",
+      "codigo_regla": "RSC-01-NDA-PART",
+      "cumple": true,
+      "observacion": "Las partes obligadas a la confidencialidad están identificadas expresamente en el encabezado del acuerdo."
+     },
+     {
+      "cita": "TERCERA. VIGENCIA. Las obligaciones de este acuerdo estarán vigentes hasta el 15 de junio de 2029.",
+      "codigo_regla": "RSC-01-NDA-VIG",
+      "cumple": true,
+      "observacion": "Se establece expresamente la duración de la obligación de confidencialidad hasta una fecha específica."
+     }
+    ]
+   },
+   "tipo": "json",
+   "uso": {
+    "completion_tokens": 335,
+    "desde_cache": false,
+    "prompt_tokens": 838,
+    "total_tokens": 1173
+   }
+  },
   "701eb94122598ba32446f205eaa7fb8faa2a2a5afb2baf5fac588bd4fb3de8c0": {
    "grabado_en": "2026-10-01T21:12:25+00:00",
    "latencia_ms": 1941,
@@ -866,6 +1409,51 @@
     "desde_cache": false,
     "prompt_tokens": 2179,
     "total_tokens": 2496
+   }
+  },
+  "78c5ecfe003f846c6ad402885430d069a49a0561384beb33b1157a6775d0ac20": {
+   "grabado_en": "2026-10-04T15:14:41+00:00",
+   "latencia_ms": 8863,
+   "respuesta": {
+    "verificaciones": [
+     {
+      "cita": "EL PRESTADOR se obliga a prestar a EL CLIENTE los servicios de soporte técnico y mantenimiento de su infraestructura de cómputo descritos en el Anexo A.",
+      "codigo_regla": "RSC-01-CONT-OBJ",
+      "cumple": true,
+      "observacion": "El objeto está definido expresamente en la cláusula primera."
+     },
+     {
+      "cita": "El presente contrato estará vigente del 2 de marzo de 2026 al 1 de marzo de 2027. Cualquiera de las partes podrá darlo por terminado anticipadamente mediante aviso por escrito con treinta días naturales de anticipación",
+      "codigo_regla": "RSC-01-CONT-VIG",
+      "cumple": true,
+      "observacion": "Se establecen la vigencia y el procedimiento de terminación anticipada en la cláusula tercera."
+     },
+     {
+      "cita": "EL PRESTADOR pagará a EL CLIENTE una pena convencional equivalente al diez por ciento del monto mensual de la contraprestación por cada mes de incumplimiento.",
+      "codigo_regla": "RSC-01-CONT-PEN",
+      "cumple": true,
+      "observacion": "La cláusula quinta establece una pena convencional por incumplimiento."
+     },
+     {
+      "cita": "Las partes se obligan recíprocamente a no divulgar la información confidencial que reciban con motivo de este contrato, durante su vigencia y dos años posteriores a su terminación.",
+      "codigo_regla": "RSC-01-CONT-CONF",
+      "cumple": true,
+      "observacion": "La cláusula cuarta pacta la obligación de confidencialidad."
+     },
+     {
+      "cita": "EL CLIENTE PLURIONE S.A. DE C.V. María Elena Ruiz Soto, Apoderada legal EL PRESTADOR SERVICIOS INTEGRALES DEL NORTE S.A. DE C.V. Jorge Alberto Treviño Garza, Representante legal",
+      "codigo_regla": "RSC-01-CONT-FIRM",
+      "cumple": true,
+      "observacion": "El documento identifica a las partes y contiene el apartado de firmas de sus representantes."
+     }
+    ]
+   },
+   "tipo": "json",
+   "uso": {
+    "completion_tokens": 526,
+    "desde_cache": false,
+    "prompt_tokens": 1332,
+    "total_tokens": 1858
    }
   },
   "79544e710218d2f445e60869fb49e4912650d59b9625b15fb0e0d952d62998e7": {
@@ -1227,6 +1815,84 @@
     "total_tokens": 1802
    }
   },
+  "98c6c1827a2b130312538427673b4a5fb1dc2d475bf4658d97e71f961e016d8e": {
+   "grabado_en": "2026-10-04T15:15:02+00:00",
+   "latencia_ms": 13393,
+   "respuesta": {
+    "verificaciones": [
+     {
+      "cita": "EL PRESTADOR se obliga a prestar a EL CLIENTE los servicios de soporte técnico y mantenimiento de su infraestructura de cómputo descritos en el Anexo A.",
+      "codigo_regla": "RSC-01-CONT-OBJ",
+      "cumple": true,
+      "observacion": "El objeto está definido expresamente en la cláusula primera."
+     },
+     {
+      "cita": "El presente contrato estará vigente del 2 de marzo de 2026 al 1 de marzo de 2027. Cualquiera de las partes podrá darlo por terminado anticipadamente mediante aviso por escrito con treinta días naturales de anticipación",
+      "codigo_regla": "RSC-01-CONT-VIG",
+      "cumple": true,
+      "observacion": "Se establecen la vigencia y el procedimiento de terminación anticipada en la cláusula tercera."
+     },
+     {
+      "cita": "EL PRESTADOR pagará a EL CLIENTE una pena convencional equivalente al diez por ciento del monto mensual de la contraprestación por cada mes de incumplimiento.",
+      "codigo_regla": "RSC-01-CONT-PEN",
+      "cumple": true,
+      "observacion": "Se pacta una pena convencional específica en la cláusula quinta."
+     },
+     {
+      "cita": "Las partes se obligan recíprocamente a no divulgar la información confidencial que reciban con motivo de este contrato, durante su vigencia y dos años posteriores a su terminación.",
+      "codigo_regla": "RSC-01-CONT-CONF",
+      "cumple": true,
+      "observacion": "Existe una cláusula expresa de confidencialidad en la cláusula cuarta."
+     },
+     {
+      "cita": "EL CLIENTE PLURIONE S.A. DE C.V. María Elena Ruiz Soto, Apoderada legal EL PRESTADOR SERVICIOS INTEGRALES DEL NORTE S.A. DE C.V. Jorge Alberto Treviño Garza, Representante legal",
+      "codigo_regla": "RSC-01-CONT-FIRM",
+      "cumple": true,
+      "observacion": "El documento identifica a las partes y contiene el apartado de firmas de sus representantes al final."
+     }
+    ]
+   },
+   "tipo": "json",
+   "uso": {
+    "completion_tokens": 531,
+    "desde_cache": false,
+    "prompt_tokens": 1332,
+    "total_tokens": 1863
+   }
+  },
+  "99367955db1dcccb01b92582743d126fc825db5fd68bfb6d08424a51c7707b55": {
+   "grabado_en": "2026-10-04T15:13:34+00:00",
+   "latencia_ms": 2013,
+   "respuesta": {
+    "verificaciones": [
+     {
+      "cita": null,
+      "codigo_regla": "RSC-ACTA-ESCR",
+      "cumple": false,
+      "observacion": "El documento es un poder general otorgado ante notario, no un acta constitutiva o de modificación de estatutos que indique el número de escritura de constitución."
+     },
+     {
+      "cita": null,
+      "codigo_regla": "RSC-ACTA-RPC",
+      "cumple": false,
+      "observacion": "No se incluye constancia ni datos de inscripción en el Registro Público de la Propiedad y del Comercio."
+     },
+     {
+      "cita": null,
+      "codigo_regla": "RSC-ACTA-ADMON",
+      "cumple": false,
+      "observacion": "Aunque se menciona al Administrador Único, el documento no designa al órgano de administración ni señala sus facultades de representación legal, sino que otorga un poder general a un tercero."
+     }
+    ]
+   },
+   "tipo": "json",
+   "uso": {
+    "completion_tokens": 245,
+    "desde_cache": false,
+    "prompt_tokens": 882,
+    "total_tokens": 1127
+   }
+  },
   "9bd3af7da3b9dd6de6e57a6384af450e36532dc21bdfb355aad00c4ce9ad1bf7": {
    "grabado_en": "2026-10-01T21:05:17+00:00",
    "latencia_ms": 848,
@@ -1245,6 +1911,39 @@
     "desde_cache": false,
     "prompt_tokens": 1585,
     "total_tokens": 1743
+   }
+  },
+  "9c33010ace518e5263676a4802f08463e84b300f7e1bb867ed794b7f75cf6713": {
+   "grabado_en": "2026-10-04T15:13:38+00:00",
+   "latencia_ms": 969,
+   "respuesta": {
+    "verificaciones": [
+     {
+      "cita": "ESCRITURA PÚBLICA NÚMERO 20,117 ... ante mí, Lic. Ernesto Valdivia Cortés, Notario Público número 27",
+      "codigo_regla": "RSC-PODER-NOT",
+      "cumple": true,
+      "observacion": "El documento identifica el número de escritura y al notario público ante quien se otorga el poder."
+     },
+     {
+      "cita": "PLURIONE S.A. DE C.V. ... otorga PODER GENERAL a favor de María Elena Ruiz Soto",
+      "codigo_regla": "RSC-PODER-PART",
+      "cumple": true,
+      "observacion": "Se identifican expresamente al poderdante (PLURIONE S.A. DE C.V.) y al apoderado (María Elena Ruiz Soto)."
+     },
+     {
+      "cita": "El apoderado podrá ejercer el poder general para pleitos y cobranzas y para actos de administración",
+      "codigo_regla": "RSC-PODER-FAC",
+      "cumple": true,
+      "observacion": "Se señalan expresamente las facultades de pleitos y cobranzas y actos de administración."
+     }
+    ]
+   },
+   "tipo": "json",
+   "uso": {
+    "completion_tokens": 301,
+    "desde_cache": false,
+    "prompt_tokens": 853,
+    "total_tokens": 1154
    }
   },
   "9eb70588ef71bbf6d3e2b004c2452db7460dad7ef6867c24c755d17b0098927e": {
@@ -1278,6 +1977,39 @@
     "desde_cache": false,
     "prompt_tokens": 805,
     "total_tokens": 1070
+   }
+  },
+  "9ee5093ff9a26abbd52c2aa7834ed50a66a05b47f6918e8094247d7402d0042c": {
+   "grabado_en": "2026-10-04T15:13:46+00:00",
+   "latencia_ms": 1304,
+   "respuesta": {
+    "verificaciones": [
+     {
+      "cita": "ESCRITURA PÚBLICA NÚMERO 20,117 ... ante mí, Lic. Ernesto Valdivia Cortés, Notario Público número 27",
+      "codigo_regla": "RSC-PODER-NOT",
+      "cumple": true,
+      "observacion": "El documento es una escritura pública ante notario y especifica el número de la misma."
+     },
+     {
+      "cita": "PLURIONE S.A. DE C.V. ... otorga PODER GENERAL a favor de María Elena Ruiz Soto",
+      "codigo_regla": "RSC-PODER-PART",
+      "cumple": true,
+      "observacion": "Se identifican claramente al poderdante (PLURIONE S.A. DE C.V.) y al apoderado (María Elena Ruiz Soto)."
+     },
+     {
+      "cita": "El apoderado podrá ejercer el poder general para pleitos y cobranzas y para actos de administración",
+      "codigo_regla": "RSC-PODER-FAC",
+      "cumple": true,
+      "observacion": "Se señalan expresamente las facultades de pleitos y cobranzas y actos de administración."
+     }
+    ]
+   },
+   "tipo": "json",
+   "uso": {
+    "completion_tokens": 297,
+    "desde_cache": false,
+    "prompt_tokens": 858,
+    "total_tokens": 1155
    }
   },
   "a4bb0a73da5a0143a7f8b4f19e2ce397af785b73f0f5d9515cb0751ac8cbb8bd": {
@@ -1390,6 +2122,51 @@
     "desde_cache": false,
     "prompt_tokens": 1767,
     "total_tokens": 2094
+   }
+  },
+  "ad3f6ff0ffb47ce61b6c6f5d0aba84af68c1bfd2e11867df8d9384fc583161a1": {
+   "grabado_en": "2026-10-04T15:15:52+00:00",
+   "latencia_ms": 2471,
+   "respuesta": {
+    "verificaciones": [
+     {
+      "cita": "EL PRESTADOR se obliga a prestar a EL CLIENTE los servicios de soporte técnico y mantenimiento de su infraestructura de cómputo descritos en el Anexo A.",
+      "codigo_regla": "RSC-01-CONT-OBJ",
+      "cumple": true,
+      "observacion": "El objeto está definido expresamente en la cláusula primera."
+     },
+     {
+      "cita": "El presente contrato estará vigente del 2 de marzo de 2026 al 1 de marzo de 2027. Cualquiera de las partes podrá darlo por terminado anticipadamente mediante aviso por escrito con treinta días naturales de anticipación",
+      "codigo_regla": "RSC-01-CONT-VIG",
+      "cumple": true,
+      "observacion": "Se establecen la vigencia y el procedimiento de terminación anticipada en la cláusula tercera."
+     },
+     {
+      "cita": null,
+      "codigo_regla": "RSC-01-CONT-PEN",
+      "cumple": false,
+      "observacion": "El documento no contiene cláusulas de penas convencionales ni penalizaciones por incumplimiento."
+     },
+     {
+      "cita": "Las partes se obligan recíprocamente a no divulgar la información confidencial que reciban con motivo de este contrato, durante su vigencia y dos años posteriores a su terminación.",
+      "codigo_regla": "RSC-01-CONT-CONF",
+      "cumple": true,
+      "observacion": "La obligación de confidencialidad está pactada en la cláusula cuarta."
+     },
+     {
+      "cita": "EL CLIENTE PLURIONE S.A. DE C.V. María Elena Ruiz Soto, Apoderada legal EL PRESTADOR SERVICIOS INTEGRALES DEL NORTE S.A. DE C.V. Jorge Alberto Treviño Garza, Representante legal",
+      "codigo_regla": "RSC-01-CONT-FIRM",
+      "cumple": true,
+      "observacion": "El documento identifica a las partes y contiene el apartado de firmas de sus representantes."
+     }
+    ]
+   },
+   "tipo": "json",
+   "uso": {
+    "completion_tokens": 500,
+    "desde_cache": false,
+    "prompt_tokens": 1271,
+    "total_tokens": 1771
    }
   },
   "ad907f456b595a2fead6a834080e8f845166446f2d103e142765fa3589a5bcd9": {
@@ -1566,6 +2343,39 @@
     "desde_cache": false,
     "prompt_tokens": 1585,
     "total_tokens": 1743
+   }
+  },
+  "c1bf052c5460163ecab6f864dc5d0cf382f786672ecf4288efe1d7f2204a9b90": {
+   "grabado_en": "2026-10-04T15:14:23+00:00",
+   "latencia_ms": 1467,
+   "respuesta": {
+    "verificaciones": [
+     {
+      "cita": "ESCRITURA PÚBLICA NÚMERO 20,117 ... ante mí, Lic. Ernesto Valdivia Cortés, Notario Público número 27",
+      "codigo_regla": "RSC-PODER-NOT",
+      "cumple": true,
+      "observacion": "El documento es una escritura pública ante notario y especifica el número de la misma."
+     },
+     {
+      "cita": "PLURIONE S.A. DE C.V. ... otorga PODER GENERAL a favor de María Elena Ruiz Soto y Rodrigo Esteban Lara Villaseñor",
+      "codigo_regla": "RSC-PODER-PART",
+      "cumple": true,
+      "observacion": "Se identifican claramente al poderdante (PLURIONE S.A. DE C.V.) y a los apoderados."
+     },
+     {
+      "cita": "El apoderado podrá ejercer el poder general para pleitos y cobranzas y para actos de administración",
+      "codigo_regla": "RSC-PODER-FAC",
+      "cumple": true,
+      "observacion": "Se señalan expresamente las facultades de pleitos y cobranzas y actos de administración."
+     }
+    ]
+   },
+   "tipo": "json",
+   "uso": {
+    "completion_tokens": 301,
+    "desde_cache": false,
+    "prompt_tokens": 864,
+    "total_tokens": 1165
    }
   },
   "c2d14e96b5988250c44918dec9d6c40bb805fe7be191228692c0757ba55ad23f": {
@@ -1752,6 +2562,60 @@
     "total_tokens": 1068
    }
   },
+  "cec7b833e06c12f93a66aa062ef981b85018ba6d494b918743f6e15f755b4b8e": {
+   "grabado_en": "2026-10-04T15:20:13+00:00",
+   "latencia_ms": 29240,
+   "respuesta": {
+    "verificaciones": [
+     {
+      "cita": "COBERTURAS CONTRATADAS\nIncendio de edificio y contenidos        Suma asegurada: $5,000,000.00\nRobo con violencia                        Suma asegurada: $750,000.00\nResponsabilidad civil general             Suma asegurada: $2,000,000.00",
+      "codigo_regla": "RSC-POL-COB",
+      "cumple": true,
+      "observacion": "El documento enumera expresamente las coberturas contratadas y asigna una suma asegurada específica a cada una."
+     }
+    ]
+   },
+   "tipo": "json",
+   "uso": {
+    "completion_tokens": 159,
+    "desde_cache": false,
+    "prompt_tokens": 753,
+    "total_tokens": 912
+   }
+  },
+  "cf8885146ce683869c105900ac852206ce4c18a2520b955ca6e4ca0c51fefccd": {
+   "grabado_en": "2026-10-04T15:19:36+00:00",
+   "latencia_ms": 13342,
+   "respuesta": {
+    "verificaciones": [
+     {
+      "cita": null,
+      "codigo_regla": "RSC-01-NDA-NODIV",
+      "cumple": false,
+      "observacion": "El documento define qué es información confidencial y su entrega, pero no contiene una cláusula expresa que prohíba o restrinja la divulgación de dicha información."
+     },
+     {
+      "cita": "Acuerdo que celebran PLURIONE S.A. DE C.V., con RFC PLU180514AB3, representada por María Elena Ruiz Soto, y SERVICIOS INTEGRALES DEL NORTE S.A. DE C.V., con RFC SIN150302KL7, representada por Jorge Alberto Treviño Garza",
+      "codigo_regla": "RSC-01-NDA-PART",
+      "cumple": true,
+      "observacion": "El encabezado identifica expresamente a las partes que celebran el acuerdo de confidencialidad."
+     },
+     {
+      "cita": "TERCERA. VIGENCIA. Las obligaciones de este acuerdo estarán vigentes hasta el 15 de junio de 2029.",
+      "codigo_regla": "RSC-01-NDA-VIG",
+      "cumple": true,
+      "observacion": "La cláusula tercera establece expresamente la duración de las obligaciones del acuerdo."
+     }
+    ]
+   },
+   "tipo": "json",
+   "uso": {
+    "completion_tokens": 324,
+    "desde_cache": false,
+    "prompt_tokens": 822,
+    "total_tokens": 1146
+   }
+  },
   "d2ac6437c27d359f0175022ab891e6cc2fa551b77ac65d7c65dfb3c7c0d974a8": {
    "grabado_en": "2026-10-01T21:17:37+00:00",
    "latencia_ms": 1708,
@@ -1790,6 +2654,51 @@
     "desde_cache": false,
     "prompt_tokens": 2241,
     "total_tokens": 2617
+   }
+  },
+  "d3d5797949567eaf9a6ebbe8c3f69d07fc9469438b89c6c4319ce34536091ee1": {
+   "grabado_en": "2026-10-04T15:15:22+00:00",
+   "latencia_ms": 11587,
+   "respuesta": {
+    "verificaciones": [
+     {
+      "cita": "EL PRESTADOR se obliga a prestar a EL CLIENTE los servicios de soporte técnico y mantenimiento de su infraestructura de cómputo descritos en el Anexo A.",
+      "codigo_regla": "RSC-01-CONT-OBJ",
+      "cumple": true,
+      "observacion": "El objeto está definido expresamente en la cláusula primera."
+     },
+     {
+      "cita": "El presente contrato estará vigente del 2 de marzo de 2026 al 1 de marzo de 2027. Cualquiera de las partes podrá darlo por terminado anticipadamente mediante aviso por escrito con treinta días naturales de anticipación",
+      "codigo_regla": "RSC-01-CONT-VIG",
+      "cumple": true,
+      "observacion": "Se establecen la vigencia y el procedimiento de terminación anticipada en la cláusula tercera."
+     },
+     {
+      "cita": "EL PRESTADOR pagará a EL CLIENTE una pena convencional equivalente al diez por ciento del monto mensual de la contraprestación por cada mes de incumplimiento.",
+      "codigo_regla": "RSC-01-CONT-PEN",
+      "cumple": true,
+      "observacion": "Se pacta una pena convencional específica en la cláusula cuarta."
+     },
+     {
+      "cita": null,
+      "codigo_regla": "RSC-01-CONT-CONF",
+      "cumple": false,
+      "observacion": "El documento no contiene cláusula alguna de confidencialidad o no divulgación."
+     },
+     {
+      "cita": "EL CLIENTE PLURIONE S.A. DE C.V. María Elena Ruiz Soto, Apoderada legal EL PRESTADOR SERVICIOS INTEGRALES DEL NORTE S.A. DE C.V. Jorge Alberto Treviño Garza, Representante legal",
+      "codigo_regla": "RSC-01-CONT-FIRM",
+      "cumple": true,
+      "observacion": "Se identifican las partes y se incluye el apartado de firmas de sus representantes al final del documento."
+     }
+    ]
+   },
+   "tipo": "json",
+   "uso": {
+    "completion_tokens": 497,
+    "desde_cache": false,
+    "prompt_tokens": 1281,
+    "total_tokens": 1778
    }
   },
   "d6c955c5a9fe00f49e37b83abcc247f1822584be4ec8162254b6bc2e56f1d760": {
@@ -1863,6 +2772,27 @@
     "desde_cache": false,
     "prompt_tokens": 763,
     "total_tokens": 1072
+   }
+  },
+  "e85b3d9dd314cca96161365ce57d6a7f1c53f95707ad2c3e777be84213a91a76": {
+   "grabado_en": "2026-10-04T15:20:38+00:00",
+   "latencia_ms": 3931,
+   "respuesta": {
+    "verificaciones": [
+     {
+      "cita": null,
+      "codigo_regla": "RSC-LIC-GIRO",
+      "cumple": false,
+      "observacion": "El documento autoriza el funcionamiento del establecimiento pero no especifica el giro o la actividad económica concreta que se autoriza a operar."
+     }
+    ]
+   },
+   "tipo": "json",
+   "uso": {
+    "completion_tokens": 84,
+    "desde_cache": false,
+    "prompt_tokens": 653,
+    "total_tokens": 737
    }
   },
   "e9a9686e11300230b27202644d19992c3d9887cbca6782aec77ec532c623b45f": {
@@ -1981,6 +2911,39 @@
     "desde_cache": false,
     "prompt_tokens": 1194,
     "total_tokens": 1723
+   }
+  },
+  "f003ab853735da31be39711ced823d9d593fc6bf1af8bd85a834587ce2e1755b": {
+   "grabado_en": "2026-10-04T15:18:55+00:00",
+   "latencia_ms": 20178,
+   "respuesta": {
+    "verificaciones": [
+     {
+      "cita": "SEGUNDA. NO DIVULGACIÓN. La parte receptora se obliga a no divulgar, publicar ni transmitir a terceros la información confidencial",
+      "codigo_regla": "RSC-01-NDA-NODIV",
+      "cumple": true,
+      "observacion": "El documento contiene una cláusula expresa que prohíbe la divulgación de la información confidencial."
+     },
+     {
+      "cita": "Acuerdo que celebran PLURIONE S.A. DE C.V., con RFC PLU180514AB3, representada por María Elena Ruiz Soto, y SERVICIOS INTEGRALES DEL NORTE S.A. DE C.V., con RFC SIN150302KL7",
+      "codigo_regla": "RSC-01-NDA-PART",
+      "cumple": true,
+      "observacion": "Las partes obligadas a la confidencialidad están identificadas expresamente en el encabezado del acuerdo."
+     },
+     {
+      "cita": "TERCERA. VIGENCIA. Las obligaciones de este acuerdo estarán vigentes hasta el 15 de junio de 2029.",
+      "codigo_regla": "RSC-01-NDA-VIG",
+      "cumple": true,
+      "observacion": "Se establece expresamente la duración de la obligación de confidencialidad hasta una fecha específica."
+     }
+    ]
+   },
+   "tipo": "json",
+   "uso": {
+    "completion_tokens": 335,
+    "desde_cache": false,
+    "prompt_tokens": 840,
+    "total_tokens": 1175
    }
   },
   "f169a3f9228b85c7acf264ce555ef8044fb9b49c8c8197cce594a2d9fa9809fd": {
@@ -2144,6 +3107,39 @@
     "desde_cache": false,
     "prompt_tokens": 2241,
     "total_tokens": 2614
+   }
+  },
+  "fae1f46b4bfed539e71d3117e8a89774bdadc20affb2f3c10af40e112ab2b885": {
+   "grabado_en": "2026-10-04T15:19:42+00:00",
+   "latencia_ms": 973,
+   "respuesta": {
+    "verificaciones": [
+     {
+      "cita": "La parte receptora se obliga a no divulgar, publicar ni transmitir a terceros la información confidencial",
+      "codigo_regla": "RSC-01-NDA-NODIV",
+      "cumple": true,
+      "observacion": "El documento contiene una cláusula expresa de no divulgación."
+     },
+     {
+      "cita": "Acuerdo que celebran PLURIONE S.A. DE C.V. ... y SERVICIOS INTEGRALES DEL NORTE S.A. DE C.V.",
+      "codigo_regla": "RSC-01-NDA-PART",
+      "cumple": true,
+      "observacion": "Las partes obligadas a la confidencialidad están identificadas expresamente en el encabezado."
+     },
+     {
+      "cita": null,
+      "codigo_regla": "RSC-01-NDA-VIG",
+      "cumple": false,
+      "observacion": "El documento no establece la vigencia o duración de la obligación de confidencialidad."
+     }
+    ]
+   },
+   "tipo": "json",
+   "uso": {
+    "completion_tokens": 251,
+    "desde_cache": false,
+    "prompt_tokens": 808,
+    "total_tokens": 1059
    }
   }
  },
