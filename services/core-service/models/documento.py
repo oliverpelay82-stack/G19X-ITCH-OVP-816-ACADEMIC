@@ -1,7 +1,6 @@
 """
 Modelo / Entidad Documento.
-Equivalente a una clase @Entity en Spring Boot.
-Mapea la tabla 'documentos' en MySQL.
+Mapea la tabla 'documentos' en PostgreSQL.
 """
 from datetime import datetime, timezone
 import uuid

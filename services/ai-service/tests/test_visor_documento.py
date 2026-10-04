@@ -126,7 +126,7 @@ def main(mp: pytest.MonkeyPatch) -> int:
 
     print("\n[5] Una sola lectura como fuente de verdad (Nivel 3 versionado)")
     escaneado = _pdf_escaneado()
-    texto, traza, _ = repositorio_texto.obtener_por_contenido(escaneado, "escaneado.pdf", usar_cache=False)
+    texto, traza, _ = repositorio_texto.obtener_por_contenido(escaneado, usar_cache=False)
     sha = hashlib.sha256(escaneado).hexdigest()
     palabras = persistencia_texto.leer_palabras(sha, 1)
     verificar(palabras is not None and compactar(" ".join(p[4] for p in palabras)) == compactar(texto),
@@ -134,7 +134,7 @@ def main(mp: pytest.MonkeyPatch) -> int:
     doble = fitz.open()
     doble.insert_pdf(fitz.open(stream=_pdf_vectorial(), filetype="pdf"), from_page=0, to_page=0)
     doble.insert_pdf(fitz.open(stream=escaneado, filetype="pdf"))
-    texto, traza, _ = repositorio_texto.obtener_por_contenido(doble.tobytes(), "hibrido.pdf", usar_cache=False)
+    texto, traza, _ = repositorio_texto.obtener_por_contenido(doble.tobytes(), usar_cache=False)
     inicio_2 = traza["detalle_paginas"][1]["inicio"]
     verificar(texto.startswith("ESCRITURA") and "Administrador" in texto[inicio_2:inicio_2 + 120]
               and "Administrador" not in texto[:inicio_2],
@@ -148,9 +148,9 @@ def main(mp: pytest.MonkeyPatch) -> int:
         def ocr_prohibido(imagen):
             raise AssertionError("se repitió el OCR de una página ya reconocida")
         sin_ocr.setattr(extraccion_pipeline, "_ocr_sobre_imagen", ocr_prohibido)
-        texto_2, _, _ = repositorio_texto.obtener_por_contenido(escaneado, "escaneado.pdf", usar_cache=False,
+        texto_2, _, _ = repositorio_texto.obtener_por_contenido(escaneado, usar_cache=False,
                                                                  texto_completo=True)
-    texto_1, _, _ = repositorio_texto.obtener_por_contenido(escaneado, "escaneado.pdf")
+    texto_1, _, _ = repositorio_texto.obtener_por_contenido(escaneado)
     verificar(texto_2 == texto_1, "Una segunda lectura reutiliza las páginas ya reconocidas: mismo texto, sin OCR")
     mp.setattr(persistencia_texto, "_version", lambda: "n3-9.9|otra-lectura")
     verificar(persistencia_texto.leer(sha) is None and persistencia_texto.leer_palabras(sha, 1) is None,

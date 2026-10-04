@@ -1,7 +1,6 @@
 """
 Modelo / Entidad TitularExpediente.
-Equivalente a una clase @Entity en Spring Boot.
-Mapea la tabla 'titulares_expediente' en MySQL.
+Mapea la tabla 'titulares_expediente' en PostgreSQL.
 """
 from datetime import datetime, timezone
 import uuid

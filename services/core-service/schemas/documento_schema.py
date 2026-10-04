@@ -1,6 +1,5 @@
 """
 Esquemas de validación de datos para Documentos (DTOs).
-Equivalente a las clases DTO / Response en Spring Boot.
 """
 from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field, computed_field

@@ -62,7 +62,6 @@ async def extraer_texto(
         texto, traza, fuente = await run_in_threadpool(
             repositorio_texto.obtener_por_contenido,
             contenido,
-            file.filename or "documento",
             forzar_ocr,
             texto_completo,
             usar_cache,

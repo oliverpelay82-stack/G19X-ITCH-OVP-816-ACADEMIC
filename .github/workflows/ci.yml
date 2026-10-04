@@ -33,7 +33,6 @@ jobs:
           --health-timeout 5s
           --health-retries 10
     env:
-      DB_DIALECT: postgresql
       DB_HOST: 127.0.0.1
       DB_PORT: "5432"
       DB_USER: postgres
@@ -85,7 +84,6 @@ jobs:
           --health-timeout 5s
           --health-retries 10
     env:
-      DB_DIALECT: postgresql
       DB_HOST: 127.0.0.1
       DB_PORT: "5432"
       DB_USER: postgres
@@ -124,7 +122,6 @@ jobs:
           --health-timeout 5s
           --health-retries 10
     env:
-      DB_DIALECT: postgresql
       DB_HOST: 127.0.0.1
       DB_PORT: "5432"
       DB_USER: postgres

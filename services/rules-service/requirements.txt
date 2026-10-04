@@ -3,11 +3,9 @@ fastapi==0.142.2
 starlette==1.7.0  # status.HTTP_422_UNPROCESSABLE_CONTENT (RFC 9110)
 uvicorn[standard]==0.54.0
 
-# Base de Datos (ORM y Drivers MySQL / PostgreSQL)
+# Base de datos: SQLAlchemy con el driver de PostgreSQL (único motor, DOC-08)
 sqlalchemy==2.1.2
-pymysql==1.2.3
 psycopg2-binary==2.9.13
-cryptography==50.0.2
 python-dotenv==1.2.4
 
 # Validación y DTOs

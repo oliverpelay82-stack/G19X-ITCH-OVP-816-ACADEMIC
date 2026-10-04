@@ -516,7 +516,7 @@ Diseñada en DOC-08 y pendiente de implementar: la tabla `usuarios` (email, pass
 
 #### Nota técnica: tipos de datos respecto del diccionario del DOC-08
 
-El diccionario de datos del DOC-08 (Tablas 4 a 8) especifica tipos nativos de PostgreSQL. La implementación usa sus equivalentes portables, como decisión consciente de compatibilidad: la capa de datos se escribe con los tipos genéricos de SQLAlchemy y `config/database.py` admite también `DB_DIALECT=mysql`, así que el esquema no depende de tipos exclusivos de un motor. Verificado en `plurione_compliance` (auditoría del 28/09/2026):
+El diccionario de datos del DOC-08 (Tablas 4 a 8) especifica tipos nativos de PostgreSQL. La implementación declara las columnas con los tipos genéricos de SQLAlchemy, que en PostgreSQL se materializan como sus tipos nativos. PostgreSQL es el único motor: la opción `DB_DIALECT=mysql` se retiró el 04/10/2026 porque nunca pudo funcionar (los triggers de inmutabilidad, `pg_advisory_xact_lock`, `clock_timestamp()` y las columnas JSON son de PostgreSQL). Verificado en `plurione_compliance` (auditoría del 28/09/2026):
 
 | DOC-08 | Implementación | Por qué | Consecuencia a vigilar |
 |---|---|---|---|

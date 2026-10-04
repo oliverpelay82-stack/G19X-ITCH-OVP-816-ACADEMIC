@@ -1,7 +1,6 @@
 """
 Modelo / Entidad Regla de Validación.
-Equivalente a una clase @Entity en Spring Boot.
-Mapea la tabla 'reglas_validacion' en MySQL.
+Mapea la tabla 'reglas_validacion' en PostgreSQL.
 
 Fuente normativa: DOC-05 (Estrategia de Validación y Catálogo de Reglas de
 Negocio) y DOC-08 (Diseño de Arquitectura de Software, APIs y Base de Datos).

@@ -1,6 +1,5 @@
 """
 Controlador de Reglas de Validación.
-Equivalente a @RestController @RequestMapping("/api/v1/reglas") en Spring Boot.
 """
 import json
 from dataclasses import asdict

@@ -25,7 +25,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Any
 
 from sqlalchemy import text
@@ -65,14 +65,8 @@ def huella_evento(e: BitacoraAuditoria) -> str:
     return hashlib.sha256(_canonico(contenido).encode("utf-8")).hexdigest()
 
 
-def _es_postgres(db: Session) -> bool:
-    return db.get_bind().dialect.name == "postgresql"
-
-
 def _ahora(db: Session) -> datetime:
-    if _es_postgres(db):
-        return db.execute(text("SELECT clock_timestamp()::timestamp")).scalar()
-    return datetime.now(timezone.utc).replace(tzinfo=None)
+    return db.execute(text("SELECT clock_timestamp()::timestamp")).scalar()
 
 
 def ultimo_sellado(db: Session) -> BitacoraAuditoria | None:
@@ -146,8 +140,7 @@ def registrar(
     ip_origen: str | None = None,
     detalle: dict[str, Any] | None = None,
 ) -> BitacoraAuditoria:
-    if _es_postgres(db):
-        db.execute(text("SELECT pg_advisory_xact_lock(hashtext('bitacora_cadena'))"))
+    db.execute(text("SELECT pg_advisory_xact_lock(hashtext('bitacora_cadena'))"))
     anterior = ultimo_sellado(db) or _sellar_genesis(db)
     entrada = BitacoraAuditoria(
         evento=evento,

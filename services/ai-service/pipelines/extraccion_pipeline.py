@@ -393,7 +393,6 @@ def detectar_mime(contenido: bytes) -> str:
 # ── Orquestador del Nivel 3 ─────────────────────────────────────────
 def extraer_texto(
     contenido: bytes,
-    nombre_archivo: str = "documento",
     forzar_ocr: bool = False,
     texto_completo: bool = False,
     paginas_conocidas: dict[int, tuple[str, float, list[list[Any]]]] | None = None,

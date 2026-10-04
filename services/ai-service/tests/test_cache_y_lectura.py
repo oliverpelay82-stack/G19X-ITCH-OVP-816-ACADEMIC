@@ -157,7 +157,7 @@ def prueba_lectura_completa(mp: pytest.MonkeyPatch) -> None:
     # La lectura completa de la auditoría se simula y se cuenta cuántas veces ocurre.
     lecturas: list[bool] = []
 
-    def extraer(contenido, nombre, forzar_ocr, texto_completo, sha256):
+    def extraer(contenido, forzar_ocr, texto_completo, sha256):
         lecturas.append(texto_completo)
         return (f"ACTA CONSTITUTIVA ... RFC {RFC} ... 26 páginas completas",
                 {"confidence_score": 0.97, "total_paginas": 26}, True)

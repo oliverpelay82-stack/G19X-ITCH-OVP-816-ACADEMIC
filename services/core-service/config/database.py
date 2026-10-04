@@ -1,41 +1,37 @@
 """
-Módulo de Configuración de Base de Datos.
-Equivalente a application.properties en Spring Boot.
-Conecta SQLAlchemy con la base de datos MySQL local.
+Configuración de la base de datos del core-service: PostgreSQL 17 (DOC-08), el único
+motor soportado. La inmutabilidad de la bitácora y de los dictámenes (triggers),
+los candados de transacción (pg_advisory_xact_lock) y las columnas JSON son de
+PostgreSQL.
 """
 import os
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-# Cargar variables del archivo .env (ubicado en backend/.env, resuelto de forma
-# independiente al directorio de trabajo actual para que scripts/ y tests/
-# también puedan importar este módulo desde fuera de backend/)
+# Variables del .env del servicio, resuelto respecto de este archivo para que
+# scripts/ y tests/ también puedan importar el módulo desde otro directorio.
 load_dotenv(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env"))
 
 # Parámetros de conexión configurables vía .env
-DB_DIALECT = os.getenv("DB_DIALECT", "postgresql")
 DB_USER = os.getenv("DB_USER", "postgres")
 DB_PASSWORD = os.getenv("DB_PASSWORD", "")
 DB_HOST = os.getenv("DB_HOST", "127.0.0.1")
-DB_PORT = os.getenv("DB_PORT", "5432" if DB_DIALECT == "postgresql" else "3306")
+DB_PORT = os.getenv("DB_PORT", "5432")
 DB_NAME = os.getenv("DB_NAME", "plurione_compliance")
-# Trazas del SQL ejecutado (show-sql de Hibernate): apagadas salvo DB_ECHO=true.
+# Trazas del SQL ejecutado: apagadas salvo DB_ECHO=true.
 DB_ECHO = os.getenv("DB_ECHO", "false").strip().lower() in {"1", "true", "yes", "on"}
 
-# URL de conexión: respeta DATABASE_URL si existe, o la construye dinámicamente
-if os.getenv("DATABASE_URL"):
-    DATABASE_URL = os.getenv("DATABASE_URL")
-elif DB_DIALECT == "mysql":
-    DATABASE_URL = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
-else:
-    DATABASE_URL = f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+# URL de conexión: DATABASE_URL si existe; si no, se arma con los parámetros.
+DATABASE_URL = os.getenv("DATABASE_URL") or (
+    f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+)
 
 # Crear el Engine de conexión
 engine = create_engine(
     DATABASE_URL,
     pool_pre_ping=True,  # Verifica que la conexión siga viva antes de cada consulta
-    echo=DB_ECHO,        # DB_ECHO=true imprime el SQL ejecutado (igual que show-sql=true en Hibernate)
+    echo=DB_ECHO,        # DB_ECHO=true imprime el SQL ejecutado
 )
 
 # Fábrica de sesiones para interactuar con la BD
@@ -230,14 +226,12 @@ def _sentencias_check() -> list[str]:
 
 def init_db():
     """
-    Equivalente a: spring.jpa.hibernate.ddl-auto=update
     Crea las tablas que aún no existen y aplica las migraciones idempotentes.
     """
     import models  # noqa: F401  (registra todas las entidades en Base.metadata)
 
     Base.metadata.create_all(bind=engine)
-    if engine.dialect.name == "postgresql":
-        with engine.begin() as conn:
-            for sentencia in _MIGRACIONES_POSTGRES + _sentencias_check():
-                conn.execute(text(sentencia))
+    with engine.begin() as conn:
+        for sentencia in _MIGRACIONES_POSTGRES + _sentencias_check():
+            conn.execute(text(sentencia))
     print("[Base de Datos] Tablas y migraciones sincronizadas con éxito.")

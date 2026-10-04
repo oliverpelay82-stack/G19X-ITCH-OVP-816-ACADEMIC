@@ -67,11 +67,11 @@ def _traza(extraccion: extraccion_pipeline.ResultadoExtraccion) -> dict[str, Any
     return datos
 
 
-def _extraer(contenido: bytes, nombre: str, forzar_ocr: bool, texto_completo: bool, sha256: str):
+def _extraer(contenido: bytes, forzar_ocr: bool, texto_completo: bool, sha256: str):
     # Las páginas escaneadas que ya reconoció una lectura parcial o el visor no
     # vuelven a pasar por OCR (solo si son de esta misma versión del Nivel 3).
     extraccion = extraccion_pipeline.extraer_texto(
-        contenido=contenido, nombre_archivo=nombre, forzar_ocr=forzar_ocr, texto_completo=texto_completo,
+        contenido=contenido, forzar_ocr=forzar_ocr, texto_completo=texto_completo,
         paginas_conocidas=persistencia_texto.paginas_reconocidas(sha256) if sha256 and not forzar_ocr else None,
     )
     traza = _traza(extraccion)
@@ -120,9 +120,7 @@ def obtener_por_documento(
             return TextoDocumento(guardada.texto, metadatos, guardada.traza, guardada.completo, sha256)
         contenido = core_client.leer_binario(metadatos)
         sha256 = sha256 or hashlib.sha256(contenido).hexdigest()
-        texto, traza, completo = _extraer(
-            contenido, metadatos.get("nombre_archivo_original", "documento"), forzar_ocr, False, sha256
-        )
+        texto, traza, completo = _extraer(contenido, forzar_ocr, False, sha256)
         return TextoDocumento(texto, metadatos, traza, completo, sha256)
 
     documento, desde_memoria = cache_texto.obtener_o_calcular(clave, resolver)
@@ -176,13 +174,7 @@ def _completar(clave: tuple[str, bool], parcial: TextoDocumento) -> TextoDocumen
                                    fuente="persistencia")
             else:
                 contenido = core_client.leer_binario(parcial.metadatos or {"id": documento_id})
-                texto, traza, _ = _extraer(
-                    contenido,
-                    (parcial.metadatos or {}).get("nombre_archivo_original", "documento"),
-                    forzar_ocr,
-                    True,
-                    parcial.sha256,
-                )
+                texto, traza, _ = _extraer(contenido, forzar_ocr, True, parcial.sha256)
                 completo = replace(parcial, texto=texto, traza=traza, completo=True, fuente="extraccion")
             cache_texto.actualizar(clave, replace(completo, fuente=parcial.fuente))
             return completo
@@ -205,7 +197,6 @@ def _leer_completo(clave: tuple[str, bool], parcial: TextoDocumento) -> None:
 # ── Archivos sueltos (endpoint /ai/extraer-texto) ───────────────────
 def obtener_por_contenido(
     contenido: bytes,
-    nombre: str,
     forzar_ocr: bool = False,
     texto_completo: bool = False,
     usar_cache: bool = True,
@@ -219,7 +210,7 @@ def obtener_por_contenido(
         guardada = persistencia_texto.leer(sha256, forzar_ocr)
         if guardada and (guardada.completo or not texto_completo):
             return guardada.texto, guardada.traza, "persistencia"
-    texto, traza, _ = _extraer(contenido, nombre, forzar_ocr, texto_completo, sha256)
+    texto, traza, _ = _extraer(contenido, forzar_ocr, texto_completo, sha256)
     return texto, traza, "extraccion"
 
 

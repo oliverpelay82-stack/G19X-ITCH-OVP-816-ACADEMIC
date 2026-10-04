@@ -1,6 +1,5 @@
 """
 Controlador de Titulares de Expediente.
-Equivalente a @RestController @RequestMapping("/api/v1/titulares") en Spring Boot.
 """
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session

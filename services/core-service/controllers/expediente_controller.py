@@ -1,6 +1,5 @@
 """
 Controlador de Expedientes Documentales.
-Equivalente a @RestController @RequestMapping("/api/v1/expedientes") en Spring Boot.
 
 El estado de cumplimiento que devuelven estas rutas es el consolidado del
 semáforo (``motor/cumplimiento.py``): se recalcula en cada consulta contra el

@@ -76,7 +76,7 @@ def _medir_configuracion(documentos: list[dict[str, str]], corridas: int) -> lis
             for k in etapas:
                 etapas[k] = 0.0
             inicio = time.perf_counter()
-            extraccion = ep.extraer_texto(contenido, "documento.pdf", texto_completo=True)
+            extraccion = ep.extraer_texto(contenido, texto_completo=True)
             tiempos.append((time.perf_counter() - inicio) * 1000)
             por_etapa.append(dict(etapas))
         resultados.append({

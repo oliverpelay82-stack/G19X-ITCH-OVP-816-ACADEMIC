@@ -1,6 +1,5 @@
 """
 Esquemas de validación de datos (DTOs).
-Equivalente a las clases DTO / Request en Spring Boot.
 """
 from datetime import datetime
 from typing import Optional

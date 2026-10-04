@@ -1,6 +1,5 @@
 """
 Controlador de Documentos Digitalizados.
-Equivalente a @RestController @RequestMapping("/api/v1/documentos") en Spring Boot.
 Maneja la carga de archivos (Nivel 1), la verificación de integridad RIE-03 y
 la entrega de binarios verificados a los demás microservicios.
 """
@@ -64,11 +63,9 @@ def _bloquear_expediente(db: Session, expediente_id: str) -> None:
     """
     Serializa las cargas de un mismo expediente hasta el fin de la transacción
     (PLUS-01): sin el candado, dos cargas simultáneas del mismo archivo pasan
-    ambas la verificación de unicidad. En otros motores no hay candado y la
-    unicidad queda garantizada solo entre cargas sucesivas.
+    ambas la verificación de unicidad.
     """
-    if db.get_bind().dialect.name == "postgresql":
-        db.execute(text("SELECT pg_advisory_xact_lock(hashtext(:clave))"), {"clave": f"ingesta:{expediente_id}"})
+    db.execute(text("SELECT pg_advisory_xact_lock(hashtext(:clave))"), {"clave": f"ingesta:{expediente_id}"})
 
 
 def _custodiado_en_expediente(db: Session, expediente_id: str, hash_sha256: str) -> Documento | None:
