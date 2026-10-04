@@ -523,6 +523,14 @@
   display: none;
 }
 
+/* Cambio de pestaña del panel de IA (Resultado, Evidencia, Registro técnico,
+   Chat): la sección que aparece se funde en 150 ms en lugar de saltar. Las
+   secciones siguen montadas; la animación se reinicia al dejar de estar ocultas. */
+.ai-seccion:not([hidden]),
+.ai-panel > div:not([hidden]) {
+  animation: fade-in var(--dur) var(--ease);
+}
+
 /* Bloque delimitado (dictamen vigente, cotejo, contenido, vigencia, sellos,
    observaciones, datos del archivo): borde, radio de tarjeta y relleno
    equilibrado en lugar de secciones encimadas. */
@@ -710,6 +718,11 @@
   gap: var(--s-2);
   font-size: var(--fs-small);
   color: var(--warn);
+}
+
+/* Dictamen cuyo automático coincide con el vigente: tres datos a partes iguales. */
+.registro-grid--tres {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 /* Cotejo de representación legal (P2, RN-03): dos columnas con el texto

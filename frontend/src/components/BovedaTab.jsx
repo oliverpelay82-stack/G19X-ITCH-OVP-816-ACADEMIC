@@ -170,13 +170,15 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
       <Card className="table-card">
         <div className="table-scroll">
           <table className="data-table data-table--boveda">
+            {/* El folio completo (EXP-XXXX-AAAAMMDDhhmm) cabe a 1366 px: su final es lo que distingue
+                un expediente de otro. El hash ya va abreviado y la fecha es corta. */}
             <colgroup>
-              <col style={{ width: '29%' }} />
+              <col style={{ width: '27%' }} />
               <col style={{ width: '10%' }} />
-              <col style={{ width: '16%' }} />
+              <col style={{ width: '19%' }} />
               <col style={{ width: '13%' }} />
-              <col style={{ width: '18%' }} />
-              <col style={{ width: '10%' }} />
+              <col style={{ width: '17%' }} />
+              <col style={{ width: '9%' }} />
               <col style={{ width: 52 }} />
             </colgroup>
             <thead>

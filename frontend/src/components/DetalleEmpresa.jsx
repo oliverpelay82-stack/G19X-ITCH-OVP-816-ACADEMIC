@@ -1,6 +1,5 @@
 import { useMemo } from 'react'
 import { ArrowLeft, ArrowUpRight, FolderPlus, SearchX } from 'lucide-react'
-import { AlertaItem } from './Alertas.jsx'
 import { CorregirEmpresa } from './CorreccionDatos.jsx'
 import FolioExpediente from './FolioExpediente.jsx'
 import { IconoExpediente } from './IconosMotor.jsx'
@@ -16,15 +15,17 @@ import {
 import { formatIndice, indiceDe } from '../utils/indice.js'
 import { formatFechaCorta, iniciales } from '../utils/format.js'
 
-/** Cuántas alertas se muestran: las más graves; el resto está en la bandeja de Alertas. */
+/** Cuántas alertas se resumen: las más graves; todas están en la bandeja de Alertas. */
 const MAX_ALERTAS = 5
 
 const plural = (n, uno, varios) => `${n} ${n === 1 ? uno : varios}`
 
 /**
  * Detalle de la empresa (#/empresas/<RFC>, PRD §13.1): sus datos, un resumen
- * en una línea, todos sus expedientes de lo más grave a lo conforme y sus
- * alertas más graves con su recomendación (RF-18, RF-21). Todo sale del
+ * en una línea, todos sus expedientes de lo más grave a lo conforme y un
+ * resumen de sus alertas más graves, una por línea, con el enlace a la bandeja
+ * de Alertas filtrada por la empresa, donde está cada recomendación (RF-18,
+ * RF-21): las tarjetas completas no se repiten aquí. Todo sale del
  * listado de expedientes ya cargado, que trae la evaluación de cada uno; no
  * hay tarjetas de métricas, que van solo en Expedientes y Reportes.
  */
@@ -35,6 +36,7 @@ export default function DetalleEmpresa({
   onVolver,
   onAbrir,
   onAperturar,
+  onVerAlertas,
   onRefresh,
   isOnline,
 }) {
@@ -210,25 +212,29 @@ export default function DetalleEmpresa({
 
       {resumen.alertas.length > 0 && (
         <section className="empresa-seccion" aria-labelledby="empresa-alertas">
-          <h3 id="empresa-alertas" className="section-title">
-            Alertas más graves
-          </h3>
-          <p className="section-desc">
-            {resumen.alertas.length > MAX_ALERTAS
-              ? `Las ${MAX_ALERTAS} de mayor severidad de ${resumen.alertas.length}; el resto está en Alertas.`
-              : 'Lo que pide acción en los expedientes de esta empresa.'}
-          </p>
-          <ul className="alerta-lista alerta-lista--bandeja">
-            {resumen.alertas.slice(0, MAX_ALERTAS).map((a, i) => (
-              <AlertaItem
-                key={`${a.expediente.id}-${a.codigo}-${a.tipo_documento}-${i}`}
-                alerta={a}
-                // Con un solo expediente, la columna del expediente repetiría lo que ya dice la tabla.
-                expediente={expedientes.length > 1 ? a.expediente : undefined}
-                onAbrirExpediente={onAbrir}
-              />
-            ))}
-          </ul>
+          <div className="empresa-seccion-cabecera">
+            <h3 id="empresa-alertas" className="section-title">
+              Alertas más graves
+            </h3>
+            <Button compacto icono={ArrowUpRight} onClick={() => onVerAlertas?.(titular.rfc)}>
+              {resumen.alertas.length === 1 ? 'Ver en Alertas' : `Ver las ${resumen.alertas.length} en Alertas`}
+            </Button>
+          </div>
+          <Card as="ul" className="empresa-alertas">
+            {resumen.alertas.slice(0, MAX_ALERTAS).map((a, i) => {
+              const sev = getSeveridadMeta(a.severidad)
+              return (
+                <li key={`${a.expediente.id}-${a.codigo}-${a.tipo_documento}-${i}`} className="empresa-alerta">
+                  <Badge tono={sev.tono === 'brand' ? undefined : sev.tono} punto>
+                    {sev.label}
+                  </Badge>
+                  <span className="empresa-alerta-titulo">{a.titulo}</span>
+                  {/* Con un solo expediente, el folio repetiría lo que ya dice la tabla. */}
+                  {expedientes.length > 1 && <FolioExpediente expediente={a.expediente.completo} className="mono cell-muted" />}
+                </li>
+              )
+            })}
+          </Card>
         </section>
       )}
     </div>

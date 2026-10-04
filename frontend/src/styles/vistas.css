@@ -96,21 +96,36 @@
   border-radius: 0 0 var(--r-md) var(--r-md);
 }
 
-/* Estado arriba y folio debajo: en una sola línea, junto al botón, el folio
-   se recortaba a «EXP-BIM9…» a 1366 px. */
+/* El semáforo y, debajo, el índice del expediente, junto al botón. El folio
+   va en la identidad: junto al botón se recortaba a «EXP-BIM9…». */
 .profile-exp {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 2px;
+  gap: var(--s-1);
   min-width: 0;
 }
 
 .profile-folio {
+  margin-top: 2px;
   font-size: var(--fs-micro);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.profile-indice {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  font-size: var(--fs-micro);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.profile-indice-barra {
+  width: 48px;
+  margin-top: 0;
 }
 
 /* Razón social que abre el detalle de la empresa: subrayado solo al pasar. */
@@ -178,6 +193,46 @@
   display: flex;
   flex-direction: column;
   gap: var(--s-2);
+}
+
+.empresa-seccion-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+}
+
+/* Resumen de alertas: una por línea; la tarjeta completa con su recomendación vive en Alertas. */
+.empresa-alertas {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.empresa-alerta {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  font-size: var(--fs-body);
+  color: var(--text-primary);
+}
+
+.empresa-alerta + .empresa-alerta {
+  border-top: var(--border-subtle);
+}
+
+.empresa-alerta .badge {
+  flex: none;
+  min-width: 96px;
+}
+
+.empresa-alerta-titulo {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* ── Expedientes: tarjetas con semáforo ────────────────────────── */
@@ -429,6 +484,28 @@
   white-space: nowrap;
 }
 
+/* Motivo agrupado: los documentos con la misma causa, uno por renglón. */
+.exp-motivo-docs {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: var(--s-1) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.exp-motivo-docs li {
+  display: grid;
+  grid-template-columns: minmax(0, max-content) minmax(0, 1fr);
+  align-items: baseline;
+  gap: var(--s-2);
+}
+
+.exp-motivo-doc {
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
 .exp-motivo-causa {
   color: var(--text-secondary);
 }
@@ -443,15 +520,31 @@
   color: var(--text-primary);
 }
 
-/* M1: aviso del RFC cuyo dígito verificador no coincide. */
+/* M1: aviso del RFC cuyo dígito verificador no coincide: etiqueta de advertencia bajo el RFC. */
 .rfc-aviso {
-  display: block;
+  align-self: flex-start;
+  width: fit-content;
   margin-top: var(--s-1);
-  font-size: var(--fs-small);
-  color: var(--warn);
+  cursor: help;
+}
+
+.rfc-aviso:focus-visible {
+  box-shadow: var(--focus-ring);
+  outline: none;
 }
 
 /* P6: contenido activo del PDF (PLUS-18). */
 .senal-archivo--warn {
   color: var(--warn);
+}
+
+/* El aviso va al borde izquierdo de su celda: el tooltip se alinea con él y no invade la barra lateral. */
+.rfc-aviso[data-tooltip]::after {
+  left: 0;
+  transform: translateY(2px);
+}
+
+.rfc-aviso[data-tooltip]:hover::after,
+.rfc-aviso[data-tooltip]:focus-visible::after {
+  transform: none;
 }

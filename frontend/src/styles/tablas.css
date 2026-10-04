@@ -346,6 +346,11 @@
   text-underline-offset: 2px;
 }
 
+/* El detalle de una regla aparece con el mismo ascenso breve que las filas. */
+.regla-detalle-grid {
+  animation: rise-in var(--dur-slow) var(--ease);
+}
+
 .data-table tr.regla-detalle td {
   height: auto;
   padding: var(--s-3) var(--cell-x) var(--s-4);

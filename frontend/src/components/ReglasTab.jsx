@@ -390,13 +390,16 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
                     </tr>
 
                     {familiaAbierta(grupo.familia) &&
-                      grupo.items.map((r) => {
+                      grupo.items.map((r, i) => {
                       const sev = getSeveridadMeta(r.severidad)
                       const abierta = reglaAbierta === r.id
                       return (
                         <Fragment key={r.id}>
+                        {/* Al desplegar la familia, sus reglas entran en cascada (data-flip y --i, movimiento.css). */}
                         <tr
                           className={`row-clickable ${!r.activo ? 'is-paused' : ''} ${abierta ? 'is-open' : ''}`}
+                          data-flip={r.id}
+                          style={{ '--i': i }}
                           onClick={() => alternarRegla(r.id)}
                         >
                           <td className="mono cell-mono cell-code" title={r.codigo_regla}>

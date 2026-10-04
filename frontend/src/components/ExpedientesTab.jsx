@@ -51,6 +51,8 @@ export default function ExpedientesTab({
   onAlternar,
   apertura = null,
   onAperturaAtendida,
+  estadoInicial = null,
+  onFiltroAtendido,
 }) {
   const toast = useToast()
   const [modalAbierto, setModalAbierto] = useState(false)
@@ -58,7 +60,8 @@ export default function ExpedientesTab({
   const [enviando, setEnviando] = useState(false)
   const [error, setError] = useState('')
   const [busqueda, setBusqueda] = useState('')
-  const [filtroEstado, setFiltroEstado] = useState('TODOS')
+  // Un sector del anillo de Reportes llega con su estado: la vista se monta ya filtrada.
+  const [filtroEstado, setFiltroEstado] = useState(estadoInicial || 'TODOS')
   const [filtroTipo, setFiltroTipo] = useState('TODOS')
   const [orden, setOrden] = useState('PRIORIDAD')
   const [desde, setDesde] = useState('')
@@ -81,6 +84,12 @@ export default function ExpedientesTab({
       tarjetas.current.get(foco)?.scrollIntoView({ block: 'center', behavior: 'smooth' })
     }
   }, [foco, loading])
+
+  // El filtro pedido desde otra vista ya se aplicó al montar: se da por atendido
+  // para que volver a Expedientes por la barra lateral no lo repita.
+  useEffect(() => {
+    if (estadoInicial) onFiltroAtendido?.()
+  }, [estadoInicial, onFiltroAtendido])
 
   // Apertura pedida desde Empresas: el modal llega con el titular preseleccionado.
   const [aperturaVista, setAperturaVista] = useState(null)

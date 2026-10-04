@@ -14,3 +14,26 @@
   animation-delay: calc(min(var(--i, 0), 7) * 30ms);
   animation-fill-mode: backwards;
 }
+
+/* ══════════════════════ DESPLEGABLES NATIVOS ══════════════════════
+   «Ver detalle», «Reglas evaluadas para el índice», «Historial del
+   expediente», «Ver datos» de las gráficas: el contenido de cada <details>
+   se despliega y se pliega con altura animada, el mismo movimiento del
+   detalle del expediente. Solo CSS (::details-content e interpolate-size):
+   un navegador que no los soporte los abre al instante, como antes. La
+   regla global de «reducir movimiento» (index.css) anula la transición. */
+details {
+  interpolate-size: allow-keywords;
+}
+
+details::details-content {
+  height: 0;
+  overflow: clip;
+  transition:
+    height var(--dur-slow) var(--ease),
+    content-visibility var(--dur-slow) allow-discrete;
+}
+
+details[open]::details-content {
+  height: auto;
+}

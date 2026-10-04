@@ -186,6 +186,8 @@ function FormularioRatificacion({ dictamen, onRatificado, onCancelar }) {
  */
 function DictamenVigente({ dictamen, puedeRatificar, onRatificar }) {
   const ratificado = dictamen.revisado_por_humano
+  // El automático solo informa algo cuando la ratificación lo cambió; si coincide, repetiría el estatus del encabezado.
+  const cambioAutomatico = Boolean(dictamen.estatus_preliminar) && dictamen.estatus_preliminar !== dictamen.estatus
   return (
     <article className="registro-card">
       <header className="registro-head">
@@ -202,12 +204,14 @@ function DictamenVigente({ dictamen, puedeRatificar, onRatificar }) {
         </span>
       </header>
 
-      <KeyValueList className="registro-grid">
+      <KeyValueList className={`registro-grid${cambioAutomatico ? '' : ' registro-grid--tres'}`}>
         <KeyValue etiqueta="Confianza" valorClassName="tabular">
           {pct(dictamen.nivel_confianza)}
         </KeyValue>
         <KeyValue etiqueta="Vigencia">{VIGENCIA[dictamen.vigencia_resultado] || '—'}</KeyValue>
-        <KeyValue etiqueta="Dictamen automático">{meta(dictamen.estatus_preliminar).label}</KeyValue>
+        {cambioAutomatico && (
+          <KeyValue etiqueta="Dictamen automático">{meta(dictamen.estatus_preliminar).label}</KeyValue>
+        )}
         <KeyValue etiqueta="Huella evaluada" valorClassName="mono" valorTitulo={dictamen.hash_sha256}>
           {hashCorto(dictamen.hash_sha256, 8, 6)}
         </KeyValue>

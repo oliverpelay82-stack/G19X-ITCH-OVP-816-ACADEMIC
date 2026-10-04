@@ -115,7 +115,8 @@ Bandas del DOC-08 §6.2: ≥ 0.85 CONFORME; de 0.70 a 0.84 y por debajo de 0.70,
 - Estructura: hojas de estilo por contexto en `src/styles/`, importadas en orden por `App.css` (una regla nueva va en la hoja de su contexto); panel de IA en `components/documento-ia/`; detalle del expediente en `components/expedientes/`; modal compartido `DetalleDocumentoModal.jsx`.
 - Reglas fijas de producto (el detalle está en PRD §13):
   - la URL con hash (`hooks/useRuta.js`) es la fuente de verdad de la sección, con inicio en Expedientes;
-  - las métricas van solo en Expedientes y Reportes;
+  - las métricas van solo en Expedientes; Reportes empieza con las gráficas;
+  - ninguna vista repite otra ni un botón lleva a donde el usuario ya está (PRD §13.1, 04/10/2026); un filtro que una vista pide a otra viaja por `filtroPendiente` (App.jsx);
   - la Bóveda entra con solo los documentos vigentes;
   - el éxito de una auditoría no se anuncia con un aviso flotante;
   - la meta de cada respuesta del chat indica su procedencia.

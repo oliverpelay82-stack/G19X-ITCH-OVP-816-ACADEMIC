@@ -67,10 +67,20 @@ const TITULO_MOTIVOS = {
 /**
  * Un motivo del core («Acta de Asamblea (legado.pdf): dictamen no conforme.»)
  * separado en documento, archivo y causa para leerlo como fila; los motivos
- * generales («Faltan documentos obligatorios: …») quedan como texto.
+ * generales («Faltan documentos obligatorios: …») quedan como texto. El nombre
+ * del documento se reconoce por el catálogo, porque tanto él («… (SAT)») como
+ * el archivo («acta (1).pdf») pueden llevar paréntesis.
  */
 function partesMotivo(motivo) {
-  // El archivo es el último paréntesis: el nombre del documento puede llevar uno («… (SAT)»).
+  const documento = Object.values(TIPO_DOCUMENTO_LABEL)
+    .filter((nombre) => motivo.startsWith(`${nombre} (`))
+    .sort((a, b) => b.length - a.length)[0]
+  if (documento) {
+    const resto = motivo.slice(documento.length + 2)
+    const fin = resto.lastIndexOf('): ')
+    if (fin > 0) return { documento, archivo: resto.slice(0, fin), causa: resto.slice(fin + 3) }
+  }
+  // Tipo fuera del catálogo cargado: el archivo es el último paréntesis sin paréntesis dentro.
   const m = /^(.+) \(([^()]+)\): (.+)$/.exec(motivo)
   return m ? { documento: m[1], archivo: m[2], causa: m[3] } : { causa: motivo }
 }
@@ -109,7 +119,38 @@ function repartirAlertas(motivos, alertas) {
   for (const f of filas.filter((x) => !x.documento)) {
     f.alertas = tomar((a) => documentoDeAlerta(a) && f.causa.includes(documentoDeAlerta(a)))
   }
-  return { filas, sueltas: pendientes }
+  return { filas: agrupar(filas), sueltas: pendientes }
+}
+
+/**
+ * Varios documentos con la misma causa («pendiente de ratificación por un
+ * analista») van en una sola fila con la lista de documentos y un solo «qué
+ * hacer», en lugar de repetir la misma recomendación por cada uno.
+ */
+function agrupar(filas) {
+  const porCausa = new Map()
+  for (const f of filas) {
+    if (!f.documento) continue
+    const clave = f.causa.replace(/\.$/, '')
+    porCausa.set(clave, [...(porCausa.get(clave) || []), f])
+  }
+  const vistas = new Set()
+  const resultado = []
+  for (const f of filas) {
+    const grupo = f.documento ? porCausa.get(f.causa.replace(/\.$/, '')) : null
+    if (!grupo || grupo.length < 2) {
+      resultado.push(f)
+    } else if (!vistas.has(grupo)) {
+      vistas.add(grupo)
+      resultado.push({
+        motivo: grupo.map((g) => g.motivo).join('|'),
+        causa: f.causa,
+        documentos: grupo.map((g) => ({ documento: g.documento, archivo: g.archivo })),
+        alertas: grupo.flatMap((g) => g.alertas),
+      })
+    }
+  }
+  return resultado
 }
 
 /** Qué hacer bajo un motivo: cada recomendación una vez y, plegado, el detalle con su severidad. */
@@ -156,14 +197,31 @@ function MotivosSemaforo({ estado, motivos = [], alertas = [] }) {
       <p className="exp-motivos-titulo">
         <span className={`status-dot status-dot--${meta.tono}`} aria-hidden="true" />
         {TITULO_MOTIVOS[estado] || 'Motivos del semáforo'}
-        <span className="tabular cell-muted"> · {motivos.length}</span>
+        <span className="tabular cell-muted"> · {filas.length + sueltas.length}</span>
       </p>
       <ul className="exp-motivos-lista">
         {filas.map((f) => (
           <li key={f.motivo} className="exp-motivo">
             <span className={`status-dot status-dot--${tonoMotivo(f.causa)}`} aria-hidden="true" />
             <div className="exp-motivo-cuerpo">
-              {f.documento ? (
+              {f.documentos ? (
+                <>
+                  <p className="exp-motivo-linea">
+                    <span className="exp-motivo-nombre">{f.documentos.length} documentos</span>
+                    <span className="exp-motivo-causa">{f.causa.replace(/\.$/, '')}</span>
+                  </p>
+                  <ul className="exp-motivo-docs">
+                    {f.documentos.map((d) => (
+                      <li key={`${d.documento}-${d.archivo}`}>
+                        <span className="exp-motivo-doc">{d.documento}</span>
+                        <span className="cell-sub exp-motivo-archivo" title={d.archivo}>
+                          {d.archivo}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              ) : f.documento ? (
                 <>
                   <p className="exp-motivo-linea">
                     <span className="exp-motivo-nombre">{f.documento}</span>

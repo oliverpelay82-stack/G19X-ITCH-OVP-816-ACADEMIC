@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { ArrowUpRight, BellOff, ChevronDown, SearchX } from 'lucide-react'
 import { SkeletonCards } from './Skeleton.jsx'
 import Desplegable from './expedientes/Desplegable.jsx'
@@ -22,8 +22,9 @@ import {
  * expediente, así que la bandeja se actualiza con el mismo sondeo que el
  * resto del panel y una alerta desaparece en cuanto se corrige su hallazgo.
  */
-export default function AlertasTab({ expedientes, loading, onAbrirExpediente }) {
-  const [busqueda, setBusqueda] = useState('')
+export default function AlertasTab({ expedientes, loading, onAbrirExpediente, busquedaInicial = null, onFiltroAtendido }) {
+  // Desde el detalle de una empresa llega su RFC: la bandeja se monta ya filtrada.
+  const [busqueda, setBusqueda] = useState(busquedaInicial || '')
   const [filtroSeveridad, setFiltroSeveridad] = useState('TODAS')
   const [filtroCodigo, setFiltroCodigo] = useState('TODAS')
   const [filtroTipo, setFiltroTipo] = useState('TODOS')
@@ -37,6 +38,11 @@ export default function AlertasTab({ expedientes, loading, onAbrirExpediente }) 
       return siguientes
     })
   const consulta = useDebounce(busqueda, 220)
+
+  // Filtro pedido desde otra vista: aplicado al montar, se da por atendido.
+  useEffect(() => {
+    if (busquedaInicial) onFiltroAtendido?.()
+  }, [busquedaInicial, onFiltroAtendido])
   const bandeja = useDesplazamiento()
 
   const alertas = useMemo(

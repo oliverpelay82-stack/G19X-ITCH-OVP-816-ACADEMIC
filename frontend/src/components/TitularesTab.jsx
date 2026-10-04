@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Building2, ChevronRight, FolderOpen, FolderPlus, LayoutGrid, Plus, Rows3, SearchX } from 'lucide-react'
+import { Building2, ChevronRight, FolderOpen, FolderPlus, LayoutGrid, Plus, Rows3, SearchX, TriangleAlert } from 'lucide-react'
 import { EncabezadoOrdenable } from './OrdenTabla.jsx'
 import useOrden, { RANGO_ESTADO } from '../hooks/useOrden.js'
 import {
@@ -19,6 +19,7 @@ import {
   Segmented,
   Select,
   Tag,
+  Tooltip,
 } from './ui/index.js'
 import { SkeletonCards, SkeletonRows } from './Skeleton.jsx'
 import useToast from '../hooks/useToast.js'
@@ -27,13 +28,44 @@ import useDesplazamiento from '../hooks/useDesplazamiento.js'
 import { createTitular } from '../services/api.js'
 import { categoriaTitular, getEstadoBadge } from '../constants.js'
 import { formatFechaCorta, iniciales, rfcRegistrable, validarRfc } from '../utils/format.js'
+import { formatIndice, indiceDe } from '../utils/indice.js'
 import FolioExpediente from './FolioExpediente.jsx'
 import DetalleEmpresa, { EmpresaNoEncontrada } from './DetalleEmpresa.jsx'
 
-/** M1: el dígito verificador del RFC no coincide (RFC de prueba o mal escrito); se aceptó con advertencia. */
+const EXPLICACION_RFC = 'Dígito verificador sin coincidir: se aceptó con advertencia'
+
+/**
+ * M1: el dígito verificador del RFC no coincide (RFC de prueba o mal escrito);
+ * se aceptó con advertencia. Etiqueta compacta de advertencia (no de error) con
+ * la explicación al pasar el cursor o al enfocarla.
+ */
 function AvisoRfc({ titular }) {
   if (titular.rfc_verificacion !== 'DIGITO_NO_COINCIDE') return null
-  return <span className="rfc-aviso">Dígito verificador sin coincidir</span>
+  return (
+    <Tooltip texto={EXPLICACION_RFC}>
+      <Badge tono="warn" className="rfc-aviso" tabIndex={0}>
+        <TriangleAlert size={12} aria-hidden="true" />
+        RFC con advertencia
+        <span className="sr-only">. {EXPLICACION_RFC}</span>
+      </Badge>
+    </Tooltip>
+  )
+}
+
+/** Índice de cumplimiento del expediente junto a su semáforo: cuánto le falta, no solo su estado. */
+function IndiceTarjeta({ expediente }) {
+  const porcentaje = indiceDe(expediente)?.porcentaje
+  if (porcentaje == null) return null
+  return (
+    <span className="profile-indice" title="Índice de cumplimiento: reglas cumplidas entre reglas evaluadas">
+      <span className="metric-bar profile-indice-barra" aria-hidden="true">
+        <span className="metric-bar-fill" style={{ width: `${Math.round(porcentaje)}%` }} />
+      </span>
+      <span>
+        <span className="tabular">{formatIndice(porcentaje)}</span> cumplimiento
+      </span>
+    </span>
+  )
 }
 
 const FORM_INICIAL = { rfc: '', razon_social: '', tipo_persona: 'MORAL', categoria: 'PROVEEDOR' }
@@ -124,6 +156,12 @@ function TarjetaTitular({ titular, expedientes, indice = 0, ...acciones }) {
           <p className="profile-sub">
             {tipoPersona(titular.tipo_persona)} · alta {formatFechaCorta(titular.creado_en)}
           </p>
+          {ultimo && (
+            <p className="mono cell-muted profile-folio">
+              <FolioExpediente expediente={ultimo} />
+              {expedientes.length > 1 && ` +${expedientes.length - 1}`}
+            </p>
+          )}
         </div>
       </header>
 
@@ -140,12 +178,7 @@ function TarjetaTitular({ titular, expedientes, indice = 0, ...acciones }) {
       <footer className="profile-foot">
         <div className="profile-exp">
           <EstadoExpediente expediente={ultimo} />
-          {ultimo && (
-            <span className="mono cell-muted profile-folio">
-              <FolioExpediente expediente={ultimo} />
-              {expedientes.length > 1 && ` +${expedientes.length - 1}`}
-            </span>
-          )}
+          {ultimo && <IndiceTarjeta expediente={ultimo} />}
         </div>
         <AccionExpediente titular={titular} expediente={ultimo} {...acciones} />
       </footer>
@@ -165,6 +198,7 @@ export default function TitularesTab({
   onAperturarExpediente,
   rfcAbierto = null,
   onVerEmpresa,
+  onVerAlertas,
   loading,
   onRefresh,
   isOnline = true,
@@ -280,6 +314,7 @@ export default function TitularesTab({
         onVolver={volver}
         onAbrir={acciones.onAbrir}
         onAperturar={aperturar}
+        onVerAlertas={onVerAlertas}
         onRefresh={onRefresh}
         isOnline={isOnline}
       />

@@ -113,6 +113,11 @@ export default function App() {
   const [reglas, setReglas] = useState([])
   // Titular para el que se pidió aperturar un expediente desde Empresas.
   const [aperturaTitular, setAperturaTitular] = useState(null)
+  // Filtro con el que otra vista pide abrir una sección: el estado del semáforo
+  // elegido en el anillo de Reportes o la empresa cuyas alertas se quieren ver.
+  // La vista lo toma al montarse y lo da por atendido.
+  const [filtroPendiente, setFiltroPendiente] = useState(null)
+  const atenderFiltro = useCallback(() => setFiltroPendiente(null), [])
 
   // Evita avisar de la misma caída en cada ciclo de sondeo.
   const caidasAvisadas = useRef(new Set())
@@ -271,6 +276,15 @@ export default function App() {
 
   const verEmpresa = useCallback((rfc) => ir('titulares', rfc), [ir])
 
+  const irFiltrado = useCallback(
+    (seccion, valor) => {
+      setFiltroPendiente({ seccion, valor })
+      ir(seccion)
+    },
+    [ir]
+  )
+  const filtroDe = (s) => (filtroPendiente?.seccion === s ? filtroPendiente.valor : null)
+
   const aperturarExpediente = useCallback(
     (titularId) => {
       setAperturaTitular(titularId)
@@ -331,6 +345,7 @@ export default function App() {
                 onAperturarExpediente={aperturarExpediente}
                 rfcAbierto={tabActiva === 'titulares' ? ruta.folio : null}
                 onVerEmpresa={verEmpresa}
+                onVerAlertas={(busqueda) => irFiltrado('alertas', busqueda)}
                 loading={loading}
                 onRefresh={refrescar}
                 isOnline={health.core.online}
@@ -349,19 +364,25 @@ export default function App() {
                 onAlternar={alternarExpediente}
                 apertura={aperturaTitular}
                 onAperturaAtendida={() => setAperturaTitular(null)}
+                estadoInicial={filtroDe('expedientes')}
+                onFiltroAtendido={atenderFiltro}
               />
             )}
             {tabActiva === 'alertas' && (
-              <AlertasTab expedientes={expedientes} loading={loading} onAbrirExpediente={abrirExpediente} />
+              <AlertasTab
+                expedientes={expedientes}
+                loading={loading}
+                onAbrirExpediente={abrirExpediente}
+                busquedaInicial={filtroDe('alertas')}
+                onFiltroAtendido={atenderFiltro}
+              />
             )}
             {tabActiva === 'reportes' && (
               <ReportesTab
                 expedientes={expedientes}
-                titulares={titulares}
-                documentos={documentos}
-                loading={loading}
                 isOnline={health.core.online}
                 onAbrirExpediente={abrirExpediente}
+                onVerExpedientes={(estado) => irFiltrado('expedientes', estado)}
               />
             )}
             {tabActiva === 'boveda' && (
