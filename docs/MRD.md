@@ -377,7 +377,7 @@ Derivados de los objetivos y umbrales documentados [Anteproyecto; DG Caps. IV, V
 | MR-18 Búsqueda de expedientes | RF-05, HU-04 | Implementado |
 | MR-19 Búsqueda conceptual en el acervo | RF-12 | Fuera del alcance de la residencia (PRD 2.1: sin historia de usuario ni prioridad, y no interviene en el dictamen) |
 | MR-20 Recepción blindada de la evidencia | PLUS-01, PLUS-02, PLUS-03 (RCV-04, RSC-OPIN-SENT), HU-34 a HU-36 | Implementado (PRD §21.1; diagramas en `docs/uml/`) |
-| MR-21 Custodia verificable ante auditorías externas | PLUS-04, PLUS-05, PLUS-06, HU-39 a HU-41 | Implementado (PRD §21.3; diagramas en `docs/uml/`) |
+| MR-21 Custodia verificable ante auditorías externas | PLUS-04, PLUS-05, PLUS-06, HU-39 a HU-41; PLUS-23 (sello de integridad de cada reporte, 03/10/2026) | Implementado (PRD §21.3 y §21.9; diagramas en `docs/uml/`) |
 | MR-22 Consulta inmediata del documento con evidencia | PLUS-07 a PLUS-11, HU-42, HU-43 | Implementado (PRD §21.4; diagrama en `docs/uml/`) |
 | MR-23 Integridad permanente y dictamen reproducible | PLUS-14, PLUS-15, HU-33, HU-44 a HU-48; RIE-03; protocolo y Tabla 1 del DOC-05 | Implementado (PRD §21.5; diagramas en `docs/uml/`) |
 | MR-24 Autenticidad del archivo, catálogo y antigüedad | M1, M5, M6, PLUS-18 a PLUS-20, Q-a, HU-49, HU-52 a HU-56 (PLUS-16 y PLUS-17 retirados el 02/10/2026); DOC-02; DOC-05 | Implementado (PRD §21.6; diagramas en `docs/uml/`) |

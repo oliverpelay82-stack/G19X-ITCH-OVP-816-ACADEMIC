@@ -14,10 +14,13 @@ evaluados por ``motor/cumplimiento.py`` y no toca la base de datos.
 """
 from __future__ import annotations
 
+import dataclasses
+import hashlib
 import io
+import json
 from collections import Counter
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import date, datetime
 from typing import Any
 
 from openpyxl import Workbook
@@ -117,6 +120,48 @@ class DatosExpediente:
     dictamenes: dict[str, DictamenAuditoria] = field(default_factory=dict)   # por documento_id
     eventos: list[BitacoraAuditoria] = field(default_factory=list)
     cadena: dict[str, Any] = field(default_factory=dict)       # motor.bitacora.verificar_cadena (PLUS-15)
+
+
+# ── PLUS-23: sello de integridad de cada reporte ─────────────────────
+ROTULO_SELLO = "Sello de integridad forense (SHA-256)"
+
+
+def _plano(valor: Any) -> Any:
+    """
+    Los datos de un reporte como estructura JSON canónica: dataclasses por sus
+    campos, filas de la base por sus columnas (y el titular del expediente, que
+    el reporte imprime), fechas en ISO 8601 y conjuntos ordenados.
+    """
+    if dataclasses.is_dataclass(valor) and not isinstance(valor, type):
+        return {f.name: _plano(getattr(valor, f.name)) for f in dataclasses.fields(valor)}
+    if hasattr(valor, "__table__"):
+        fila = {c.name: _plano(getattr(valor, c.name)) for c in valor.__table__.columns}
+        if getattr(valor, "titular", None) is not None and hasattr(valor.titular, "__table__"):
+            fila["titular"] = _plano(valor.titular)
+        return fila
+    if isinstance(valor, dict):
+        return {str(k): _plano(v) for k, v in valor.items()}
+    if isinstance(valor, (list, tuple)):
+        return [_plano(v) for v in valor]
+    if isinstance(valor, (set, frozenset)):
+        return sorted(_plano(v) for v in valor)
+    if isinstance(valor, (datetime, date)):
+        return valor.isoformat()
+    return valor
+
+
+def sello_contenido(*datos: Any) -> str:
+    """
+    PLUS-23: SHA-256 de los datos del reporte en forma canónica (JSON con claves
+    ordenadas). Los mismos datos dan siempre el mismo sello; lo imprimen el pie
+    del PDF y el resumen del Excel, y lo guarda el evento de la exportación.
+    """
+    canonico = json.dumps(_plano(list(datos)), sort_keys=True, ensure_ascii=False, separators=(",", ":"), default=str)
+    return hashlib.sha256(canonico.encode("utf-8")).hexdigest()
+
+
+def _sello(sello: str | None) -> list[tuple[str, Any]]:
+    return [(ROTULO_SELLO, sello)] if sello else []
 
 
 def _ancla(cadena: dict[str, Any]) -> list[tuple[str, Any]]:
@@ -308,11 +353,11 @@ def _ficha_expediente(datos: DatosExpediente) -> list[tuple[str, Any]]:
     ]
 
 
-def expediente_xlsx(datos: DatosExpediente) -> bytes:
+def expediente_xlsx(datos: DatosExpediente, sello: str | None = None) -> bytes:
     libro = Workbook()
     resumen = libro.active
     resumen.title = "Dictamen"
-    ficha = _ficha_expediente(datos) + _ancla(datos.cadena)
+    ficha = _ficha_expediente(datos) + _ancla(datos.cadena) + _sello(sello)
     _hoja_ficha(resumen, "Dictamen de Cumplimiento Documental", ficha)
     fila = len(ficha) + 5
     resumen.cell(row=fila, column=1, value="Motivos del semáforo").font = Font(bold=True)
@@ -352,7 +397,8 @@ def expediente_xlsx(datos: DatosExpediente) -> bytes:
     return _guardar(libro)
 
 
-def global_xlsx(evaluados: list[tuple[Expediente, EvaluacionExpediente]], cadena: dict[str, Any] | None = None) -> bytes:
+def global_xlsx(evaluados: list[tuple[Expediente, EvaluacionExpediente]], cadena: dict[str, Any] | None = None,
+                sello: str | None = None) -> bytes:
     libro = Workbook()
     resumen = libro.active
     resumen.title = "Resumen"
@@ -371,6 +417,7 @@ def global_xlsx(evaluados: list[tuple[Expediente, EvaluacionExpediente]], cadena
         *[(f"Expedientes {etiqueta_expediente(t).lower()}s", n) for t, n in indicadores["por_tipo"]],
         ("Reporte emitido", _ahora()),
         *_ancla(cadena or {}),
+        *_sello(sello),
     ])
     _hoja_graficas(libro, indicadores)
     _hoja_tabla(libro.create_sheet("Expedientes"), [
@@ -533,18 +580,23 @@ def _pie(lienzo, doc) -> None:
                       "PluriOne S.A. de C.V. · Motor de Validación de Cumplimiento Documental · Documento generado "
                       "automáticamente a partir de la bitácora inmutable")
     lienzo.drawRightString(doc.pagesize[0] - doc.rightMargin, 10 * mm, f"Página {doc.page}")
+    # PLUS-23: el sello de los datos del reporte, en cada página.
+    if getattr(doc, "sello", None):
+        lienzo.setFont("Courier", 6.5)
+        lienzo.drawString(doc.leftMargin, 6.5 * mm, f"{ROTULO_SELLO}: {doc.sello}")
     lienzo.restoreState()
 
 
-def _documento_pdf(historia: list, titulo: str) -> bytes:
+def _documento_pdf(historia: list, titulo: str, sello: str | None = None) -> bytes:
     salida = io.BytesIO()
     doc = SimpleDocTemplate(salida, pagesize=letter, leftMargin=16 * mm, rightMargin=16 * mm, topMargin=16 * mm,
                             bottomMargin=18 * mm, title=titulo, author="PluriOne — Motor de Cumplimiento")
+    doc.sello = sello
     doc.build(historia, onFirstPage=_pie, onLaterPages=_pie)
     return salida.getvalue()
 
 
-def expediente_pdf(datos: DatosExpediente) -> bytes:
+def expediente_pdf(datos: DatosExpediente, sello: str | None = None) -> bytes:
     e = _estilos()
     ancho = letter[0] - 32 * mm
     exp, ev = datos.expediente, datos.evaluacion
@@ -606,7 +658,7 @@ def expediente_pdf(datos: DatosExpediente) -> bytes:
             ),
         ]
     historia += _seccion_ancla(datos.cadena, e, ancho)
-    return _documento_pdf(historia, f"Dictamen {exp.codigo_expediente}")
+    return _documento_pdf(historia, f"Dictamen {exp.codigo_expediente}", sello)
 
 
 def _seccion_ancla(cadena: dict[str, Any], e, ancho: float) -> list:
@@ -617,7 +669,8 @@ def _seccion_ancla(cadena: dict[str, Any], e, ancho: float) -> list:
     return [KeepTogether([Paragraph("Constancia de la cadena de custodia", e["seccion"]), _ficha(pares, e, ancho)])]
 
 
-def global_pdf(evaluados: list[tuple[Expediente, EvaluacionExpediente]], cadena: dict[str, Any] | None = None) -> bytes:
+def global_pdf(evaluados: list[tuple[Expediente, EvaluacionExpediente]], cadena: dict[str, Any] | None = None,
+               sello: str | None = None) -> bytes:
     e = _estilos()
     ancho = letter[0] - 32 * mm
     ind = _indicadores(evaluados)
@@ -653,7 +706,7 @@ def global_pdf(evaluados: list[tuple[Expediente, EvaluacionExpediente]], cadena:
                    [ancho * p for p in (0.2, 0.1, 0.28, 0.42)], e, ["Folio", "Severidad", "Alerta", "Recomendación"]),
         ]
     historia += _seccion_ancla(cadena or {}, e, ancho)
-    return _documento_pdf(historia, "Reporte de Cumplimiento Documental")
+    return _documento_pdf(historia, "Reporte de Cumplimiento Documental", sello)
 
 
 
@@ -880,14 +933,14 @@ def _filas_eventos_custodia(datos: DatosCustodia) -> list[dict[str, Any]]:
     } for e in datos.eventos]
 
 
-def ficha_custodia_xlsx(datos: DatosCustodia) -> bytes:
+def ficha_custodia_xlsx(datos: DatosCustodia, sello: str | None = None) -> bytes:
     libro = Workbook()
     hoja = libro.active
     hoja.title = "Ficha"
     pares = _ficha_custodia(datos) + [("Cadena de la bitácora", _texto_cadena(datos.cadena)),
                                       ("Último sello", datos.cadena.get("ultimo_hash") or "—"),
                                       ("Algoritmo", datos.cadena.get("algoritmo") or "—")]
-    pares += [("Alcance normativo", LEYENDA_CUSTODIA)]
+    pares += [("Alcance normativo", LEYENDA_CUSTODIA)] + _sello(sello)
     _hoja_ficha(hoja, "Ficha de Custodia Documental", pares)
     _hoja_tabla(libro.create_sheet("Versiones"), [
         ("n", "#", 5), ("archivo", "Archivo", 40), ("fecha", "Ingesta", 17), ("hash", "SHA-256", 68),
@@ -909,17 +962,17 @@ def ficha_custodia_xlsx(datos: DatosCustodia) -> bytes:
     return _guardar(libro)
 
 
-def ficha_custodia_pdf(datos: DatosCustodia) -> bytes:
+def ficha_custodia_pdf(datos: DatosCustodia, sello: str | None = None) -> bytes:
     e = _estilos()
     ancho = letter[0] - 32 * mm
     doc = datos.documento
     integra = datos.cadena.get("integra", True)
     estado = "CONFORME" if datos.integro and integra else "NO_CONFORME"
-    sello = ("Documento íntegro" if datos.integro else "Documento ALTERADO") + " · " + _texto_cadena(datos.cadena)
+    veredicto = ("Documento íntegro" if datos.integro else "Documento ALTERADO") + " · " + _texto_cadena(datos.cadena)
     historia: list = [
         Paragraph("Ficha de Custodia Documental", e["titulo"]),
         Paragraph(f"{_esc(doc.nombre_archivo_original)} · emitida el {_ahora()}", e["subtitulo"]),
-        _sello_estado(estado, sello, e, ancho),
+        _sello_estado(estado, veredicto, e, ancho),
         Spacer(1, 8),
         _ficha(_ficha_custodia(datos), e, ancho),
         Paragraph("Versiones del documento en el expediente", e["seccion"]),
@@ -955,4 +1008,4 @@ def ficha_custodia_pdf(datos: DatosCustodia) -> bytes:
     for h in (datos.cadena.get("hallazgos") or [])[:10]:
         historia.append(Paragraph(f"• Secuencia {_esc(h.get('secuencia'))}: {_esc(h.get('problema'))}", e["texto"]))
     historia += [Spacer(1, 10), Paragraph(_esc(LEYENDA_CUSTODIA), e["subtitulo"])]
-    return _documento_pdf(historia, f"Ficha de custodia {doc.nombre_archivo_original}")
+    return _documento_pdf(historia, f"Ficha de custodia {doc.nombre_archivo_original}", sello)

@@ -10,6 +10,7 @@ Controlador de Reportes de Auditoría (Módulo 6: RF-22, RF-23, RF-24; HU-28, HU
 Cada exportación queda en la bitácora (EXPORTACION_REPORTE): qué se exportó,
 en qué formato y desde qué IP.
 """
+import hashlib
 from datetime import datetime
 from typing import Literal, Optional
 
@@ -38,11 +39,18 @@ def _archivo(contenido: bytes, formato: str, nombre: str) -> Response:
 
 
 def _registrar(
-    db: Session, request: Request, detalle: dict, expediente_id: str | None = None, documento_id: str | None = None
+    db: Session, request: Request, detalle: dict, contenido: bytes, sello: str,
+    expediente_id: str | None = None, documento_id: str | None = None,
 ) -> None:
+    """
+    Evento de la exportación en la bitácora sellada. PLUS-23: guarda el sello de los
+    datos (impreso en el reporte) y la huella del archivo emitido, con la que quien
+    lo reciba comprueba que no cambió (un archivo no puede imprimir su propia huella).
+    """
     bitacora.registrar(
         db, EVENTO_EXPORTACION_REPORTE, expediente_id=expediente_id, documento_id=documento_id, usuario="OPERADOR",
-        ip_origen=request.client.host if request.client else None, detalle=detalle,
+        ip_origen=request.client.host if request.client else None,
+        detalle={**detalle, "sello_contenido": sello, "hash_archivo": hashlib.sha256(contenido).hexdigest()},
     )
     db.commit()
 
@@ -73,9 +81,11 @@ def reporte_expediente(
     )
     # PLUS-15: el último eslabón antes de esta exportación queda impreso como ancla externa.
     datos = reportes.DatosExpediente(exp, evaluacion, dictamenes, eventos, cadena=bitacora.verificar_cadena(db))
-    contenido = reportes.expediente_pdf(datos) if formato == "pdf" else reportes.expediente_xlsx(datos)
+    sello = reportes.sello_contenido(datos)   # PLUS-23
+    contenido = reportes.expediente_pdf(datos, sello) if formato == "pdf" else reportes.expediente_xlsx(datos, sello)
     _registrar(db, request, {"reporte": "DICTAMEN_EXPEDIENTE", "formato": formato,
-                             "codigo_expediente": exp.codigo_expediente, "estado": evaluacion.estado}, exp.id)
+                             "codigo_expediente": exp.codigo_expediente, "estado": evaluacion.estado},
+               contenido, sello, exp.id)
     return _archivo(contenido, formato, f"dictamen_{exp.codigo_expediente}")
 
 
@@ -93,9 +103,11 @@ def reporte_global(
 ):
     evaluados = evaluar_lista(db, consultar_expedientes(db, tipo_expediente=tipo_expediente), causa="REPORTE_GLOBAL")
     cadena = bitacora.verificar_cadena(db)  # PLUS-15: ancla del último eslabón antes de exportar
-    contenido = reportes.global_pdf(evaluados, cadena) if formato == "pdf" else reportes.global_xlsx(evaluados, cadena)
+    sello = reportes.sello_contenido(evaluados, cadena)   # PLUS-23
+    contenido = (reportes.global_pdf(evaluados, cadena, sello) if formato == "pdf"
+                 else reportes.global_xlsx(evaluados, cadena, sello))
     _registrar(db, request, {"reporte": "CUMPLIMIENTO_GLOBAL", "formato": formato,
-                             "tipo_expediente": tipo_expediente, "expedientes": len(evaluados)})
+                             "tipo_expediente": tipo_expediente, "expedientes": len(evaluados)}, contenido, sello)
     return _archivo(contenido, formato, f"reporte_cumplimiento_{datetime.now().strftime('%Y%m%d_%H%M')}")
 
 
@@ -153,10 +165,12 @@ def ficha_custodia(
         documento=documento, expediente=documento.expediente, integro=integro, hash_actual=hash_actual,
         versiones=versiones, dictamenes=dictamenes, eventos=eventos, cadena=cadena,
     )
-    contenido = reportes.ficha_custodia_pdf(datos) if formato == "pdf" else reportes.ficha_custodia_xlsx(datos)
+    sello = reportes.sello_contenido(datos)   # PLUS-23
+    contenido = (reportes.ficha_custodia_pdf(datos, sello) if formato == "pdf"
+                 else reportes.ficha_custodia_xlsx(datos, sello))
     _registrar(db, request, {"reporte": "FICHA_CUSTODIA", "formato": formato,
                              "nombre_archivo_original": documento.nombre_archivo_original,
                              "hash_sha256": documento.hash_sha256, "integro": integro,
                              "cadena_integra": cadena.get("integra")},
-               documento.expediente_id, documento.id)
+               contenido, sello, documento.expediente_id, documento.id)
     return _archivo(contenido, formato, f"custodia_{documento.hash_sha256[:12]}")

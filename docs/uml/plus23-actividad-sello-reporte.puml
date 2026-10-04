@@ -1,0 +1,48 @@
+@startuml plus23-actividad-sello-reporte
+' PLUS-23 — Sello de integridad de cada reporte exportado (PRD §21.9).
+' Trazabilidad: RF-23, RF-24, RF-27; NOM-151 (huella del mensaje de datos),
+' ISO/IEC 27001 A.8.15 (registros); complementa PLUS-15 (último sello de la cadena).
+' Implementación: services/core-service/motor/reportes.py (sello_contenido,
+' pie del PDF y hoja de resumen del Excel) y controllers/reporte_controller.py
+' (evento EXPORTACION_REPORTE de la bitácora sellada).
+' Un archivo no puede llevar impresa la huella de sus propios bytes: se imprime
+' la huella de los datos del reporte y la del archivo completo queda en la bitácora.
+
+title PLUS-23 — Sello de integridad del reporte
+
+|Analista|
+start
+:Descarga un reporte en PDF o Excel
+(dictamen del expediente, reporte global
+o ficha de custodia);
+
+|core-service|
+:Reúne los datos del reporte
+(evaluación, dictámenes, eventos y
+el último sello de la cadena, PLUS-15);
+:Sello de integridad = SHA-256 de los datos
+en forma canónica (JSON con claves ordenadas);
+:Genera el PDF (sello en el pie de cada página)
+o el Excel (sello en la hoja de resumen);
+:Huella del archivo = SHA-256 de sus bytes;
+:Registra EXPORTACION_REPORTE en la bitácora
+sellada con ambas huellas;
+
+|Analista|
+:Recibe el archivo;
+stop
+
+|Auditor externo|
+start
+:Calcula el SHA-256 del archivo que recibió;
+:Lo busca en la bitácora (o en la ficha
+de custodia): el evento trae la misma huella
+y el sello impreso en el reporte;
+if (¿Coinciden?) then (sí)
+  :El archivo es el que emitió el motor,
+  sin alteraciones;
+else (no)
+  :El archivo cambió después de emitirse;
+endif
+stop
+@enduml
