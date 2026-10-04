@@ -70,6 +70,9 @@ export function formatRelativo(valor) {
   return formatFechaCorta(valor)
 }
 
+/** «1 expediente», «3 expedientes»: la cifra con la palabra en singular o plural. */
+export const plural = (n, uno, varios) => `${n} ${n === 1 ? uno : varios}`
+
 /** Iniciales para el avatar de un titular (máximo dos letras). */
 export function iniciales(nombre) {
   if (!nombre) return '??'

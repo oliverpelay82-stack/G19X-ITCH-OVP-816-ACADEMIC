@@ -1,8 +1,9 @@
 // Detalle desplegado del expediente: índice, motivos con su qué hacer, documentos, historial, carga y exportación.
 import { useState } from 'react'
 import { Lightbulb, Maximize2, Plus } from 'lucide-react'
-import { Badge, Button, Card } from '../ui/index.js'
+import { Button, Card } from '../ui/index.js'
 import DropZone from '../DropZone.jsx'
+import EstadoBadge from '../EstadoBadge.jsx'
 import { RenombrarExpediente } from '../CorreccionDatos.jsx'
 import ExportarReporte from '../ExportarReporte.jsx'
 import HistorialExpediente from '../HistorialExpediente.jsx'
@@ -337,7 +338,6 @@ export function DetalleExpediente({ exp, subiendo, onSubir, iaOnline, onRefresh,
                 </tr>
               )}
               {filas.map((f) => {
-                const meta = ESTADO_DOCUMENTO[f.estado] || ESTADO_DOCUMENTO.SIN_DICTAMEN
                 const sev = f.severidad ? getSeveridadMeta(f.severidad) : null
                 const nombreTipo = TIPO_DOCUMENTO_LABEL[f.tipo] || f.tipo
                 const documento = f.doc && delExpediente.find((d) => d.id === f.doc.documento_id)
@@ -380,9 +380,9 @@ export function DetalleExpediente({ exp, subiendo, onSubir, iaOnline, onRefresh,
                       )}
                     </td>
                     <td className="col-right">
-                      <Badge tono={meta.tono} punto>
-                        {f.doc?.vigencia === 'VENCIDO' ? 'Vencido' : meta.label}
-                      </Badge>
+                      <EstadoBadge estado={f.estado} mapa={ESTADO_DOCUMENTO} respaldo="SIN_DICTAMEN">
+                        {f.doc?.vigencia === 'VENCIDO' ? 'Vencido' : undefined}
+                      </EstadoBadge>
                     </td>
                   </tr>
                 )

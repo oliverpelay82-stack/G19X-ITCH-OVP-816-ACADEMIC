@@ -1,16 +1,12 @@
 import { useEffect, useState } from 'react'
 import { History, Save, ShieldAlert, UserCheck } from 'lucide-react'
 import { Skeleton } from './Skeleton.jsx'
+import EstadoBadge from './EstadoBadge.jsx'
+import { getEstadoBadge } from '../constants.js'
 import { Badge, Button, Field, Input, KeyValue, KeyValueList, Segmented } from './ui/index.js'
 import useToast from '../hooks/useToast.js'
 import { getDictamenes, ratificarDictamen } from '../services/api.js'
 import { formatFecha, formatRelativo, hashCorto } from '../utils/format.js'
-
-const ESTATUS = {
-  CONFORME: { tono: 'ok', label: 'Conforme' },
-  EN_REVISION: { tono: 'warn', label: 'En revisión' },
-  NO_CONFORME: { tono: 'bad', label: 'No conforme' },
-}
 
 const RESULTADO_REGLA = {
   CUMPLE: 'ok',
@@ -50,7 +46,7 @@ const MIN_JUSTIFICACION = 10
 /** Orígenes cuyo dictamen no se ratifica: una alteración (RIE-03) y un documento ilegible (se recarga). */
 const SIN_RATIFICACION = new Set(['RIE-03', 'NIVEL_3_ILEGIBLE'])
 
-const meta = (estatus) => ESTATUS[estatus] || { tono: 'neutral', label: estatus || 'Sin estatus' }
+const meta = getEstadoBadge
 const pct = (n) => (n === null || n === undefined ? '—' : `${Math.round(n * 100)}%`)
 
 /** Marca de tiempo relativa, con la fecha absoluta en el tooltip. */
@@ -59,15 +55,6 @@ function Momento({ valor }) {
     <time className="tabular" dateTime={valor} title={formatFecha(valor)}>
       {formatRelativo(valor)}
     </time>
-  )
-}
-
-function EstatusBadge({ estatus }) {
-  const m = meta(estatus)
-  return (
-    <Badge tono={m.tono} punto>
-      {m.label}
-    </Badge>
   )
 }
 
@@ -191,7 +178,7 @@ function DictamenVigente({ dictamen, puedeRatificar, onRatificar }) {
   return (
     <article className="registro-card">
       <header className="registro-head">
-        <EstatusBadge estatus={dictamen.estatus} />
+        <EstadoBadge estado={dictamen.estatus} />
         {ratificado && (
           <Badge title={`Ratificado por ${dictamen.revisado_por}`}>
             <UserCheck size={12} strokeWidth={1.75} aria-hidden="true" />
@@ -352,7 +339,7 @@ export default function DictamenesGuardados({
       <ul>
         {anteriores.map((d) => (
           <li key={d.id} className="historial-item">
-            <EstatusBadge estatus={d.estatus} />
+            <EstadoBadge estado={d.estatus} />
             <span className="cell-muted">
               {ORIGEN[d.origen] || `Confianza ${pct(d.nivel_confianza)}`}
               {d.revisado_por_humano && ` · ratificado por ${d.revisado_por}`}

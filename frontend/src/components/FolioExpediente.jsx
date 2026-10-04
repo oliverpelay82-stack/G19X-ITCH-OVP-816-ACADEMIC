@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { Badge } from './ui/index.js'
-import { getEstadoBadge, getSeveridadMeta, rangoSeveridad, TIPO_EXPEDIENTE_LABEL } from '../constants.js'
+import EstadoBadge from './EstadoBadge.jsx'
+import { getSeveridadMeta, rangoSeveridad, TIPO_EXPEDIENTE_LABEL } from '../constants.js'
 import { formatIndice, indiceDe } from '../utils/indice.js'
 
 const RETARDO = 350 // ms: pasar el cursor de largo no abre nada
@@ -72,7 +72,6 @@ export default function FolioExpediente({ expediente, enfocable = true, classNam
 }
 
 function TarjetaPrevia({ id, expediente: e, posicion }) {
-  const estado = getEstadoBadge(e.estado_cumplimiento)
   const alertas = [...(e.evaluacion?.alertas || [])].sort((a, b) => rangoSeveridad(a.severidad) - rangoSeveridad(b.severidad))
   const masGrave = alertas[0]
   return (
@@ -82,9 +81,7 @@ function TarjetaPrevia({ id, expediente: e, posicion }) {
         {e.codigo_expediente} · {TIPO_EXPEDIENTE_LABEL[e.tipo_expediente] || e.tipo_expediente}
       </p>
       <div className="folio-tarjeta-datos">
-        <Badge tono={estado.tono} punto>
-          {estado.label}
-        </Badge>
+        <EstadoBadge estado={e.estado_cumplimiento} />
         <span>
           <strong className="tabular">{formatIndice(indiceDe(e)?.porcentaje)}</strong> cumplimiento
         </span>

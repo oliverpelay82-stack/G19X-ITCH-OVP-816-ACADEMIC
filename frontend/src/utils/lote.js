@@ -13,6 +13,7 @@
  * es el veredicto de analizarNivel1 (null mientras se calcula) y `tipo` es
  * '' hasta que el analista lo elige: el lote no tiene tipo por omisión.
  */
+import { plural } from './format.js'
 
 /**
  * Observaciones de cada elemento, por id: `duplicadoDe` (nombre del primer
@@ -62,7 +63,6 @@ export function estadoLote(elementos, revision) {
 
 /** Texto del aviso final del lote: cuántos se custodiaron y cuántos se rechazaron. */
 export function resumenLote(custodiados, rechazados) {
-  const plural = (n, uno, varios) => `${n} ${n === 1 ? uno : varios}`
   const partes = [plural(custodiados, 'documento custodiado', 'documentos custodiados')]
   if (rechazados) partes.push(plural(rechazados, 'rechazado, sigue en la lista con su motivo', 'rechazados, siguen en la lista con su motivo'))
   return partes.join(' · ')

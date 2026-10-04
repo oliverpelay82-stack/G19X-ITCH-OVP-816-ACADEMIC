@@ -3,6 +3,7 @@ import { Building2, ChevronRight, FolderOpen, FolderPlus, LayoutGrid, Plus, Rows
 import { EncabezadoOrdenable } from './OrdenTabla.jsx'
 import useOrden, { RANGO_ESTADO } from '../hooks/useOrden.js'
 import {
+  Avatar,
   Badge,
   Button,
   Card,
@@ -24,12 +25,14 @@ import {
 import { SkeletonCards, SkeletonRows } from './Skeleton.jsx'
 import useToast from '../hooks/useToast.js'
 import useDebounce from '../hooks/useDebounce.js'
+import { coincideEn, normalizar } from '../utils/busqueda.js'
 import useDesplazamiento from '../hooks/useDesplazamiento.js'
 import { createTitular } from '../services/api.js'
-import { categoriaTitular, getEstadoBadge } from '../constants.js'
-import { formatFechaCorta, iniciales, rfcRegistrable, validarRfc } from '../utils/format.js'
+import { categoriaTitular } from '../constants.js'
+import { formatFechaCorta, rfcRegistrable, validarRfc } from '../utils/format.js'
 import { formatIndice, indiceDe } from '../utils/indice.js'
 import FolioExpediente from './FolioExpediente.jsx'
+import EstadoBadge from './EstadoBadge.jsx'
 import DetalleEmpresa, { EmpresaNoEncontrada } from './DetalleEmpresa.jsx'
 
 const EXPLICACION_RFC = 'Dígito verificador sin coincidir: se aceptó con advertencia'
@@ -86,12 +89,7 @@ const tipoPersona = (t) => (t === 'FISICA' ? 'Persona física' : 'Persona moral'
 /** Semáforo compacto del expediente más reciente del titular. */
 function EstadoExpediente({ expediente }) {
   if (!expediente) return <span className="cell-muted">Sin expediente</span>
-  const meta = getEstadoBadge(expediente.estado_cumplimiento)
-  return (
-    <Badge tono={meta.tono} punto>
-      {meta.label}
-    </Badge>
-  )
+  return <EstadoBadge estado={expediente.estado_cumplimiento} />
 }
 
 /** Acción principal del titular: abrir su expediente o aperturar el primero. */
@@ -146,9 +144,7 @@ function TarjetaTitular({ titular, expedientes, indice = 0, ...acciones }) {
   return (
     <Card as="article" className="profile-card" data-flip={titular.id} style={{ '--i': indice }}>
       <header className="profile-head">
-        <span className="avatar avatar--lg" aria-hidden="true">
-          {iniciales(titular.razon_social)}
-        </span>
+        <Avatar nombre={titular.razon_social} grande />
         <div className="profile-identity">
           <h3 className="profile-name">
             <NombreEmpresa titular={titular} onVer={acciones.onVer} />
@@ -236,15 +232,10 @@ export default function TitularesTab({
   }, [expedientes])
 
   const filtrados = useMemo(() => {
-    const q = consulta.trim().toLowerCase()
+    const q = normalizar(consulta)
     return titulares.filter((t) => {
       const coincideTipo = filtroTipo === 'TODOS' || t.tipo_persona === filtroTipo
-      const coincideBusqueda =
-        !q ||
-        t.rfc?.toLowerCase().includes(q) ||
-        t.razon_social?.toLowerCase().includes(q) ||
-        t.categoria?.toLowerCase().includes(q) ||
-        categoriaTitular(t.categoria).toLowerCase().includes(q)
+      const coincideBusqueda = coincideEn([t.rfc, t.razon_social, t.categoria, categoriaTitular(t.categoria)], q)
       return coincideTipo && coincideBusqueda
     })
   }, [titulares, consulta, filtroTipo])
@@ -311,7 +302,6 @@ export default function TitularesTab({
         titular={titular}
         expedientes={expedientesPorTitular.get(titular.id) || []}
         aviso={<AvisoRfc titular={titular} />}
-        onVolver={volver}
         onAbrir={acciones.onAbrir}
         onAperturar={aperturar}
         onVerAlertas={onVerAlertas}
@@ -452,9 +442,7 @@ export default function TitularesTab({
                       <tr key={t.id} data-flip={t.id} style={{ '--i': i }}>
                         <td>
                           <div className="identity">
-                            <span className="avatar" aria-hidden="true">
-                              {iniciales(t.razon_social)}
-                            </span>
+                            <Avatar nombre={t.razon_social} />
                             <NombreEmpresa titular={t} onVer={acciones.onVer} className="identity-name" />
                           </div>
                         </td>

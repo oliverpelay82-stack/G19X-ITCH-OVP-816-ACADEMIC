@@ -2,8 +2,9 @@ import { useMemo } from 'react'
 import { ArrowLeft, ArrowUpRight, FolderPlus, SearchX } from 'lucide-react'
 import { CorregirEmpresa } from './CorreccionDatos.jsx'
 import FolioExpediente from './FolioExpediente.jsx'
+import EstadoBadge from './EstadoBadge.jsx'
 import { IconoExpediente } from './IconosMotor.jsx'
-import { Badge, Button, Card, CopyChip, EmptyState, KeyValue, KeyValueList, Tag } from './ui/index.js'
+import { Avatar, Badge, Button, Card, CopyChip, EmptyState, KeyValue, KeyValueList, Tag } from './ui/index.js'
 import { RANGO_ESTADO } from '../hooks/useOrden.js'
 import {
   categoriaTitular,
@@ -12,13 +13,12 @@ import {
   rangoSeveridad,
   TIPO_EXPEDIENTE_LABEL,
 } from '../constants.js'
+import { alertasDeExpedientes } from '../utils/alertas.js'
 import { formatIndice, indiceDe } from '../utils/indice.js'
-import { formatFechaCorta, iniciales } from '../utils/format.js'
+import { formatFechaCorta, plural } from '../utils/format.js'
 
 /** Cuántas alertas se resumen: las más graves; todas están en la bandeja de Alertas. */
 const MAX_ALERTAS = 5
-
-const plural = (n, uno, varios) => `${n} ${n === 1 ? uno : varios}`
 
 /**
  * Detalle de la empresa (#/empresas/<RFC>, PRD §13.1): sus datos, un resumen
@@ -27,13 +27,14 @@ const plural = (n, uno, varios) => `${n} ${n === 1 ? uno : varios}`
  * de Alertas filtrada por la empresa, donde está cada recomendación (RF-18,
  * RF-21): las tarjetas completas no se repiten aquí. Todo sale del
  * listado de expedientes ya cargado, que trae la evaluación de cada uno; no
- * hay tarjetas de métricas, que van solo en Expedientes y Reportes.
+ * hay tarjetas de métricas, que van solo en Expedientes. Para volver a la
+ * lista basta la miga «Empresas» del encabezado (o «Atrás»): un botón propio
+ * la repetiría.
  */
 export default function DetalleEmpresa({
   titular,
   expedientes,
   aviso,
-  onVolver,
   onAbrir,
   onAperturar,
   onVerAlertas,
@@ -53,23 +54,11 @@ export default function DetalleEmpresa({
   const resumen = useMemo(() => {
     const porEstado = { CONFORME: 0, EN_REVISION: 0, NO_CONFORME: 0 }
     let documentos = 0
-    const alertas = []
     for (const e of expedientes) {
       porEstado[e.estado_cumplimiento] = (porEstado[e.estado_cumplimiento] || 0) + 1
       documentos += e.evaluacion?.documentos?.length || 0
-      for (const a of e.evaluacion?.alertas || []) {
-        alertas.push({
-          ...a,
-          expediente: {
-            id: e.id,
-            codigo: e.codigo_expediente,
-            nombre: e.nombre || TIPO_EXPEDIENTE_LABEL[e.tipo_expediente] || '',
-            completo: e, // vista previa del folio (D2)
-          },
-        })
-      }
     }
-    alertas.sort((a, b) => rangoSeveridad(a.severidad) - rangoSeveridad(b.severidad))
+    const alertas = alertasDeExpedientes(expedientes)
     const graves = alertas.filter((a) => ['CRITICA', 'ALTA'].includes(a.severidad)).length
     return { porEstado, documentos, alertas, graves }
   }, [expedientes])
@@ -89,17 +78,9 @@ export default function DetalleEmpresa({
 
   return (
     <div className="tab-panel empresa-detalle">
-      <div className="empresa-volver">
-        <Button compacto icono={ArrowLeft} onClick={onVolver}>
-          Empresas
-        </Button>
-      </div>
-
       <Card as="section" className="empresa-ficha" aria-labelledby="empresa-nombre">
         <header className="profile-head">
-          <span className="avatar avatar--lg" aria-hidden="true">
-            {iniciales(titular.razon_social)}
-          </span>
+          <Avatar nombre={titular.razon_social} grande />
           <div className="profile-identity">
             <h2 id="empresa-nombre" className="empresa-nombre">
               {titular.razon_social}
@@ -164,7 +145,6 @@ export default function DetalleEmpresa({
                 </thead>
                 <tbody>
                   {ordenados.map((e) => {
-                    const estado = getEstadoBadge(e.estado_cumplimiento)
                     const alertas = e.evaluacion?.alertas || []
                     const peor = alertas.reduce(
                       (p, a) => (p == null || rangoSeveridad(a.severidad) < rangoSeveridad(p) ? a.severidad : p),
@@ -180,9 +160,7 @@ export default function DetalleEmpresa({
                         </td>
                         <td>{TIPO_EXPEDIENTE_LABEL[e.tipo_expediente] || e.tipo_expediente}</td>
                         <td>
-                          <Badge tono={estado.tono} punto>
-                            {estado.label}
-                          </Badge>
+                          <EstadoBadge estado={e.estado_cumplimiento} />
                         </td>
                         <td className="col-right cell-num tabular">{formatIndice(indiceDe(e)?.porcentaje)}</td>
                         <td className="col-right cell-num tabular">{`${Math.round(e.porcentaje_completitud ?? 0)}%`}</td>

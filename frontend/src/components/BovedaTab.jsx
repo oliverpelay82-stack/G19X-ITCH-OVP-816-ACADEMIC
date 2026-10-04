@@ -9,12 +9,14 @@ import { firmaDeMime, tipoCorto } from '../utils/documentos.js'
 import { SkeletonRows } from './Skeleton.jsx'
 import useToast from '../hooks/useToast.js'
 import useDebounce from '../hooks/useDebounce.js'
+import { coincideEn, normalizar } from '../utils/busqueda.js'
 import useDesplazamiento from '../hooks/useDesplazamiento.js'
 import { custodiarArchivo } from '../services/api.js'
 import { avisarCarga } from '../utils/nivel1.js'
 import { ESTADO_DOCUMENTO, TIPO_DOCUMENTO_LABEL, TIPO_EXPEDIENTE_LABEL, TIPOS_DOCUMENTO, tiposParaCarga } from '../constants.js'
 import { formatBytes, formatFecha, formatFechaCorta, hashCorto } from '../utils/format.js'
 import FolioExpediente from './FolioExpediente.jsx'
+import EstadoBadge from './EstadoBadge.jsx'
 
 const COLUMNAS = 7
 
@@ -24,14 +26,7 @@ const COLUMNAS = 7
  * (se conserva con sus dictámenes, RF-04). Sin evaluación del expediente, «—».
  */
 function EstadoEnBoveda({ estado, evaluado }) {
-  if (estado) {
-    const meta = ESTADO_DOCUMENTO[estado] || ESTADO_DOCUMENTO.SIN_DICTAMEN
-    return (
-      <Badge tono={meta.tono} punto>
-        {meta.label}
-      </Badge>
-    )
-  }
+  if (estado) return <EstadoBadge estado={estado} mapa={ESTADO_DOCUMENTO} respaldo="SIN_DICTAMEN" />
   if (!evaluado) return <span className="cell-muted">—</span>
   return (
     <Tag title="Una versión más reciente del mismo tipo es la vigente; esta se conserva con sus dictámenes">
@@ -95,15 +90,14 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
   }, [enAlcance])
 
   const filtrados = useMemo(() => {
-    const q = consulta.trim().toLowerCase()
+    const q = normalizar(consulta)
     return enAlcance.filter((d) => {
       const tipoOk = filtroTipo === 'TODOS' || d.tipo_documento === filtroTipo
-      const busquedaOk =
-        !q ||
-        d.nombre_archivo_original?.toLowerCase().includes(q) ||
-        d.hash_sha256?.toLowerCase().includes(q) ||
-        mapaExpedientes[d.expediente_id]?.codigo_expediente?.toLowerCase().includes(q) ||
-        mapaExpedientes[d.expediente_id]?.titular?.razon_social?.toLowerCase().includes(q)
+      const exp = mapaExpedientes[d.expediente_id]
+      const busquedaOk = coincideEn(
+        [d.nombre_archivo_original, d.hash_sha256, exp?.codigo_expediente, exp?.titular?.razon_social],
+        q
+      )
       return tipoOk && busquedaOk
     })
   }, [enAlcance, consulta, filtroTipo, mapaExpedientes])

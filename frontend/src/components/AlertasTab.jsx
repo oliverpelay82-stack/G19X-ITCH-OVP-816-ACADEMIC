@@ -5,12 +5,13 @@ import Desplegable from './expedientes/Desplegable.jsx'
 import { AlertaItem } from './Alertas.jsx'
 import FolioExpediente from './FolioExpediente.jsx'
 import useDebounce from '../hooks/useDebounce.js'
+import { alertasDeExpedientes } from '../utils/alertas.js'
+import { coincideEn, normalizar } from '../utils/busqueda.js'
 import useDesplazamiento from '../hooks/useDesplazamiento.js'
 import { Button, Card, EmptyState, SearchBox, Segmented, Select } from './ui/index.js'
 import {
   ALERTA_META,
   getSeveridadMeta,
-  rangoSeveridad,
   SEVERIDADES,
   TIPO_EXPEDIENTE_LABEL,
   TIPOS_EXPEDIENTE,
@@ -45,26 +46,7 @@ export default function AlertasTab({ expedientes, loading, onAbrirExpediente, bu
   }, [busquedaInicial, onFiltroAtendido])
   const bandeja = useDesplazamiento()
 
-  const alertas = useMemo(
-    () =>
-      expedientes
-        .flatMap((exp) =>
-          (exp.evaluacion?.alertas || []).map((a) => ({
-            ...a,
-            expediente: {
-              id: exp.id,
-              codigo: exp.codigo_expediente,
-              nombre: exp.nombre || exp.titular?.razon_social || '',
-              razon_social: exp.titular?.razon_social || '',
-              rfc: exp.titular?.rfc || '',
-              tipo: exp.tipo_expediente,
-              completo: exp, // para la vista previa del folio (D2)
-            },
-          }))
-        )
-        .sort((a, b) => rangoSeveridad(a.severidad) - rangoSeveridad(b.severidad)),
-    [expedientes]
-  )
+  const alertas = useMemo(() => alertasDeExpedientes(expedientes), [expedientes])
 
   const opcionesSeveridad = useMemo(
     () => [
@@ -82,16 +64,15 @@ export default function AlertasTab({ expedientes, loading, onAbrirExpediente, bu
   const codigos = useMemo(() => [...new Set(alertas.map((a) => a.codigo))], [alertas])
 
   const filtradas = useMemo(() => {
-    const q = consulta.trim().toLowerCase()
+    const q = normalizar(consulta)
     return alertas.filter((a) => {
       const sevOk = filtroSeveridad === 'TODAS' || a.severidad === filtroSeveridad
       const codOk = filtroCodigo === 'TODAS' || a.codigo === filtroCodigo
       const tipoOk = filtroTipo === 'TODOS' || a.expediente.tipo === filtroTipo
-      const textoOk =
-        !q ||
-        [a.titulo, a.detalle, a.recomendacion, a.expediente.codigo, a.expediente.razon_social, a.expediente.rfc]
-          .filter(Boolean)
-          .some((t) => t.toLowerCase().includes(q))
+      const textoOk = coincideEn(
+        [a.titulo, a.detalle, a.recomendacion, a.expediente.codigo, a.expediente.razon_social, a.expediente.rfc],
+        q
+      )
       return sevOk && codOk && tipoOk && textoOk
     })
   }, [alertas, consulta, filtroSeveridad, filtroCodigo, filtroTipo])

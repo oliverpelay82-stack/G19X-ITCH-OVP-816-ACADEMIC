@@ -20,6 +20,7 @@ import {
 import { SkeletonRows } from './Skeleton.jsx'
 import useToast from '../hooks/useToast.js'
 import useDebounce from '../hooks/useDebounce.js'
+import { coincideEn, normalizar } from '../utils/busqueda.js'
 import { createRegla, toggleRegla } from '../services/api.js'
 import TipoDocumentoNuevo from './TipoDocumentoNuevo.jsx'
 import { formatFecha } from '../utils/format.js'
@@ -122,19 +123,14 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
   const consulta = useDebounce(busqueda, 220)
 
   const filtradas = useMemo(() => {
-    const q = consulta.trim().toLowerCase()
+    const q = normalizar(consulta)
     return reglas.filter((r) => {
       const familiaOk = filtroFamilia === 'TODAS' || r.familia_regla === filtroFamilia
       const severidadOk = filtroSeveridad === 'TODAS' || r.severidad === filtroSeveridad
       const estadoOk = filtroEstado === 'TODAS' || (filtroEstado === 'ACTIVAS') === Boolean(r.activo)
       // Un tipo de expediente ve sus reglas y las generales (sin tipo), como el rules-service.
       const tipoExpOk = filtroTipoExp === 'TODOS' || !r.tipo_expediente || r.tipo_expediente === filtroTipoExp
-      const busquedaOk =
-        !q ||
-        r.codigo_regla?.toLowerCase().includes(q) ||
-        r.nombre_regla?.toLowerCase().includes(q) ||
-        r.descripcion?.toLowerCase().includes(q) ||
-        r.accion?.toLowerCase().includes(q)
+      const busquedaOk = coincideEn([r.codigo_regla, r.nombre_regla, r.descripcion, r.accion], q)
       return familiaOk && severidadOk && estadoOk && tipoExpOk && busquedaOk
     })
   }, [reglas, filtroFamilia, filtroSeveridad, filtroEstado, filtroTipoExp, consulta])

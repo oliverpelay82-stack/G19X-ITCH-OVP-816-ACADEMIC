@@ -3,6 +3,7 @@
  * pestañas. Cada componente genera las clases de App.css, que a su vez solo
  * consumen los tokens maestros de index.css.
  */
+export { default as Avatar } from './Avatar.jsx'
 export { Badge, Tag } from './Badge.jsx'
 export { Button, IconButton } from './Button.jsx'
 export { default as Card } from './Card.jsx'

@@ -1,9 +1,10 @@
 // «Auditar pendientes» (HU-32): audita en secuencia los documentos vigentes sin dictamen.
 import { useState } from 'react'
 import { Check, Loader2, Minus, Sparkles, X } from 'lucide-react'
-import { Badge, Button } from '../ui/index.js'
+import { Button } from '../ui/index.js'
 import { analizarDocumento, getExpedienteById } from '../../services/api.js'
 import { getEstadoBadge } from '../../constants.js'
+import EstadoBadge from '../EstadoBadge.jsx'
 
 /** Estado de un documento dentro de «Auditar pendientes». */
 const PASO = {
@@ -157,9 +158,9 @@ export function AuditarPendientes({ exp, iaOnline, onTerminado }) {
           {resultado.despues && (
             <p>
               Semáforo{' '}
-              <Badge tono={getEstadoBadge(resultado.antes.estado).tono}>{getEstadoBadge(resultado.antes.estado).label}</Badge>{' '}
+              <EstadoBadge estado={resultado.antes.estado} punto={false} />{' '}
               →{' '}
-              <Badge tono={getEstadoBadge(resultado.despues.estado).tono}>{getEstadoBadge(resultado.despues.estado).label}</Badge>
+              <EstadoBadge estado={resultado.despues.estado} punto={false} />
               {' · '}
               {resultado.despues.alertas} {resultado.despues.alertas === 1 ? 'alerta' : 'alertas'} (antes{' '}
               {resultado.antes.alertas})

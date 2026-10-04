@@ -7,6 +7,7 @@
  */
 import { Loader2, Plus, RefreshCw, Search, X } from 'lucide-react'
 import {
+  Avatar,
   Badge,
   Button,
   Card,
@@ -22,6 +23,8 @@ import {
   Tag,
   Tooltip,
 } from '../src/components/ui/index.js'
+import EstadoBadge from '../src/components/EstadoBadge.jsx'
+import { ESTADO_DOCUMENTO } from '../src/constants.js'
 
 const nada = () => {}
 
@@ -343,5 +346,68 @@ export const CASOS = [
       </label>
     ),
     nuevo: <SearchBox value="" onChange={nada} placeholder="Buscar expedientes" label="Buscar expedientes" />,
+  },
+  {
+    nombre: 'EstadoBadge del semáforo (Titulares, Empresa, Folio, Dictamen)',
+    actual: (
+      <Badge tono="bad" punto>
+        No conforme
+      </Badge>
+    ),
+    nuevo: <EstadoBadge estado="NO_CONFORME" />,
+  },
+  {
+    nombre: 'EstadoBadge grande del expediente (Expedientes)',
+    actual: (
+      <Badge tono="warn" punto grande>
+        En revisión
+      </Badge>
+    ),
+    nuevo: <EstadoBadge estado="EN_REVISION" grande />,
+  },
+  {
+    nombre: 'EstadoBadge de documento vencido (detalle del expediente)',
+    actual: (
+      <Badge tono="bad" punto>
+        Vencido
+      </Badge>
+    ),
+    nuevo: (
+      <EstadoBadge estado="NO_CONFORME" mapa={ESTADO_DOCUMENTO} respaldo="SIN_DICTAMEN">
+        Vencido
+      </EstadoBadge>
+    ),
+  },
+  {
+    nombre: 'EstadoBadge de documento con estado desconocido (Bóveda)',
+    actual: (
+      <Badge tono="neutral" punto>
+        Sin auditar
+      </Badge>
+    ),
+    nuevo: <EstadoBadge estado="OTRO" mapa={ESTADO_DOCUMENTO} respaldo="SIN_DICTAMEN" />,
+  },
+  {
+    nombre: 'EstadoBadge sin punto (resultado de «Auditar pendientes»)',
+    actual: <Badge tono="ok">Conforme</Badge>,
+    nuevo: <EstadoBadge estado="CONFORME" punto={false} />,
+  },
+  {
+    nombre: 'Avatar de la tabla (Empresas, Expedientes)',
+    actual: (
+      <span className="avatar" aria-hidden="true">
+        AN
+      </span>
+    ),
+    nuevo: <Avatar nombre="Aceros del Norte, S.A. de C.V." />,
+  },
+  {
+    nombre: 'Avatar grande (tarjeta de perfil, detalle de la empresa)',
+    actual: (
+      <span className="avatar avatar--lg" aria-hidden="true">
+        GB
+      </span>
+    ),
+    nuevo: <Avatar nombre="GRUPO BIMBO S.A.B. DE C.V." grande />,
   },
 ]

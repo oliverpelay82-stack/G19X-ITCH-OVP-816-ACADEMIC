@@ -1,15 +1,17 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { ChevronDown, Lock, Plus, SearchX } from 'lucide-react'
 import { IconoExpediente } from './IconosMotor.jsx'
-import { Badge, Button, Card, EmptyState, Field, Input, Modal, SearchBox, Segmented, Select, Tag } from './ui/index.js'
+import { Avatar, Button, Card, EmptyState, Field, Input, Modal, SearchBox, Segmented, Select, Tag } from './ui/index.js'
 import { SkeletonCards } from './Skeleton.jsx'
+import EstadoBadge from './EstadoBadge.jsx'
 import useToast from '../hooks/useToast.js'
 import DetalleDocumentoModal from './DetalleDocumentoModal.jsx'
 import useDebounce from '../hooks/useDebounce.js'
+import { coincideEn, normalizar } from '../utils/busqueda.js'
 import { createExpediente, custodiarArchivo } from '../services/api.js'
 import { avisarCarga } from '../utils/nivel1.js'
 import { getEstadoBadge, TIPO_EXPEDIENTE_LABEL, TIPOS_EXPEDIENTE } from '../constants.js'
-import { formatRelativo, iniciales } from '../utils/format.js'
+import { formatRelativo } from '../utils/format.js'
 import { formatIndice, indiceDe } from '../utils/indice.js'
 import { RANGO_ESTADO } from '../hooks/useOrden.js'
 import { DetalleExpediente } from './expedientes/DetalleExpediente.jsx'
@@ -114,18 +116,16 @@ export default function ExpedientesTab({
   )
 
   const filtrados = useMemo(() => {
-    const q = consulta.trim().toLowerCase()
+    const q = normalizar(consulta)
     return expedientes.filter((exp) => {
       const coincideEstado = filtroEstado === 'TODOS' || exp.estado_cumplimiento === filtroEstado
       const coincideTipo = filtroTipo === 'TODOS' || exp.tipo_expediente === filtroTipo
       const dia = diaDe(exp.creado_en)
       const coincideFecha = (!desde || (dia && dia >= desde)) && (!hasta || (dia && dia <= hasta))
-      const coincideBusqueda =
-        !q ||
-        exp.codigo_expediente?.toLowerCase().includes(q) ||
-        exp.nombre?.toLowerCase().includes(q) ||
-        exp.titular?.razon_social?.toLowerCase().includes(q) ||
-        exp.titular?.rfc?.toLowerCase().includes(q)
+      const coincideBusqueda = coincideEn(
+        [exp.codigo_expediente, exp.nombre, exp.titular?.razon_social, exp.titular?.rfc],
+        q
+      )
       return coincideEstado && coincideTipo && coincideFecha && coincideBusqueda
     })
   }, [expedientes, consulta, filtroEstado, filtroTipo, desde, hasta])
@@ -345,9 +345,7 @@ export default function ExpedientesTab({
                   aria-expanded={abierto}
                   aria-label={`${exp.titular?.razon_social || exp.codigo_expediente}: ${meta.label}`}
                 >
-                  <span className="avatar" aria-hidden="true">
-                    {iniciales(exp.titular?.razon_social || exp.codigo_expediente)}
-                  </span>
+                  <Avatar nombre={exp.titular?.razon_social || exp.codigo_expediente} />
                   <span className="exp-identity">
                     <span className="exp-identity-row">
                       <span className="identity-name">{exp.titular?.razon_social || 'Titular no disponible'}</span>
@@ -367,9 +365,7 @@ export default function ExpedientesTab({
                     </span>
                   </span>
                   <Destello valor={exp.estado_cumplimiento} tono={meta.tono} ladoCheck="izquierda">
-                    <Badge tono={meta.tono} punto grande>
-                      {meta.label}
-                    </Badge>
+                    <EstadoBadge estado={exp.estado_cumplimiento} grande />
                   </Destello>
                   <span
                     className="exp-indice"
