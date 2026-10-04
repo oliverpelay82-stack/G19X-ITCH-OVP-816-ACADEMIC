@@ -131,13 +131,25 @@ export const renombrarExpediente = (id, nombre) =>
 export const getDocumentos = () => request(CORE_BASE_URL, '/documentos', { tiempoLimite: LIMITE_SONDEO_MS })
 const uploadDocumento = (formData) =>
   request(CORE_BASE_URL, '/documentos/upload', { method: 'POST', body: formData, isFormData: true })
+/**
+ * RNF-02: pide al ai-service leer de fondo el documento recién custodiado (todas
+ * sus páginas, sin el modelo ni tokens), para que la auditoría encuentre el texto
+ * listo. No se espera ni se avisa: si la IA no responde, la auditoría lee como antes.
+ */
+const anticiparLectura = (documentoId) =>
+  request(AI_BASE_URL, `/ai/documentos/${documentoId}/anticipar`, { method: 'POST', tiempoLimite: LIMITE_SONDEO_MS }).catch(
+    () => {}
+  )
+
 /** Custodia un archivo con su tipo en un expediente (una carga individual o un elemento de un lote, RF-02). */
-export const custodiarArchivo = (expedienteId, archivo, tipoDocumento) => {
+export const custodiarArchivo = async (expedienteId, archivo, tipoDocumento) => {
   const formData = new FormData()
   formData.append('expediente_id', expedienteId)
   formData.append('tipo_documento', tipoDocumento)
   formData.append('file', archivo)
-  return uploadDocumento(formData)
+  const documento = await uploadDocumento(formData)
+  if (documento?.id) anticiparLectura(documento.id)
+  return documento
 }
 
 /* ── Dictámenes y bitácora (Core Service :8001) ─────────────────── */

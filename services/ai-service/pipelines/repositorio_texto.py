@@ -20,6 +20,12 @@ lectura parcial (corte temprano) y programa la completa en un hilo de fondo;
 cuando termina, reemplaza a la parcial en memoria y en disco. Un candado por
 documento evita que la auditoría y la lectura de fondo reconozcan las mismas
 páginas dos veces.
+
+**Lectura anticipada (RNF-02).** Al custodiar un documento se pide ``anticipar``:
+el documento se lee completo de fondo, con prioridad de fondo en el pool de OCR,
+y la auditoría encuentra el texto listo. Si la auditoría (o el chat o el visor)
+llega mientras esa lectura sigue, sus páginas pendientes pasan a primer plano
+(``_promover``) y la petición espera esa misma lectura.
 """
 from __future__ import annotations
 
@@ -33,6 +39,7 @@ from typing import Any
 from clients import core_client
 from config import settings
 from pipelines import extraccion_pipeline, persistencia_texto
+from pipelines.extraccion_pipeline import FONDO, Turno
 from pipelines.cache_extracciones import cache_texto
 
 
@@ -50,6 +57,9 @@ class TextoDocumento:
 # se hace de un documento a la vez.
 _ejecutor_fondo = ThreadPoolExecutor(max_workers=1, thread_name_prefix="lectura-completa")
 _en_curso: set[tuple[str, bool]] = set()
+# Turno de OCR de cada lectura de fondo en curso: una petición en primer plano
+# del mismo documento lo promueve.
+_turnos: dict[tuple[str, bool], Turno] = {}
 _candado = Lock()
 # Un candado por documento para la lectura completa: la de la auditoría y la de
 # fondo del chat se esperan entre sí y la segunda reutiliza el resultado.
@@ -109,6 +119,7 @@ def obtener_por_documento(
     """
     core_client.verificar_integridad(documento_id)
     clave = (documento_id, forzar_ocr)
+    _promover(clave)
     fuente_calculada = ["extraccion"]
 
     def resolver() -> TextoDocumento:
@@ -120,7 +131,10 @@ def obtener_por_documento(
             return TextoDocumento(guardada.texto, metadatos, guardada.traza, guardada.completo, sha256)
         contenido = core_client.leer_binario(metadatos)
         sha256 = sha256 or hashlib.sha256(contenido).hexdigest()
-        texto, traza, completo = _extraer(contenido, forzar_ocr, False, sha256)
+        # Quien pide el texto completo (la auditoría) lo lee de una vez, en flujo
+        # continuo: sin una lectura parcial previa que deje hilos ociosos y una
+        # barrera antes del resto de las páginas.
+        texto, traza, completo = _extraer(contenido, forzar_ocr, texto_completo, sha256)
         return TextoDocumento(texto, metadatos, traza, completo, sha256)
 
     documento, desde_memoria = cache_texto.obtener_o_calcular(clave, resolver)
@@ -140,11 +154,59 @@ def lectura_completa_en_curso(documento_id: str, forzar_ocr: bool = False) -> bo
 
 def _programar_lectura_completa(documento_id: str, forzar_ocr: bool, parcial: TextoDocumento) -> None:
     clave = (documento_id, forzar_ocr)
+    turno = Turno(FONDO)
     with _candado:
         if clave in _en_curso:
             return
         _en_curso.add(clave)
-    _ejecutor_fondo.submit(_leer_completo, clave, parcial)
+        _turnos[clave] = turno
+    _ejecutor_fondo.submit(_leer_completo, clave, parcial, turno)
+
+
+def anticipar(documento_id: str) -> bool:
+    """
+    RNF-02: programa la lectura completa de un documento recién custodiado, de
+    fondo y sin el modelo. Devuelve False si ya hay una lectura de fondo de ese
+    documento en curso (o en cola) o si la lectura anticipada está apagada.
+    """
+    if not settings.LECTURA_ANTICIPADA:
+        return False
+    clave = (documento_id, False)
+    turno = Turno(FONDO)
+    with _candado:
+        if clave in _en_curso:
+            return False
+        _en_curso.add(clave)
+        _turnos[clave] = turno
+    _ejecutor_fondo.submit(_leer_anticipado, clave, turno)
+    return True
+
+
+def _promover(clave: tuple[str, bool]) -> None:
+    """Una petición en primer plano de un documento que se lee de fondo sube sus páginas pendientes."""
+    with _candado:
+        turno = _turnos.get(clave)
+    if turno is not None and turno is not extraccion_pipeline.turno_actual():
+        extraccion_pipeline.promover(turno)
+
+
+def _terminar_fondo(clave: tuple[str, bool]) -> None:
+    with _candado:
+        _en_curso.discard(clave)
+        _turnos.pop(clave, None)
+
+
+def _leer_anticipado(clave: tuple[str, bool], turno: Turno) -> None:
+    documento_id, _ = clave
+    try:
+        with extraccion_pipeline.en_turno(turno):
+            documento = obtener_por_documento(documento_id, completar_en_fondo=False, texto_completo=True)
+        print(f"[ai-service] Lectura anticipada lista: {documento_id} "
+              f"({documento.traza.get('total_paginas')} páginas, {documento.fuente}).")
+    except Exception:  # noqa: BLE001 - un fallo de fondo no debe tumbar el servicio; la auditoría lo reintenta
+        print(f"[ai-service] AVISO: falló la lectura anticipada de {documento_id}:\n{traceback.format_exc()}")
+    finally:
+        _terminar_fondo(clave)
 
 
 def _liberar_candado(clave: tuple[str, bool], candado: Lock) -> None:
@@ -182,16 +244,16 @@ def _completar(clave: tuple[str, bool], parcial: TextoDocumento) -> TextoDocumen
         _liberar_candado(clave, candado)
 
 
-def _leer_completo(clave: tuple[str, bool], parcial: TextoDocumento) -> None:
+def _leer_completo(clave: tuple[str, bool], parcial: TextoDocumento, turno: Turno) -> None:
     documento_id, _ = clave
     try:
-        completo = _completar(clave, parcial)
+        with extraccion_pipeline.en_turno(turno):
+            completo = _completar(clave, parcial)
         print(f"[ai-service] Lectura completa lista: {documento_id} ({completo.traza['total_paginas']} páginas).")
     except Exception:  # noqa: BLE001 - un fallo de fondo no debe tumbar el servicio
         print(f"[ai-service] AVISO: falló la lectura completa de {documento_id}:\n{traceback.format_exc()}")
     finally:
-        with _candado:
-            _en_curso.discard(clave)
+        _terminar_fondo(clave)
 
 
 # ── Archivos sueltos (endpoint /ai/extraer-texto) ───────────────────

@@ -673,5 +673,34 @@ El OCR cuesta 2 puntos de F1 en las entidades (el RFC de GS-CSF-03-ESC) y nada e
 | Requisito | Resultado |
 |---|---|
 | RNF-01 (≤ 2 s) | **Cumple:** p95 ≤ 73 ms, incluso con OCR en curso |
-| RNF-02 (≤ 25 s, 20 páginas) | **Cumple con el contrato escaneado sintético** (≈ 11.4 s, reconstrucción pendiente de la medición formal sin el presupuesto del grabador); **no cumple con el acta real densa** (≈ 30 s normalizado a 20 páginas) |
+| RNF-02 (≤ 25 s, 20 páginas) | **Cumple con el contrato escaneado sintético** (≈ 11.4 s, reconstrucción pendiente de la medición formal sin el presupuesto del grabador); **no cumple con el acta real densa** (≈ 30 s normalizado a 20 páginas). **Actualización del 04/10/2026:** con la lectura anticipada la auditoría solo espera al Nivel 4 (≈ 3 s), también con el acta real (ver «Lectura anticipada y prioridad del OCR») |
 | RNF-03 (≥ 50 simultáneas) | **Cumple el criterio de §7.4** (0 errores, 0 pérdidas, p95 de consulta 1.07 s), con degradación de latencia por un solo proceso |
+
+
+#### Experimento: OCR a 250 dpi (04/10/2026)
+
+Para acercar el RNF-02 con actas reales densas se probó bajar `OCR_DPI` de 300 a 250 (31 % menos píxeles por página), sin el modelo y sin gastar tokens ([`ocr_dpi_250_vs_300.json`](resultados_validacion/ocr_dpi_250_vs_300.json)):
+
+| | 300 dpi | 250 dpi |
+|---|---|---|
+| Acta real escaneada, 26 páginas (mediana de 3) | **29.8 s** | 30.6 s |
+| Contrato escaneado, 20 páginas (mediana de 3) | 7.9 s | 7.4 s |
+| CER mediano de los 12 escaneos | **0.24 %** | 0.41 % |
+| CER máximo | 0.96 % | 0.96 % |
+
+**Decisión: se conserva 300 dpi.** En el acta real el tiempo no baja: lo determina el reconocimiento de páginas densas de texto, no el tamaño de la imagen. El contrato gana apenas 5 %, y 9 de los 12 escaneos leen peor. Con el equipo sin otros servicios, el acta tardó 29.8 s en el Nivel 3 (37.7 s el 03/10 con la base y los servicios en marcha). Eso equivale a ≈ 23 s por cada 20 páginas antes del Nivel 4, cerca del límite de 25 s del RNF-02.
+
+
+#### Lectura anticipada y prioridad del OCR (04/10/2026)
+
+**Dónde se va el tiempo.** Perfil de una página del acta real, en serie: rasterizado 83 ms, preprocesamiento 57 ms, codificación PNG 78 ms y **Tesseract 3,855 ms (95 %)**. Desactivar el reintento de texto invertido, pasar la imagen en BMP o en 1 bit no cambian ni el tiempo ni el texto. Con 4, 6, 8 y 10 workers el acta tarda 37.8, 33.5, 31.7 y 33.2 s: 8 es el óptimo del equipo. `OMP_THREAD_LIMIT=1` ya estaba fijado. El límite es el procesador (y su temperatura: la misma lectura pasa de ≈ 30 s en frío a ≈ 35 s tras varias seguidas).
+
+**Qué se cambió (PRD §21.9).** La lectura se anticipa al custodiar; el pool de OCR prioriza la auditoría, el chat y el visor; y la auditoría de un documento sin leer va directo a la lectura completa. Resultados sin el modelo ([`lectura_anticipada.json`](resultados_validacion/lectura_anticipada.json)):
+
+| Escenario (acta real de 26 páginas) | Antes | Ahora |
+|---|---|---|
+| Auditoría sin lectura previa: resolución del texto | 34 a 41 s (parcial + resto) | **30.2 s** (lectura completa directa) |
+| Auditoría con la lectura anticipada terminada: resolución del texto | — | **0 ms** (memoria) |
+| Chat de otro documento mientras el acta se lee de fondo | 18.1 s (misma cola) | **10.2 s** (prioridad) |
+
+Con la lectura anticipada, la espera de la auditoría es el Nivel 4: dos consultas en paralelo de 1.3 a 3 s cada una (≈ 3 s). **El RNF-02 se cumple para el analista también con el acta real densa.** Sin anticipar (un documento cargado solo por la API), la auditoría de 26 páginas densas tarda ≈ 30 s de lectura más el Nivel 4 en este equipo (≈ 26 s por cada 20 páginas). La suite de precisión se reproduce idéntica: la lectura de cada página no cambió.

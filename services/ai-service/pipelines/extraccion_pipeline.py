@@ -27,12 +27,17 @@ Por eso, salvo que se pida el texto completo, el reconocimiento se detiene al
 acumular ese volumen o tras ``MAX_PAGINAS_OCR`` páginas escaneadas. Las páginas
 omitidas quedan registradas en la traza y en las observaciones.
 """
-from concurrent.futures import FIRST_COMPLETED, Future, ThreadPoolExecutor, wait
+from concurrent.futures import FIRST_COMPLETED, Future, wait
+from contextlib import contextmanager
+from contextvars import ContextVar
 from dataclasses import dataclass, field
 from functools import lru_cache
 from typing import Any
+import heapq
 import io
+import itertools
 import re
+import threading
 
 import cv2
 import fitz  # PyMuPDF
@@ -45,17 +50,118 @@ from pipelines import sellos
 
 pytesseract.pytesseract.tesseract_cmd = settings.TESSERACT_CMD
 
-# Pool único de OCR para todo el proceso. Con un pool por petición, tres
-# auditorías simultáneas lanzaban 3 × OCR_WORKERS procesos de Tesseract sobre
-# OCR_WORKERS núcleos físicos (y la lectura completa de fondo sumaba otra
-# tanda): el CPU se sobresuscribía y la memoria crecía con cada petición. Así,
-# el total de reconocimientos simultáneos queda acotado a OCR_WORKERS.
-_POOL_OCR = ThreadPoolExecutor(max_workers=settings.OCR_WORKERS, thread_name_prefix="ocr")
+# ── Pool de OCR con prioridad (RNF-02) ──────────────────────────────
+PRIMER_PLANO = 0   # auditoría, chat y visor: alguien espera la respuesta
+FONDO = 1          # lectura anticipada y lectura completa del chat
+
+
+class Turno:
+    """
+    Prioridad de las páginas de una lectura. Es mutable: si una auditoría pide
+    un documento que se está leyendo de fondo, ``promover`` sube sus páginas
+    pendientes a primer plano sin repetir el OCR.
+    """
+
+    __slots__ = ("prioridad",)
+
+    def __init__(self, prioridad: int = PRIMER_PLANO):
+        self.prioridad = prioridad
+
+
+_TURNO_PRIMER_PLANO = Turno(PRIMER_PLANO)
+_turno_actual: ContextVar[Turno] = ContextVar("turno_ocr", default=_TURNO_PRIMER_PLANO)
+
+
+@contextmanager
+def en_turno(turno: Turno):
+    """Las páginas que se envíen al pool dentro del bloque llevan la prioridad de ``turno``."""
+    token = _turno_actual.set(turno)
+    try:
+        yield turno
+    finally:
+        _turno_actual.reset(token)
+
+
+class _PoolPrioritario:
+    """
+    Pool único de OCR para todo el proceso, con OCR_WORKERS hilos: el total de
+    reconocimientos simultáneos queda acotado al procesador (con un pool por
+    petición, tres auditorías lanzaban 3 × OCR_WORKERS Tesseract y la memoria
+    crecía con cada una). Cada hilo toma la página de mayor prioridad y, entre
+    iguales, la más antigua: lo que espera una persona pasa antes que la
+    lectura anticipada, que solo usa el procesador libre.
+    """
+
+    def __init__(self, hilos: int):
+        self._cola: list[list[Any]] = []
+        self._orden = itertools.count()
+        self._condicion = threading.Condition()
+        self._cerrado = False
+        for n in range(hilos):
+            threading.Thread(target=self._trabajar, name=f"ocr_{n}", daemon=True).start()
+
+    def submit(self, funcion, *args) -> Future:
+        futuro: Future = Future()
+        turno = _turno_actual.get()
+        with self._condicion:
+            if self._cerrado:
+                raise RuntimeError("El pool de OCR está cerrado.")
+            heapq.heappush(self._cola, [turno.prioridad, next(self._orden), turno, futuro, funcion, args])
+            self._condicion.notify()
+        return futuro
+
+    def map(self, funcion, elementos) -> list[Any]:
+        futuros = [self.submit(funcion, e) for e in elementos]
+        return [f.result() for f in futuros]
+
+    def reordenar(self) -> None:
+        """Recalcula el orden de la cola tras promover un turno."""
+        with self._condicion:
+            for entrada in self._cola:
+                entrada[0] = entrada[2].prioridad
+            heapq.heapify(self._cola)
+
+    def shutdown(self) -> None:
+        with self._condicion:
+            self._cerrado = True
+            for *_, futuro, _f, _a in self._cola:
+                futuro.cancel()
+            self._cola.clear()
+            self._condicion.notify_all()
+
+    def _trabajar(self) -> None:
+        while True:
+            with self._condicion:
+                while not self._cola and not self._cerrado:
+                    self._condicion.wait()
+                if self._cerrado:
+                    return
+                *_, futuro, funcion, args = heapq.heappop(self._cola)
+            if not futuro.set_running_or_notify_cancel():
+                continue
+            try:
+                futuro.set_result(funcion(*args))
+            except BaseException as exc:  # noqa: BLE001 - se entrega al que espera el resultado
+                futuro.set_exception(exc)
+
+
+_POOL_OCR = _PoolPrioritario(settings.OCR_WORKERS)
+
+
+def turno_actual() -> Turno:
+    return _turno_actual.get()
+
+
+def promover(turno: Turno) -> None:
+    """Pasa a primer plano las páginas pendientes de una lectura de fondo."""
+    if turno.prioridad != PRIMER_PLANO:
+        turno.prioridad = PRIMER_PLANO
+        _POOL_OCR.reordenar()
 
 
 def cerrar() -> None:
     """Apagado del servicio: descarta los reconocimientos en cola sin esperarlos."""
-    _POOL_OCR.shutdown(wait=False, cancel_futures=True)
+    _POOL_OCR.shutdown()
 
 # Firmas binarias aceptadas, idénticas a las del Nivel 1 en core-service.
 FIRMAS_MAGICAS: dict[str, list[bytes]] = {
@@ -353,7 +459,7 @@ def _ocr_en_paralelo(imagenes: list[np.ndarray]) -> list[tuple[str, float, list[
     reparte entre los núcleos sin copiar las imágenes entre procesos. El pool
     es el compartido del proceso (``_POOL_OCR``).
     """
-    return list(_POOL_OCR.map(_ocr_sobre_imagen, imagenes))
+    return _POOL_OCR.map(_ocr_sobre_imagen, imagenes)
 
 
 # Lectura completa en flujo continuo: páginas rasterizadas que pueden esperar su

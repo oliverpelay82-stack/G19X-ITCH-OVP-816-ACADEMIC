@@ -1,0 +1,90 @@
+{
+ "fecha": "2026-10-04",
+ "proposito": "RNF-02: ¿bajar OCR_DPI de 300 a 250 acelera el Nivel 3 sin perder exactitud?",
+ "metodo": "Nivel 3 directo (extraccion_pipeline.extraer_texto, texto_completo), sin caché ni persistencia ni modelo; un proceso por DPI; equipo sin otros servicios. CER contra el texto conocido de los 12 escaneos del Gold Standard; 3 corridas del contrato escaneado de 20 páginas y del acta real de 26 páginas.",
+ "dpi_300": {
+  "dpi": 300,
+  "workers": 8,
+  "cer": {
+   "GS-CSF-01-ESC": 0.0047,
+   "GS-CSF-03-ESC": 0.0069,
+   "GS-OPIN-01-ESC": 0.00374,
+   "GS-DOM-01-ESC": 0.0,
+   "GS-ACTA-01-ESC": 0.00508,
+   "GS-ACTA-03-ESC": 0.00457,
+   "GS-PODER-01-ESC": 0.00956,
+   "GS-CONT-01-ESC": 0.00112,
+   "GS-CONT-03-ESC": 0.00082,
+   "GS-CONT-07-ESC": 0.0011,
+   "GS-NDA-01-ESC": 0.0,
+   "GS-POL-01-ESC": 0.0
+  },
+  "cer_mediana": 0.00243,
+  "cer_maximo": 0.00956,
+  "tiempos": {
+   "contrato_20p": {
+    "mediana_s": 7.87,
+    "corridas_s": [
+     8.28,
+     7.87,
+     7.86
+    ],
+    "confianza": 0.953,
+    "paginas_ocr": 20
+   },
+   "acta_real_26p": {
+    "mediana_s": 29.79,
+    "corridas_s": [
+     29.44,
+     29.79,
+     32.75
+    ],
+    "confianza": 0.876,
+    "paginas_ocr": 26
+   }
+  }
+ },
+ "dpi_250": {
+  "dpi": 250,
+  "workers": 8,
+  "cer": {
+   "GS-CSF-01-ESC": 0.00823,
+   "GS-CSF-03-ESC": 0.00575,
+   "GS-OPIN-01-ESC": 0.00623,
+   "GS-DOM-01-ESC": 0.00351,
+   "GS-ACTA-01-ESC": 0.00465,
+   "GS-ACTA-03-ESC": 0.00572,
+   "GS-PODER-01-ESC": 0.00956,
+   "GS-CONT-01-ESC": 0.0015,
+   "GS-CONT-03-ESC": 0.00165,
+   "GS-CONT-07-ESC": 0.00184,
+   "GS-NDA-01-ESC": 0.00189,
+   "GS-POL-01-ESC": 0.00151
+  },
+  "cer_mediana": 0.00408,
+  "cer_maximo": 0.00956,
+  "tiempos": {
+   "contrato_20p": {
+    "mediana_s": 7.44,
+    "corridas_s": [
+     7.34,
+     7.44,
+     7.45
+    ],
+    "confianza": 0.953,
+    "paginas_ocr": 20
+   },
+   "acta_real_26p": {
+    "mediana_s": 30.6,
+    "corridas_s": [
+     30.6,
+     30.6,
+     30.75
+    ],
+    "confianza": 0.875,
+    "paginas_ocr": 26
+   }
+  }
+ },
+ "decision": "Se conserva 300 dpi: a 250 el acta real no se acelera (29.8 → 30.6 s), el contrato gana 5 % y el CER mediano sube de 0.24 % a 0.41 % (9 de 12 escaneos empeoran)."
+}

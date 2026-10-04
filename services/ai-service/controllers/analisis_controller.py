@@ -387,6 +387,22 @@ def preparar_documento(documento_id: str):
 
 
 @router.post(
+    "/documentos/{documento_id}/anticipar",
+    status_code=status.HTTP_202_ACCEPTED,
+    summary="Leer de fondo un documento recién custodiado (Nivel 3, sin el modelo)",
+)
+def anticipar_lectura(documento_id: str):
+    """
+    RNF-02: el frontend lo pide al custodiar cada documento. Programa la lectura
+    de todas sus páginas en segundo plano, con prioridad de fondo en el OCR, y
+    responde al instante; la auditoría encuentra después el texto listo. No
+    consume tokens. ``programada`` es False si ese documento ya se está leyendo
+    o si la lectura anticipada está apagada (``LECTURA_ANTICIPADA``).
+    """
+    return {"documento_id": documento_id, "programada": repositorio_texto.anticipar(documento_id)}
+
+
+@router.post(
     "/analisis-semantico",
     status_code=status.HTTP_200_OK,
     summary="Dictaminar un documento con el modelo de lenguaje (tipo, RFC, vigencia y estatus)",

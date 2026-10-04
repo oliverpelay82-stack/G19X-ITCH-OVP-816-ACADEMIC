@@ -165,6 +165,10 @@ EXTRACCIONES_DB_PATH: str = os.getenv(
 COMPLETAR_LECTURA_EN_SEGUNDO_PLANO: bool = os.getenv("COMPLETAR_LECTURA_EN_SEGUNDO_PLANO", "true").lower() in (
     "1", "true", "si", "sí", "yes",
 )
+# RNF-02: al custodiar un documento, el frontend pide leerlo de fondo (todas sus
+# páginas, sin el modelo); la auditoría encuentra el texto listo. Con «false», el
+# endpoint /anticipar no programa nada y la auditoría lee como antes.
+LECTURA_ANTICIPADA: bool = os.getenv("LECTURA_ANTICIPADA", "true").lower() in ("1", "true", "si", "sí", "yes")
 
 # Búsqueda de fragmentos relevantes (Nivel 4). En lugar de enviar solo el inicio
 # del documento, se envía su encabezado y los fragmentos que mejor responden a la

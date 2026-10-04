@@ -1,0 +1,59 @@
+@startuml rnf02-actividad-lectura-anticipada
+' RNF-02 — Lectura anticipada del Nivel 3 y prioridad del OCR (PRD §21.9, 04/10/2026).
+' Trazabilidad: RNF-02 (≤ 25 s por documento de hasta 20 páginas), RF-10 y RF-11
+' (auditoría con IA), HU-20 (visor). No lee menos páginas: cambia cuándo se leen.
+' Implementación: ai-service pipelines/extraccion_pipeline.py (pool de OCR con
+' prioridad), pipelines/repositorio_texto.py (anticipar, lectura completa
+' directa, promoción) y POST /api/v1/ai/documentos/{id}/anticipar; frontend
+' services/api.js (la pide al custodiar cada documento).
+' Medido: el OCR de un acta real de 26 páginas densas cuesta ≈ 30 s en el equipo
+' de desarrollo (Tesseract ≈ 3.9 s de CPU por página, 95 % del tiempo); ese
+' trabajo ocurre mientras el analista sigue custodiando, no al auditar.
+
+title RNF-02 — Lectura anticipada y prioridad del OCR
+
+|Analista|
+start
+:Custodia un documento (o un lote);
+
+|core-service|
+:Nivel 1: firma, huella SHA-256 y bóveda;
+:201 con el documento;
+
+|Frontend|
+:Pide la lectura anticipada
+(POST /ai/documentos/{id}/anticipar);
+
+|ai-service|
+:202: queda en la cola de fondo
+(un documento a la vez);
+fork
+  :Lee TODAS las páginas en flujo continuo
+  con prioridad de fondo;
+  :Guarda texto y palabras con recuadro
+  (SQLite por huella);
+fork again
+  |Analista|
+  :Sigue trabajando
+  (otra carga, el chat, el visor);
+  |ai-service|
+  :Esas páginas pasan primero
+  (prioridad de primer plano);
+end fork
+
+|Analista|
+:Pide la auditoría;
+
+|ai-service|
+if (¿El texto completo ya está guardado?) then (sí)
+  :Lo reutiliza (milisegundos);
+else (se está leyendo)
+  :Promueve las páginas pendientes de ese
+  documento a primer plano y espera
+  la misma lectura (sin repetir OCR);
+endif
+:Nivel 4: extracción y verificación
+en paralelo con el modelo;
+:Dictamen;
+stop
+@enduml
