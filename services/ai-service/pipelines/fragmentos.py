@@ -363,23 +363,41 @@ def _es_encabezado(renglon: str) -> bool:
                                                        sum(c.isupper() for c in letras) / len(letras) > 0.6)
 
 
-def _reordenar(v: Ventana, puntaje: float, base: set[str], distintivos: set[str] | None = None) -> float:
+def _rubro(renglon: str) -> str:
+    """El rubro de un encabezado: lo que nombra la cláusula («ARTÍCULO SEXTO. - CAPITAL
+    SOCIAL»), sin el cuerpo que el OCR deja en el mismo renglón; o el renglón en mayúsculas."""
+    m = _ENCABEZADO_LEGAL.match(renglon)
+    return m.group(1) if m else renglon
+
+
+def _reordenar(v: Ventana, puntaje: float, base: set[str], distintivos: set[str] | None = None,
+               bigramas: set[tuple[str, str]] | None = None) -> float:
     """
     BM25 favorece la ventana donde los términos se repiten; una pregunta puntual
     («tiempo de respuesta de la mesa de ayuda») se responde en la que reúne más
     términos distintos y, sobre todo, la que los tiene en un encabezado: siete
     páginas de niveles de servicio repiten «tiempo de respuesta», pero solo una
     se titula «MESA DE AYUDA».
+
+    Un encabezado que contiene un par de palabras seguidas de la pregunta también
+    suma, aunque cada palabra sea común: en un acta, «capital» y «social» están en
+    un tercio de las páginas (las reglas para aumentarlo), pero solo un rubro se
+    titula «CAPITAL SOCIAL», y es el que fija el monto.
     """
     if not base:
         return puntaje
     renglones = v.texto.splitlines()
     presentes = set().union(*(set(tokenizar(r)) for r in renglones)) & base if renglones else set()
-    en_encabezado = set().union(*(set(tokenizar(r)) for r in renglones if _es_encabezado(r))) & base \
-        if renglones else set()
+    encabezados = [r for r in renglones if _es_encabezado(r)]
+    en_encabezado = set().union(*(set(tokenizar(r)) for r in encabezados)) & base if encabezados else set()
     if distintivos is not None:
         en_encabezado &= distintivos
-    return puntaje * (0.5 + len(presentes) / len(base)) + 2.0 * len(en_encabezado)
+    rubro = set()
+    if bigramas:
+        for r in encabezados:
+            tokens = tokenizar(_rubro(r))
+            rubro |= set(zip(tokens, tokens[1:])) & bigramas
+    return puntaje * (0.5 + len(presentes) / len(base)) + 2.0 * len(en_encabezado) + 2.0 * len(rubro)
 
 
 def _tramo_relevante(v: Ventana, base: set[str]) -> Ventana:
@@ -413,7 +431,9 @@ def _candidatas_reordenadas(texto: str, consulta: str, desde: int = 0) -> list[t
         key=lambda c: c[1], reverse=True,
     )[:_CANDIDATAS_REORDENAMIENTO]
     distintivos = {t for t in base if indice.df.get(t, 0) < _DF_MAXIMA_ENCABEZADO * len(indice.ventanas)}
-    return sorted(((v, _reordenar(v, p, base, distintivos)) for v, p in candidatas),
+    tokens_consulta = tokenizar(consulta)
+    bigramas = set(zip(tokens_consulta, tokens_consulta[1:]))
+    return sorted(((v, _reordenar(v, p, base, distintivos, bigramas)) for v, p in candidatas),
                   key=lambda c: c[1], reverse=True)
 
 

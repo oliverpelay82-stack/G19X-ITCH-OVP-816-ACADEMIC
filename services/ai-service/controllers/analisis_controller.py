@@ -701,9 +701,13 @@ def chat_documento(peticion: ChatDocumentoRequest):
         presupuesto = {"limite": presupuesto_tokens.presupuesto.limite, "usados_ultimo_minuto": usados,
                        "estimado": estimado, "reducido": False}
         if not presupuesto_tokens.presupuesto.cabe(estimado):
-            seleccion = fragmentos.seleccionar(
-                texto, consulta, max_fragmentos=2, paginas=paginas,
-                presupuesto=settings.MAX_CARACTERES_CONTEXTO // 3,
+            # Se acota con la misma estrategia del turno: una pregunta puntual conserva el
+            # reordenamiento por encabezados (con BM25 simple, el chat que sigue a una
+            # auditoría perdía el rubro que responde, como el «CAPITAL SOCIAL» de un acta).
+            seleccionar = fragmentos.seleccionar if general else fragmentos.seleccionar_enfocado
+            seleccion = seleccionar(
+                texto, consulta, presupuesto=settings.MAX_CARACTERES_CONTEXTO // 3, max_fragmentos=2,
+                paginas=paginas,
             )
             mensajes = _mensajes_chat(seleccion.texto, estado, historial[-2:], peticion.pregunta)
             claves = [cache_chat.clave_exacta(mensajes, settings.CHAT_MAX_TOKENS)] if claves else []
