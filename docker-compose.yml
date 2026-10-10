@@ -40,6 +40,9 @@ services:
       DB_PASSWORD: plurione-demo
       DB_NAME: plurione_compliance
       STORAGE_VAULT_PATH: /app/storage_vault
+      # M1: en producción, RFC_DIGITO_ESTRICTO=true en el .env de la raíz rechaza un RFC
+      # cuyo dígito verificador no coincide; sin definir, se acepta (datos de prueba).
+      RFC_DIGITO_ESTRICTO: ${RFC_DIGITO_ESTRICTO:-false}
       # Documentos obligatorios del expediente (reglas RIE activas, HU-09).
       RULES_BASE_URL: http://plurione-rules:8002
     volumes:

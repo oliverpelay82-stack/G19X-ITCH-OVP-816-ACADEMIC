@@ -35,12 +35,12 @@ import FolioExpediente from './FolioExpediente.jsx'
 import EstadoBadge from './EstadoBadge.jsx'
 import DetalleEmpresa, { EmpresaNoEncontrada } from './DetalleEmpresa.jsx'
 
-const EXPLICACION_RFC = 'Dígito verificador sin coincidir: se aceptó con advertencia'
+const EXPLICACION_RFC = 'Es común en un RFC ficticio de prueba. Si el RFC es real, revisa que esté bien escrito.'
 
 /**
  * M1: el dígito verificador del RFC no coincide (RFC de prueba o mal escrito);
- * se aceptó con advertencia. Etiqueta compacta de advertencia (no de error) con
- * la explicación al pasar el cursor o al enfocarla.
+ * se aceptó porque la validación estricta está desactivada. Etiqueta compacta de
+ * advertencia (no de error) con la explicación al pasar el cursor o al enfocarla.
  */
 function AvisoRfc({ titular }) {
   if (titular.rfc_verificacion !== 'DIGITO_NO_COINCIDE') return null
@@ -48,7 +48,7 @@ function AvisoRfc({ titular }) {
     <Tooltip texto={EXPLICACION_RFC}>
       <Badge tono="warn" className="rfc-aviso" tabIndex={0}>
         <TriangleAlert size={12} aria-hidden="true" />
-        RFC con advertencia
+        Dígito verificador no coincide (permitido en pruebas)
         <span className="sr-only">. {EXPLICACION_RFC}</span>
       </Badge>
     </Tooltip>

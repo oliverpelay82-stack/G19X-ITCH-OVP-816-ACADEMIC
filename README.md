@@ -38,6 +38,8 @@ Sin la clave, el sistema funciona completo salvo la auditoría y el chat con IA,
 
 El rules-service carga el catálogo de reglas al arrancar (`AUTO_SEED=true`). La precarga es idempotente: solo inserta las reglas que faltan y no toca las editadas.
 
+> **Producción: activar `RFC_DIGITO_ESTRICTO=true`.** Al dar de alta un titular, el core valida el formato, la longitud y la fecha del RFC, y calcula su dígito verificador con el algoritmo del SAT (módulo 11). Por defecto (`false`), un RFC cuyo dígito no coincide se acepta con la etiqueta «Dígito verificador no coincide (permitido en pruebas)», para poder trabajar con RFC ficticios. En producción, agregar `RFC_DIGITO_ESTRICTO=true` al `.env` de la raíz (en local, al `.env` del core-service) para rechazar esos RFC con un 422. La existencia del RFC no se consulta al SAT: se acredita con la Constancia de Situación Fiscal y la Opinión 32-D, cuyo RFC el motor coteja con el del titular durante la auditoría.
+
 ### En local
 
 Se necesitan Python 3.12, Node 20.19 o superior, PostgreSQL 17 y Tesseract (con los idiomas `spa` y `eng`). Cada servicio lee su propio `.env` (`DB_*` en core y rules; `GROQ_API_KEY`, `TESSERACT_CMD`, `CORE_BASE_URL` y `RULES_BASE_URL` en el ai-service; ver [`services/ai-service/README.md`](services/ai-service/README.md)).
