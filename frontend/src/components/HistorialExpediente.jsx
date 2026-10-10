@@ -3,7 +3,7 @@ import { History, Loader2 } from 'lucide-react'
 import { Badge, Button } from './ui/index.js'
 import { getBitacora, verificarCadena } from '../services/api.js'
 import { getEstadoBadge, TIPO_DOCUMENTO_LABEL } from '../constants.js'
-import { formatFecha } from '../utils/format.js'
+import { formatFecha, plural } from '../utils/format.js'
 
 /** Causas con que el core-service reevalúa el semáforo (bitácora, EVALUACION_REGLAS). */
 const CAUSA = {
@@ -152,8 +152,8 @@ export default function HistorialExpediente({ expedienteId, documentos = [] }) {
         >
           <span className={`status-dot status-dot--${cadena.integra ? 'ok' : 'bad'}`} aria-hidden="true" />{' '}
           {cadena.integra
-            ? `Cadena de custodia íntegra · ${cadena.eventos_sellados} ${cadena.eventos_sellados === 1 ? 'evento sellado' : 'eventos sellados'}`
-            : `Cadena de custodia comprometida · ${cadena.total_hallazgos} ${cadena.total_hallazgos === 1 ? 'hallazgo' : 'hallazgos'}: consulte la verificación de la bitácora`}
+            ? `Cadena de custodia íntegra · ${plural(cadena.eventos_sellados, 'evento sellado', 'eventos sellados')}`
+            : `Cadena de custodia comprometida · ${plural(cadena.total_hallazgos, 'hallazgo', 'hallazgos')}: consulte la verificación de la bitácora`}
         </p>
       )}
       {eventos && eventos.length === 0 && <p className="field-hint">Sin eventos registrados.</p>}

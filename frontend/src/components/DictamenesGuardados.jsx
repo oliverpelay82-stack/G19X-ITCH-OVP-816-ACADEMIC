@@ -6,7 +6,7 @@ import { getEstadoBadge } from '../constants.js'
 import { Badge, Button, Field, Input, KeyValue, KeyValueList, Segmented } from './ui/index.js'
 import useToast from '../hooks/useToast.js'
 import { getDictamenes, ratificarDictamen } from '../services/api.js'
-import { formatFecha, formatRelativo, hashCorto } from '../utils/format.js'
+import { formatFecha, formatRelativo, hashCorto, plural } from '../utils/format.js'
 
 const RESULTADO_REGLA = {
   CUMPLE: 'ok',
@@ -136,7 +136,7 @@ function FormularioRatificacion({ dictamen, onRatificado, onCancelar }) {
           estado: estadoCampo,
           mensaje: justificacionValida
             ? 'Justificación suficiente.'
-            : `Faltan ${faltan} ${faltan === 1 ? 'carácter' : 'caracteres'} para registrar la decisión.`,
+            : `Faltan ${plural(faltan, 'carácter', 'caracteres')} para registrar la decisión.`,
         }}
       >
         <textarea
@@ -334,7 +334,7 @@ export default function DictamenesGuardados({
     <details className="historial">
       <summary>
         <History size={12} strokeWidth={1.75} aria-hidden="true" />
-        Historial · {anteriores.length} {anteriores.length === 1 ? 'dictamen anterior' : 'dictámenes anteriores'}
+        Historial · {plural(anteriores.length, 'dictamen anterior', 'dictámenes anteriores')}
       </summary>
       <ul>
         {anteriores.map((d) => (

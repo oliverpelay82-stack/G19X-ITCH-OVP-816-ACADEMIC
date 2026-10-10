@@ -162,7 +162,7 @@ El catálogo de endpoints (DOC-08) define la jerarquía de acceso ADMIN > AUDITO
 
 ## 7. Requerimientos funcionales
 
-[DG Cap. IV §4.4 — texto oficial de los requerimientos; estado según DG Cap. X §10.6, Tabla 34]
+[DG Cap. IV §4.4 — texto oficial de los requerimientos; estado según DG Cap. X §10.7, Tabla 33]
 
 Prioridad tomada de las historias de usuario asociadas (Cap. VII); «—» cuando ninguna historia cubre el requerimiento. Estados: **Implementado**, **Parcial** o **Pendiente**.
 
@@ -228,7 +228,7 @@ Prioridad tomada de las historias de usuario asociadas (Cap. VII); «—» cuand
 | RF-26 | Autorización por rol (RBAC). | Alta | **Pendiente** | Roles definidos (sección 5). |
 | RF-27 | Bitácora inmutable protegida por el motor de base de datos. | Alta | Implementado | Disparador `trg_bitacora_inmutable` y, desde P3, cada evento sellado en cadena y verificable (`/bitacora/verificar-cadena`); el usuario autenticado se registrará con RF-25. |
 
-**Resumen:** 22 implementados, 1 parcial, 3 pendientes y 1 fuera del alcance de 27 (versión 2.1: RF-10 pasa a parcial y RF-12 sale del alcance; versión 2.9: RF-09 y RF-02 pasan a implementados). La Tabla 34 del DG reporta 20, 4 y 3; la diferencia es RF-11, que pasa a implementado con la verificación de contenido del Nivel 4 (versión 1.2 de este documento).
+**Resumen:** 22 implementados, 1 parcial, 3 pendientes y 1 fuera del alcance de 27 (versión 2.1: RF-10 pasa a parcial y RF-12 sale del alcance; versión 2.9: RF-09 y RF-02 pasan a implementados). La Tabla 33 del DG (§10.7, corte al 03/10/2026) reporta las mismas cifras.
 
 ---
 

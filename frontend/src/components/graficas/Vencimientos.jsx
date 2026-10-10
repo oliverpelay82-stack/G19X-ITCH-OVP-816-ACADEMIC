@@ -1,6 +1,6 @@
 import { CartesianGrid, ReferenceLine, ResponsiveContainer, Scatter, ScatterChart, Tooltip, XAxis, YAxis } from 'recharts'
 import { TIPO_DOCUMENTO_LABEL, TIPOS_EXPEDIENTE } from '../../constants.js'
-import { formatDia } from '../../utils/format.js'
+import { formatDia, plural } from '../../utils/format.js'
 import { DatosDeLaGrafica, Leyenda, TarjetaGrafica, TooltipGrafica } from './comun.jsx'
 import { animar, EJE, RETICULA } from './estilo.js'
 
@@ -13,7 +13,7 @@ const FRANJAS = [
   { clave: 'horizonte', etiqueta: '31 a 90 días', hasta: HORIZONTE, color: 'var(--off-solid)' },
 ]
 
-const diasTexto = (d) => (d === 0 ? 'vence hoy' : `vence en ${d} ${d === 1 ? 'día' : 'días'}`)
+const diasTexto = (d) => (d === 0 ? 'vence hoy' : `vence en ${plural(d, 'día', 'días')}`)
 
 /** Punto con anillo del color de la superficie: legible aunque se encime con otro. */
 function Punto({ cx, cy, fill }) {
@@ -54,7 +54,7 @@ export default function Vencimientos({ expedientes, onAbrirExpediente }) {
   }))
 
   const subtitulo =
-    `${enHorizonte.length} ${enHorizonte.length === 1 ? 'documento vence' : 'documentos vencen'} en ${HORIZONTE} días` +
+    `${plural(enHorizonte.length, 'documento vence', 'documentos vencen')} en ${HORIZONTE} días` +
     (vencidos ? ` · ${vencidos} ya ${vencidos === 1 ? 'venció' : 'vencieron'}` : '')
 
   return (

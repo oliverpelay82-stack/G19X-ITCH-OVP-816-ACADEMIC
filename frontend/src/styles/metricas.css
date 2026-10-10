@@ -40,14 +40,6 @@
   min-width: 0;
 }
 
-.metric-label {
-  font-size: var(--fs-micro);
-  font-weight: 500;
-  letter-spacing: var(--tracking-caps);
-  text-transform: uppercase;
-  color: var(--text-muted);
-}
-
 /* Cifra y desglose en dos renglones: las cuatro tarjetas tienen la misma
    estructura y el desglose nunca se recorta, en ningún ancho. */
 .metric-body {
@@ -55,14 +47,6 @@
   flex-direction: column;
   gap: 2px;
   min-width: 0;
-}
-
-.metric-value {
-  font-size: var(--fs-metric);
-  font-weight: 600;
-  letter-spacing: -0.025em;
-  line-height: 1.1;
-  color: var(--text-primary);
 }
 
 .metric-foot {

@@ -6,6 +6,7 @@ import { Card } from './ui/index.js'
 import { TIPOS_EXPEDIENTE } from '../constants.js'
 import { formatIndice, promedioIndice } from '../utils/indice.js'
 import { reducirMovimiento } from '../utils/movimiento.js'
+import { plural } from '../utils/format.js'
 
 /** Duración del conteo: el doble de la transición lenta del sistema de diseño. */
 const DURACION_CONTEO = 480
@@ -86,7 +87,7 @@ export default function MetricsCards({ titulares, expedientes, documentos, loadi
       label: 'Empresas',
       valor: <Cifra valor={titulares.length} />,
       pie: (
-        <span className="metric-foot">{`${datos.morales} ${datos.morales === 1 ? 'moral' : 'morales'} · ${datos.fisicas} ${datos.fisicas === 1 ? 'física' : 'físicas'}`}</span>
+        <span className="metric-foot">{`${plural(datos.morales, 'moral', 'morales')} · ${plural(datos.fisicas, 'física', 'físicas')}`}</span>
       ),
     },
     {

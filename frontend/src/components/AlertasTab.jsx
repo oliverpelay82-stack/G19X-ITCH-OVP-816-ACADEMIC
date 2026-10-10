@@ -16,6 +16,7 @@ import {
   TIPO_EXPEDIENTE_LABEL,
   TIPOS_EXPEDIENTE,
 } from '../constants.js'
+import { plural } from '../utils/format.js'
 
 /**
  * Bandeja de alertas y recomendaciones de todos los expedientes (Módulo 5:
@@ -145,8 +146,7 @@ export default function AlertasTab({ expedientes, loading, onAbrirExpediente, bu
         <>
           <div className="bandeja-resumen">
             <p className="field-hint">
-              {filtradas.length} {filtradas.length === 1 ? 'alerta' : 'alertas'} en {nExpedientes}{' '}
-              {nExpedientes === 1 ? 'expediente' : 'expedientes'}, de la más grave a la menos grave.
+              {plural(filtradas.length, 'alerta', 'alertas')} en {plural(nExpedientes, 'expediente', 'expedientes')}, de la más grave a la menos grave.
               {filtroTipo !== 'TODOS' && ` Tipo: ${TIPO_EXPEDIENTE_LABEL[filtroTipo]}.`}
             </p>
             {/* Todas del mismo expediente: se nombra una vez aquí en lugar de en cada alerta. */}

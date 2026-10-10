@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import EstadoBadge from './EstadoBadge.jsx'
 import { getSeveridadMeta, rangoSeveridad, TIPO_EXPEDIENTE_LABEL } from '../constants.js'
 import { formatIndice, indiceDe } from '../utils/indice.js'
+import { plural } from '../utils/format.js'
 
 const RETARDO = 350 // ms: pasar el cursor de largo no abre nada
 const ANCHO = 280
@@ -93,7 +94,7 @@ function TarjetaPrevia({ id, expediente: e, posicion }) {
         {masGrave ? (
           <>
             <span className="tabular">
-              {alertas.length} {alertas.length === 1 ? 'alerta' : 'alertas'}
+              {plural(alertas.length, 'alerta', 'alertas')}
             </span>
             {' · '}
             {getSeveridadMeta(masGrave.severidad).label}: {masGrave.titulo}

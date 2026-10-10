@@ -1,9 +1,10 @@
 import { useMemo } from 'react'
 import { Card, Tag } from './ui/index.js'
 import { ALERTA_META } from '../constants.js'
+import { plural } from '../utils/format.js'
 
-const diasTexto = (n) => (n === 0 ? 'desde hoy' : `${n} ${n === 1 ? 'día' : 'días'}`)
-const documentosTexto = (n) => `${n} ${n === 1 ? 'documento' : 'documentos'}`
+const diasTexto = (n) => (n === 0 ? 'desde hoy' : plural(n, 'día', 'días'))
+const documentosTexto = (n) => plural(n, 'documento', 'documentos')
 
 /**
  * Hallazgos por categoría (RF-22, HU-26) con lo que espera al analista: cada

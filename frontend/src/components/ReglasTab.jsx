@@ -23,7 +23,7 @@ import useDebounce from '../hooks/useDebounce.js'
 import { coincideEn, normalizar } from '../utils/busqueda.js'
 import { createRegla, toggleRegla } from '../services/api.js'
 import TipoDocumentoNuevo from './TipoDocumentoNuevo.jsx'
-import { formatFecha } from '../utils/format.js'
+import { formatFecha, plural } from '../utils/format.js'
 import {
   FAMILIA_META,
   FAMILIAS_REGLA,
@@ -378,7 +378,7 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
                           <span className="group-name">{grupo.meta.nombre}</span>
                           <span className="group-meta">{grupo.meta.nivel}</span>
                           <span className="group-count tabular">
-                            {grupo.items.length} {grupo.items.length === 1 ? 'regla' : 'reglas'} ·{' '}
+                            {plural(grupo.items.length, 'regla', 'reglas')} ·{' '}
                             {grupo.items.filter((r) => r.activo).length} activas
                           </span>
                         </button>

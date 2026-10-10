@@ -3,7 +3,7 @@ import { ArrowUpRight } from 'lucide-react'
 import { Bar, BarChart, CartesianGrid, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { getBitacora } from '../../services/api.js'
 import { getEstadoBadge } from '../../constants.js'
-import { formatFechaCorta } from '../../utils/format.js'
+import { formatFechaCorta, plural } from '../../utils/format.js'
 import { Skeleton } from '../Skeleton.jsx'
 import { agruparCambios, DIAS, diaCorto, esCambioDeTendencia, LIMITE } from './cambios.js'
 import { DatosDeLaGrafica, Leyenda, TarjetaGrafica, TooltipGrafica } from './comun.jsx'
@@ -52,7 +52,7 @@ export default function CambiosSemaforo({ expedientes = [], onAbrirExpediente })
   return (
     <TarjetaGrafica
       titulo="Tendencia del semáforo"
-      subtitulo={eventos ? `Últimos ${DIAS} días · ${mejoras} ${mejoras === 1 ? 'mejora' : 'mejoras'}, ${deterioros} ${deterioros === 1 ? 'deterioro' : 'deterioros'}` : `Últimos ${DIAS} días`}
+      subtitulo={eventos ? `Últimos ${DIAS} días · ${plural(mejoras, 'mejora', 'mejoras')}, ${plural(deterioros, 'deterioro', 'deterioros')}` : `Últimos ${DIAS} días`}
     >
       {error && <p className="grafica-vacia">{error}</p>}
       {!error && !eventos && <Skeleton h={180} />}

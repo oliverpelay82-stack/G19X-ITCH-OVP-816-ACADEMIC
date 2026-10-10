@@ -11,7 +11,7 @@ import { coincideEn, normalizar } from '../utils/busqueda.js'
 import { createExpediente, custodiarArchivo } from '../services/api.js'
 import { avisarCarga } from '../utils/nivel1.js'
 import { getEstadoBadge, TIPO_EXPEDIENTE_LABEL, TIPOS_EXPEDIENTE } from '../constants.js'
-import { formatRelativo } from '../utils/format.js'
+import { formatRelativo, plural } from '../utils/format.js'
 import { formatIndice, indiceDe } from '../utils/indice.js'
 import { RANGO_ESTADO } from '../hooks/useOrden.js'
 import { DetalleExpediente } from './expedientes/DetalleExpediente.jsx'
@@ -359,7 +359,7 @@ export default function ExpedientesTab({
                       {nAlertas > 0 && (
                         <span className="exp-nalertas">
                           {' '}
-                          · {nAlertas} {nAlertas === 1 ? 'alerta' : 'alertas'}
+                          · {plural(nAlertas, 'alerta', 'alertas')}
                         </span>
                       )}
                     </span>

@@ -71,7 +71,7 @@ export default function DetalleEmpresa({
     plural(resumen.documentos, 'documento vigente', 'documentos vigentes'),
     resumen.alertas.length
       ? `${plural(resumen.alertas.length, 'alerta', 'alertas')}${
-          resumen.graves ? ` (${resumen.graves} ${resumen.graves === 1 ? 'crítica o alta' : 'críticas o altas'})` : ''
+          resumen.graves ? ` (${plural(resumen.graves, 'crítica o alta', 'críticas o altas')})` : ''
         }`
       : 'sin alertas',
   ].join(' · ')

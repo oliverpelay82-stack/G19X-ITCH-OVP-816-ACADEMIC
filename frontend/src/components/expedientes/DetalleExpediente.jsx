@@ -16,7 +16,7 @@ import {
   tiposParaCarga,
   VIGENCIA_META,
 } from '../../constants.js'
-import { formatDia } from '../../utils/format.js'
+import { formatDia, plural } from '../../utils/format.js'
 import { AuditarPendientes } from './AuditarPendientes.jsx'
 
 /**
@@ -55,7 +55,7 @@ function Vigencia({ doc }) {
   const texto =
     doc.vigencia === 'VENCIDO'
       ? `Venció el ${formatDia(doc.fecha_caducidad)}`
-      : `Vence el ${formatDia(doc.fecha_caducidad)} · ${dias} ${dias === 1 ? 'día' : 'días'}`
+      : `Vence el ${formatDia(doc.fecha_caducidad)} · ${plural(dias, 'día', 'días')}`
   return <span className={`cell-sub cell-${meta?.tono === 'ok' ? 'muted' : meta?.tono}`}>{texto}</span>
 }
 
@@ -393,7 +393,7 @@ export function DetalleExpediente({ exp, subiendo, onSubir, iaOnline, onRefresh,
 
         {evaluacion?.sustituidos > 0 && (
           <p className="field-hint exp-tabla-nota">
-            {evaluacion.sustituidos} {evaluacion.sustituidos === 1 ? 'archivo sustituido' : 'archivos sustituidos'} por uno
+            {plural(evaluacion.sustituidos, 'archivo sustituido', 'archivos sustituidos')} por uno
             más reciente del mismo tipo; su historial se conserva en la bitácora.
           </p>
         )}

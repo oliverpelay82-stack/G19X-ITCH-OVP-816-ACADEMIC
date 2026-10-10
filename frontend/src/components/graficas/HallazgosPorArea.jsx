@@ -2,6 +2,7 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxi
 import { getSeveridadMeta, SEVERIDADES, TIPOS_EXPEDIENTE } from '../../constants.js'
 import { DatosDeLaGrafica, Leyenda, TarjetaGrafica, TooltipGrafica } from './comun.jsx'
 import { animar, EJE, RETICULA, SEPARACION } from './estilo.js'
+import { plural } from '../../utils/format.js'
 
 /** Rampa de un solo tono, validada: Crítica es el paso más marcado en ambos temas. */
 const COLOR_SEVERIDAD = {
@@ -30,7 +31,7 @@ export default function HallazgosPorArea({ expedientes }) {
   const total = porSeveridad.reduce((n, [, v]) => n + v, 0)
 
   return (
-    <TarjetaGrafica titulo="Hallazgos por área y severidad" subtitulo={`${total} ${total === 1 ? 'hallazgo vigente' : 'hallazgos vigentes'}`}>
+    <TarjetaGrafica titulo="Hallazgos por área y severidad" subtitulo={plural(total, 'hallazgo vigente', 'hallazgos vigentes')}>
       <ResponsiveContainer width="100%" height={180}>
         <BarChart data={filas} layout="vertical" margin={{ top: 4, right: 12, bottom: 0, left: 0 }} barSize={20}>
           <CartesianGrid {...RETICULA} horizontal={false} />
@@ -42,7 +43,7 @@ export default function HallazgosPorArea({ expedientes }) {
               const f = active && payload?.[0]?.payload
               return f ? (
                 <TooltipGrafica
-                  titulo={`${f.area} · ${f.expedientes} ${f.expedientes === 1 ? 'expediente' : 'expedientes'}`}
+                  titulo={`${f.area} · ${plural(f.expedientes, 'expediente', 'expedientes')}`}
                   filas={SEVERIDADES.map((s) => ({ etiqueta: getSeveridadMeta(s).label, valor: f[s], color: COLOR_SEVERIDAD[s] }))}
                   nota={`${f.total} en total`}
                 />

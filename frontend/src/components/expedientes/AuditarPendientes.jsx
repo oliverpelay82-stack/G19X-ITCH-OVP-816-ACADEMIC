@@ -5,6 +5,7 @@ import { Button } from '../ui/index.js'
 import { analizarDocumento, getExpedienteById } from '../../services/api.js'
 import { getEstadoBadge } from '../../constants.js'
 import EstadoBadge from '../EstadoBadge.jsx'
+import { plural } from '../../utils/format.js'
 
 /** Estado de un documento dentro de «Auditar pendientes». */
 const PASO = {
@@ -106,7 +107,7 @@ export function AuditarPendientes({ exp, iaOnline, onTerminado }) {
       <p className="eyebrow">Validación del expediente</p>
       {!pasos && (
         <p className="field-hint">
-          {pendientes.length} {pendientes.length === 1 ? 'documento sin auditar' : 'documentos sin auditar'}. Se validan
+          {plural(pendientes.length, 'documento sin auditar', 'documentos sin auditar')}. Se validan
           con reglas e IA uno por uno.
         </p>
       )}
@@ -162,7 +163,7 @@ export function AuditarPendientes({ exp, iaOnline, onTerminado }) {
               →{' '}
               <EstadoBadge estado={resultado.despues.estado} punto={false} />
               {' · '}
-              {resultado.despues.alertas} {resultado.despues.alertas === 1 ? 'alerta' : 'alertas'} (antes{' '}
+              {plural(resultado.despues.alertas, 'alerta', 'alertas')} (antes{' '}
               {resultado.antes.alertas})
             </p>
           )}

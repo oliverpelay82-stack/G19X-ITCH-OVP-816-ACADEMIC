@@ -2,6 +2,7 @@ import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
 import { formatIndice, promedioIndice } from '../../utils/indice.js'
 import { DatosDeLaGrafica, Leyenda, TarjetaGrafica, TooltipGrafica } from './comun.jsx'
 import { animar, SEPARACION } from './estilo.js'
+import { plural } from '../../utils/format.js'
 
 const ESTADOS = [
   { clave: 'CONFORME', etiqueta: 'Conforme', color: 'var(--chart-ok)' },
@@ -9,7 +10,7 @@ const ESTADOS = [
   { clave: 'NO_CONFORME', etiqueta: 'No conforme', color: 'var(--chart-bad)' },
 ]
 
-const expedientesTexto = (n) => `${n} ${n === 1 ? 'expediente' : 'expedientes'}`
+const expedientesTexto = (n) => plural(n, 'expediente', 'expedientes')
 const pct = (n, total) => (total ? `${Math.round((n / total) * 100)}%` : '0%')
 
 /**

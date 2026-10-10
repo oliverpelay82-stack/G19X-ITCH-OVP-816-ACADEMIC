@@ -254,14 +254,6 @@
   position: relative;
 }
 
-.exp-card > .exp-summary::before {
-  content: '';
-  position: absolute;
-  inset: 0 auto 0 0;
-  width: 3px;
-  background: var(--off-solid);
-}
-
 .exp-card--ok > .exp-summary::before {
   background: var(--ok-solid);
 }
