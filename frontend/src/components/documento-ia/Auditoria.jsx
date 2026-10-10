@@ -179,7 +179,7 @@ export function AuditoriaIa({
         {etapas && <Stepper etapas={etapas} compacto={!analizando} />}
 
         {analizando && (
-          <div className="ai-loading" aria-hidden="true">
+          <div className="ia-bloque" aria-hidden="true">
             <Skeleton w="30%" h={24} />
             <Skeleton w="72%" />
             <Skeleton w="100%" h={3} r="var(--r-full)" />

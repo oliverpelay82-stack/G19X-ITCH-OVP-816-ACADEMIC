@@ -69,12 +69,6 @@ def comparar_campo(esperado: Any, extraido: Any, iguales: Callable[[Any, Any], b
     return Conteo(vp=1) if iguales(esperado, extraido) else Conteo(fp=1, fn=1)
 
 
-def comparar_conjuntos(esperados: Iterable[str], extraidos: Iterable[str]) -> Conteo:
-    """Entidades de un caso (p. ej. firmantes) como conjuntos de claves ya normalizadas."""
-    e, x = set(esperados), set(extraidos)
-    return Conteo(vp=len(e & x), fp=len(x - e), fn=len(e - x))
-
-
 def sumar(conteos: Iterable[Conteo]) -> Conteo:
     total = Conteo()
     for c in conteos:

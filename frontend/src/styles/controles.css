@@ -10,12 +10,6 @@
   margin-left: auto;
 }
 
-/* Buscador alineado a la derecha de la barra: el ancho de los demás buscadores. */
-.toolbar-buscador {
-  display: flex;
-  flex: 0 1 340px;
-}
-
 .search-box {
   display: flex;
   align-items: center;

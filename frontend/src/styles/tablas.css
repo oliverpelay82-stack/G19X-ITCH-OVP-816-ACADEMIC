@@ -249,16 +249,8 @@
   white-space: normal;
 }
 
+/* Base compartida con .squircle (primitivas.css). */
 .avatar {
-  display: inline-flex;
-  flex: none;
-  align-items: center;
-  justify-content: center;
-  width: var(--squircle);
-  height: var(--squircle);
-  border: 1px solid var(--squircle-border);
-  border-radius: var(--r-squircle);
-  background: var(--squircle-bg);
   font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.02em;

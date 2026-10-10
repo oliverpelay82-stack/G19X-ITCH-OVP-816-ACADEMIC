@@ -1,7 +1,9 @@
 /* ══════════════════════ 2. PRIMITIVAS ═══════════════════════════ */
 
-/* Micro-squircle: el contenedor de icono de toda la interfaz. */
-.squircle {
+/* Micro-squircle: el contenedor de icono de toda la interfaz; el avatar de
+   iniciales (tablas.css) comparte su forma. */
+.squircle,
+.avatar {
   display: inline-flex;
   flex: none;
   align-items: center;
@@ -11,6 +13,9 @@
   border: 1px solid var(--squircle-border);
   border-radius: var(--r-squircle);
   background: var(--squircle-bg);
+}
+
+.squircle {
   color: var(--icon);
   transition: background-color var(--dur) var(--ease), border-color var(--dur) var(--ease),
     color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);

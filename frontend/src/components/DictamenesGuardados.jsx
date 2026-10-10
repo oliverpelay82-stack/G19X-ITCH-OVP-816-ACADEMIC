@@ -299,7 +299,7 @@ export default function DictamenesGuardados({
 
   if (dictamenes === null) {
     return (
-      <div className="ai-loading" aria-hidden="true">
+      <div className="ia-bloque" aria-hidden="true">
         <Skeleton w="40%" />
         <Skeleton w="100%" h={56} />
       </div>

@@ -49,16 +49,6 @@
   color: var(--text-muted);
 }
 
-.ai-loading {
-  display: flex;
-  flex-direction: column;
-  gap: var(--s-3);
-  padding: var(--s-4);
-  border: var(--border-default);
-  border-radius: var(--r-md);
-  background: var(--bg-surface);
-}
-
 /* ── Stepper del pipeline ──────────────────────────────────────── */
 .stepper {
   display: grid;
@@ -532,7 +522,7 @@
 }
 
 /* Bloque delimitado (dictamen vigente, cotejo, contenido, vigencia, sellos,
-   observaciones, datos del archivo): borde, radio de tarjeta y relleno
+   observaciones, datos del archivo y esqueleto de carga): borde, radio de tarjeta y relleno
    equilibrado en lugar de secciones encimadas. */
 .ia-bloque {
   display: flex;

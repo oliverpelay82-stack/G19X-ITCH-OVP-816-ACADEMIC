@@ -46,11 +46,6 @@ def test_metricas_indefinidas_no_son_cero():
     assert m.Conteo(vp=0, fp=1, fn=1).f1 == 0.0
 
 
-def test_conjuntos_de_personas():
-    c = m.comparar_conjuntos({"MARIA RUIZ SOTO", "JUAN PEREZ"}, {"MARIA RUIZ SOTO", "PEDRO LOPEZ"})
-    assert c == m.Conteo(vp=1, fp=1, fn=1)
-
-
 def test_wilson_contra_valores_de_referencia():
     # 8 de 10, z = 1.96: centro = (0.8 + 0.19208) / 1.38416 = 0.71675;
     # margen = 1.96·√(0.016 + 0.009604) / 1.38416 = 0.22657 → [0.4902, 0.9433].
