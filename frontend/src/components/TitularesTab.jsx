@@ -23,6 +23,7 @@ import {
   Tooltip,
 } from './ui/index.js'
 import { SkeletonCards, SkeletonRows } from './Skeleton.jsx'
+import { CORE_FUERA_DE_LINEA, sinRespuesta } from './sinRespuesta.js'
 import useToast from '../hooks/useToast.js'
 import useDebounce from '../hooks/useDebounce.js'
 import { coincideEn, normalizar } from '../utils/busqueda.js'
@@ -314,30 +315,37 @@ export default function TitularesTab({
   }
 
   const vacio = !loading && filtrados.length === 0
-  const vacioProps = {
-    icon: titulares.length === 0 ? Buildings : MagnifyingGlass,
-    titulo: titulares.length === 0 ? 'Aún no hay empresas registradas' : 'Sin resultados',
-    descripcion:
-      titulares.length === 0
-        ? 'Da de alta el primer titular para abrir su expediente de cumplimiento.'
-        : 'Prueba con otro término o cambia el filtro de tipo de persona.',
-    children:
-      titulares.length === 0 ? (
-        <Button variante="primary" compacto icono={Plus} onClick={() => setModalAbierto(true)} disabled={!isOnline}>
-          Alta de empresa
-        </Button>
-      ) : (
-        <Button
-          compacto
-          onClick={() => {
-            setBusqueda('')
-            setFiltroTipo('TODOS')
-          }}
-        >
-          Limpiar búsqueda
-        </Button>
-      ),
-  }
+  // Sin respuesta del core y sin datos que mostrar: no es una lista vacía (null = aún sin sondear).
+  const caido = isOnline === false && titulares.length === 0
+  const vacioProps = caido
+    ? sinRespuesta(
+        CORE_FUERA_DE_LINEA,
+        'El sistema de expedientes no responde: no es posible consultar ni registrar empresas. La lista se actualiza sola cuando vuelva a responder.'
+      )
+    : {
+        icon: titulares.length === 0 ? Buildings : MagnifyingGlass,
+        titulo: titulares.length === 0 ? 'Aún no hay empresas registradas' : 'Sin resultados',
+        descripcion:
+          titulares.length === 0
+            ? 'Da de alta el primer titular para abrir su expediente de cumplimiento.'
+            : 'Prueba con otro término o cambia el filtro de tipo de persona.',
+        children:
+          titulares.length === 0 ? (
+            <Button variante="primary" compacto icono={Plus} onClick={() => setModalAbierto(true)} disabled={!isOnline}>
+              Alta de empresa
+            </Button>
+          ) : (
+            <Button
+              compacto
+              onClick={() => {
+                setBusqueda('')
+                setFiltroTipo('TODOS')
+              }}
+            >
+              Limpiar búsqueda
+            </Button>
+          ),
+      }
 
   return (
     <div className="tab-panel">

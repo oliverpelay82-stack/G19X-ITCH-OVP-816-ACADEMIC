@@ -109,7 +109,8 @@ async function generar() {
 const contenido = await generar()
 const actual = (() => {
   try {
-    return readFileSync(DESTINO, 'utf8')
+    // Git en Windows (core.autocrlf) lo deja con CRLF: se compara el texto, no los finales de línea.
+    return readFileSync(DESTINO, 'utf8').replace(/\r\n/g, '\n')
   } catch {
     return ''
   }

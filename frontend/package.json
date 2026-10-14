@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "oxlint",
-    "test:ui": "node scripts/generar-iconos.mjs --verificar && node scripts/verificar-ui.mjs",
+    "test:ui": "node scripts/generar-iconos.mjs --verificar && node scripts/verificar-ui.mjs && node scripts/verificar-logica.mjs",
     "iconos": "node scripts/generar-iconos.mjs",
     "preview": "vite preview"
   },

@@ -43,7 +43,7 @@ import cv2
 import fitz  # PyMuPDF
 import numpy as np
 import pytesseract
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 
 from config import settings
 from pipelines import sellos
@@ -677,8 +677,29 @@ def _procesar_pdf(
     return paginas, total_paginas
 
 
+def abrir_imagen(contenido: bytes) -> Image.Image:
+    """
+    Imagen JPEG o PNG del documento, ya decodificada (``load``). Como en el PDF,
+    una imagen con la firma correcta puede venir truncada o dañada, y PIL solo
+    lo descubre al decodificarla: es un dato del documento, no un fallo del
+    motor (400, no un error interno). También se rechaza la que excede el límite
+    de píxeles de PIL (bomba de descompresión), que en memoria pesaría varios GB.
+    La usan la extracción y el visor; se cierra con ``with``.
+    """
+    try:
+        imagen = Image.open(io.BytesIO(contenido))
+        imagen.load()
+        return imagen
+    except Image.DecompressionBombError as exc:
+        raise FormatoNoSoportadoError(f"La imagen excede el tamaño máximo que admite el OCR: {exc}") from exc
+    except (UnidentifiedImageError, OSError, SyntaxError, ValueError) as exc:
+        raise FormatoNoSoportadoError(
+            f"La imagen tiene la firma correcta pero está truncada o dañada: {exc}"
+        ) from exc
+
+
 def _procesar_imagen(contenido: bytes, observaciones: list[str]) -> list[ResultadoPagina]:
-    with Image.open(io.BytesIO(contenido)) as imagen_pil:
+    with abrir_imagen(contenido) as imagen_pil:
         imagen_rgb = np.array(imagen_pil.convert("RGB"))
     # También por el pool compartido, para que cuente dentro del tope de OCR_WORKERS.
     texto, confianza, palabras, sellos_pagina = _POOL_OCR.submit(

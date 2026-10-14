@@ -9,6 +9,7 @@ import { alertasDeExpedientes } from '../utils/alertas.js'
 import { coincideEn, normalizar } from '../utils/busqueda.js'
 import useDesplazamiento from '../hooks/useDesplazamiento.js'
 import { Button, Card, EmptyState, SearchBox, Segmented, Select } from './ui/index.js'
+import { CORE_FUERA_DE_LINEA, sinRespuesta } from './sinRespuesta.js'
 import {
   ALERTA_META,
   getSeveridadMeta,
@@ -24,7 +25,14 @@ import { plural } from '../utils/format.js'
  * expediente, así que la bandeja se actualiza con el mismo sondeo que el
  * resto del panel y una alerta desaparece en cuanto se corrige su hallazgo.
  */
-export default function AlertasTab({ expedientes, loading, onAbrirExpediente, busquedaInicial = null, onFiltroAtendido }) {
+export default function AlertasTab({
+  expedientes,
+  loading,
+  isOnline = true,
+  onAbrirExpediente,
+  busquedaInicial = null,
+  onFiltroAtendido,
+}) {
   // Desde el detalle de una empresa llega su RFC: la bandeja se monta ya filtrada.
   const [busqueda, setBusqueda] = useState(busquedaInicial || '')
   const [filtroSeveridad, setFiltroSeveridad] = useState('TODAS')
@@ -48,6 +56,8 @@ export default function AlertasTab({ expedientes, loading, onAbrirExpediente, bu
   const bandeja = useDesplazamiento()
 
   const alertas = useMemo(() => alertasDeExpedientes(expedientes), [expedientes])
+  // Sin respuesta del core y sin datos que mostrar: no es una lista vacía (null = aún sin sondear).
+  const caido = isOnline === false && expedientes.length === 0
 
   const opcionesSeveridad = useMemo(
     () => [
@@ -114,7 +124,18 @@ export default function AlertasTab({ expedientes, loading, onAbrirExpediente, bu
 
       {loading && <SkeletonCards count={3} height={96} />}
 
-      {!loading && filtradas.length === 0 && (
+      {!loading && caido && (
+        <Card>
+          <EmptyState
+            {...sinRespuesta(
+              CORE_FUERA_DE_LINEA,
+              'El sistema de expedientes no responde: no es posible saber qué alertas hay. La bandeja se actualiza sola cuando vuelva a responder.'
+            )}
+          />
+        </Card>
+      )}
+
+      {!loading && !caido && filtradas.length === 0 && (
         <Card>
           <EmptyState
             icon={alertas.length === 0 ? BellSlash : MagnifyingGlass}

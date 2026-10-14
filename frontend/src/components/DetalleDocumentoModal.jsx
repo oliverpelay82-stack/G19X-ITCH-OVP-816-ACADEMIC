@@ -12,6 +12,7 @@ import { descargarOriginal, localizarCita } from '../services/api.js'
 import { ESTADO_DOCUMENTO, TIPO_DOCUMENTO_LABEL } from '../constants.js'
 import { firmaDeMime, tipoCorto } from '../utils/documentos.js'
 import { formatBytes, formatDia, formatFecha } from '../utils/format.js'
+import { idAleatorio } from '../utils/id.js'
 
 function Dato({ label, children, ancho = false }) {
   return (
@@ -109,7 +110,7 @@ function InspectorDocumento({ doc, expediente, iaOnline, onRefresh, onVisor, onO
   // Ubica la cita en el documento; si llega otra antes de terminar, gana la última.
   const mostrar = useCallback(
     async ({ cita, tono = 'ok' }) => {
-      const clave = crypto.randomUUID()
+      const clave = idAleatorio()
       setVisorAbierto(true)
       onVisor(true)
       setBusqueda({ clave, tono, buscando: true })
@@ -128,7 +129,7 @@ function InspectorDocumento({ doc, expediente, iaOnline, onRefresh, onVisor, onO
     (pagina) => {
       setVisorAbierto(true)
       onVisor(true)
-      setBusqueda({ clave: crypto.randomUUID(), pagina })
+      setBusqueda({ clave: idAleatorio(), pagina })
     },
     [onVisor]
   )

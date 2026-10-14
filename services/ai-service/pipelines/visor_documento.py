@@ -117,7 +117,7 @@ def _es_vectorial(pagina: fitz.Page) -> bool:
 def info(documento_id: str) -> dict[str, Any]:
     doc = _documento(documento_id)
     if not doc.es_pdf:
-        with Image.open(io.BytesIO(doc.contenido)) as imagen:
+        with extraccion_pipeline.abrir_imagen(doc.contenido) as imagen:
             ancho, alto = imagen.size
         return {"total_paginas": 1, "paginas": [{"numero": 1, "ancho": ancho, "alto": alto, "metodo": "OCR"}]}
     with _abrir_pdf(doc.contenido) as pdf:
@@ -143,7 +143,7 @@ def pagina_jpeg(documento_id: str, numero: int, ancho_px: int) -> bytes:
     if not doc.es_pdf:
         if numero != 1:
             raise IndexError("Una imagen tiene una sola página.")
-        with Image.open(io.BytesIO(doc.contenido)) as imagen:
+        with extraccion_pipeline.abrir_imagen(doc.contenido) as imagen:
             imagen = imagen.convert("RGB")
             alto_px = round(imagen.height * ancho_px / imagen.width)
             salida = io.BytesIO()
@@ -181,7 +181,7 @@ def _palabras_escaneadas(doc: Documento, pdf: fitz.Document | None, numeros: lis
         elif pdf is not None:
             imagenes[numero] = extraccion_pipeline._rasterizar(pdf[numero - 1])
         else:
-            with Image.open(io.BytesIO(doc.contenido)) as original:
+            with extraccion_pipeline.abrir_imagen(doc.contenido) as original:
                 imagenes[numero] = np.array(original.convert("L"))
     if imagenes:
         with ThreadPoolExecutor(max_workers=settings.OCR_WORKERS) as hilos:

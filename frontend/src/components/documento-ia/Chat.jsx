@@ -7,6 +7,7 @@ import useToast from '../../hooks/useToast.js'
 import { preguntarSobreDocumento } from '../../services/api.js'
 import { Citas, EstadoLectura, MetaInferencia } from './Lectura.jsx'
 import { avisarFallo, cronometrar } from './formato.js'
+import { idAleatorio } from '../../utils/id.js'
 
 const PREGUNTAS_SUGERIDAS = [
   '¿Qué le falta a este documento?',
@@ -104,7 +105,7 @@ export function ChatDocumento({ doc, iaOnline }) {
       .slice(-MAX_TURNOS_HISTORIAL)
       .map((m) => ({ rol: m.rol, contenido: m.contenido }))
 
-    setMensajes((prev) => [...prev, { id: crypto.randomUUID(), rol: 'usuario', contenido: pregunta }])
+    setMensajes((prev) => [...prev, { id: idAleatorio(), rol: 'usuario', contenido: pregunta }])
     setBorrador('')
     setPensando(true)
     try {
@@ -117,7 +118,7 @@ export function ChatDocumento({ doc, iaOnline }) {
       setMensajes((prev) => [
         ...prev,
         {
-          id: crypto.randomUUID(),
+          id: idAleatorio(),
           rol: 'asistente',
           contenido: r?.respuesta || 'El modelo no devolvió contenido.',
           modelo: r?.modelo_utilizado,
@@ -133,7 +134,7 @@ export function ChatDocumento({ doc, iaOnline }) {
       avisarFallo(toast, err, 'No se pudo consultar el documento')
       setMensajes((prev) => [
         ...prev,
-        { id: crypto.randomUUID(), rol: 'asistente', contenido: err?.message || 'Error del servicio de análisis con IA.', error: true },
+        { id: idAleatorio(), rol: 'asistente', contenido: err?.message || 'Error del servicio de análisis con IA.', error: true },
       ])
     } finally {
       setPensando(false)

@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react'
 import ExportarReporte from './ExportarReporte.jsx'
 import HallazgosCategoria from './HallazgosCategoria.jsx'
-import { Select } from './ui/index.js'
+import { Card, EmptyState, Select } from './ui/index.js'
+import { CORE_FUERA_DE_LINEA, sinRespuesta } from './sinRespuesta.js'
 import AnilloSemaforo from './graficas/AnilloSemaforo.jsx'
 import CambiosSemaforo from './graficas/CambiosSemaforo.jsx'
 import HallazgosPorArea from './graficas/HallazgosPorArea.jsx'
@@ -54,23 +55,37 @@ export default function ReportesTab({ expedientes, isOnline = true, onAbrirExped
         </div>
       </div>
 
-      {/* Fase A del plan visual: el semáforo, los hallazgos por área y severidad
-          (RF-22) y, debajo, lo que vence y la tendencia. La categoría sigue como
-          lista: son clases sin orden, más de las que un color distingue. */}
-      <Seccion titulo={`Hallazgos · ${totalAlertas}`}>
-        <div className="report-grid">
-          <AnilloSemaforo expedientes={expedientes} onSeleccionar={onVerExpedientes} />
-          <HallazgosPorArea expedientes={expedientes} />
-          <HallazgosCategoria expedientes={expedientes} />
-        </div>
-      </Seccion>
+      {/* Sin respuesta del core y sin datos: las gráficas en cero dirían que no hay hallazgos. */}
+      {isOnline === false && expedientes.length === 0 ? (
+        <Card>
+          <EmptyState
+            {...sinRespuesta(
+              CORE_FUERA_DE_LINEA,
+              'El sistema de expedientes no responde: no es posible calcular los indicadores. Las gráficas se actualizan solas cuando vuelva a responder.'
+            )}
+          />
+        </Card>
+      ) : (
+        <>
+          {/* Fase A del plan visual: el semáforo, los hallazgos por área y severidad
+              (RF-22) y, debajo, lo que vence y la tendencia. La categoría sigue como
+              lista: son clases sin orden, más de las que un color distingue. */}
+          <Seccion titulo={`Hallazgos · ${totalAlertas}`}>
+            <div className="report-grid">
+              <AnilloSemaforo expedientes={expedientes} onSeleccionar={onVerExpedientes} />
+              <HallazgosPorArea expedientes={expedientes} />
+              <HallazgosCategoria expedientes={expedientes} />
+            </div>
+          </Seccion>
 
-      <Seccion titulo="Vencimientos y tendencia">
-        <div className="report-grid report-grid--dos">
-          <Vencimientos expedientes={expedientes} onAbrirExpediente={onAbrirExpediente} />
-          <CambiosSemaforo expedientes={expedientes} onAbrirExpediente={onAbrirExpediente} />
-        </div>
-      </Seccion>
+          <Seccion titulo="Vencimientos y tendencia">
+            <div className="report-grid report-grid--dos">
+              <Vencimientos expedientes={expedientes} onAbrirExpediente={onAbrirExpediente} />
+              <CambiosSemaforo expedientes={expedientes} onAbrirExpediente={onAbrirExpediente} />
+            </div>
+          </Seccion>
+        </>
+      )}
     </div>
   )
 }

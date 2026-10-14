@@ -373,6 +373,7 @@ export default function App() {
               <AlertasTab
                 expedientes={expedientes}
                 loading={loading}
+                isOnline={health.core.online}
                 onAbrirExpediente={abrirExpediente}
                 busquedaInicial={filtroDe('alertas')}
                 onFiltroAtendido={atenderFiltro}

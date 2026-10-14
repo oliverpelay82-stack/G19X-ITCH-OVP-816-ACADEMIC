@@ -12,7 +12,12 @@ HU-47, HU-48). Sin red: Groq, el rules-service y el core se simulan.
      al tener éxito; si Groq sigue sin responder, la reprograma con espera
      creciente y, al agotar los intentos, avisa «agotado» y la retira; un
      documento que ya no existe se descarta.
+  4. Archivo dañado (HU-33): una imagen JPEG o PNG con la firma correcta pero
+     truncada, o mayor que el límite de píxeles de PIL, se rechaza con 400
+     (FormatoNoSoportadoError), como un PDF corrupto, y no con un error 500,
+     en la extracción y en el visor.
 """
+import io
 from datetime import datetime, timedelta, timezone
 
 import pytest
@@ -24,7 +29,9 @@ from clients.core_client import DocumentoNoEncontradoError
 from clients.groq_client import GroqNoDisponibleError
 from config import settings
 from controllers import analisis_controller
-from pipelines import diferidos, legibilidad, repositorio_texto
+from PIL import Image
+
+from pipelines import diferidos, extraccion_pipeline, legibilidad, repositorio_texto, visor_documento
 
 client = TestClient(main.app)
 GENERAR_JSON_REAL = groq_client.generar_json
@@ -186,3 +193,43 @@ def test_la_espera_crece_hasta_un_dia():
     assert diferidos.espera(20) == timedelta(hours=24)
     # Q-c: muchos fallos seguidos (auditorías manuales con Groq caído) no desbordan la duración.
     assert diferidos.espera(40) == diferidos.espera(10_000) == timedelta(hours=24)
+
+
+def _imagen(formato: str, lado: int = 64) -> bytes:
+    salida = io.BytesIO()
+    Image.new("RGB", (lado, lado), "white").save(salida, formato)
+    return salida.getvalue()
+
+
+@pytest.mark.parametrize("formato,corte", [("JPEG", 200), ("PNG", 60)])
+def test_una_imagen_truncada_se_rechaza_como_formato_no_soportado(formato, corte):
+    truncada = _imagen(formato)[:corte]
+    with pytest.raises(extraccion_pipeline.FormatoNoSoportadoError, match="truncada o dañada"):
+        extraccion_pipeline.extraer_texto(truncada, texto_completo=True)
+
+
+def test_una_bomba_de_descompresion_se_rechaza(monkeypatch):
+    # PIL rechaza una imagen de más del doble de MAX_IMAGE_PIXELS; se baja el límite
+    # para no generar en la prueba una imagen de 180 millones de píxeles.
+    monkeypatch.setattr(Image, "MAX_IMAGE_PIXELS", 1_000)
+    with pytest.raises(extraccion_pipeline.FormatoNoSoportadoError, match="tamaño máximo"):
+        extraccion_pipeline.extraer_texto(_imagen("PNG", 100), texto_completo=True)
+
+
+def test_la_imagen_truncada_responde_400_y_no_500():
+    respuesta = client.post(
+        "/api/v1/ai/extraer-texto",
+        files={"file": ("truncada.png", _imagen("PNG")[:60], "image/png")},
+        data={"usar_cache": "false"},
+    )
+    assert respuesta.status_code == 400
+    assert "truncada o dañada" in respuesta.json()["detail"]
+
+
+def test_el_visor_de_una_imagen_truncada_responde_400(monkeypatch):
+    truncada = _imagen("JPEG")[:200]
+    monkeypatch.setattr(visor_documento, "_documento", lambda _id: visor_documento.Documento("0" * 64, truncada, False))
+    for ruta in ("/api/v1/ai/documentos/x/visor", "/api/v1/ai/documentos/x/paginas/1?ancho=800"):
+        respuesta = client.get(ruta)
+        assert respuesta.status_code == 400, ruta
+        assert "truncada o dañada" in respuesta.json()["detail"]

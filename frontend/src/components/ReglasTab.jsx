@@ -1,5 +1,5 @@
 import { Fragment, useMemo, useState } from 'react'
-import { CaretRight, CircleNotch, CloudSlash, ListChecks, MagnifyingGlass, Plus } from './iconos.js'
+import { CaretRight, CircleNotch, ListChecks, MagnifyingGlass, Plus } from './iconos.js'
 import {
   Badge,
   Button,
@@ -17,6 +17,7 @@ import {
   Tag,
 } from './ui/index.js'
 import { SkeletonRows } from './Skeleton.jsx'
+import { sinRespuesta } from './sinRespuesta.js'
 import useToast from '../hooks/useToast.js'
 import useDebounce from '../hooks/useDebounce.js'
 import { coincideEn, normalizar } from '../utils/busqueda.js'
@@ -273,9 +274,10 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
       <div className="tab-panel">
         <Card>
           <EmptyState
-            icon={CloudSlash}
-            titulo="Catálogo de reglas fuera de línea"
-            descripcion="El servicio del catálogo no responde: no es posible consultar, evaluar ni modificar las reglas. Empresas, Expedientes y Bóveda siguen operando."
+            {...sinRespuesta(
+              'Catálogo de reglas fuera de línea',
+              'El servicio del catálogo no responde: no es posible consultar, evaluar ni modificar las reglas. Empresas, Expedientes y Bóveda siguen operando.'
+            )}
           />
         </Card>
       </div>

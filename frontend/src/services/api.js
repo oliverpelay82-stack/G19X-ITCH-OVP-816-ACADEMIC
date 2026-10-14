@@ -7,6 +7,8 @@
  *   - AI Service    (:8003) → Extracción de texto/OCR (Nivel 3) y análisis
  *                            semántico con LLM vía Groq Cloud (Nivel 4).
  */
+import { idAleatorio } from '../utils/id.js'
+
 // Configurables en el build (VITE_CORE_URL, VITE_RULES_URL, VITE_AI_URL) para
 // desplegar o probar contra otros puertos sin tocar el código; por defecto,
 // los puertos oficiales del DOC-08.
@@ -45,14 +47,8 @@ class ApiError extends Error {
   }
 }
 
-/**
- * PLUS-21: folio de seguimiento de cada llamada (X-Request-ID). getRandomValues
- * funciona también fuera de un contexto seguro (la intranet por IP, sin HTTPS),
- * donde randomUUID no existe.
- */
-function nuevoFolio() {
-  return Array.from(crypto.getRandomValues(new Uint8Array(8)), (b) => b.toString(16).padStart(2, '0')).join('')
-}
+/** PLUS-21: folio de seguimiento de cada llamada (X-Request-ID). */
+const nuevoFolio = idAleatorio
 
 /**
  * Tiempo máximo de las lecturas que el panel repite cada 15 s (salud y listas).

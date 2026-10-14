@@ -7,6 +7,7 @@ import DropZone from './DropZone.jsx'
 import DetalleDocumentoModal from './DetalleDocumentoModal.jsx'
 import { firmaDeMime, tipoCorto } from '../utils/documentos.js'
 import { SkeletonRows } from './Skeleton.jsx'
+import { CORE_FUERA_DE_LINEA, sinRespuesta } from './sinRespuesta.js'
 import useToast from '../hooks/useToast.js'
 import useDebounce from '../hooks/useDebounce.js'
 import { coincideEn, normalizar } from '../utils/busqueda.js'
@@ -70,6 +71,8 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
     [estadoVigente, mapaExpedientes]
   )
   const vigentes = useMemo(() => documentos.filter(esVigente), [documentos, esVigente])
+  // Sin respuesta del core y sin datos que mostrar: no es una lista vacía (null = aún sin sondear).
+  const caido = isOnline === false && documentos.length === 0
   const enAlcance = alcance === 'VIGENTES' ? vigentes : documentos
 
   const opcionesAlcance = [
@@ -199,7 +202,17 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
             <tbody ref={filas}>
               {loading && <SkeletonRows rows={6} cols={COLUMNAS} />}
 
-              {!loading && filtrados.length === 0 && (
+              {!loading && caido && (
+                <EmptyRow
+                  columnas={COLUMNAS}
+                  {...sinRespuesta(
+                    CORE_FUERA_DE_LINEA,
+                    'El sistema de expedientes no responde: no es posible consultar ni custodiar documentos. La lista se actualiza sola cuando vuelva a responder.'
+                  )}
+                />
+              )}
+
+              {!loading && !caido && filtrados.length === 0 && (
                 <EmptyRow
                   columnas={COLUMNAS}
                   icon={documentos.length === 0 ? FileLock : MagnifyingGlass}

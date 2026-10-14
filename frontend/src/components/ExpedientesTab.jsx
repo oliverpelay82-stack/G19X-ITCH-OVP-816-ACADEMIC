@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { CaretDown, FolderOpen, Lock, MagnifyingGlass, Plus } from './iconos.js'
 import { Avatar, Button, Card, EmptyState, Field, Input, Modal, SearchBox, Segmented, Select, Tag } from './ui/index.js'
 import { SkeletonCards } from './Skeleton.jsx'
+import { CORE_FUERA_DE_LINEA, sinRespuesta } from './sinRespuesta.js'
 import EstadoBadge from './EstadoBadge.jsx'
 import useToast from '../hooks/useToast.js'
 import DetalleDocumentoModal from './DetalleDocumentoModal.jsx'
@@ -114,6 +115,8 @@ export default function ExpedientesTab({
     [expedientes]
   )
 
+  // Sin respuesta del core y sin datos que mostrar: no es una lista vacía (null = aún sin sondear).
+  const caido = isOnline === false && expedientes.length === 0
   const filtrados = useMemo(() => {
     const q = normalizar(consulta)
     return expedientes.filter((exp) => {
@@ -279,7 +282,18 @@ export default function ExpedientesTab({
 
       {loading && <SkeletonCards count={3} height={72} />}
 
-      {!loading && filtrados.length === 0 && (
+      {!loading && caido && (
+        <Card>
+          <EmptyState
+            {...sinRespuesta(
+              CORE_FUERA_DE_LINEA,
+              'El sistema de expedientes no responde: no es posible consultar ni aperturar expedientes. La lista se actualiza sola cuando vuelva a responder.'
+            )}
+          />
+        </Card>
+      )}
+
+      {!loading && !caido && filtrados.length === 0 && (
         <Card>
           <EmptyState
             icon={expedientes.length === 0 ? FolderOpen : MagnifyingGlass}
