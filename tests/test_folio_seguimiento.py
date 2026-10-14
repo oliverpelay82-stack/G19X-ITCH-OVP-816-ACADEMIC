@@ -26,7 +26,7 @@ from types import SimpleNamespace  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
 from main import app  # noqa: E402
 from clients import rules_client  # noqa: E402
-from config import observabilidad  # noqa: E402
+from config import observabilidad, seguridad  # noqa: E402
 from config.database import engine, init_db  # noqa: E402
 
 bd_pruebas.verificar_aislamiento(engine)
@@ -114,4 +114,7 @@ def test_el_cliente_del_rules_service_propaga_el_folio(monkeypatch):
         _obtener_real("CORPORATIVO")
     finally:
         observabilidad._actual.reset(token)
-    assert enviadas == {"X-Request-ID": "folio-hacia-rules"}
+    assert enviadas["X-Request-ID"] == "folio-hacia-rules"
+    # Módulo 7: la misma llamada lleva el token SISTEMA del core (PRD §5.2).
+    identidad = seguridad.leer_token(enviadas["Authorization"].removeprefix("Bearer "))
+    assert identidad.es_sistema and identidad.sub == "core-service"

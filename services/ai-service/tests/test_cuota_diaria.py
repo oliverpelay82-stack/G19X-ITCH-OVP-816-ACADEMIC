@@ -13,7 +13,8 @@ import time
 from datetime import datetime, timedelta, timezone
 
 import httpx
-from fastapi.testclient import TestClient
+
+import sesion
 from openai import RateLimitError
 
 import main
@@ -74,7 +75,7 @@ def test_health_informa_la_cuota():
     health_controller._cache["ocr"] = (ahora, {"disponible": True})
     try:
         cuota_diaria.registrar(3000)
-        cuerpo = TestClient(main.app).get("/api/v1/health").json()
+        cuerpo = sesion.cliente(main.app).get("/api/v1/health").json()
     finally:
         health_controller._cache.clear()
     cuota = cuerpo["motor_inferencia"]["cuota_diaria"]

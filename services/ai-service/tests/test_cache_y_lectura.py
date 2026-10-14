@@ -30,7 +30,7 @@ import pytest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from fastapi.testclient import TestClient  # noqa: E402
+import sesion  # noqa: E402
 from openai import APIConnectionError  # noqa: E402
 
 import main  # noqa: E402
@@ -39,7 +39,7 @@ from config import settings  # noqa: E402
 from pipelines import persistencia_texto, repositorio_texto  # noqa: E402
 from pipelines.cache_extracciones import CacheExtracciones  # noqa: E402
 
-client = TestClient(main.app)
+client = sesion.cliente(main.app)
 RFC = "PLU180514AB3"
 DOC_ID = "doc-cache-001"
 _resultados: list[bool] = []

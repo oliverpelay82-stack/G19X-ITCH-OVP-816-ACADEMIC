@@ -12,7 +12,7 @@ from typing import Any
 
 import requests
 
-from config import observabilidad, settings
+from config import autorizacion, settings
 
 # Sesión HTTP del proceso: reutiliza las conexiones TCP (keep-alive) hacia el
 # rules-service. Sin estado propio, puede compartirse entre hilos.
@@ -42,7 +42,7 @@ def evaluar_vigencia(
     try:
         respuesta = _sesion.post(
             f"{settings.RULES_BASE_URL}/api/v1/reglas/evaluar-vigencia", json=cuerpo, timeout=TIMEOUT_SEGUNDOS,
-            headers=observabilidad.cabeceras(),
+            headers=autorizacion.cabeceras_servicio(),
         )
         respuesta.raise_for_status()
         return respuesta.json()
@@ -69,7 +69,7 @@ def criterios_contenido(tipo_documento: str | None) -> list[dict[str, Any]]:
     try:
         respuesta = _sesion.get(
             f"{settings.RULES_BASE_URL}/api/v1/reglas", params={"activo": "true"}, timeout=TIMEOUT_SEGUNDOS,
-            headers=observabilidad.cabeceras(),
+            headers=autorizacion.cabeceras_servicio(),
         )
         respuesta.raise_for_status()
         reglas = respuesta.json()
@@ -111,7 +111,7 @@ def version_reglas_tipo(tipo_documento: str | None) -> str | None:
         return None
     try:
         respuesta = _sesion.get(f"{settings.RULES_BASE_URL}/api/v1/reglas/version", timeout=TIMEOUT_SEGUNDOS,
-                                params={"tipo_documento": tipo_documento}, headers=observabilidad.cabeceras())
+                                params={"tipo_documento": tipo_documento}, headers=autorizacion.cabeceras_servicio())
         respuesta.raise_for_status()
         return respuesta.json().get("version_reglas_tipo")
     except (requests.RequestException, ValueError):
@@ -127,7 +127,7 @@ def version_catalogo() -> str | None:
         return version
     try:
         respuesta = _sesion.get(f"{settings.RULES_BASE_URL}/api/v1/reglas/version", timeout=TIMEOUT_SEGUNDOS,
-                                headers=observabilidad.cabeceras())
+                                headers=autorizacion.cabeceras_servicio())
         respuesta.raise_for_status()
         version = respuesta.json().get("version_catalogo")
     except (requests.RequestException, ValueError):

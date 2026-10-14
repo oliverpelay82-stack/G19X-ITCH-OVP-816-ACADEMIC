@@ -21,6 +21,7 @@ interviene: el casete sustituye a esa función completa.
 from __future__ import annotations
 
 import hashlib
+import secrets
 import importlib.util
 import json
 import os
@@ -41,7 +42,7 @@ sys.path.insert(0, _SERVICIO)
 import pytest  # noqa: E402
 
 from clients import core_client, groq_client, rules_client  # noqa: E402
-from config import settings  # noqa: E402
+from config import autorizacion, seguridad, settings  # noqa: E402
 from evaluacion import gold_standard as gs  # noqa: E402
 from pipelines import analisis_semantico, presupuesto_tokens, repositorio_texto  # noqa: E402
 from pipelines.cache_extracciones import CacheExtracciones  # noqa: E402
@@ -297,6 +298,10 @@ class ReglasSimuladas:
         return json.loads(json.dumps(asdict(resultado), default=str))
 
 
+# Analista simulado de las corridas (Módulo 7): audita y pregunta como VALIDADOR.
+ANALISTA = "evaluacion@example.com"
+
+
 class Entorno:
     """
     Instala las simulaciones mientras dura el bloque ``with`` y las retira al salir.
@@ -315,6 +320,11 @@ class Entorno:
 
     def __enter__(self) -> "Entorno":
         mp = self._parche
+        # Módulo 7: sesión propia de la corrida, sin core. Una clave efímera firma el token
+        # del analista simulado y su cuenta se confirma sin llamar a GET /auth/me.
+        mp.setenv("JWT_SECRET", secrets.token_urlsafe(48))
+        mp.setattr(autorizacion, "confirmar_cuenta",
+                   lambda token: autorizacion.Cuenta(ANALISTA, seguridad.VALIDADOR, False))
         temporal = tempfile.mkdtemp(prefix="plurione-evaluacion-")
         mp.setattr(settings, "EXTRACCIONES_DB_PATH", os.path.join(temporal, "extracciones.sqlite3"))
         mp.setattr(settings, "COMPLETAR_LECTURA_EN_SEGUNDO_PLANO", False)
@@ -350,7 +360,8 @@ class Entorno:
         from fastapi.testclient import TestClient
 
         import main
-        return TestClient(main.app)
+        token, _ = seguridad.emitir_token("evaluacion", ANALISTA, "Analista de la evaluación", seguridad.VALIDADOR)
+        return TestClient(main.app, headers={"Authorization": f"Bearer {token}"})
 
     def version(self) -> dict[str, Any]:
         """Lo que ata una corrida a una versión del motor (§3)."""

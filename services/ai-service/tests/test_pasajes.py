@@ -21,7 +21,7 @@ import pytest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from fastapi.testclient import TestClient  # noqa: E402
+import sesion  # noqa: E402
 
 import main  # noqa: E402
 from clients import core_client, groq_client, rules_client  # noqa: E402
@@ -97,7 +97,7 @@ def test_por_el_endpoint(monkeypatch):
         return r
 
     monkeypatch.setattr(groq_client, "conversar", conversar)
-    cliente = TestClient(main.app)
+    cliente = sesion.cliente(main.app)
     r = cliente.post("/api/v1/ai/chat-documento", json={"documento_id": "doc-t1", "pregunta": "¿Cuál es el capital social?"})
     cuerpo = r.json()
     assert cuerpo["origen_respuesta"] == "PASAJE_DEL_DOCUMENTO" and not llamadas

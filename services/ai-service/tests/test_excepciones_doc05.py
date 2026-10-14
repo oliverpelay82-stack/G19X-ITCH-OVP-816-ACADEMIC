@@ -21,7 +21,8 @@ import io
 from datetime import datetime, timedelta, timezone
 
 import pytest
-from fastapi.testclient import TestClient
+
+import sesion
 
 import main
 from clients import core_client, groq_client, rules_client
@@ -33,7 +34,7 @@ from PIL import Image
 
 from pipelines import diferidos, extraccion_pipeline, legibilidad, repositorio_texto, visor_documento
 
-client = TestClient(main.app)
+client = sesion.cliente(main.app)
 GENERAR_JSON_REAL = groq_client.generar_json
 DOC_ID = "doc-p5-001"
 TEXTO_LEGIBLE = "ACTA CONSTITUTIVA ... RFC PLU180514AB3 ... " + "Cláusula primera. " * 40

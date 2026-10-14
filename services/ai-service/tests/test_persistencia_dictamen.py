@@ -24,14 +24,14 @@ import pytest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from fastapi.testclient import TestClient  # noqa: E402
+import sesion  # noqa: E402
 
 import main  # noqa: E402
 from clients import core_client, groq_client, rules_client  # noqa: E402
 from clients.core_client import CoreNoDisponibleError, DocumentoAlteradoError  # noqa: E402
 from pipelines import repositorio_texto  # noqa: E402
 
-client = TestClient(main.app)
+client = sesion.cliente(main.app)
 RFC = "PLU180514AB3"
 DOC_ID = "doc-prueba-001"
 _resultados: list[bool] = []

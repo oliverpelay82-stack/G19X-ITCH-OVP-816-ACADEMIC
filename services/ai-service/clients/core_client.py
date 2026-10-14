@@ -16,11 +16,12 @@ from typing import Any
 
 import requests
 
-from config import observabilidad, settings
+from config import autorizacion, settings
 
 # Sesión HTTP del proceso: reutiliza las conexiones TCP (keep-alive) hacia el
-# core-service en lugar de abrir una por petición. Sin estado propio (no hay
-# cookies ni autenticación), así que puede compartirse entre los hilos del pool.
+# core-service en lugar de abrir una por petición. Sin estado propio (el token
+# SISTEMA y la persona viajan en las cabeceras de cada llamada, Módulo 7), así que
+# puede compartirse entre los hilos del pool.
 _sesion = requests.Session()
 # Tope para establecer la conexión: un core-service caído o inalcanzable falla
 # en segundos; el segundo valor de cada timeout es el de lectura de la respuesta.
@@ -50,7 +51,7 @@ def _get(ruta: str, timeout: int = 15) -> requests.Response:
     url = f"{settings.CORE_BASE_URL}/api/v1{ruta}"
     try:
         respuesta = _sesion.get(url, timeout=(TIMEOUT_CONEXION_SEGUNDOS, timeout),
-                                headers=observabilidad.cabeceras())
+                                headers=autorizacion.cabeceras_servicio())
     except requests.RequestException as exc:
         raise CoreNoDisponibleError(f"No fue posible consultar el core-service en {settings.CORE_BASE_URL}: {exc}") from exc
     if respuesta.status_code == 404:
@@ -82,7 +83,7 @@ def registrar_dictamen(dictamen: dict[str, Any]) -> dict[str, Any]:
     url = f"{settings.CORE_BASE_URL}/api/v1/dictamenes"
     try:
         respuesta = _sesion.post(url, json=dictamen, timeout=(TIMEOUT_CONEXION_SEGUNDOS, 15),
-                                 headers=observabilidad.cabeceras())
+                                 headers=autorizacion.cabeceras_servicio())
     except requests.RequestException as exc:
         raise CoreNoDisponibleError(f"No fue posible registrar el dictamen en {settings.CORE_BASE_URL}: {exc}") from exc
     if respuesta.status_code == 409:
@@ -104,7 +105,7 @@ def ultimo_dictamen(documento_id: str) -> dict[str, Any] | None:
             f"{settings.CORE_BASE_URL}/api/v1/dictamenes",
             params={"documento_id": documento_id, "limite": 1},
             timeout=(TIMEOUT_CONEXION_SEGUNDOS, 10),
-            headers=observabilidad.cabeceras(),
+            headers=autorizacion.cabeceras_servicio(),
         )
         respuesta.raise_for_status()
         dictamenes = respuesta.json()
@@ -123,7 +124,7 @@ def marcar_diferido(documento_id: str, aviso: dict[str, Any]) -> bool:
         respuesta = _sesion.post(
             f"{settings.CORE_BASE_URL}/api/v1/documentos/{documento_id}/procesamiento-diferido",
             json=aviso, timeout=(TIMEOUT_CONEXION_SEGUNDOS, 10),
-            headers=observabilidad.cabeceras(),
+            headers=autorizacion.cabeceras_servicio(),
         )
         return respuesta.ok
     except requests.RequestException:

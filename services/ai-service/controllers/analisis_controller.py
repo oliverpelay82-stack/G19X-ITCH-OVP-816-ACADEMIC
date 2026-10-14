@@ -27,13 +27,14 @@ import unicodedata
 from concurrent.futures import ThreadPoolExecutor
 from types import SimpleNamespace
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 
 from clients import core_client, groq_client, rules_client
 from clients.core_client import CoreNoDisponibleError, DocumentoAlteradoError, DocumentoNoEncontradoError
 from clients.groq_client import GroqNoDisponibleError, GroqRespuestaInvalidaError, IaNoConfiguradaError
 from clients.rules_client import ReglasNoDisponiblesError
 from config import settings
+from config.autorizacion import operacion
 from pipelines import analisis_semantico as pipeline_analisis
 from pipelines import (
     cache_chat, fragmentos, pasajes, persistencia_texto, presupuesto_tokens, repositorio_texto, respuestas_directas,
@@ -366,6 +367,7 @@ def _persistir_dictamen(
 
 @router.post(
     "/documentos/{documento_id}/preparar",
+    dependencies=[Depends(operacion)],
     status_code=status.HTTP_200_OK,
     summary="Resolver el texto de un documento (Nivel 3) sin invocar al modelo",
 )
@@ -388,6 +390,7 @@ def preparar_documento(documento_id: str):
 
 @router.post(
     "/documentos/{documento_id}/anticipar",
+    dependencies=[Depends(operacion)],
     status_code=status.HTTP_202_ACCEPTED,
     summary="Leer de fondo un documento recién custodiado (Nivel 3, sin el modelo)",
 )
@@ -404,6 +407,7 @@ def anticipar_lectura(documento_id: str):
 
 @router.post(
     "/analisis-semantico",
+    dependencies=[Depends(operacion)],
     status_code=status.HTTP_200_OK,
     summary="Dictaminar un documento con el modelo de lenguaje (tipo, RFC, vigencia y estatus)",
 )
@@ -612,6 +616,7 @@ def auditar(peticion: AnalisisSemanticoRequest) -> dict:
 
 @router.post(
     "/chat-documento",
+    dependencies=[Depends(operacion)],
     status_code=status.HTTP_200_OK,
     summary="Preguntar en lenguaje natural sobre el contenido de un documento",
 )

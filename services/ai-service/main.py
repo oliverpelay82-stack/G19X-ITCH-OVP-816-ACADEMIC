@@ -14,6 +14,7 @@ Aloja los Niveles 3 y 4 del pipeline de validación (DOC-05):
 
 Puerto: 8003.
 """
+import os
 import traceback
 from contextlib import asynccontextmanager
 
@@ -22,7 +23,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from clients.groq_client import IaNoConfiguradaError
-from config import observabilidad
+from config import observabilidad, seguridad
 from config import settings
 from pipelines import diferidos, extraccion_pipeline
 from controllers import analisis_controller
@@ -63,6 +64,9 @@ def _diagnostico_arranque() -> None:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Módulo 7: sin un JWT_SECRET válido el servicio no arranca (no podría validar sesiones
+    # ni firmar sus llamadas al core).
+    seguridad.verificar_configuracion()
     _diagnostico_arranque()
     # P5 (DOC-05, Tabla 1): reintento automático de las auditorías diferidas.
     detener_diferidos = diferidos.iniciar_ciclo(analisis_controller.procesar_diferidos)
@@ -128,11 +132,13 @@ async def cabeceras_seguridad(request: Request, call_next):
     return respuesta
 
 
-# Permitir llamadas CORS desde el frontend
+# CORS: solo los orígenes de la interfaz (Módulo 7; el token viaja en Authorization).
+# Por omisión, Vite en desarrollo (5173) y el puerto de las pruebas aisladas (5174).
+_ORIGENES_PREDETERMINADOS = "http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174"
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=[o.strip() for o in os.getenv("CORS_ORIGENES", _ORIGENES_PREDETERMINADOS).split(",") if o.strip()],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
     expose_headers=["X-Request-ID"],

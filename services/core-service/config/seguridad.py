@@ -145,7 +145,7 @@ def leer_token(token: str) -> Identidad:
     )
 
 
-_portador = HTTPBearer(
+portador = HTTPBearer(
     auto_error=False,
     description="Token de sesión de POST /api/v1/auth/login (JWT HMAC-SHA256).",
 )
@@ -157,7 +157,7 @@ def no_autenticado(detalle: str) -> HTTPException:
     )
 
 
-def identidad_actual(credenciales: HTTPAuthorizationCredentials | None = Depends(_portador)) -> Identidad:
+def identidad_actual(credenciales: HTTPAuthorizationCredentials | None = Depends(portador)) -> Identidad:
     """Dependencia de FastAPI: exige un token Bearer válido (401 si falta o no sirve)."""
     if credenciales is None or credenciales.scheme.lower() != "bearer":
         raise no_autenticado("Inicie sesión para usar el sistema.")

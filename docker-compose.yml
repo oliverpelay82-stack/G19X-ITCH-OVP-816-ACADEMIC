@@ -76,6 +76,9 @@ services:
       DB_NAME: plurione_compliance
       # Precarga idempotente del catálogo DOC-05 al arrancar (solo inserta las reglas que falten).
       AUTO_SEED: "true"
+      # Módulo 7: el mismo secreto que el core y el ai-service.
+      JWT_SECRET: ${JWT_SECRET:-secreto-de-demostracion-del-motor-cambielo-en-produccion}
+      CORS_ORIGENES: ${CORS_ORIGENES:-http://localhost:5173,http://127.0.0.1:5173}
     depends_on:
       plurione-db:
         condition: service_healthy
@@ -96,6 +99,9 @@ services:
       TESSDATA_PREFIX: /usr/share/tesseract-ocr/5/tessdata
       CORE_BASE_URL: http://plurione-core:8001
       RULES_BASE_URL: http://plurione-rules:8002
+      # Módulo 7: el mismo secreto que el core y el rules-service.
+      JWT_SECRET: ${JWT_SECRET:-secreto-de-demostracion-del-motor-cambielo-en-produccion}
+      CORS_ORIGENES: ${CORS_ORIGENES:-http://localhost:5173,http://127.0.0.1:5173}
     # Sin la bóveda: el ai-service lee cada binario por el core, que verifica su huella (RIE-03).
     volumes:
       - plurione_ai_data:/app/data

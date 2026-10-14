@@ -20,13 +20,19 @@ from typing import Any
 
 import requests
 
-from config import observabilidad
+from config import observabilidad, seguridad
 from config.catalogo import TIPO_EXPEDIENTE_PREDETERMINADO, etiqueta_expediente
 
 logger = logging.getLogger("core-service.rules_client")
 
 RULES_BASE_URL = os.getenv("RULES_BASE_URL", "http://127.0.0.1:8002").rstrip("/")
 TIMEOUT_SEGUNDOS = float(os.getenv("RULES_TIMEOUT", "2"))
+
+
+def _cabeceras() -> dict[str, str]:
+    """Folio de la petición (PLUS-21) y token SISTEMA del core (Módulo 7, DOC-08)."""
+    return {**observabilidad.cabeceras(), **seguridad.cabeceras_sistema("core-service")}
+
 
 FUENTE_CATALOGO = "rules-service"
 FUENTE_RESPALDO = "respaldo-doc02"
@@ -106,7 +112,7 @@ def obtener_documentos_obligatorios(tipo_expediente: str = TIPO_EXPEDIENTE_PREDE
     url = f"{RULES_BASE_URL}/api/v1/reglas/documentos-obligatorios"
     try:
         respuesta = requests.get(url, params={"tipo_expediente": tipo_expediente}, timeout=TIMEOUT_SEGUNDOS,
-                                 headers=observabilidad.cabeceras())
+                                 headers=_cabeceras())
         respuesta.raise_for_status()
         registros = respuesta.json()
         version = respuesta.headers.get("X-Version-Catalogo")
@@ -143,7 +149,7 @@ def tipos_documento_declarados() -> list[dict[str, Any]] | None:
     """
     try:
         respuesta = requests.get(f"{RULES_BASE_URL}/api/v1/reglas/tipos-documento", timeout=TIMEOUT_SEGUNDOS,
-                                 headers=observabilidad.cabeceras())
+                                 headers=_cabeceras())
         respuesta.raise_for_status()
         return [t for t in respuesta.json() if isinstance(t, dict) and t.get("tipo_documento")]
     except (requests.RequestException, ValueError):

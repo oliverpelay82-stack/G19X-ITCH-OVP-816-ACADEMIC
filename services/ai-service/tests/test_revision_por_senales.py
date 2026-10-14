@@ -9,7 +9,8 @@ del dictamen (M6, M7). Sin red: Groq, el rules-service y el core se simulan.
   3. El dictamen lleva la versión del catálogo y la de las reglas de su tipo.
 """
 import pytest
-from fastapi.testclient import TestClient
+
+import sesion
 
 import main
 from clients import core_client, groq_client, rules_client
@@ -17,7 +18,7 @@ from controllers import analisis_controller
 from pipelines import analisis_semantico as pipeline_analisis
 from pipelines import repositorio_texto
 
-client = TestClient(main.app)
+client = sesion.cliente(main.app)
 RFC = "BIM011108DJ5"
 TEXTO = ("CONSTANCIA DE SITUACION FISCAL. RFC: BIM011108DJ5. Denominación: GRUPO BIMBO S.A.B. DE C.V. "
          "Lugar y fecha de emisión: CIUDAD DE MEXICO A 01 DE SEPTIEMBRE DE 2026. ") * 6

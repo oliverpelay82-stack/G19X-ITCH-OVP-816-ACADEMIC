@@ -10,10 +10,12 @@ from types import SimpleNamespace
 
 from fastapi.testclient import TestClient
 
+import sesion
+
 import main
 from clients import core_client, rules_client
 
-client = TestClient(main.app)
+client = sesion.cliente(main.app)
 
 
 def test_el_folio_vuelve_y_se_crea_si_falta():

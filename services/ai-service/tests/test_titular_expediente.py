@@ -12,13 +12,14 @@ se simulan.
   3. Sin esos campos en la ficha (un core anterior) se usan los de la petición.
 """
 import pytest
-from fastapi.testclient import TestClient
+
+import sesion
 
 import main
 from clients import core_client, groq_client, rules_client
 from pipelines import repositorio_texto
 
-client = TestClient(main.app)
+client = sesion.cliente(main.app)
 DOC_ID = "doc-titular-001"
 RFC = "PLU180514AB3"
 RAZON = "PLURIONE S.A. DE C.V."

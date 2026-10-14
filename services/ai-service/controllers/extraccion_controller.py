@@ -12,10 +12,11 @@ fuerza). El OCR corre en el pool de hilos y no en el event loop, para que el
 servicio siga respondiendo (health check, chat) mientras se reconoce un
 documento largo.
 """
-from fastapi import APIRouter, File, Form, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
 from fastapi.concurrency import run_in_threadpool
 
 from config import settings
+from config.autorizacion import lectura, operacion
 from pipelines import extraccion_pipeline, repositorio_texto
 from pipelines.extraccion_pipeline import FormatoNoSoportadoError, MotorOcrNoDisponibleError
 
@@ -24,6 +25,7 @@ router = APIRouter(prefix="/api/v1/ai", tags=["Nivel 3 — Extracción de Texto"
 
 @router.post(
     "/extraer-texto",
+    dependencies=[Depends(operacion)],
     status_code=status.HTTP_200_OK,
     summary="Extraer el texto de un PDF o imagen (capa vectorial + OCR con preprocesamiento)",
 )
@@ -83,6 +85,7 @@ async def extraer_texto(
 
 @router.get(
     "/configuracion-ocr",
+    dependencies=[Depends(lectura)],
     summary="Consultar los parámetros activos del motor OCR",
 )
 def configuracion_ocr():

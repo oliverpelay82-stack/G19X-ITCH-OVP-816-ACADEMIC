@@ -7,14 +7,16 @@ Visor de evidencia (HU-20, RF-13): páginas del documento y ubicación de citas.
 
 Todas leen el binario a través del core-service, que verifica su huella (RIE-03).
 """
-from fastapi import APIRouter, HTTPException, Query, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from pydantic import BaseModel, Field
 
 from clients.core_client import CoreNoDisponibleError, DocumentoAlteradoError, DocumentoNoEncontradoError
+from config.autorizacion import lectura
 from pipelines import repositorio_texto, visor_documento
 from pipelines.extraccion_pipeline import FormatoNoSoportadoError, MotorOcrNoDisponibleError
 
-router = APIRouter(prefix="/api/v1/ai/documentos", tags=["Visor de evidencia"])
+# Módulo 7 (PRD §5.1): el visor es de lectura (ADMIN, VALIDADOR y AUDITOR).
+router = APIRouter(prefix="/api/v1/ai/documentos", tags=["Visor de evidencia"], dependencies=[Depends(lectura)])
 
 
 class LocalizarCitaRequest(BaseModel):

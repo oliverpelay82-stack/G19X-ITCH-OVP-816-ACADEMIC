@@ -31,7 +31,7 @@ import servicios  # noqa: E402
 
 CORE_SERVICE_DIR = servicios.directorio("core-service")
 NOMBRE_BD_PRUEBAS = "plurione_compliance_test"
-SECRETO_PRUEBAS = "secreto-de-las-pruebas-del-motor-de-validacion"
+SECRETO_PRUEBAS = servicios.SECRETO_PRUEBAS
 
 _bd_recreada = False
 

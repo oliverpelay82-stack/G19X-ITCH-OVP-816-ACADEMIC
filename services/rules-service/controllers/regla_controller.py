@@ -8,7 +8,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
-from config import zona_horaria
+from config import seguridad, zona_horaria
+from config.autorizacion import Actor, lectura_o_sistema, operacion, solo_admin
 from config.database import get_db
 from models.regla import Regla
 from motor import obligatorios, version_catalogo, vigencia
@@ -26,6 +27,7 @@ router = APIRouter(prefix="/api/v1/reglas", tags=["Reglas de Validación"])
 
 @router.post(
     "/evaluar-vigencia",
+    dependencies=[Depends(lectura_o_sistema)],
     response_model=EvaluacionVigenciaResponse,
     summary="Evaluar la vigencia de un documento contra las reglas RCV activas (Nivel 2)",
 )
@@ -50,6 +52,7 @@ def evaluar_vigencia(peticion: EvaluacionVigenciaRequest, db: Session = Depends(
 
 @router.get(
     "/documentos-obligatorios",
+    dependencies=[Depends(lectura_o_sistema)],
     response_model=list[DocumentoObligatorioResponse],
     summary="Documentos y anexos que exige un tipo de expediente según las reglas RIE activas (HU-09, HU-10)",
 )
@@ -89,11 +92,20 @@ def listar_documentos_obligatorios(
     status_code=status.HTTP_201_CREATED,
     summary="Dar de alta una nueva regla en el catálogo (RDS-01)",
 )
-def crear_regla(regla_dto: ReglaCreate, db: Session = Depends(get_db)):
+def crear_regla(regla_dto: ReglaCreate, actor: Actor = Depends(operacion), db: Session = Depends(get_db)):
     """
     Equivalente a @PostMapping.
     Valida que el código de la regla no exista y la guarda en reglas_validacion.
+
+    Módulo 7 (PRD §5.1): el administrador da de alta reglas de cualquier familia;
+    el validador, solo de la familia RDS (un tipo de documento nuevo con su
+    criterio, RDS-01: «el administrador o validador»).
     """
+    if actor.rol != seguridad.ADMIN and regla_dto.familia_regla.upper() != "RDS":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Su rol solo puede dar de alta tipos de documento nuevos (reglas dinámicas).",
+        )
     principal = regla_dto.documento_principal.strip().upper() if regla_dto.documento_principal else None
     tipo_documento = regla_dto.tipo_documento.strip().upper() if regla_dto.tipo_documento else None
     if principal and not tipo_documento:
@@ -138,6 +150,7 @@ def crear_regla(regla_dto: ReglaCreate, db: Session = Depends(get_db)):
 
 @router.get(
     "",
+    dependencies=[Depends(lectura_o_sistema)],
     response_model=list[ReglaResponse],
     summary="Listar reglas del catálogo, con filtros opcionales",
 )
@@ -164,6 +177,7 @@ def listar_reglas(
 
 @router.get(
     "/version",
+    dependencies=[Depends(lectura_o_sistema)],
     summary="Versión del catálogo de reglas (huella de todas las reglas, activas y pausadas)",
 )
 def version_del_catalogo(
@@ -188,6 +202,7 @@ def version_del_catalogo(
 
 @router.get(
     "/tipos-documento",
+    dependencies=[Depends(lectura_o_sistema)],
     response_model=list[TipoDocumentoDeclaradoResponse],
     summary="Tipos de documento declarados por reglas dinámicas (RF-09, RDS-01)",
 )
@@ -222,6 +237,7 @@ def agrupar_tipos_declarados(reglas) -> list[TipoDocumentoDeclaradoResponse]:
 
 @router.get(
     "/{regla_id}",
+    dependencies=[Depends(lectura_o_sistema)],
     response_model=ReglaResponse,
     summary="Consultar una regla del catálogo por su ID",
 )
@@ -238,6 +254,7 @@ def obtener_regla_por_id(regla_id: str, db: Session = Depends(get_db)):
 
 @router.patch(
     "/{regla_id}/activo",
+    dependencies=[Depends(solo_admin)],
     response_model=ReglaResponse,
     summary="Activar o desactivar una regla del catálogo",
 )

@@ -18,7 +18,8 @@ import threading
 import time
 
 import pytest
-from fastapi.testclient import TestClient
+
+import sesion
 
 import main
 from clients import core_client
@@ -174,7 +175,7 @@ def test_la_auditoria_promueve_la_lectura_de_fondo_y_la_espera(lecturas, monkeyp
 def test_el_endpoint_responde_202_al_instante(lecturas):
     lecturas.pausa.clear()
     inicio = time.perf_counter()
-    r = TestClient(main.app).post(f"/api/v1/ai/documentos/{DOC_ID}/anticipar")
+    r = sesion.cliente(main.app).post(f"/api/v1/ai/documentos/{DOC_ID}/anticipar")
     assert r.status_code == 202 and r.json() == {"documento_id": DOC_ID, "programada": True}
     assert time.perf_counter() - inicio < 2
     lecturas.pausa.set()

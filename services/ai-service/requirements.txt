@@ -22,3 +22,6 @@ pytesseract==0.3.13
 numpy==2.5.3
 # Q-a: base de zonas horarias para zoneinfo (Windows e imágenes slim no la traen).
 tzdata==2026.4
+
+# Módulo 7 (RF-26, DOC-08): validación de las sesiones y token SISTEMA (JWT HMAC-SHA256).
+PyJWT==2.15.1

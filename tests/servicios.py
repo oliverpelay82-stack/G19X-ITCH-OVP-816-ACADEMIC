@@ -26,6 +26,11 @@ RAIZ = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 SERVICIOS_DIR = os.path.join(RAIZ, "services")
 SERVICIOS = ("core-service", "rules-service", "ai-service")
 
+# Módulo 7: las pruebas firman y validan las sesiones con su propia clave, nunca con
+# la de un .env. Forma parte del entorno original, así que ``activar`` la conserva.
+SECRETO_PRUEBAS = "secreto-de-las-pruebas-del-motor-de-validacion"
+os.environ["JWT_SECRET"] = SECRETO_PRUEBAS
+
 _ENTORNO_ORIGINAL = dict(os.environ)
 
 

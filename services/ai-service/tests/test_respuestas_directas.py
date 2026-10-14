@@ -18,7 +18,7 @@ import pytest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from fastapi.testclient import TestClient  # noqa: E402
+import sesion  # noqa: E402
 
 import main  # noqa: E402
 from clients import core_client, groq_client, rules_client  # noqa: E402
@@ -185,7 +185,7 @@ def servicio(monkeypatch):
         {"codigo_regla": "RSC-02-CONT", "nombre_regla": "Datos del firmante", "criterio": "Firmantes",
          "recomendacion": "Confirmar", "familia_regla": "RSC", "severidad": "ALTA"}])
     monkeypatch.setattr(rules_client, "evaluar_vigencia", lambda *a: {"resultado": "VIGENTE", "evaluaciones": []})
-    return TestClient(main.app), estado
+    return sesion.cliente(main.app), estado
 
 
 def _chat(cliente, pregunta, **extra):

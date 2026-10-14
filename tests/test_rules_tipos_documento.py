@@ -18,12 +18,13 @@ import servicios  # noqa: E402
 
 servicios.activar("rules-service")
 
-from fastapi.testclient import TestClient  # noqa: E402
 
 from main import app  # noqa: E402
 from controllers.regla_controller import agrupar_tipos_declarados  # noqa: E402
 
-client = TestClient(app)
+from sesiones_rules import SesionesRules  # noqa: E402
+
+client = SesionesRules().cliente(app)
 
 
 def _regla(codigo, tipo, nombre, creado, familia="RDS", activo=True, expediente="REGULATORIO"):

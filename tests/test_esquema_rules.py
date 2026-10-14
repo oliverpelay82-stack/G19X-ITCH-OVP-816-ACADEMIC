@@ -16,15 +16,16 @@ import servicios  # noqa: E402
 servicios.activar("rules-service")
 
 import pytest  # noqa: E402
-from fastapi.testclient import TestClient  # noqa: E402
 from sqlalchemy import text  # noqa: E402
 from sqlalchemy.exc import IntegrityError  # noqa: E402
 
 from config.database import engine, init_db  # noqa: E402
 from main import app  # noqa: E402
 from schemas.regla_schema import ReglaCreate  # noqa: E402  (antes de que otra suite active otro servicio)
+from sesiones_rules import SesionesRules  # noqa: E402
 
 init_db()
+sesiones = SesionesRules()
 
 REGLA = {
     "codigo_regla": "XYZ-01",
@@ -37,7 +38,7 @@ REGLA = {
 
 
 def test_api_rechaza_familia_fuera_del_doc05():
-    respuesta = TestClient(app).post("/api/v1/reglas", json=REGLA)
+    respuesta = sesiones.cliente(app).post("/api/v1/reglas", headers=sesiones.persona("ADMIN"), json=REGLA)
     assert respuesta.status_code == 422, respuesta.text
     assert any(e["loc"][-1] == "familia_regla" for e in respuesta.json()["detail"])
 
@@ -45,7 +46,8 @@ def test_api_rechaza_familia_fuera_del_doc05():
 def test_api_rechaza_severidad_fuera_del_doc05():
     """Hallazgo 8 (auditoría del 14/10/2026): la severidad era texto libre; «baja» se guardaba."""
     regla = {**REGLA, "familia_regla": "RDS", "codigo_regla": f"SEV-{uuid.uuid4().hex[:6]}"}
-    respuesta = TestClient(app).post("/api/v1/reglas", json={**regla, "severidad": "BAJA"})
+    respuesta = sesiones.cliente(app).post("/api/v1/reglas", headers=sesiones.persona("ADMIN"),
+                                           json={**regla, "severidad": "BAJA"})
     assert respuesta.status_code == 422, respuesta.text
     assert any(e["loc"][-1] == "severidad" for e in respuesta.json()["detail"])
     assert ReglaCreate(**{**regla, "severidad": " media_alta "}).severidad == "MEDIA_ALTA"

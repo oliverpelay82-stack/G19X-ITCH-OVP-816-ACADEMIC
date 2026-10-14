@@ -27,12 +27,13 @@ import servicios  # noqa: E402
 
 servicios.activar("rules-service")
 
-from fastapi.testclient import TestClient  # noqa: E402
 
 from main import app  # noqa: E402
 from motor import obligatorios, vigencia  # noqa: E402
+from sesiones_rules import SesionesRules  # noqa: E402
 
-client = TestClient(app)
+sesiones = SesionesRules()
+client = sesiones.cliente(app)
 FAMILIAS = {"RIE", "RCV", "RSC", "RDS"}
 CAMPOS = {"id", "codigo_regla", "nombre_regla", "familia_regla", "descripcion", "severidad", "accion", "activo"}
 
@@ -71,7 +72,8 @@ def main() -> int:
     inexistente = client.get("/api/v1/reglas/00000000-0000-0000-0000-000000000000")
     verificar(inexistente.status_code == 404, "Un id inexistente responde 404", f"HTTP {inexistente.status_code}")
 
-    invalida = client.post("/api/v1/reglas", json={"codigo_regla": "X", "nombre_regla": "ab"})
+    invalida = client.post("/api/v1/reglas", headers=sesiones.persona("ADMIN"),
+                           json={"codigo_regla": "X", "nombre_regla": "ab"})
     verificar(invalida.status_code == 422, "Una regla inválida se rechaza con 422", f"HTTP {invalida.status_code}")
 
     prueba_motor_vigencia()
@@ -226,7 +228,7 @@ def prueba_documentos_obligatorios() -> None:
         verificar(all(d["tipo_expediente"] in (None, tipo) for d in datos),
                   f"El catálogo real para {tipo} solo trae reglas de ese tipo o generales",
                   ", ".join(d["tipo_documento"] for d in datos if not d["documento_principal"]))
-    anexo_propio = client.post("/api/v1/reglas", json={
+    anexo_propio = client.post("/api/v1/reglas", headers=sesiones.persona("ADMIN"), json={
         "codigo_regla": "RIE-99-TEST", "nombre_regla": "Anexo inválido", "familia_regla": "RIE",
         "descripcion": "Un documento no puede ser anexo de sí mismo.", "severidad": "ALTA", "accion": "Ninguna",
         "tipo_documento": "FIANZA", "documento_principal": "FIANZA"})
