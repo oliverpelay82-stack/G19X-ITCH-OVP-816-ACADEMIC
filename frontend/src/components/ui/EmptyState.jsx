@@ -9,7 +9,7 @@ export function EmptyState({ icon: Icono, titulo, descripcion, className, childr
     <div className={cx('empty-state', className)}>
       {Icono && (
         <span className="squircle squircle--lg empty-icon" aria-hidden="true">
-          <Icono size={16} />
+          <Icono size={16} aria-hidden="true" />
         </span>
       )}
       <p className="empty-title">{titulo}</p>

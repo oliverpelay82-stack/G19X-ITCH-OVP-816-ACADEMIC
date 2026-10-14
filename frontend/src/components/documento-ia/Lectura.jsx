@@ -1,6 +1,6 @@
 // Estado de la lectura del documento, fragmentos consultados y meta de cada respuesta.
 import { useState } from 'react'
-import { FileCheck, FileText, History, Quote, Zap } from 'lucide-react'
+import { ClockCounterClockwise, FileText, Lightning, Quotes, SealCheck } from '../iconos.js'
 import { useEvidencia } from '../evidencia-context.js'
 import { Badge } from '../ui/index.js'
 import { formatDuracion, nombreModelo } from './formato.js'
@@ -61,7 +61,7 @@ export function Citas({ contexto }) {
                 aria-expanded={activa}
                 title={f.pagina ? `Ver la página ${f.pagina} en el documento` : undefined}
               >
-                <FileText size={12} strokeWidth={1.75} aria-hidden="true" />
+                <FileText size={12} aria-hidden="true" />
                 <span className="citation-title">{f.titulo || f.inicio || 'Fragmento'}</span>
                 <span className="citation-pos tabular">{f.pagina ? `p. ${f.pagina}` : `${f.posicion_pct}%`}</span>
               </button>
@@ -89,17 +89,17 @@ export function Citas({ contexto }) {
  */
 const PROCEDENCIA = {
   DATOS_DEL_DICTAMEN: {
-    icono: FileCheck,
+    icono: SealCheck,
     texto: 'datos del dictamen',
     detalle: 'Respuesta armada con los datos que la auditoría del documento verificó; no se consultó al modelo.',
   },
   PASAJE_DEL_DOCUMENTO: {
-    icono: Quote,
+    icono: Quotes,
     texto: 'texto del documento',
     detalle: 'Pasaje literal del documento, sin interpretación; no se consultó al modelo.',
   },
   CACHE: {
-    icono: History,
+    icono: ClockCounterClockwise,
     texto: 'respuesta ya consultada',
     detalle:
       'La misma pregunta ya se respondió sobre este documento y su dictamen vigente; no se volvió a consultar al modelo.',
@@ -112,7 +112,7 @@ export function MetaInferencia({ modelo, duracion, origen }) {
   if (!procedencia) {
     return (
       <span className="inference-meta" title={nombreModelo(modelo)}>
-        <Zap size={12} strokeWidth={1.75} aria-hidden="true" />
+        <Lightning size={12} aria-hidden="true" />
         <span className="tabular">{formatDuracion(duracion)}</span> · análisis con IA
       </span>
     )
@@ -120,7 +120,7 @@ export function MetaInferencia({ modelo, duracion, origen }) {
   const Icono = procedencia.icono
   return (
     <span className="inference-meta" title={procedencia.detalle}>
-      <Icono size={12} strokeWidth={1.75} aria-hidden="true" />
+      <Icono size={12} aria-hidden="true" />
       <span className="tabular">{formatDuracion(duracion)}</span> · {procedencia.texto}
     </span>
   )

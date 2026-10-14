@@ -1,6 +1,5 @@
 import { Fragment, useMemo, useState } from 'react'
-import { ChevronRight, Loader2, Plus, SearchX, ServerOff } from 'lucide-react'
-import { IconoReglas } from './IconosMotor.jsx'
+import { CaretRight, CircleNotch, CloudSlash, ListChecks, MagnifyingGlass, Plus } from './iconos.js'
 import {
   Badge,
   Button,
@@ -67,7 +66,7 @@ function Switch({ checked, onClick, loading, label }) {
       data-tooltip={checked ? 'Pausar regla' : 'Activar regla'}
     >
       {/* Única excepción a la escala de iconos (12, 14 y 16): cabe en la perilla del interruptor. */}
-      <span className="switch-thumb">{loading && <Loader2 className="spin" size={9} strokeWidth={1.75} />}</span>
+      <span className="switch-thumb">{loading && <CircleNotch className="spin" size={9} weight="bold" />}</span>
     </button>
   )
 }
@@ -274,7 +273,7 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
       <div className="tab-panel">
         <Card>
           <EmptyState
-            icon={ServerOff}
+            icon={CloudSlash}
             titulo="Catálogo de reglas fuera de línea"
             descripcion="El servicio del catálogo no responde: no es posible consultar, evaluar ni modificar las reglas. Empresas, Expedientes y Bóveda siguen operando."
           />
@@ -352,7 +351,7 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
               {!loading && filtradas.length === 0 && (
                 <EmptyRow
                   columnas={COLUMNAS}
-                  icon={reglas.length === 0 ? IconoReglas : SearchX}
+                  icon={reglas.length === 0 ? ListChecks : MagnifyingGlass}
                   titulo={reglas.length === 0 ? 'El catálogo está vacío' : 'Sin coincidencias'}
                   descripcion={
                     reglas.length === 0
@@ -373,7 +372,7 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
                           aria-expanded={familiaAbierta(grupo.familia)}
                           onClick={() => alternarFamilia(grupo.familia)}
                         >
-                          <ChevronRight size={14} className="chevron" aria-hidden="true" />
+                          <CaretRight size={14} className="chevron" aria-hidden="true" />
                           <span className="mono group-code">{grupo.familia}</span>
                           <span className="group-name">{grupo.meta.nombre}</span>
                           <span className="group-meta">{grupo.meta.nivel}</span>

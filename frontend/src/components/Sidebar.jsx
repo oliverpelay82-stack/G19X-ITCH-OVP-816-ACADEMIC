@@ -1,32 +1,29 @@
 import { useState } from 'react'
-import { BellRing, Building2, FileBarChart2 } from 'lucide-react'
-import { IconoBoveda, IconoExpediente, IconoReglas } from './IconosMotor.jsx'
+import { BellRinging, Buildings, ChartBar, FolderOpen, ListChecks, Vault } from './iconos.js'
 import LogoMotor from './LogoMotor.jsx'
 
+// Iconos del menú en peso regular y duotone en el ítem activo.
 const GRUPOS = [
   {
     label: 'Cumplimiento',
     items: [
-      { id: 'titulares', label: 'Empresas', icon: Building2 },
-      { id: 'expedientes', label: 'Expedientes', icon: IconoExpediente },
-      { id: 'boveda', label: 'Bóveda', icon: IconoBoveda },
+      { id: 'titulares', label: 'Empresas', icon: Buildings },
+      { id: 'expedientes', label: 'Expedientes', icon: FolderOpen },
+      { id: 'boveda', label: 'Bóveda', icon: Vault },
     ],
   },
   {
     label: 'Auditoría',
     items: [
-      { id: 'alertas', label: 'Alertas', icon: BellRing },
-      { id: 'reportes', label: 'Reportes', icon: FileBarChart2 },
+      { id: 'alertas', label: 'Alertas', icon: BellRinging },
+      { id: 'reportes', label: 'Reportes', icon: ChartBar },
     ],
   },
   {
     label: 'Configuración',
-    items: [{ id: 'reglas', label: 'Reglas', icon: IconoReglas }],
+    items: [{ id: 'reglas', label: 'Reglas', icon: ListChecks }],
   },
 ]
-
-/** Versión del motor que se muestra en el pie (catálogo DOC-05). */
-const VERSION = 'Versión 1.0.0'
 
 /**
  * Conteo del menú. Cuando cambia (no al cargar la primera vez) late una sola
@@ -81,7 +78,7 @@ export default function Sidebar({ tabActiva, onTabChange, contadores }) {
                   aria-current={activo ? 'page' : undefined}
                 >
                   <span className="squircle" aria-hidden="true">
-                    <Icono size={16} />
+                    <Icono size={16} weight={activo ? 'duotone' : 'regular'} />
                   </span>
                   <span className="nav-label">{label}</span>
                   {contador?.total > 0 && <Contador total={contador.total} tono={contador.tono} />}
@@ -91,10 +88,6 @@ export default function Sidebar({ tabActiva, onTabChange, contadores }) {
           </div>
         ))}
       </nav>
-
-      <div className="sidebar-foot">
-        <span className="version-badge">{VERSION}</span>
-      </div>
     </aside>
   )
 }

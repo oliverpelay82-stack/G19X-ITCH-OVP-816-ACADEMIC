@@ -177,19 +177,6 @@
   color: var(--text-secondary);
 }
 
-.sidebar-foot {
-  margin-top: auto;
-  padding: var(--s-3) var(--s-1) 0;
-  border-top: var(--border-subtle);
-}
-
-.version-badge {
-  padding: 0 var(--s-2);
-  font-family: var(--font-mono);
-  font-size: var(--fs-micro);
-  color: var(--text-secondary);
-}
-
 /* ── Header ────────────────────────────────────────────────────── */
 .app-header {
   position: sticky;
@@ -284,6 +271,12 @@
   font-size: var(--fs-small);
   color: var(--text-muted);
   text-align: right;
+  opacity: 0;
+  transition: opacity var(--dur-slow) var(--ease);
+}
+
+.actualizado.is-visible {
+  opacity: 1;
 }
 
 .header-divider {

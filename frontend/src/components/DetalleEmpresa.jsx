@@ -1,9 +1,8 @@
 import { useMemo } from 'react'
-import { ArrowLeft, ArrowUpRight, FolderPlus, SearchX } from 'lucide-react'
+import { ArrowLeft, ArrowUpRight, FolderOpen, FolderPlus, MagnifyingGlass } from './iconos.js'
 import { CorregirEmpresa } from './CorreccionDatos.jsx'
 import FolioExpediente from './FolioExpediente.jsx'
 import EstadoBadge from './EstadoBadge.jsx'
-import { IconoExpediente } from './IconosMotor.jsx'
 import { Avatar, Badge, Button, Card, CopyChip, EmptyState, KeyValue, KeyValueList, Tag } from './ui/index.js'
 import { RANGO_ESTADO } from '../hooks/useOrden.js'
 import {
@@ -114,7 +113,7 @@ export default function DetalleEmpresa({
         {ordenados.length === 0 ? (
           <Card>
             <EmptyState
-              icon={IconoExpediente}
+              icon={FolderOpen}
               titulo="Esta empresa aún no tiene expedientes"
               descripcion="Apertura el primero para empezar a custodiar y validar sus documentos."
             />
@@ -225,7 +224,7 @@ export function EmpresaNoEncontrada({ rfc, onVolver }) {
     <div className="tab-panel">
       <Card>
         <EmptyState
-          icon={SearchX}
+          icon={MagnifyingGlass}
           titulo="Empresa no encontrada"
           descripcion={`No hay una empresa registrada con el RFC ${rfc}.`}
         >

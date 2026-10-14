@@ -1,4 +1,4 @@
-import { ListChecks, Lock } from 'lucide-react'
+import { ListChecks, Lock } from './iconos.js'
 import { Badge } from './ui/index.js'
 import { TIPO_DOCUMENTO_LABEL } from '../constants.js'
 import { formatIndice } from '../utils/indice.js'
@@ -83,7 +83,7 @@ export default function IndiceCumplimiento({ indice, presentes, obligatorios }) 
         <div className="notice notice--bad indice-bloqueo">
           {/* Qué bloquea y qué hacer ya está en los motivos del semáforo: aquí solo se dice que bloquea. */}
           <p className="indice-bloqueo-titulo" title={indice.bloqueos.join(' ')}>
-            <Lock size={12} strokeWidth={1.75} aria-hidden="true" />
+            <Lock size={12} aria-hidden="true" />
             <span>
               {indice.bloqueos.length === 1
                 ? 'Bloqueado por una regla crítica'

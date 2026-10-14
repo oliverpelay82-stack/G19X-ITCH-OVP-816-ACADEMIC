@@ -1,4 +1,4 @@
-import { ArrowUpRight, Lightbulb } from 'lucide-react'
+import { ArrowUpRight, Lightbulb } from './iconos.js'
 import { Button, Tag } from './ui/index.js'
 import { ALERTA_META, getSeveridadMeta } from '../constants.js'
 import FolioExpediente from './FolioExpediente.jsx'

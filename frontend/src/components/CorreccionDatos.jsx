@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Pencil } from 'lucide-react'
+import { PencilSimple } from './iconos.js'
 import { Button, Field, Input, Modal, Select } from './ui/index.js'
 import useToast from '../hooks/useToast.js'
 import { corregirTitular, renombrarExpediente } from '../services/api.js'
@@ -67,7 +67,7 @@ export function CorregirEmpresa({ titular, onCorregido, disabled }) {
 
   return (
     <>
-      <Button compacto icono={Pencil} onClick={abrir} disabled={disabled}>
+      <Button compacto icono={PencilSimple} onClick={abrir} disabled={disabled}>
         Corregir datos
       </Button>
       {abierto && (
@@ -116,7 +116,7 @@ export function RenombrarExpediente({ exp, onRenombrado, disabled }) {
     <>
       <Button
         compacto
-        icono={Pencil}
+        icono={PencilSimple}
         onClick={() => {
           setNombre(exp.nombre || '')
           setAbierto(true)

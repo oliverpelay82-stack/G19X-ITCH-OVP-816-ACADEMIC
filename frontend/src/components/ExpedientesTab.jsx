@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { ChevronDown, Lock, Plus, SearchX } from 'lucide-react'
-import { IconoExpediente } from './IconosMotor.jsx'
+import { CaretDown, FolderOpen, Lock, MagnifyingGlass, Plus } from './iconos.js'
 import { Avatar, Button, Card, EmptyState, Field, Input, Modal, SearchBox, Segmented, Select, Tag } from './ui/index.js'
 import { SkeletonCards } from './Skeleton.jsx'
 import EstadoBadge from './EstadoBadge.jsx'
@@ -283,7 +282,7 @@ export default function ExpedientesTab({
       {!loading && filtrados.length === 0 && (
         <Card>
           <EmptyState
-            icon={expedientes.length === 0 ? IconoExpediente : SearchX}
+            icon={expedientes.length === 0 ? FolderOpen : MagnifyingGlass}
             titulo={expedientes.length === 0 ? 'Aún no hay expedientes aperturados' : 'Sin resultados'}
             descripcion={
               expedientes.length === 0
@@ -376,7 +375,7 @@ export default function ExpedientesTab({
                     }
                   >
                     <span className="exp-indice-valor tabular">
-                      {indice?.bloqueado && <Lock size={12} strokeWidth={1.75} aria-label="Bloqueado" />}
+                      {indice?.bloqueado && <Lock size={12} aria-label="Bloqueado" />}
                       {formatIndice(indice?.porcentaje)}
                       <span className="cell-muted"> cumplimiento</span>
                     </span>
@@ -386,7 +385,7 @@ export default function ExpedientesTab({
                   </span>
                   <span className="exp-updated cell-muted tabular">{formatRelativo(exp.actualizado_en)}</span>
                   <span className="squircle exp-chevron" aria-hidden="true">
-                    <ChevronDown size={14} className="chevron" />
+                    <CaretDown size={14} className="chevron" />
                   </span>
                 </button>
 

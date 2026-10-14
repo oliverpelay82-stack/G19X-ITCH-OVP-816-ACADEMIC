@@ -1,5 +1,5 @@
 import { Component } from 'react'
-import { RefreshCw, ServerOff } from 'lucide-react'
+import { ArrowsClockwise, CloudSlash } from './iconos.js'
 import { Button, Card, EmptyState } from './ui/index.js'
 
 /**
@@ -25,11 +25,11 @@ export default class ErrorVista extends Component {
     return (
       <Card>
         <EmptyState
-          icon={ServerOff}
+          icon={CloudSlash}
           titulo="No se pudo cargar esta sección"
           descripcion="Suele pasar tras una actualización del sistema. Recargar trae la versión vigente; los datos no se pierden."
         >
-          <Button compacto icono={RefreshCw} onClick={() => window.location.reload()}>
+          <Button compacto icono={ArrowsClockwise} onClick={() => window.location.reload()}>
             Recargar
           </Button>
         </EmptyState>

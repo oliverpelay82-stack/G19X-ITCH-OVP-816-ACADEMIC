@@ -1,6 +1,6 @@
 // Chat documental: preguntas sobre el documento con citas verificadas.
 import { useEffect, useRef, useState } from 'react'
-import { ArrowUp, MessageSquareText } from 'lucide-react'
+import { ArrowUp, ChatText } from '../iconos.js'
 import { useEvidencia } from '../evidencia-context.js'
 import { Badge, Button, EmptyState } from '../ui/index.js'
 import useToast from '../../hooks/useToast.js'
@@ -159,7 +159,7 @@ export function ChatDocumento({ doc, iaOnline }) {
       <div className="chat-thread" ref={hilo} aria-live="polite">
         {mensajes.length === 0 && !pensando && (
           <EmptyState
-            icon={MessageSquareText}
+            icon={ChatText}
             titulo="Pregunta sobre este documento"
             descripcion="El modelo responde con lo que contiene el archivo y su dictamen en el sistema, cita las cláusulas que leyó y lo dice cuando no encuentra el dato."
           />

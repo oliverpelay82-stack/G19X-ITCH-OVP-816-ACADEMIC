@@ -2,7 +2,7 @@
 // con su ratificación y cotejo de representación), evidencia y registro técnico.
 import { useEffect, useId, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { FileSearch, Sparkles } from 'lucide-react'
+import { FileMagnifyingGlass, Sparkle } from '../iconos.js'
 import { Skeleton } from '../Skeleton.jsx'
 import DictamenesGuardados, { AvisoIntegridad } from '../DictamenesGuardados.jsx'
 import CotejoRepresentacion from '../CotejoRepresentacion.jsx'
@@ -142,7 +142,7 @@ export function AuditoriaIa({
     <Button
       variante={auditado ? 'secondary' : 'primary'}
       compacto={auditado}
-      icono={Sparkles}
+      icono={Sparkle}
       cargando={analizando}
       onClick={auditar}
       disabled={!iaOnline || alterado}
@@ -215,7 +215,7 @@ export function AuditoriaIa({
           <DictamenEvidencia dictamen={dictamen} expediente={expediente} tipoRegistrado={doc.tipo_documento} ids={ids} />
         ) : (
           <EmptyState
-            icon={FileSearch}
+            icon={FileMagnifyingGlass}
             titulo="Sin evidencia de esta sesión"
             descripcion="La evidencia detallada (cotejo, contenido con sus citas, vigencia, sellos y observaciones) se muestra al auditar el documento. El dictamen vigente conserva el resultado de cada regla."
           />

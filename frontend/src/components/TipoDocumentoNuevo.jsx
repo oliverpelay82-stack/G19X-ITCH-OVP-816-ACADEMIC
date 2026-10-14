@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { FilePlus2 } from 'lucide-react'
+import { FilePlus } from './iconos.js'
 import { Button, Field, Input, Modal, Select } from './ui/index.js'
 import useToast from '../hooks/useToast.js'
 import { createRegla } from '../services/api.js'
@@ -94,7 +94,7 @@ export default function TipoDocumentoNuevo({ onCreado, disabled }) {
 
   return (
     <>
-      <Button icono={FilePlus2} onClick={() => setAbierto(true)} disabled={disabled}>
+      <Button icono={FilePlus} onClick={() => setAbierto(true)} disabled={disabled}>
         Nuevo tipo de documento
       </Button>
       {abierto && (

@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
-import { X } from 'lucide-react'
+import { X } from './iconos.js'
 import { ToastContext } from './toast-context.js'
 
 /** Las notificaciones se retiran solas a los 4 segundos; las que ofrecen «Deshacer», a los 6. */

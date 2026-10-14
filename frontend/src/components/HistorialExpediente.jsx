@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { History, Loader2 } from 'lucide-react'
+import { CircleNotch, ClockCounterClockwise } from './iconos.js'
 import { Badge, Button } from './ui/index.js'
 import { getBitacora, verificarCadena } from '../services/api.js'
 import { getEstadoBadge, TIPO_DOCUMENTO_LABEL } from '../constants.js'
@@ -135,13 +135,13 @@ export default function HistorialExpediente({ expedienteId, documentos = [] }) {
     // para que la lista no salte.
     <details className="exp-historial" onToggle={(e) => e.currentTarget.open && !cargando && cargar()}>
       <summary className="desplegable-titulo">
-        <History size={12} aria-hidden="true" />
+        <ClockCounterClockwise size={12} aria-hidden="true" />
         Historial del expediente
         {eventos && <span className="tabular cell-muted"> · {eventos.length}</span>}
       </summary>
       {cargando && !eventos && (
         <p className="field-hint">
-          <Loader2 className="spin" size={12} aria-hidden="true" /> Consultando la bitácora…
+          <CircleNotch className="spin" size={12} aria-hidden="true" /> Consultando la bitácora…
         </p>
       )}
       {error && <p className="notice notice--warn">{error}</p>}

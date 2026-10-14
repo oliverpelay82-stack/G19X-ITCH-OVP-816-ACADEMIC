@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ChevronRight, Moon, RefreshCw, Search, Sun } from 'lucide-react'
+import { ArrowsClockwise, CaretRight, MagnifyingGlass, Moon, Sun } from './iconos.js'
 import SystemHealth from './SystemHealth.jsx'
 import { IconButton } from './ui/index.js'
 
@@ -15,20 +15,25 @@ function useDesplazado() {
   return desplazado
 }
 
-/** Antigüedad de los datos a la vista, en palabras; se recalcula cada 5 s. */
+// Lo que dura a la vista la confirmación de «Actualizar datos».
+const AVISO_ACTUALIZADO_MS = 3000
+
+/**
+ * Confirmación breve de «Actualizar datos»: aparece al terminar y se desvanece.
+ * El espacio queda reservado para que los botones no se muevan.
+ */
 function Actualizado({ momento }) {
-  const [ahora, setAhora] = useState(() => Date.now())
+  // Último momento cuya confirmación ya se desvaneció.
+  const [vencido, setVencido] = useState(null)
   useEffect(() => {
-    const id = setInterval(() => setAhora(Date.now()), 5000)
-    return () => clearInterval(id)
-  }, [])
-  if (!momento) return null
-  const segundos = Math.max(0, Math.round((ahora - momento) / 1000))
-  const texto =
-    segundos < 10 ? 'Actualizado ahora' : segundos < 60 ? `Actualizado hace ${segundos} s` : `Actualizado hace ${Math.round(segundos / 60)} min`
+    if (!momento) return undefined
+    const id = setTimeout(() => setVencido(momento), AVISO_ACTUALIZADO_MS)
+    return () => clearTimeout(id)
+  }, [momento])
+  const visible = Boolean(momento) && vencido !== momento
   return (
-    <span className="actualizado tabular" title={new Date(momento).toLocaleTimeString('es-MX')}>
-      {texto}
+    <span className={visible ? 'actualizado is-visible' : 'actualizado'} aria-hidden={!visible}>
+      Actualizado ahora
     </span>
   )
 }
@@ -71,7 +76,7 @@ export default function Header({
                         {m.label}
                       </button>
                     )}
-                    {!ultima && <ChevronRight size={12} aria-hidden="true" />}
+                    {!ultima && <CaretRight size={12} aria-hidden="true" />}
                   </li>
                 )
               })}
@@ -89,12 +94,12 @@ export default function Header({
         <Actualizado momento={actualizado} />
 
         {/* D1: la paleta de comandos también se abre con Ctrl+K (⌘K en Mac). */}
-        <IconButton etiqueta="Buscar o ir a… (Ctrl+K)" data-tooltip="Buscar · Ctrl+K" aria-haspopup="dialog" onClick={onAbrirPaleta}>
-          <Search size={16} />
+        <IconButton etiqueta="Buscar (Ctrl+K)" data-tooltip="Buscar · Ctrl+K" aria-haspopup="dialog" onClick={onAbrirPaleta}>
+          <MagnifyingGlass size={16} />
         </IconButton>
 
         <IconButton etiqueta="Actualizar datos" tooltip ocupado={refrescando} onClick={onRefresh} disabled={refrescando}>
-          <RefreshCw size={16} className="refresh-icon" />
+          <ArrowsClockwise size={16} className="refresh-icon" />
         </IconButton>
 
         <IconButton

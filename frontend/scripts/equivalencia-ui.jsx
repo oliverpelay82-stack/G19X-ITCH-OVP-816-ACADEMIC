@@ -5,7 +5,7 @@
  * exige el mismo HTML, salvo los atributos de accesibilidad que el
  * componente añade a propósito.
  */
-import { Loader2, Plus, RefreshCw, Search, X } from 'lucide-react'
+import { ArrowsClockwise, CircleNotch, MagnifyingGlass, Plus, X } from '../src/components/iconos.js'
 import {
   Avatar,
   Badge,
@@ -33,7 +33,7 @@ export const CASOS = [
     nombre: 'Button primario de barra con icono (ExpedientesTab)',
     actual: (
       <button type="button" className="btn btn-primary toolbar-action" onClick={nada} disabled title="Primero registra una empresa">
-        <Plus size={14} />
+        <Plus size={14} aria-hidden="true" />
         Aperturar expediente
       </button>
     ),
@@ -47,7 +47,7 @@ export const CASOS = [
     nombre: 'Button de envío en curso (modal de apertura)',
     actual: (
       <button type="submit" className="btn btn-primary" disabled>
-        <Loader2 className="spin" size={14} />
+        <CircleNotch className="spin" size={14} aria-hidden="true" />
         Crear expediente
       </button>
     ),
@@ -74,12 +74,12 @@ export const CASOS = [
     nombre: 'IconButton compacto (visor, modal)',
     actual: (
       <button type="button" className="icon-button icon-button--sm" onClick={nada} aria-label="Cerrar el visor">
-        <X size={16} />
+        <X size={16} aria-hidden="true" />
       </button>
     ),
     nuevo: (
       <IconButton etiqueta="Cerrar el visor" compacto onClick={nada}>
-        <X size={16} />
+        <X size={16} aria-hidden="true" />
       </IconButton>
     ),
   },
@@ -87,12 +87,12 @@ export const CASOS = [
     nombre: 'IconButton de refresco con tooltip, ocupado (Header)',
     actual: (
       <button type="button" className="icon-button is-busy" onClick={nada} disabled data-tooltip="Actualizar datos" aria-label="Actualizar datos">
-        <RefreshCw size={16} className="refresh-icon" />
+        <ArrowsClockwise size={16} className="refresh-icon" aria-hidden="true" />
       </button>
     ),
     nuevo: (
       <IconButton etiqueta="Actualizar datos" tooltip ocupado onClick={nada} disabled>
-        <RefreshCw size={16} className="refresh-icon" />
+        <ArrowsClockwise size={16} className="refresh-icon" aria-hidden="true" />
       </IconButton>
     ),
   },
@@ -286,7 +286,7 @@ export const CASOS = [
     actual: (
       <div className="empty-state">
         <span className="squircle squircle--lg empty-icon" aria-hidden="true">
-          <X size={16} />
+          <X size={16} aria-hidden="true" />
         </span>
         <p className="empty-title">Sin coincidencias</p>
         <p className="empty-desc">Ajusta la búsqueda.</p>
@@ -298,13 +298,13 @@ export const CASOS = [
     nombre: 'Tooltip sobre un botón de icono (Header)',
     actual: (
       <button type="button" className="icon-button" data-tooltip="Tema oscuro" aria-label="Tema oscuro">
-        <X size={16} />
+        <X size={16} aria-hidden="true" />
       </button>
     ),
     nuevo: (
       <Tooltip texto="Tema oscuro" nombra>
         <button type="button" className="icon-button">
-          <X size={16} />
+          <X size={16} aria-hidden="true" />
         </button>
       </Tooltip>
     ),
@@ -341,7 +341,7 @@ export const CASOS = [
     nombre: 'SearchBox con atajo «/» (barras de herramientas)',
     actual: (
       <label className="search-box ">
-        <Search size={14} aria-hidden="true" />
+        <MagnifyingGlass size={14} aria-hidden="true" />
         <input type="search" placeholder="Buscar expedientes" value="" onChange={nada} aria-label="Buscar expedientes" aria-keyshortcuts="/" />
       </label>
     ),

@@ -1,6 +1,6 @@
 // «Auditar pendientes» (HU-32): audita en secuencia los documentos vigentes sin dictamen.
 import { useState } from 'react'
-import { Check, Loader2, Minus, Sparkles, X } from 'lucide-react'
+import { Check, CircleNotch, Minus, Sparkle, X } from '../iconos.js'
 import { Button } from '../ui/index.js'
 import { analizarDocumento, getExpedienteById } from '../../services/api.js'
 import { getEstadoBadge } from '../../constants.js'
@@ -10,7 +10,7 @@ import { plural } from '../../utils/format.js'
 /** Estado de un documento dentro de «Auditar pendientes». */
 const PASO = {
   cola: { icono: null, texto: 'En cola' },
-  auditando: { icono: Loader2, texto: 'Auditando…' },
+  auditando: { icono: CircleNotch, texto: 'Auditando…' },
   hecho: { icono: Check, texto: null },
   error: { icono: X, texto: null },
 }
@@ -172,7 +172,7 @@ export function AuditarPendientes({ exp, iaOnline, onTerminado }) {
       {(!pasos || resultado) && pendientes.length > 0 && (
         <Button
           variante="primary"
-          icono={Sparkles}
+          icono={Sparkle}
           onClick={auditar}
           disabled={enCurso || !iaOnline}
           title={iaOnline ? undefined : 'El servicio de análisis con IA no responde'}

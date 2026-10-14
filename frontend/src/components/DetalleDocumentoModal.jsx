@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { ChevronDown, ChevronUp, Download, PanelRightClose, PanelRightOpen, UserCheck } from 'lucide-react'
+import { CaretDown, CaretUp, DownloadSimple, SidebarSimple, UserCheck } from './iconos.js'
 import { Badge, Button, CopyChip, IconButton, KeyValue, KeyValueList, Modal } from './ui/index.js'
 import { cx } from './ui/clases.js'
 import Destello from './Destello.jsx'
@@ -167,7 +167,7 @@ function InspectorDocumento({ doc, expediente, iaOnline, onRefresh, onVisor, onO
               )}
               <Button
                 compacto
-                icono={visorAbierto ? PanelRightClose : PanelRightOpen}
+                icono={visorAbierto ? SidebarSimple : SidebarSimple}
                 onClick={() => alternarVisor(!visorAbierto)}
                 disabled={!iaOnline}
                 title={
@@ -235,7 +235,7 @@ function DescargarOriginal({ doc }) {
     }
   }
   return (
-    <Button compacto icono={Download} cargando={descargando} onClick={descargar}>
+    <Button compacto icono={DownloadSimple} cargando={descargando} onClick={descargar}>
       Descargar original
     </Button>
   )
@@ -287,7 +287,7 @@ export default function DetalleDocumentoModal({ documento, lista, expediente, ia
         disabled={posicion <= 0 || auditando}
         title={auditando ? 'Espera a que termine la auditoría' : 'Documento anterior (Alt+↑)'}
       >
-        <ChevronUp size={16} />
+        <CaretUp size={16} />
       </IconButton>
       <span className="tabular modal-nav-pos">
         {posicion + 1} / {lista.length}
@@ -299,7 +299,7 @@ export default function DetalleDocumentoModal({ documento, lista, expediente, ia
         disabled={posicion >= lista.length - 1 || auditando}
         title={auditando ? 'Espera a que termine la auditoría' : 'Documento siguiente (Alt+↓)'}
       >
-        <ChevronDown size={16} />
+        <CaretDown size={16} />
       </IconButton>
     </div>
   )

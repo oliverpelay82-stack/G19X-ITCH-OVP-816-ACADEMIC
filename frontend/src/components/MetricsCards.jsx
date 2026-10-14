@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Building2 } from 'lucide-react'
-import { IconoBoveda, IconoExpediente, IconoSemaforo } from './IconosMotor.jsx'
+import { Buildings, FolderOpen, TrafficSignal, Vault } from './iconos.js'
 import { Skeleton } from './Skeleton.jsx'
 import { Card } from './ui/index.js'
 import { TIPOS_EXPEDIENTE } from '../constants.js'
@@ -83,7 +82,7 @@ export default function MetricsCards({ titulares, expedientes, documentos, loadi
   const tarjetas = [
     {
       id: 'empresas',
-      icon: Building2,
+      icon: Buildings,
       label: 'Empresas',
       valor: <Cifra valor={titulares.length} />,
       pie: (
@@ -92,7 +91,7 @@ export default function MetricsCards({ titulares, expedientes, documentos, loadi
     },
     {
       id: 'expedientes',
-      icon: IconoExpediente,
+      icon: FolderOpen,
       label: 'Expedientes',
       valor: <Cifra valor={expedientes.length} />,
       pie: (
@@ -103,7 +102,7 @@ export default function MetricsCards({ titulares, expedientes, documentos, loadi
     },
     {
       id: 'boveda',
-      icon: IconoBoveda,
+      icon: Vault,
       label: 'Bóveda',
       valor: <Cifra valor={documentos.length} />,
       pie: <span className="metric-foot">{`${enMB(datos.bytes)} bajo custodia`}</span>,
@@ -112,7 +111,7 @@ export default function MetricsCards({ titulares, expedientes, documentos, loadi
       // Índice de cumplimiento del DOC-05 (C6). La completitud (documentos
       // obligatorios presentes) va aparte, con su nombre: no es cumplimiento.
       id: 'cumplimiento',
-      icon: IconoSemaforo,
+      icon: TrafficSignal,
       label: 'Cumplimiento',
       valor: <Cifra valor={datos.indice} formato={formatIndice} />,
       pie: <span className="metric-foot">{`Obligatorios presentes: ${datos.completitud.toFixed(0)}%`}</span>,

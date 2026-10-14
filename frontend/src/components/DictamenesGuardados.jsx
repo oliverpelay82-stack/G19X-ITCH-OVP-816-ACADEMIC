@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { History, Save, ShieldAlert, UserCheck } from 'lucide-react'
+import { ClockCounterClockwise, FloppyDisk, ShieldWarning, UserCheck } from './iconos.js'
 import { Skeleton } from './Skeleton.jsx'
 import EstadoBadge from './EstadoBadge.jsx'
 import { getEstadoBadge } from '../constants.js'
@@ -181,7 +181,7 @@ function DictamenVigente({ dictamen, puedeRatificar, onRatificar }) {
         <EstadoBadge estado={dictamen.estatus} />
         {ratificado && (
           <Badge title={`Ratificado por ${dictamen.revisado_por}`}>
-            <UserCheck size={12} strokeWidth={1.75} aria-hidden="true" />
+            <UserCheck size={12} aria-hidden="true" />
             Ratificado
           </Badge>
         )}
@@ -333,7 +333,7 @@ export default function DictamenesGuardados({
   const historial = anteriores.length > 0 && (
     <details className="historial">
       <summary>
-        <History size={12} strokeWidth={1.75} aria-hidden="true" />
+        <ClockCounterClockwise size={12} aria-hidden="true" />
         Historial · {plural(anteriores.length, 'dictamen anterior', 'dictámenes anteriores')}
       </summary>
       <ul>
@@ -358,7 +358,7 @@ export default function DictamenesGuardados({
       <section className="dictamenes-guardados" aria-label="Dictámenes guardados">
         <div className="dictamen-linea">
           <p className="dictamen-linea-texto">
-            <Save size={14} strokeWidth={1.75} aria-hidden="true" />
+            <FloppyDisk size={14} aria-hidden="true" />
             Es el resultado de esta auditoría, guardado <Momento valor={vigente.creado_en} />
           </p>
           {historial}
@@ -393,7 +393,7 @@ export function AvisoIntegridad() {
     <div className="verdict verdict--bad verdict--compact" role="alert">
       <div className="verdict-main">
         <p className="eyebrow eyebrow--icon">
-          <ShieldAlert size={12} strokeWidth={1.75} aria-hidden="true" /> Integridad comprometida
+          <ShieldWarning size={12} aria-hidden="true" /> Integridad comprometida
         </p>
         <p className="verdict-word verdict-word--sm">Documento bloqueado</p>
         <p className="verdict-reason">

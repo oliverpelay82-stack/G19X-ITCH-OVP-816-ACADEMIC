@@ -1,5 +1,5 @@
 // Stepper de las etapas de la auditoría.
-import { Check, Loader2, Minus, X } from 'lucide-react'
+import { Check, CircleNotch, Minus, X } from '../iconos.js'
 import { Badge } from '../ui/index.js'
 import { ETAPAS } from './etapas.js'
 
@@ -17,10 +17,10 @@ export function Stepper({ etapas, compacto }) {
         return (
           <li key={e.id} className={`step step--${estado}`}>
             <span className="step-marker" aria-hidden="true">
-              {estado === 'activo' && <Loader2 className="spin" size={12} strokeWidth={1.75} />}
-              {estado === 'hecho' && <Check size={12} strokeWidth={1.75} />}
-              {estado === 'error' && <X size={12} strokeWidth={1.75} />}
-              {estado === 'omitido' && <Minus size={12} strokeWidth={1.75} />}
+              {estado === 'activo' && <CircleNotch className="spin" size={12} />}
+              {estado === 'hecho' && <Check size={12} />}
+              {estado === 'error' && <X size={12} />}
+              {estado === 'omitido' && <Minus size={12} />}
               {(estado === 'pendiente' || estado === 'espera') && <span className="step-num">{i + 1}</span>}
             </span>
             <span className="step-body">

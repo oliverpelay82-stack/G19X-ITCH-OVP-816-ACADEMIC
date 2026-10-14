@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react'
-import { FileLock2, ScanSearch, SearchX, Upload } from 'lucide-react'
+import { FileLock, FileMagnifyingGlass, MagnifyingGlass, UploadSimple } from './iconos.js'
 import { EncabezadoOrdenable } from './OrdenTabla.jsx'
 import useOrden, { RANGO_ESTADO } from '../hooks/useOrden.js'
 import { Badge, Button, Card, CopyChip, EmptyRow, Field, IconButton, Modal, SearchBox, Segmented, Select, Tag } from './ui/index.js'
@@ -147,7 +147,7 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
         <Segmented label="Versiones a mostrar" valor={alcance} onChange={setAlcance} opciones={opcionesAlcance} />
         <Button
           variante="primary"
-          icono={Upload}
+          icono={UploadSimple}
           className="toolbar-action"
           onClick={() => setIngestaAbierta(true)}
           disabled={!isOnline || expedientes.length === 0}
@@ -202,7 +202,7 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
               {!loading && filtrados.length === 0 && (
                 <EmptyRow
                   columnas={COLUMNAS}
-                  icon={documentos.length === 0 ? FileLock2 : SearchX}
+                  icon={documentos.length === 0 ? FileLock : MagnifyingGlass}
                   titulo={documentos.length === 0 ? 'La bóveda está vacía' : 'Sin coincidencias'}
                   descripcion={
                     documentos.length === 0
@@ -278,7 +278,7 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
                           }}
                           title="Abrir auditoría y visor"
                         >
-                          <ScanSearch size={14} />
+                          <FileMagnifyingGlass size={14} />
                         </IconButton>
                       </td>
                     </tr>

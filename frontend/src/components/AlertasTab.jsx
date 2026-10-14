@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ArrowUpRight, BellOff, ChevronDown, SearchX } from 'lucide-react'
+import { ArrowUpRight, BellSlash, CaretDown, MagnifyingGlass } from './iconos.js'
 import { SkeletonCards } from './Skeleton.jsx'
 import Desplegable from './expedientes/Desplegable.jsx'
 import { AlertaItem } from './Alertas.jsx'
@@ -117,7 +117,7 @@ export default function AlertasTab({ expedientes, loading, onAbrirExpediente, bu
       {!loading && filtradas.length === 0 && (
         <Card>
           <EmptyState
-            icon={alertas.length === 0 ? BellOff : SearchX}
+            icon={alertas.length === 0 ? BellSlash : MagnifyingGlass}
             titulo={alertas.length === 0 ? 'Sin alertas vigentes' : 'Sin coincidencias'}
             descripcion={
               alertas.length === 0
@@ -178,7 +178,7 @@ export default function AlertasTab({ expedientes, loading, onAbrirExpediente, bu
                       aria-controls={idLista}
                       onClick={() => alternar(clave)}
                     >
-                      <ChevronDown size={14} strokeWidth={1.5} className="bandeja-grupo-flecha" aria-hidden="true" />
+                      <CaretDown size={14} className="bandeja-grupo-flecha" aria-hidden="true" />
                       <span className={`status-dot status-dot--${meta.tono}`} aria-hidden="true" />
                       {titulo} <span className="tabular cell-muted">· {items.length}</span>
                     </button>

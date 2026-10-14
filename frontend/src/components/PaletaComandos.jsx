@@ -1,6 +1,6 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { Building2, CornerDownLeft, FileText, FolderOpen, Moon, Navigation, RefreshCw, Search, Sun } from 'lucide-react'
+import { ArrowElbowDownLeft, Buildings, FileText, FolderOpen, MagnifyingGlass } from './iconos.js'
 import { categoriaTitular, getEstadoBadge, TIPO_DOCUMENTO_LABEL, TIPO_EXPEDIENTE_LABEL } from '../constants.js'
 import { coincide, normalizar } from '../utils/busqueda.js'
 
@@ -8,23 +8,18 @@ const POR_GRUPO = 6
 
 /**
  * D1 · Paleta de comandos (Ctrl+K o ⌘K): saltar a una empresa por razón social
- * o RFC (abre su detalle); a un expediente por folio, nombre, empresa o RFC; a
- * un documento por su archivo; a una sección; o
- * cambiar el tema y actualizar los datos, sin el ratón. ↑/↓ recorren, Intro
+ * o RFC (abre su detalle); a un expediente por folio, nombre, empresa o RFC; o
+ * a un documento por su archivo, sin el ratón. Las secciones, el tema y
+ * actualizar no se listan: ya están en el menú lateral y en el encabezado. ↑/↓ recorren, Intro
  * ejecuta y Escape cierra; el foco vuelve a donde estaba.
  */
 export default function PaletaComandos({
   onCerrar,
-  secciones,
   titulares = [],
   expedientes,
   documentos,
-  onIr,
   onVerEmpresa,
   onAbrirExpediente,
-  isDark,
-  onToggleTheme,
-  onRefresh,
 }) {
   const [texto, setTexto] = useState('')
   const [activo, setActivo] = useState(0)
@@ -36,27 +31,9 @@ export default function PaletaComandos({
     const q = normalizar(texto)
     const porId = new Map(expedientes.map((e) => [e.id, e]))
     const filtrar = (items) => items.filter((i) => coincide(i.busqueda, q)).slice(0, POR_GRUPO)
-    const acciones = [
-      {
-        clave: 'tema',
-        icono: isDark ? Sun : Moon,
-        titulo: isDark ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro',
-        busqueda: 'tema claro oscuro noche dia apariencia',
-        ejecutar: onToggleTheme,
-      },
-      { clave: 'refrescar', icono: RefreshCw, titulo: 'Actualizar los datos', busqueda: 'actualizar refrescar recargar datos', ejecutar: onRefresh },
-    ]
-    const irA = Object.entries(secciones).map(([clave, s]) => ({
-      clave: `ir-${clave}`,
-      icono: Navigation,
-      titulo: `Ir a ${s.titulo}`,
-      sub: s.grupo,
-      busqueda: `ir a ${s.titulo} ${s.grupo}`,
-      ejecutar: () => onIr(clave),
-    }))
     const deEmpresas = titulares.map((t) => ({
       clave: `emp-${t.id}`,
-      icono: Building2,
+      icono: Buildings,
       titulo: t.razon_social,
       sub: `${t.rfc} · ${categoriaTitular(t.categoria)}`,
       busqueda: [t.razon_social, t.rfc].join(' '),
@@ -81,21 +58,13 @@ export default function PaletaComandos({
         ejecutar: () => onAbrirExpediente(d.expediente_id),
       }
     })
-    // Sin texto: lo que se usa para moverse. Con texto: primero lo buscado.
-    return (q
-      ? [
-          { titulo: 'Empresas', items: filtrar(deEmpresas) },
-          { titulo: 'Expedientes', items: filtrar(deExpedientes) },
-          { titulo: 'Documentos', items: filtrar(deDocumentos) },
-          { titulo: 'Ir a', items: filtrar(irA) },
-          { titulo: 'Acciones', items: filtrar(acciones) },
-        ]
-      : [
-          { titulo: 'Ir a', items: irA },
-          { titulo: 'Acciones', items: acciones },
-        ]
-    ).filter((g) => g.items.length)
-  }, [texto, titulares, expedientes, documentos, secciones, isDark, onAbrirExpediente, onVerEmpresa, onIr, onRefresh, onToggleTheme])
+    if (!q) return []
+    return [
+      { titulo: 'Empresas', items: filtrar(deEmpresas) },
+      { titulo: 'Expedientes', items: filtrar(deExpedientes) },
+      { titulo: 'Documentos', items: filtrar(deDocumentos) },
+    ].filter((g) => g.items.length)
+  }, [texto, titulares, expedientes, documentos, onAbrirExpediente, onVerEmpresa])
 
   const planos = grupos.flatMap((g) => g.items)
   const actual = Math.min(activo, Math.max(planos.length - 1, 0))
@@ -140,7 +109,7 @@ export default function PaletaComandos({
     <div className="paleta-velo" onMouseDown={(e) => e.target === e.currentTarget && onCerrar()}>
       <div className="paleta" role="dialog" aria-modal="true" aria-label="Paleta de comandos">
         <div className="paleta-campo">
-          <Search size={16} aria-hidden="true" />
+          <MagnifyingGlass size={16} aria-hidden="true" />
           <input
             ref={campo}
             type="search"
@@ -150,7 +119,7 @@ export default function PaletaComandos({
               setActivo(0)
             }}
             onKeyDown={alPulsar}
-            placeholder="Buscar expediente, empresa, RFC, documento o sección…"
+            placeholder="Buscar expediente, empresa, RFC o documento…"
             role="combobox"
             aria-expanded="true"
             aria-controls={`${id}-lista`}
@@ -161,7 +130,11 @@ export default function PaletaComandos({
           <kbd className="paleta-tecla">Esc</kbd>
         </div>
         <div ref={lista} id={`${id}-lista`} role="listbox" aria-label="Resultados" className="paleta-lista">
-          {planos.length === 0 && <p className="paleta-vacia">Sin resultados para «{texto}».</p>}
+          {planos.length === 0 && (
+            <p className="paleta-vacia">
+              {texto.trim() ? `Sin resultados para «${texto}».` : 'Escribe para buscar empresas, expedientes y documentos.'}
+            </p>
+          )}
           {grupos.map((g) => (
             <div key={g.titulo} role="group" aria-label={g.titulo}>
               <p className="paleta-grupo">{g.titulo}</p>
@@ -184,18 +157,13 @@ export default function PaletaComandos({
                       <span className="paleta-opcion-titulo">{item.titulo}</span>
                       {item.sub && <span className="paleta-opcion-sub">{item.sub}</span>}
                     </span>
-                    {propio === actual && <CornerDownLeft size={12} className="paleta-intro" aria-hidden="true" />}
+                    {propio === actual && <ArrowElbowDownLeft size={12} className="paleta-intro" aria-hidden="true" />}
                   </div>
                 )
               })}
             </div>
           ))}
         </div>
-        <p className="paleta-pie">
-          <kbd className="paleta-tecla">↑</kbd>
-          <kbd className="paleta-tecla">↓</kbd> recorrer · <kbd className="paleta-tecla">Intro</kbd> abrir ·{' '}
-          <kbd className="paleta-tecla">Ctrl</kbd> <kbd className="paleta-tecla">K</kbd> abrir o cerrar
-        </p>
       </div>
     </div>,
     document.body

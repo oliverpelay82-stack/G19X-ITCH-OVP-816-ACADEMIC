@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
-import { X } from 'lucide-react'
+import { X } from '../iconos.js'
 import { animarSalida } from '../../utils/movimiento.js'
 
 /** Elementos que pueden recibir el foco con Tab dentro del panel. */
@@ -111,7 +111,7 @@ export default function Modal({ title, subtitle, onClose, children, footer, size
           <div className="modal-acciones">
             {acciones}
             <button type="button" className="icon-button icon-button--sm" onClick={() => cerrar.current()} aria-label="Cerrar">
-              <X size={16} />
+              <X size={16} aria-hidden="true" />
             </button>
           </div>
         </header>

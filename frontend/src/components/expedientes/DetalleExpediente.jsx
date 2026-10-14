@@ -1,6 +1,6 @@
 // Detalle desplegado del expediente: índice, motivos con su qué hacer, documentos, historial, carga y exportación.
 import { useState } from 'react'
-import { Lightbulb, Maximize2, Plus } from 'lucide-react'
+import { ArrowsOut, Lightbulb, Plus } from '../iconos.js'
 import { Button, Card } from '../ui/index.js'
 import DropZone from '../DropZone.jsx'
 import EstadoBadge from '../EstadoBadge.jsx'
@@ -364,7 +364,7 @@ export function DetalleExpediente({ exp, subiendo, onSubir, iaOnline, onRefresh,
                               onClick={() => onAbrirDocumento(documento, delExpediente)}
                             >
                               <span className="cell-ellipsis">{f.doc.nombre_archivo_original}</span>
-                              <Maximize2 size={12} aria-hidden="true" />
+                              <ArrowsOut size={12} aria-hidden="true" />
                             </button>
                           ) : (
                             <span className="cell-ellipsis" title={f.doc.nombre_archivo_original}>

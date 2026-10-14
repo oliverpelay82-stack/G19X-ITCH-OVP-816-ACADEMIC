@@ -124,7 +124,7 @@ export default function App() {
   const primeraCarga = useRef(true)
   const cicloEnCurso = useRef(false)
 
-  // Momento de la última carga con datos: la cabecera dice «Actualizado hace…».
+  // Momento del último «Actualizar datos» con éxito: la cabecera lo confirma un instante.
   const [actualizado, setActualizado] = useState(null)
 
   const cargarTodo = useCallback(async () => {
@@ -134,13 +134,13 @@ export default function App() {
       getDocumentos(),
       getReglas(),
     ])
-    if ([t, e, d].some((x) => x.status === 'fulfilled')) setActualizado(Date.now())
     if (t.status === 'fulfilled') setTitulares(t.value || [])
     if (e.status === 'fulfilled') setExpedientes(e.value || [])
     if (d.status === 'fulfilled') setDocumentos(d.value || [])
     if (r.status === 'fulfilled') registrarTiposDeclarados(r.value || []) // RF-09: antes de pintar
     setReglas(r.status === 'fulfilled' ? r.value || [] : [])
     setLoading(false)
+    return [t, e, d].some((x) => x.status === 'fulfilled')
   }, [])
 
   const chequearSalud = useCallback(async () => {
@@ -173,7 +173,8 @@ export default function App() {
   const refrescar = useCallback(async () => {
     setRefrescando(true)
     try {
-      await Promise.all([cargarTodo(), chequearSalud(), new Promise((r) => setTimeout(r, REFRESCO_MINIMO_MS))])
+      const [conDatos] = await Promise.all([cargarTodo(), chequearSalud(), new Promise((r) => setTimeout(r, REFRESCO_MINIMO_MS))])
+      if (conDatos) setActualizado(Date.now())
     } finally {
       setRefrescando(false)
     }
@@ -410,16 +411,11 @@ export default function App() {
         {paletaAbierta && (
           <PaletaComandos
             onCerrar={() => setPaletaAbierta(false)}
-            secciones={SECCIONES}
             titulares={titulares}
             expedientes={expedientes}
             documentos={documentos}
-            onIr={setTabActiva}
             onVerEmpresa={verEmpresa}
             onAbrirExpediente={abrirExpediente}
-            isDark={isDark}
-            onToggleTheme={toggleTheme}
-            onRefresh={refrescar}
           />
         )}
       </div>

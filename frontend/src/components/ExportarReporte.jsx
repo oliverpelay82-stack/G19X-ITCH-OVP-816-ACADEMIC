@@ -1,12 +1,12 @@
 import { useState } from 'react'
-import { FileSpreadsheet, FileText } from 'lucide-react'
+import { FileText, FileXls } from './iconos.js'
 import { Button } from './ui/index.js'
 import useToast from '../hooks/useToast.js'
 import { descargarReporte } from '../services/api.js'
 
 const FORMATOS = [
   { id: 'pdf', label: 'PDF', icon: FileText },
-  { id: 'xlsx', label: 'Excel', icon: FileSpreadsheet },
+  { id: 'xlsx', label: 'Excel', icon: FileXls },
 ]
 
 /**

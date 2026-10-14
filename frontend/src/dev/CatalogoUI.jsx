@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ArrowLeft, Download, FolderPlus, Moon, Plus, RefreshCw, Sparkles, Sun, X } from 'lucide-react'
+import { ArrowLeft, ArrowsClockwise, DownloadSimple, FolderPlus, Moon, Plus, Sparkle, Sun, X } from '../components/iconos.js'
 import {
   Badge,
   Button,
@@ -261,13 +261,13 @@ export default function CatalogoUI() {
             <Button variante="primary" compacto>
               Compacto
             </Button>
-            <Button variante="primary" cargando={cargando} icono={Sparkles} onClick={simularCarga}>
+            <Button variante="primary" cargando={cargando} icono={Sparkle} onClick={simularCarga}>
               {cargando ? 'Auditando…' : 'Probar cargando'}
             </Button>
             <Button variante="primary" disabled>
               Deshabilitado
             </Button>
-            <Button variante="primary" soloIcono icono={Download} aria-label="Descargar" />
+            <Button variante="primary" soloIcono icono={DownloadSimple} aria-label="Descargar" />
           </Muestra>
           <Muestra etiqueta="secondary">
             <Button icono={FolderPlus}>Aperturar expediente</Button>
@@ -279,7 +279,7 @@ export default function CatalogoUI() {
               <X size={16} />
             </IconButton>
             <IconButton etiqueta="Actualizar datos" tooltip ocupado={cargando} onClick={simularCarga}>
-              <RefreshCw size={16} className="refresh-icon" />
+              <ArrowsClockwise size={16} className="refresh-icon" />
             </IconButton>
             <IconButton etiqueta="Deshabilitado" disabled>
               <X size={16} />

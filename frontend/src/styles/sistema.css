@@ -312,13 +312,6 @@
   color: var(--text-muted);
 }
 
-.paleta-pie {
-  padding: var(--s-2) var(--s-4);
-  border-top: var(--border-subtle);
-  font-size: var(--fs-micro);
-  color: var(--text-muted);
-}
-
 .paleta-tecla {
   display: inline-block;
   min-width: 18px;

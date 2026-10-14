@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
-import { Loader2, Upload, X } from 'lucide-react'
+import { CircleNotch, UploadSimple, X } from './iconos.js'
 import { Badge, Button, Field, IconButton, Select } from './ui/index.js'
 import { MAX_FILE_SIZE_BYTES } from '../constants.js'
 import useToast from '../hooks/useToast.js'
@@ -47,7 +47,7 @@ function VeredictoLote({ analisis }) {
   if (!analisis) {
     return (
       <span className="lote-calculando">
-        <Loader2 className="spin" size={12} />
+        <CircleNotch className="spin" size={12} />
         Calculando la huella…
       </span>
     )
@@ -230,7 +230,7 @@ export default function DropZone({
         tabIndex={0}
         aria-label="Seleccionar o arrastrar uno o varios documentos"
       >
-        <Upload size={16} className="dropzone-icon" />
+        <UploadSimple size={16} className="dropzone-icon" />
         <p className="dropzone-title">{arrastrando ? 'Suelta para analizar' : 'Arrastra archivos o haz clic'}</p>
         <p className="dropzone-hint">PDF, JPG o PNG · máx. {formatBytes(MAX_FILE_SIZE_BYTES)}</p>
         <input
@@ -245,7 +245,7 @@ export default function DropZone({
 
       {analizando && (
         <div className="analysis analysis--loading">
-          <Loader2 className="spin" size={14} />
+          <CircleNotch className="spin" size={14} />
           <span>Calculando la huella digital…</span>
         </div>
       )}
@@ -295,7 +295,7 @@ export default function DropZone({
                       <path d="M3.5 8.5l3 3 6-7" pathLength="1" />
                     </svg>
                   ) : e.enviando ? (
-                    <Loader2 className="spin lote-enviando" size={14} aria-label="Custodiando" />
+                    <CircleNotch className="spin lote-enviando" size={14} aria-label="Custodiando" />
                   ) : (
                     <IconButton etiqueta={`Quitar ${e.archivo.name} del lote`} compacto onClick={() => quitar(e.id)} disabled={enviandoLote}>
                       <X size={14} />

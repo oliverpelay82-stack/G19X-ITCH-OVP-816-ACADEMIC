@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Building2, ChevronRight, FolderOpen, FolderPlus, LayoutGrid, Plus, Rows3, SearchX, TriangleAlert } from 'lucide-react'
+import { Buildings, CaretRight, FolderOpen, FolderPlus, MagnifyingGlass, Plus, Rows, SquaresFour, Warning } from './iconos.js'
 import { EncabezadoOrdenable } from './OrdenTabla.jsx'
 import useOrden, { RANGO_ESTADO } from '../hooks/useOrden.js'
 import {
@@ -47,7 +47,7 @@ function AvisoRfc({ titular }) {
   return (
     <Tooltip texto={EXPLICACION_RFC}>
       <Badge tono="warn" className="rfc-aviso" tabIndex={0}>
-        <TriangleAlert size={12} aria-hidden="true" />
+        <Warning size={12} aria-hidden="true" />
         Dígito verificador no coincide (permitido en pruebas)
         <span className="sr-only">. {EXPLICACION_RFC}</span>
       </Badge>
@@ -102,7 +102,7 @@ function AccionExpediente({ titular, expediente, onAbrir, onAperturar, isOnline,
         onClick={() => onAbrir(expediente.id)}
         title="Abrir expediente"
       >
-        <ChevronRight size={14} />
+        <CaretRight size={14} />
       </IconButton>
     ) : (
       <Button compacto icono={FolderOpen} onClick={() => onAbrir(expediente.id)}>
@@ -315,7 +315,7 @@ export default function TitularesTab({
 
   const vacio = !loading && filtrados.length === 0
   const vacioProps = {
-    icon: titulares.length === 0 ? Building2 : SearchX,
+    icon: titulares.length === 0 ? Buildings : MagnifyingGlass,
     titulo: titulares.length === 0 ? 'Aún no hay empresas registradas' : 'Sin resultados',
     descripcion:
       titulares.length === 0
@@ -359,8 +359,8 @@ export default function TitularesTab({
           valor={vista}
           onChange={setVistaElegida}
           opciones={[
-            { id: 'tarjetas', label: <LayoutGrid size={14} aria-label="Tarjetas" />, tooltip: 'Tarjetas de perfil' },
-            { id: 'tabla', label: <Rows3 size={14} aria-label="Tabla" />, tooltip: 'Tabla densa' },
+            { id: 'tarjetas', label: <SquaresFour size={14} aria-label="Tarjetas" />, tooltip: 'Tarjetas de perfil' },
+            { id: 'tabla', label: <Rows size={14} aria-label="Tabla" />, tooltip: 'Tabla densa' },
           ]}
         />
 

@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { ChevronLeft, ChevronRight, Loader2, ScanText, X } from 'lucide-react'
+import { CaretLeft, CaretRight, CircleNotch, Scan, X } from './iconos.js'
 import { Badge, IconButton, Segmented } from './ui/index.js'
 import { getVisorDocumento, urlPaginaDocumento } from '../services/api.js'
 
@@ -28,7 +28,7 @@ function AvisoEvidencia({ estado, onIrA, paginaActual }) {
   if (estado.buscando) {
     return (
       <p className="visor-aviso" role="status">
-        <Loader2 className="spin" size={14} aria-hidden="true" />
+        <CircleNotch className="spin" size={14} aria-hidden="true" />
         Ubicando la cita en el documento… en un escaneo, la primera búsqueda reconoce las páginas.
       </p>
     )
@@ -157,7 +157,7 @@ export default function VisorDocumento({ doc, busqueda, onCerrar }) {
       <header className="visor-head">
         <div className="visor-titulo">
           <span className="squircle" aria-hidden="true">
-            <ScanText size={14} />
+            <Scan size={14} />
           </span>
           <div>
             <p className="eyebrow">Documento original</p>
@@ -177,13 +177,13 @@ export default function VisorDocumento({ doc, busqueda, onCerrar }) {
       <div className="visor-controles">
         <div className="visor-paginacion">
           <IconButton etiqueta="Página anterior" compacto onClick={() => irA(pagina - 1)} disabled={pagina <= 1}>
-            <ChevronLeft size={16} />
+            <CaretLeft size={16} />
           </IconButton>
           <span className="tabular visor-contador">
             {total ? `${pagina} / ${total}` : '— / —'}
           </span>
           <IconButton etiqueta="Página siguiente" compacto onClick={() => irA(pagina + 1)} disabled={!total || pagina >= total}>
-            <ChevronRight size={16} />
+            <CaretRight size={16} />
           </IconButton>
         </div>
         <Segmented label="Zoom del visor" valor={zoom} onChange={setZoom} opciones={ZOOMS} />

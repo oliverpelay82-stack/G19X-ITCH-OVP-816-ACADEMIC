@@ -1,4 +1,4 @@
-import { Loader2 } from 'lucide-react'
+import { CircleNotch } from '../iconos.js'
 import { cx } from './clases.js'
 
 /**
@@ -29,7 +29,7 @@ export function Button({
       aria-busy={cargando || undefined}
       {...props}
     >
-      {cargando ? <Loader2 className="spin" size={14} /> : Icono && <Icono size={14} />}
+      {cargando ? <CircleNotch className="spin" size={14} aria-hidden="true" /> : Icono && <Icono size={14} aria-hidden="true" />}
       {children}
     </button>
   )

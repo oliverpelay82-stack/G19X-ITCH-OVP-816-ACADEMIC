@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Check, Copy } from 'lucide-react'
+import { Check, Copy } from '../iconos.js'
 import useToast from '../../hooks/useToast.js'
 import { copiarAlPortapapeles } from '../../utils/format.js'
 
@@ -27,7 +27,7 @@ export default function CopyChip({ valor, visible, etiqueta, completo = false })
       data-tooltip={copiado ? 'Copiado' : `Copiar ${etiqueta}`}
     >
       <span className="mono">{visible ?? valor}</span>
-      {copiado ? <Check size={12} strokeWidth={1.75} className="copy-ok" /> : <Copy size={12} strokeWidth={1.75} />}
+      {copiado ? <Check size={12} className="copy-ok" aria-hidden="true" /> : <Copy size={12} aria-hidden="true" />}
     </button>
   )
 }
