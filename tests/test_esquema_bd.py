@@ -203,7 +203,11 @@ def test_tablas_del_modulo_7():
     """
     inspector = inspect(engine)
     assert {"email", "password_hash", "nombre_completo", "rol", "activo", "creado_en", "debe_cambiar_contrasena",
-            "intentos_fallidos", "bloqueado_hasta", "ultimo_acceso"} <= {c["name"] for c in inspector.get_columns("usuarios")}
+            "intentos_fallidos", "bloqueado_hasta", "ultimo_acceso", "mfa_secreto",
+            "mfa_habilitado"} <= {c["name"] for c in inspector.get_columns("usuarios")}
+    # F3: el DEFAULT de mfa_habilitado vive en la base, igual en una base nueva y en una migrada.
+    [mfa] = [c for c in inspector.get_columns("usuarios") if c["name"] == "mfa_habilitado"]
+    assert "false" in str(mfa["default"]).lower(), mfa
     assert any(u["column_names"] == ["expediente_id", "usuario_id"]
                for u in inspector.get_unique_constraints("expediente_asignaciones"))
     with engine.connect() as c:

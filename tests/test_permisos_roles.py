@@ -56,6 +56,9 @@ X = "00000000-0000-0000-0000-000000000000"  # id inexistente: el permitido llega
 MATRIZ = [
     ("GET", "/api/v1/auth/me", (A, V, AU, C)),
     ("POST", "/api/v1/auth/cambiar-contrasena", (A, V, AU, C)),
+    ("POST", "/api/v1/auth/mfa/generar", (A, V, AU, C)),
+    ("POST", "/api/v1/auth/mfa/activar", (A, V, AU, C)),
+    ("POST", "/api/v1/auth/mfa/desactivar", (A, V, AU, C)),
     ("GET", "/api/v1/usuarios", (A,)),
     ("POST", "/api/v1/usuarios", (A,)),
     ("PATCH", f"/api/v1/usuarios/{X}", (A,)),

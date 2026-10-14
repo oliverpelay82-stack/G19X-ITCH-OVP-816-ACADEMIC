@@ -12,7 +12,7 @@ Sin borrado físico de cuentas (RN-04): una cuenta se desactiva.
 from datetime import datetime, timezone
 import uuid
 
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, UniqueConstraint
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, UniqueConstraint, false
 
 from config.database import Base
 
@@ -39,6 +39,11 @@ class Usuario(Base):
     intentos_fallidos = Column(Integer, nullable=False, default=0)
     bloqueado_hasta = Column(DateTime, nullable=True)
     ultimo_acceso = Column(DateTime, nullable=True)
+    # Segundo factor TOTP opcional (RF-25, fase F3). El secreto existe desde que el usuario
+    # lo genera; solo cuenta en el inicio de sesión cuando lo confirma con un código.
+    mfa_secreto = Column(String(64), nullable=True)
+    # Con su DEFAULT en la base, igual que la migración: una base nueva y una migrada coinciden.
+    mfa_habilitado = Column(Boolean, nullable=False, default=False, server_default=false())
 
     def __repr__(self):
         return f"<Usuario {self.email} ({self.rol})>"

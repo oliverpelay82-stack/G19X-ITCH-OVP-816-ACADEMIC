@@ -38,6 +38,9 @@ def _nombre(valor: str) -> str:
 class LoginRequest(BaseModel):
     email: str = Field(..., min_length=3, max_length=150)
     contrasena: str = Field(..., min_length=1, max_length=200)
+    codigo: Optional[str] = Field(
+        None, max_length=10, description="Código de 6 dígitos de la app autenticadora, si la cuenta tiene MFA"
+    )
 
     @field_validator("email")
     @classmethod
@@ -56,16 +59,41 @@ class UsuarioResponse(BaseModel):
     rol: str
     activo: bool
     debe_cambiar_contrasena: bool
+    mfa_habilitado: bool = False
     bloqueado_hasta: Optional[datetime] = None
     ultimo_acceso: Optional[datetime] = None
     creado_en: datetime
 
 
 class LoginResponse(BaseModel):
-    access_token: str
+    """
+    Con MFA habilitado y sin código, solo ``requiere_codigo: true`` (sin token): la
+    interfaz pide el código y repite la petición con él.
+    """
+
+    requiere_codigo: bool = False
+    access_token: Optional[str] = None
     token_type: Literal["bearer"] = "bearer"
-    expira_en: int = Field(..., description="Segundos de vigencia del token")
-    usuario: UsuarioResponse
+    expira_en: Optional[int] = Field(None, description="Segundos de vigencia del token")
+    usuario: Optional[UsuarioResponse] = None
+
+
+class MfaGenerarRequest(BaseModel):
+    contrasena: str = Field(..., min_length=1, max_length=200)
+
+
+class MfaGenerarResponse(BaseModel):
+    secreto: str = Field(..., description="Para escribirlo a mano en la app autenticadora")
+    uri: str = Field(..., description="otpauth:// para el código QR")
+
+
+class MfaActivarRequest(BaseModel):
+    codigo: str = Field(..., min_length=6, max_length=10)
+
+
+class MfaDesactivarRequest(BaseModel):
+    contrasena: str = Field(..., min_length=1, max_length=200)
+    codigo: str = Field(..., min_length=6, max_length=10)
 
 
 class CambioContrasenaRequest(BaseModel):
@@ -108,6 +136,9 @@ class UsuarioUpdate(BaseModel):
     activo: Optional[bool] = None
     contrasena_temporal: Optional[str] = Field(
         None, max_length=200, description="Restablece la contraseña y desbloquea la cuenta"
+    )
+    restablecer_mfa: Optional[bool] = Field(
+        None, description="true quita el segundo factor de la cuenta (teléfono perdido)"
     )
 
     @field_validator("nombre_completo")

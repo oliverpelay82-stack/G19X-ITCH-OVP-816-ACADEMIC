@@ -1,0 +1,81 @@
+@startuml m7-actividad-mfa
+' Módulo 7, fase F3 — Segundo factor TOTP opcional por usuario (DOC-04, no PLUS).
+' Trazabilidad: RF-25 («soportando autenticación multifactor»), HU-06, RF-27 y HU-07
+' (CAMBIO_MFA e INICIO_SESION_FALLIDO en la bitácora), HU-05 (el administrador restablece
+' el MFA de una cuenta); RFC 6238 (TOTP de 6 dígitos cada 30 s); ISO/IEC 27001 A.8.5.
+' Diseño: PRD §5.2. Complementa docs/uml/m7-secuencia-inicio-sesion.puml.
+' Implementación prevista: core-service controllers/auth_controller.py (POST /auth/mfa/generar,
+' /auth/mfa/activar, /auth/mfa/desactivar y el segundo paso de POST /auth/login),
+' columnas usuarios.mfa_secreto y usuarios.mfa_habilitado, dependencia pyotp.
+
+title Módulo 7 — MFA con TOTP: alta, uso y baja
+
+|Usuario|
+|core-service|
+|Administrador|
+|Usuario|
+start
+:Desde su perfil, pide activar
+el segundo factor y confirma
+su contraseña;
+|core-service|
+:POST /auth/mfa/generar {contrasena};
+if (¿Contraseña correcta y MFA aún
+no habilitado?) then (no)
+  :400 (contraseña) o 409 (ya habilitado);
+  stop
+else (sí)
+endif
+:Genera un secreto nuevo (base32) y lo
+guarda en mfa_secreto, sin habilitar;
+:Devuelve el secreto y la URI otpauth://
+(emisor «Motor de Validación», cuenta = correo);
+|Usuario|
+:Lo registra en su app autenticadora
+(código QR o secreto) y escribe el
+código de 6 dígitos;
+|core-service|
+:POST /auth/mfa/activar {codigo};
+if (¿El código corresponde al secreto
+pendiente (ventana de ±30 s)?) then (no)
+  :400, sin habilitar;
+  stop
+else (sí)
+  :mfa_habilitado = true y evento
+  CAMBIO_MFA (ACTIVADO);
+endif
+|Usuario|
+:Siguiente inicio de sesión: correo
+y contraseña;
+|core-service|
+:POST /auth/login → 200 {requiere_codigo: true},
+sin token;
+|Usuario|
+:Escribe el código de su app;
+|core-service|
+:POST /auth/login {email, contrasena, codigo};
+if (¿Código válido?) then (sí)
+  :Token de sesión (INICIO_SESION);
+else (no)
+  :401 y cuenta como intento fallido
+  (INICIO_SESION_FALLIDO, CODIGO_INVALIDO:
+  al quinto, bloqueo de 15 min);
+endif
+|Usuario|
+if (¿Quiere quitar el segundo factor?) then (él mismo)
+  |core-service|
+  :POST /auth/mfa/desactivar
+  {contrasena, codigo};
+  :Borra el secreto y registra
+  CAMBIO_MFA (DESACTIVADO);
+else (perdió el teléfono)
+  |Administrador|
+  :PATCH /usuarios/{id} con
+  restablecer_mfa = true;
+  |core-service|
+  :Borra el secreto y registra
+  ACTUALIZACION_USUARIO
+  con «mfa restablecido»;
+endif
+stop
+@enduml

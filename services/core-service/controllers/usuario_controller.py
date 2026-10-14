@@ -88,6 +88,11 @@ def actualizar_usuario(usuario_id: str, dto: UsuarioUpdate, actor: Actor = Depen
         usuario.intentos_fallidos = 0
         usuario.bloqueado_hasta = None
         cambios["contrasena"] = {"restablecida": True}
+    if dto.restablecer_mfa and (usuario.mfa_habilitado or usuario.mfa_secreto):
+        # Teléfono perdido (fase F3): la cuenta vuelve a entrar solo con su contraseña.
+        usuario.mfa_habilitado = False
+        usuario.mfa_secreto = None
+        cambios["mfa"] = {"restablecido": True}
 
     if cambios:
         bitacora.registrar(

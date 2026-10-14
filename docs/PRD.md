@@ -11,7 +11,7 @@
 | Desarrollo (Scrum Master / Desarrollador) | Oliver Villanueva Pelay, residente (No. de control 21520500) |
 | Stakeholder evaluador | Edgar Loheffelmman (PluriOne) |
 | Asesor interno | Dr. Wilfrido Campos Francisco |
-| Versión del documento | 3.9 — 14 de octubre de 2026 (3.9: Módulo 7, fase F2 en rules y ai; 3.8: Módulo 7, fase F1 en el core; 3.7: diseño del Módulo 7 y del correo RF-20, matriz de permisos, §5.1 y §5.2; 3.6: rubro que nombra lo preguntado en el chat, §21.9; 3.5: lectura anticipada y prioridad del OCR, RNF-02, §21.9; 3.4: frontend sin redundancias, §13.1; 3.3: PLUS-23, elementos expresos y cargo del apoderado, §21.9; 3.2: auditoría técnica y OCR en flujo continuo, §21.9; 3.1: depuración del alcance, §21.8; 3.0: RNF-10, respaldos; 2.9: RF-09, corrección de datos y RF-02; 2.8: Fase B del plan visual; 2.7: gráficas, Fase A; 2.6: P7 implementado; 2.5: P7 documentado; 2.4: P6; 2.3: P5 implementado; 2.2: P5 documentado; 2.1: revisión de requerimientos; 2.0: correcciones de la documentación; 1.9: revisión visual del frontend; 1.8: chat documental eficiente; 1.7: revisión del frontend; 1.6: índice de cumplimiento; 1.5: P3; 1.4: P2; 1.3: P1; 1.2: 28 de septiembre; 1.0: 27 de septiembre de 2026) |
+| Versión del documento | 4.0 — 14 de octubre de 2026 (4.0: Módulo 7, fase F3, MFA con TOTP; 3.9: Módulo 7, fase F2 en rules y ai; 3.8: Módulo 7, fase F1 en el core; 3.7: diseño del Módulo 7 y del correo RF-20, matriz de permisos, §5.1 y §5.2; 3.6: rubro que nombra lo preguntado en el chat, §21.9; 3.5: lectura anticipada y prioridad del OCR, RNF-02, §21.9; 3.4: frontend sin redundancias, §13.1; 3.3: PLUS-23, elementos expresos y cargo del apoderado, §21.9; 3.2: auditoría técnica y OCR en flujo continuo, §21.9; 3.1: depuración del alcance, §21.8; 3.0: RNF-10, respaldos; 2.9: RF-09, corrección de datos y RF-02; 2.8: Fase B del plan visual; 2.7: gráficas, Fase A; 2.6: P7 implementado; 2.5: P7 documentado; 2.4: P6; 2.3: P5 implementado; 2.2: P5 documentado; 2.1: revisión de requerimientos; 2.0: correcciones de la documentación; 1.9: revisión visual del frontend; 1.8: chat documental eficiente; 1.7: revisión del frontend; 1.6: índice de cumplimiento; 1.5: P3; 1.4: P2; 1.3: P1; 1.2: 28 de septiembre; 1.0: 27 de septiembre de 2026) |
 | Estado del producto | En desarrollo: Sprints 1 y 2 implementados, Sprint 3 implementado parcialmente, Sprint 4 implementado salvo HU-31, Módulo 7 diseñado (14/10/2026) y en implementación |
 | Documento hermano | [MRD.md](MRD.md) — requerimientos de mercado |
 
@@ -166,7 +166,7 @@ Por endpoint (lo que aplica cada servicio; «Lectura» = ADMIN, VALIDADOR y AUDI
 |---|---|---|
 | Los tres | `GET /health` | Público |
 | core | `POST /auth/login` | Público |
-| core | `GET /auth/me`, `POST /auth/cambiar-contrasena`, `POST /auth/mfa/activar`, `POST /auth/mfa/confirmar`, `POST /auth/mfa/desactivar` | Cualquier usuario autenticado |
+| core | `GET /auth/me`, `POST /auth/cambiar-contrasena`, `POST /auth/mfa/generar`, `POST /auth/mfa/activar`, `POST /auth/mfa/desactivar` | Cualquier usuario autenticado |
 | core | `GET`, `POST /usuarios`; `PATCH /usuarios/{id}` | ADMIN |
 | core | `GET`, `PUT /expedientes/{id}/asignaciones` | ADMIN |
 | core | `GET /expedientes/asignados` | Cualquier usuario autenticado (devuelve solo los suyos) |
@@ -189,7 +189,7 @@ Sin token, con un token inválido o vencido, o con la cuenta desactivada: 401. C
 
 **Autenticación (RF-25, HU-06).**
 - Cuentas locales con correo y contraseña (bcrypt). Ya no se usa Microsoft Entra ID (§19): el token es un JWT HS256 firmado con `JWT_SECRET`, con `sub`, `email`, `nombre`, `rol`, `iat` y `exp`. Vigencia: `JWT_EXPIRACION_MINUTOS` (480 por omisión, una jornada), sin tokens de renovación. La interfaz lo guarda en `sessionStorage` y lo envía como `Authorization: Bearer`.
-- **MFA (RF-25, decisión del 14/10/2026):** TOTP opcional por usuario (RFC 6238, apps autenticadoras), activado por el propio usuario con su contraseña y un código de confirmación. Con MFA activo, `POST /auth/login` responde `{requiere_codigo: true}` sin token hasta recibir el código. El administrador puede restablecer el MFA de una cuenta (teléfono perdido).
+- **MFA (RF-25, decisión del 14/10/2026; [diagrama](uml/m7-actividad-mfa.puml)):** TOTP opcional por usuario (RFC 6238, apps autenticadoras). El propio usuario lo da de alta en dos pasos: `POST /auth/mfa/generar` con su contraseña (devuelve el secreto y la URI `otpauth://`) y `POST /auth/mfa/activar` con el primer código de su app. Con MFA habilitado, `POST /auth/login` responde `{requiere_codigo: true}` sin token hasta recibir el código, y un código inválido cuenta como intento fallido. `POST /auth/mfa/desactivar` pide la contraseña y un código vigente. El administrador puede restablecer el MFA de una cuenta (teléfono perdido) con `PATCH /usuarios/{id}` `{restablecer_mfa: true}`.
 - Contraseña de al menos 10 caracteres. Tras cinco intentos fallidos seguidos (contraseña o código), la cuenta se bloquea 15 min (429). Un correo inexistente y una contraseña incorrecta reciben el mismo 401, para no revelar qué cuentas existen.
 - Una cuenta creada o restablecida por el administrador tiene una contraseña temporal y `debe_cambiar_contrasena`: hasta cambiarla, el token solo sirve para `/auth/me` y `/auth/cambiar-contrasena`.
 
@@ -211,7 +211,7 @@ Sin token, con un token inválido o vencido, o con la cuenta desactivada: 401. C
 - Los eventos anteriores al Módulo 7 conservan «OPERADOR»: la bitácora es inmutable y su cadena sellada no cambia.
 
 **Datos (migración idempotente en el core).**
-- `usuarios`: las columnas del DOC-08 (`id`, `email` único, `password_hash`, `nombre_completo`, `rol` con CHECK de los cuatro roles, `activo`, `creado_en`), más `debe_cambiar_contrasena`, `intentos_fallidos`, `bloqueado_hasta`, `ultimo_acceso`, `mfa_activo` y `totp_secreto`.
+- `usuarios`: las columnas del DOC-08 (`id`, `email` único, `password_hash`, `nombre_completo`, `rol` con CHECK de los cuatro roles, `activo`, `creado_en`), más `debe_cambiar_contrasena`, `intentos_fallidos`, `bloqueado_hasta`, `ultimo_acceso`, `mfa_secreto` y `mfa_habilitado`.
 - `expediente_asignaciones` (`expediente_id`, `usuario_id`, `asignado_por`, `creado_en`; únicos por par): no la define el DOC-08, pero la exigen la HU-31 («sus expedientes asignados») y el RF-20 («los responsables asignados»).
 - Sin borrado físico de usuarios (RN-04): una cuenta se desactiva. Una asignación sí se retira, y el cambio queda en la bitácora con la lista anterior y la nueva.
 
@@ -239,6 +239,7 @@ Sin token, con un token inválido o vencido, o con la cuenta desactivada: 401. C
 **Riesgos aceptados.**
 - El token en `sessionStorage` es legible por un script inyectado (XSS). React escapa el contenido y la interfaz no inserta HTML; la alternativa con cookies exige protección CSRF entre tres orígenes.
 - El secreto TOTP se guarda sin cifrar en la base, como el resto de los datos mientras RNF-04 siga pendiente.
+- Un código TOTP sigue sirviendo dentro de su ventana (±30 s) aunque ya se haya usado: quien lo viera y además supiera la contraseña podría reutilizarlo en ese lapso. Impedirlo exige guardar el último paso usado por cuenta; no se agrega en la versión mínima.
 
 ---
 
@@ -324,7 +325,7 @@ Prioridad tomada de las historias de usuario asociadas (Cap. VII); «—» cuand
 
 | ID | Requerimiento | Prioridad | Estado | Evidencia / nota |
 |---|---|---|---|---|
-| RF-25 | Autenticación con credenciales corporativas y soporte MFA. | Alta | **Parcial** | Diseñada el 14/10/2026 (§5.2): cuentas locales con bcrypt, JWT HMAC-SHA256 del DOC-08 y TOTP opcional por usuario. Implementada en el core (F1, 14/10/2026): inicio de sesión con bloqueo, contraseña temporal y cuentas iniciales. Faltan el MFA (F3) y la interfaz (F4). |
+| RF-25 | Autenticación con credenciales corporativas y soporte MFA. | Alta | **Parcial** | Diseñada el 14/10/2026 (§5.2): cuentas locales con bcrypt, JWT HMAC-SHA256 del DOC-08 y TOTP opcional por usuario. Implementada en el core (F1, 14/10/2026): inicio de sesión con bloqueo, contraseña temporal y cuentas iniciales; segundo factor TOTP opcional (F3, 14/10/2026, `tests/test_mfa.py`). Falta la interfaz (F4). |
 | RF-26 | Autorización por rol (RBAC). | Alta | **Parcial** | Matriz de permisos por endpoint (§5.1), aplicada desde el 14/10/2026 en los tres servicios: core (F1) y rules y ai (F2), con una prueba de matriz en cada uno. Falta la interfaz por rol (F4). |
 | RF-27 | Bitácora inmutable protegida por el motor de base de datos. | Alta | Implementado | Disparador `trg_bitacora_inmutable` y, desde P3, cada evento sellado en cadena y verificable (`/bitacora/verificar-cadena`); el usuario autenticado se registrará con RF-25. |
 
@@ -597,7 +598,7 @@ Microservicios desacoplados orquestados con Docker Compose en la red `plurione-n
 | rules-service | `/health`; `/reglas` (catálogo, alta y pausa); `/reglas/documentos-obligatorios?tipo_expediente=`; `/reglas/tipos-documento` (tipos declarados por reglas RDS, RF-09); `/reglas/evaluar-vigencia` |
 | ai-service | `/health`; `/ai/extraer-texto`; `/ai/documentos/{id}/preparar`; `/ai/analisis-semantico`; `/ai/chat-documento`; `/ai/configuracion-ocr` |
 
-Módulo 7 (§5.1 y §5.2), en el core: `/auth/login`, `/auth/me`, `/auth/cambiar-contrasena`, `/usuarios` y `/usuarios/{id}`, `/expedientes/{id}/asignaciones` y `/expedientes/asignados`, implementados el 14/10/2026 (F1); `/auth/mfa/activar|confirmar|desactivar`, en F3. Todos los endpoints salvo `/health` y `/auth/login` exigen `Authorization: Bearer`.
+Módulo 7 (§5.1 y §5.2), en el core: `/auth/login`, `/auth/me`, `/auth/cambiar-contrasena`, `/usuarios` y `/usuarios/{id}`, `/expedientes/{id}/asignaciones` y `/expedientes/asignados`, implementados el 14/10/2026 (F1); `/auth/mfa/generar|activar|desactivar`, el mismo día (F3). Todos los endpoints salvo `/health` y `/auth/login` exigen `Authorization: Bearer`.
 
 Documentación interactiva OpenAPI en `/docs` de cada servicio.
 
@@ -614,7 +615,7 @@ Documentación interactiva OpenAPI en `/docs` de cada servicio.
 | `dictamenes_auditoria` | Resultado de cada auditoría y su ratificación humana (protegido por `trg_dictamen_protegido`), con los firmantes o apoderados extraídos en `representacion_legal` (P2). |
 | `bitacora_auditoria` | Eventos inmutables (protegida por `trg_bitacora_inmutable`), sellados en cadena con `secuencia`, `hash_anterior` y `hash_evento` (P3). |
 
-Módulo 7 (§5.2), creadas el 14/10/2026: la tabla `usuarios` del DOC-08 (email, password_hash bcrypt, nombre_completo, rol con CHECK de los cuatro roles, activo, creado_en), con las columnas de operación de la sesión (las del MFA llegan en F3), y `expediente_asignaciones` (HU-31, RF-20), única por par y con FK RESTRICT. `bitacora_auditoria.usuario` y `dictamenes_auditoria.revisado_por` se ampliaron a 150 caracteres para guardar el correo.
+Módulo 7 (§5.2), creadas el 14/10/2026: la tabla `usuarios` del DOC-08 (email, password_hash bcrypt, nombre_completo, rol con CHECK de los cuatro roles, activo, creado_en), con las columnas de operación de la sesión y del segundo factor (`mfa_secreto`, `mfa_habilitado`, F3), y `expediente_asignaciones` (HU-31, RF-20), única por par y con FK RESTRICT. `bitacora_auditoria.usuario` y `dictamenes_auditoria.revisado_por` se ampliaron a 150 caracteres para guardar el correo.
 
 #### Nota técnica: tipos de datos respecto del diccionario del DOC-08
 
@@ -865,7 +866,7 @@ Riesgos adicionales identificados en la implementación [DG §8.7 y §10.7]:
 
 **Pendientes de implementación** (orden acordado el 29/09/2026: P1 a P3 y la revisión completa del frontend terminados; en la fase final, el Módulo 7)
 
-1. Autenticación, usuarios y roles: RF-25, RF-26, HU-05, HU-06 y HU-31; registrar el usuario autenticado en la bitácora (HU-07). Diseño aprobado el 14/10/2026 (§5.1 y §5.2); F1 (core) y F2 (rules y ai) terminadas el 14/10/2026. Siguen F3 (MFA), F4 (interfaz), F5 (correo) y F6 (pruebas, scripts y entrega).
+1. Autenticación, usuarios y roles: RF-25, RF-26, HU-05, HU-06 y HU-31; registrar el usuario autenticado en la bitácora (HU-07). Diseño aprobado el 14/10/2026 (§5.1 y §5.2); F1 (core), F2 (rules y ai) y F3 (MFA) terminadas el 14/10/2026. Siguen F4 (interfaz), F5 (correo) y F6 (pruebas, scripts y entrega).
 2. Notificaciones por correo electrónico: RF-20, HU-17 (fase F5 del Módulo 7, §5.2).
 3. Requerimientos no funcionales: cifrado AES-256 en reposo (RNF-04), TLS 1.3 en el borde y red interna aislada (RNF-05); pruebas de concurrencia y disponibilidad (RNF-03, RNF-09).
 4. Después de P5 (revisión de requerimientos, versión 2.1): ciclo de vida del expediente activo, cerrado y archivado, sin eliminar nada, para que un expediente concluido deje de evaluarse y de alertar (complementa la conservación de §12.6). La corrección de los datos de una empresa o un expediente con registro en la bitácora, que este punto también pedía, se implementó en la versión 2.9 (`PATCH /titulares/{id}` y `PATCH /expedientes/{id}`).

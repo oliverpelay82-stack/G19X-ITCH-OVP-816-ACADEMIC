@@ -133,6 +133,9 @@ _MIGRACIONES_POSTGRES = [
     # filas: los triggers de inmutabilidad no se disparan y los sellos no cambian.
     "ALTER TABLE bitacora_auditoria ALTER COLUMN usuario TYPE VARCHAR(150)",
     "ALTER TABLE dictamenes_auditoria ALTER COLUMN revisado_por TYPE VARCHAR(150)",
+    # Módulo 7, fase F3: segundo factor TOTP opcional por cuenta (RF-25).
+    "ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS mfa_secreto VARCHAR(64)",
+    "ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS mfa_habilitado BOOLEAN NOT NULL DEFAULT FALSE",
     # RF-27: la bitácora solo admite inserciones.
     """
     CREATE OR REPLACE FUNCTION bitacora_inmutable() RETURNS trigger AS $$

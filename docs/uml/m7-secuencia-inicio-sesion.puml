@@ -34,7 +34,7 @@ else contraseña correcta y MFA activo, sin código
 end
 AUTH -> BD : intentos_fallidos = 0; ultimo_acceso = ahora
 AUTH -> BD : evento INICIO_SESION (usuario, IP)
-AUTH --> UI : 200 {access_token, token_type: bearer, expira_en,\nusuario: {id, email, nombre_completo, rol,\ndebe_cambiar_contrasena, mfa_activo}}
+AUTH --> UI : 200 {access_token, token_type: bearer, expira_en,\nusuario: {id, email, nombre_completo, rol,\ndebe_cambiar_contrasena, mfa_habilitado}}
 UI -> UI : guarda el token en sessionStorage\ny arma el menú del rol
 opt debe_cambiar_contrasena
   UI -> AUTH : POST /auth/cambiar-contrasena {actual, nueva}
