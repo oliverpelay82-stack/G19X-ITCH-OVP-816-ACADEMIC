@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { cambiarContrasena } from '../../services/api.js'
 import useSesion from '../../hooks/useSesion.js'
-import { Button, Field, Input } from '../ui/index.js'
+import { WarningCircle } from '../iconos.js'
+import { Button, Field } from '../ui/index.js'
+import { CampoContrasena } from './Campos.jsx'
 
 /** Mínimo del core (config/seguridad.py, LONGITUD_MINIMA_CONTRASENA). */
 const MINIMO = 10
@@ -47,13 +49,13 @@ export default function FormularioContrasena({ temporal = false, onListo, accion
   return (
     <form className="acceso-form" onSubmit={enviar} noValidate>
       {error && (
-        <p className="acceso-error" role="alert">
-          {error}
-        </p>
+        <div className="acceso-alerta acceso-alerta--error" role="alert">
+          <WarningCircle size={16} aria-hidden="true" />
+          <p>{error}</p>
+        </div>
       )}
       <Field etiqueta={temporal ? 'Contraseña temporal' : 'Contraseña actual'}>
-        <Input
-          type="password"
+        <CampoContrasena
           autoComplete="current-password"
           value={actual}
           onChange={(e) => setActual(e.target.value)}
@@ -62,14 +64,13 @@ export default function FormularioContrasena({ temporal = false, onListo, accion
         />
       </Field>
       <Field etiqueta="Contraseña nueva" ayuda={`Al menos ${MINIMO} caracteres.`}>
-        <Input type="password" autoComplete="new-password" value={nueva} onChange={(e) => setNueva(e.target.value)} required />
+        <CampoContrasena autoComplete="new-password" value={nueva} onChange={(e) => setNueva(e.target.value)} required />
       </Field>
       <Field
         etiqueta="Repite la contraseña nueva"
         retro={problema ? { estado: 'invalido', mensaje: problema } : null}
       >
-        <Input
-          type="password"
+        <CampoContrasena
           autoComplete="new-password"
           value={confirmacion}
           estado={problema ? 'invalido' : undefined}

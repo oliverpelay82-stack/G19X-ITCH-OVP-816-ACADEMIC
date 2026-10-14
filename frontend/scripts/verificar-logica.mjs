@@ -25,6 +25,7 @@ const { agruparCambios } = await import('../src/components/graficas/cambios.js')
 const { valorTrasCarga } = await import('../src/utils/carga.js')
 const { puede, seccionPermitida, seccionesDe } = await import('../src/utils/permisos.js')
 const sesion = await import('../src/services/sesion.js')
+const { contrasenaSegura, cumpleRequisitos, requisitosDe } = await import('../src/utils/contrasena.js')
 
 /** Marca de tiempo como la devuelve la API: UTC sin zona, con microsegundos. */
 const comoApi = (fecha) => `${fecha.toISOString().slice(0, -1)}123`
@@ -53,6 +54,26 @@ const CASOS = [
       seccionPermitida('CONSULTA', 'reglas') === 'consulta' &&
       seccionPermitida('AUDITOR', 'usuarios') === 'expedientes' &&
       seccionPermitida('ADMIN', 'usuarios') === 'usuarios',
+  },
+  {
+    nombre: 'Alta de cuentas: los requisitos de la contraseña temporal se evalúan uno por uno',
+    probar: () => {
+      const estado = (t) => requisitosDe(t).map((r) => (r.cumple ? 1 : 0)).join('')
+      return (
+        estado('') === '000' && estado('corta') === '000' && estado('sinmayuscula1') === '101' &&
+        estado('SinNumeroNiSimbolo') === '110' && estado('Ñandú-2026x') === '111' && cumpleRequisitos('Temporal-2026')
+      )
+    },
+  },
+  {
+    nombre: 'Alta de cuentas: la contraseña generada cumple, no se repite y evita 0, O, 1, l e I',
+    probar: () => {
+      const generadas = Array.from({ length: 200 }, () => contrasenaSegura())
+      return (
+        generadas.every((c) => c.length === 14 && cumpleRequisitos(c) && /[a-z]/.test(c) && !/[0O1lI]/.test(c)) &&
+        new Set(generadas).size === generadas.length && contrasenaSegura(4).length === 10
+      )
+    },
   },
   {
     nombre: 'Módulo 7: la sesión avisa al iniciar y al expirar, y un token vencido no se usa',

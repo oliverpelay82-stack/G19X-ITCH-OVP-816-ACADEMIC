@@ -3,33 +3,437 @@
    verificación en dos pasos, Usuarios y Consulta. Solo tokens.
    =================================================================== */
 
-/* Pantallas sin sesión: una tarjeta centrada sobre el lienzo */
+/* ── Pantallas sin sesión ─────────────────────────────────────────
+   Un escenario centrado en la ventana, con la vitrina del motor y la
+   tarjeta de acceso en dos columnas (en pantallas angostas, solo la
+   tarjeta). La rejilla técnica del fondo se desvanece con una máscara
+   radial: única excepción a «sin gradientes» del sistema, aprobada solo
+   para esta pantalla (CLAUDE.md); sus degradados dibujan líneas de 1 px
+   y la máscara solo regula la opacidad. El movimiento es transform y
+   opacity; la regla global de «reducir movimiento» (index.css) lo
+   detiene. Nada de desenfoques: los pulsos son aros sólidos que crecen
+   y se desvanecen. */
 .acceso {
+  position: relative;
+  isolation: isolate;
   min-height: 100vh;
   display: grid;
   place-items: center;
-  padding: var(--s-6) var(--s-4);
+  padding: var(--s-10) var(--s-4);
   background: var(--bg-canvas);
+  overflow: hidden;
 }
 
-.acceso-tarjeta {
+.acceso::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image:
+    linear-gradient(to right, var(--line-subtle) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--line-subtle) 1px, transparent 1px);
+  background-size: 40px 40px;
+  background-position: center center;
+  mask-image: radial-gradient(ellipse 70% 65% at 50% 50%, black 25%, transparent 100%);
+  pointer-events: none;
+}
+
+.acceso-escenario {
   width: 100%;
-  max-width: 400px;
+  max-width: 416px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: center;
+}
+
+@media (min-width: 1024px) {
+  .acceso-escenario {
+    max-width: 1040px;
+    grid-template-columns: minmax(0, 1fr) 416px;
+    gap: clamp(var(--s-10), 5vw, 64px);
+  }
+}
+
+@keyframes acceso-entrada {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+/* Aro sólido que crece y se desvanece: el «latido» de lo que está activo. */
+@keyframes acceso-latido {
+  from {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+  to {
+    transform: scale(1.06, 1.18);
+    opacity: 0;
+  }
+}
+
+/* ── Vitrina ── */
+.acceso-vitrina {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .acceso-vitrina {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-4);
+  }
+}
+
+.vitrina-eyebrow {
+  font-size: var(--fs-micro);
+  font-weight: 600;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--text-muted);
+  animation: acceso-entrada calc(var(--dur-slow) * 2.5) var(--ease) both;
+}
+
+.vitrina-titulo {
+  max-width: 520px;
+  font-size: clamp(30px, 2.6vw, 36px);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: var(--text-primary);
+  text-wrap: balance;
+  animation: acceso-entrada calc(var(--dur-slow) * 2.5) var(--ease) 80ms both;
+}
+
+.vitrina-sub {
+  max-width: 480px;
+  font-size: var(--fs-body);
+  line-height: 1.65;
+  color: var(--text-muted);
+  animation: acceso-entrada calc(var(--dur-slow) * 2.5) var(--ease) 160ms both;
+}
+
+/* Recorrido de un documento: cinco etapas sobre una pista fina por la que avanza un pulso. */
+.vitrina-flujo {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  max-width: 480px;
+  margin: var(--s-4) 0 var(--s-2);
+  animation: acceso-entrada calc(var(--dur-slow) * 2.5) var(--ease) 240ms both;
+}
+
+.flujo-pista {
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  top: 18px;
+  height: 1px;
+  background: var(--line-strong);
+  overflow: hidden;
+}
+
+.flujo-pulso {
+  position: absolute;
+  inset: 0;
+  animation: flujo-recorrido 4.2s var(--ease) infinite;
+  will-change: transform;
+}
+
+.flujo-pulso::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 48px;
+  height: 100%;
+  background: var(--text-primary);
+}
+
+@keyframes flujo-recorrido {
+  from {
+    transform: translateX(-48px);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+.flujo-etapa {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-2);
+  min-width: 56px;
+}
+
+/* Squircle tonal: fondo suave, borde de 1 px y el icono en el gris del sistema. */
+.flujo-nodo {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--r-squircle);
+  border: 1px solid var(--squircle-border);
+  background: var(--squircle-bg);
+  color: var(--icon);
+  box-shadow: var(--shadow-hairline);
+}
+
+/* IA y Dictamen: donde el motor decide. Superficie, borde y texto primarios, y su latido. */
+.flujo-etapa.is-activa .flujo-nodo {
+  border-color: var(--text-primary);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-card);
+}
+
+.flujo-etapa.is-activa .flujo-nodo::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: calc(var(--r-squircle) + 4px);
+  border: 1px solid var(--text-primary);
+  animation: acceso-latido 2.4s var(--ease) calc(var(--i) * 0.4s) infinite;
+  will-change: transform, opacity;
+}
+
+.flujo-etiqueta {
+  font-size: var(--fs-micro);
+  color: var(--text-muted);
+}
+
+.flujo-etapa.is-activa .flujo-etiqueta {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Capacidades: entran escalonadas, desde abajo. */
+.vitrina-capacidades {
   display: flex;
   flex-direction: column;
   gap: var(--s-3);
-  padding: var(--s-8) var(--s-6);
+  max-width: 480px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.capacidad {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  border: var(--border-default);
+  border-radius: var(--r-lg);
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-card);
+  animation: acceso-entrada calc(var(--dur-slow) * 2.5) var(--ease) calc(320ms + var(--i) * 120ms) both;
+}
+
+/* La capacidad «viva» (IA): su borde late, como un proceso en marcha. */
+.capacidad--viva::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--text-tertiary);
+  animation: acceso-latido 2.8s var(--ease) 1.4s infinite;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+.capacidad-icono {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--r-squircle);
+  border: 1px solid var(--squircle-border);
+  background: var(--squircle-bg);
+  color: var(--icon);
+}
+
+.capacidad--viva .capacidad-icono {
+  border-color: var(--line-strong);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+}
+
+.capacidad-cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+  min-width: 0;
+  padding-top: 1px;
+}
+
+.capacidad-titulo {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  font-size: var(--fs-small);
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  color: var(--text-primary);
+}
+
+.capacidad-texto {
+  font-size: var(--fs-small);
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.capacidad-vivo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1-5);
+  padding: 1px var(--s-2);
+  border-radius: var(--r-full);
+  border: 1px solid var(--ok-border);
+  background: var(--ok-bg);
+  font-size: var(--fs-micro);
+  font-weight: 500;
+  color: var(--ok);
+}
+
+.capacidad-vivo-punto {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--r-full);
+  background: var(--ok);
+  animation: vivo-parpadeo 1.6s ease-in-out infinite;
+}
+
+@keyframes vivo-parpadeo {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+/* ── Panel de acceso ── */
+.acceso-panel {
+  width: 100%;
+}
+
+/* Estado real de los servicios, en la esquina de la ventana. */
+.acceso-estado {
+  position: absolute;
+  top: var(--s-4);
+  right: var(--s-4);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: var(--s-1) var(--s-2-5);
+  border: var(--border-default);
+  border-radius: var(--r-full);
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-hairline);
+  font-size: var(--fs-micro);
+  color: var(--text-secondary);
+  animation: acceso-entrada calc(var(--dur-slow) * 2) var(--ease) 400ms both;
+}
+
+.acceso-estado-punto {
+  position: relative;
+  width: 7px;
+  height: 7px;
+  border-radius: var(--r-full);
+  background: var(--neutral);
+}
+
+.acceso-estado--ok .acceso-estado-punto {
+  background: var(--ok);
+}
+
+.acceso-estado--warn .acceso-estado-punto {
+  background: var(--warn);
+}
+
+.acceso-estado--bad .acceso-estado-punto {
+  background: var(--bad);
+}
+
+.acceso-estado--ok .acceso-estado-punto::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: var(--r-full);
+  border: 1px solid var(--ok);
+  animation: estado-latido 2.4s var(--ease) infinite;
+  will-change: transform, opacity;
+}
+
+@keyframes estado-latido {
+  from {
+    transform: scale(0.6);
+    opacity: 1;
+  }
+  to {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+}
+
+/* Tarjeta con borde pulido y sombra en tres capas (tokens del sistema). */
+.acceso-tarjeta {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+  padding: var(--s-8);
   background: var(--bg-surface);
   border: var(--border-default);
   border-radius: var(--r-lg);
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--shadow-hairline), var(--shadow-card), var(--shadow-modal);
 }
+
+/* Entrada escalonada: marca, título, avisos, campos, botón y ayuda. */
+.acceso-tarjeta > *,
+.acceso-form > * {
+  animation: acceso-entrada calc(var(--dur-slow) * 2) var(--ease) both;
+}
+
+.acceso-tarjeta > :nth-child(1) { animation-delay: 60ms; }
+.acceso-tarjeta > :nth-child(2) { animation-delay: 140ms; }
+.acceso-tarjeta > :nth-child(n + 3) { animation-delay: 220ms; }
+.acceso-tarjeta > .acceso-pie { animation-delay: 600ms; }
+.acceso-form > :nth-child(1) { animation-delay: 260ms; }
+.acceso-form > :nth-child(2) { animation-delay: 340ms; }
+.acceso-form > :nth-child(3) { animation-delay: 420ms; }
+.acceso-form > :nth-child(4) { animation-delay: 480ms; }
+.acceso-form > :nth-child(5) { animation-delay: 540ms; }
 
 .acceso-marca {
   display: flex;
   align-items: center;
-  gap: var(--s-2-5);
-  margin-bottom: var(--s-3);
+  gap: var(--s-3);
+}
+
+/* Isotipo: el único squircle invertido, como en la barra lateral. */
+.acceso-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--r-squircle);
+  background: var(--bg-inverse);
+  color: var(--text-inverse);
+  box-shadow: var(--shadow-card);
+}
+
+.acceso-encabezado {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1-5);
 }
 
 .acceso-titulo {
@@ -40,53 +444,156 @@
   color: var(--text-primary);
 }
 
-.acceso-descripcion,
-.acceso-nota {
+.acceso-descripcion {
   font-size: var(--fs-small);
-  color: var(--text-secondary);
-  line-height: 1.5;
-}
-
-.acceso-nota {
   color: var(--text-muted);
-  margin-top: var(--s-1);
+  line-height: 1.5;
 }
 
-.acceso-aviso,
-.acceso-error {
+/* Ayuda al pie de la tarjeta, separada por una línea fina, no como texto suelto. */
+.acceso-pie {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-2);
+  padding-top: var(--s-4);
+  border-top: 1px solid var(--line-subtle);
+  font-size: var(--fs-micro);
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.acceso-pie svg {
+  flex: none;
+  margin-top: 1px;
+  color: var(--text-tertiary);
+}
+
+/* Avisos como tarjeta: el icono marca el tono y el texto conserva su color de lectura. */
+.acceso-alerta {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-2-5);
+  padding: var(--s-3);
+  border-radius: var(--r-md);
+  border: 1px solid var(--neutral-border);
+  background: var(--neutral-bg);
+  box-shadow: var(--shadow-hairline);
   font-size: var(--fs-small);
   line-height: 1.5;
-  padding: var(--s-2) var(--s-3);
-  border-radius: var(--r-sm);
+  color: var(--text-primary);
 }
 
-.acceso-aviso {
+.acceso-alerta svg {
+  flex: none;
+  margin-top: 2px;
   color: var(--text-secondary);
-  background: var(--neutral-bg);
-  border: 1px solid var(--neutral-border);
 }
 
-.acceso-error {
-  color: var(--bad);
+.acceso-alerta--error {
+  border-color: var(--bad-border);
   background: var(--bad-bg);
-  border: 1px solid var(--bad-border);
+}
+
+.acceso-alerta--error svg {
+  color: var(--bad);
 }
 
 .acceso-form {
   display: flex;
   flex-direction: column;
-  gap: var(--s-3);
+  gap: var(--s-4);
 }
 
 .acceso-form .btn {
   justify-content: center;
 }
 
+/* Al pasar por un campo, su contorno gana una sombra; al enfocarlo, el anillo del sistema. */
+.acceso-form .campo-icono input:not(:focus):hover {
+  box-shadow: var(--shadow-card);
+}
+
+/* Acción principal sólida: contraste primario, 44 px, se eleva al pasar y se hunde al pulsar. */
+.acceso-enviar {
+  height: 44px;
+  margin-top: var(--s-1);
+  font-weight: 600;
+  transition:
+    background-color var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease),
+    transform var(--dur) var(--ease);
+}
+
+.acceso-form .acceso-enviar:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-pop);
+}
+
+.acceso-form .acceso-enviar:not(:disabled):active {
+  transform: translateY(0) scale(0.985);
+  box-shadow: var(--shadow-hairline);
+}
+
 .acceso-codigo {
   font-family: var(--font-mono);
   font-size: var(--fs-title);
-  letter-spacing: 0.3em;
-  text-align: center;
+  letter-spacing: 0.4em;
+}
+
+/* ── Campo con icono (acceso y alta de cuentas) ─────────────────── */
+.campo-icono {
+  position: relative;
+  display: block;
+}
+
+.campo-icono-icono {
+  position: absolute;
+  left: var(--s-3);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-tertiary);
+  pointer-events: none;
+  transition: color var(--dur) var(--ease);
+}
+
+.campo-icono:focus-within .campo-icono-icono {
+  color: var(--text-primary);
+}
+
+/* Misma especificidad que la regla base de los campos (controles.css) más la del contenedor. */
+.campo-icono input:not([type='checkbox']):not([type='file']):not([type='search']) {
+  padding-left: calc(var(--s-3) + var(--s-4) + var(--s-2-5));
+}
+
+.campo-icono--accion input:not([type='checkbox']):not([type='file']):not([type='search']) {
+  padding-right: calc(var(--s-2) + 28px + var(--s-1));
+}
+
+.campo-icono-accion {
+  position: absolute;
+  right: var(--s-1-5);
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  gap: 2px;
+}
+
+.campo-icono-boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--icon);
+  transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+.campo-icono-boton:hover {
+  background: var(--bg-subtle);
+  color: var(--text-primary);
 }
 
 /* Menú de usuario de la cabecera */
@@ -261,4 +768,173 @@
 .asignacion-detalle span:last-child {
   font-size: var(--fs-micro);
   color: var(--text-muted);
+}
+
+/* ── Alta de cuenta: tres bloques con ritmo propio ──────────────── */
+.alta-cuenta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-5);
+}
+
+.alta-seccion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+
+.alta-seccion + .alta-seccion {
+  padding-top: var(--s-5);
+  border-top: 1px solid var(--line-subtle);
+}
+
+.alta-seccion-head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.alta-seccion-ayuda {
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+}
+
+/* Dos botones dentro del campo (generar y copiar): más espacio a la derecha. */
+.campo-icono:has(.campo-icono-accion > :nth-child(2)) input:not([type='checkbox']):not([type='file']):not([type='search']) {
+  padding-right: calc(var(--s-2) + 58px + var(--s-1));
+}
+
+.campo-icono-boton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.campo-icono-boton.is-ok {
+  color: var(--ok);
+}
+
+/* Rol como tarjetas de opción: el radio nativo da el teclado y el lector de pantalla. */
+.rol-opciones {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s-2);
+}
+
+.rol-opcion {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--s-2-5);
+  min-height: var(--control-md);
+  padding: var(--s-2-5) var(--s-3);
+  border: var(--border-default);
+  border-radius: var(--r-md);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  font-size: var(--fs-small);
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    border-color var(--dur) var(--ease),
+    background-color var(--dur) var(--ease),
+    color var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease),
+    transform var(--dur) var(--ease);
+}
+
+.rol-opcion input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.rol-opcion svg {
+  flex: none;
+  color: var(--icon);
+  transition: color var(--dur) var(--ease);
+}
+
+.rol-opcion:hover {
+  border-color: var(--line-strong);
+  color: var(--text-primary);
+}
+
+.rol-opcion:active {
+  transform: scale(0.98);
+}
+
+.rol-opcion:has(input:checked) {
+  border-color: var(--text-primary);
+  background: var(--bg-subtle);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-hairline);
+}
+
+.rol-opcion:has(input:checked) svg {
+  color: var(--text-primary);
+}
+
+.rol-opcion:has(input:focus-visible) {
+  box-shadow: var(--focus-ring);
+}
+
+.rol-alcance {
+  padding: var(--s-2-5) var(--s-3);
+  border-radius: var(--r-md);
+  background: var(--neutral-bg);
+  border: 1px solid var(--neutral-border);
+  font-size: var(--fs-small);
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.rol-alcance strong {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Requisitos de la contraseña: pasan a «cumplido» con su marca. */
+.requisitos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-1-5);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.requisito {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1-5);
+  padding: 2px var(--s-2);
+  border-radius: var(--r-full);
+  border: 1px solid var(--line);
+  font-size: var(--fs-micro);
+  color: var(--text-muted);
+  transition: color var(--dur) var(--ease), border-color var(--dur) var(--ease), background-color var(--dur) var(--ease);
+}
+
+.requisito.is-ok {
+  color: var(--ok);
+  border-color: var(--ok-border);
+  background: var(--ok-bg);
+}
+
+/* Pie del alta: la acción principal se eleva un poco al pasar y se hunde al pulsar. */
+.alta-cuenta .modal-footer .btn {
+  transition:
+    background-color var(--dur) var(--ease),
+    border-color var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease),
+    transform var(--dur) var(--ease);
+}
+
+.alta-cuenta .modal-footer .btn:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-card);
+}
+
+.alta-cuenta .modal-footer .btn:not(:disabled):active {
+  transform: translateY(0) scale(0.98);
 }

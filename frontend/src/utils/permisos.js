@@ -15,6 +15,14 @@ export const NOMBRE_ROL = {
   CONSULTA: 'Consulta',
 }
 
+/** Lo que puede hacer cada rol, en una línea (PRD §5.1): lo muestra el alta de cuentas. */
+export const ALCANCE_ROL = {
+  ADMIN: 'Gestiona cuentas y asignaciones, configura las reglas y también opera el sistema.',
+  VALIDADOR: 'Registra empresas y expedientes, custodia y audita documentos y ratifica dictámenes.',
+  AUDITOR: 'Consulta expedientes, dictámenes, alertas y bitácora, y exporta reportes, sin modificar nada.',
+  CONSULTA: 'Ve solo el semáforo de los expedientes que se le asignen.',
+}
+
 const { ADMIN, VALIDADOR, AUDITOR, CONSULTA } = ROL
 
 export const PERMISOS = Object.freeze({

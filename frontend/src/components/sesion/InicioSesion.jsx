@@ -1,8 +1,10 @@
 import { useRef, useState } from 'react'
+import { ArrowLeft, EnvelopeSimple, ShieldCheck } from '../iconos.js'
 import { iniciarSesionApi } from '../../services/api.js'
 import { MOTIVO } from '../../services/sesion.js'
 import useSesion from '../../hooks/useSesion.js'
-import { Button, Field, Input } from '../ui/index.js'
+import { Button, Field } from '../ui/index.js'
+import { CampoContrasena, CampoIcono } from './Campos.jsx'
 import PantallaAcceso from './PantallaAcceso.jsx'
 
 /**
@@ -25,6 +27,14 @@ export default function InicioSesion() {
 
   const enviar = async (e) => {
     e.preventDefault()
+    // El botón siempre está disponible (acción principal sólida): lo que falta se dice en el aviso.
+    const falta = pideCodigo
+      ? codigo.length !== 6 && 'Escribe los 6 dígitos del código.'
+      : (!email.trim() || !contrasena) && 'Escribe tu correo y tu contraseña.'
+    if (falta) {
+      setError({ texto: falta, clave: Date.now() })
+      return
+    }
     setEnviando(true)
     setError(null)
     try {
@@ -36,7 +46,7 @@ export default function InicioSesion() {
         entrar(respuesta)
       }
     } catch (err) {
-      setError(err.message)
+      setError({ texto: err.message, clave: Date.now() })
       if (pideCodigo) setCodigo('')
     } finally {
       setEnviando(false)
@@ -59,14 +69,19 @@ export default function InicioSesion() {
       }
       aviso={!pideCodigo && motivoCierre === MOTIVO.EXPIRADA ? 'Tu sesión expiró. Vuelve a iniciar sesión.' : null}
       error={error}
+      pie={
+        !pideCodigo && '¿Olvidaste tu contraseña o perdiste tu teléfono? Pide al administrador que la restablezca.'
+      }
     >
       <form className="acceso-form" onSubmit={enviar} noValidate>
         {!pideCodigo ? (
           <>
             <Field etiqueta="Correo">
-              <Input
+              <CampoIcono
+                icono={EnvelopeSimple}
                 type="email"
                 autoComplete="username"
+                placeholder="nombre@empresa.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -74,8 +89,7 @@ export default function InicioSesion() {
               />
             </Field>
             <Field etiqueta="Contraseña">
-              <Input
-                type="password"
+              <CampoContrasena
                 autoComplete="current-password"
                 value={contrasena}
                 onChange={(e) => setContrasena(e.target.value)}
@@ -85,13 +99,15 @@ export default function InicioSesion() {
           </>
         ) : (
           <Field etiqueta="Código de verificación">
-            <Input
+            <CampoIcono
               ref={campoCodigo}
+              icono={ShieldCheck}
               className="acceso-codigo tabular"
               inputMode="numeric"
               autoComplete="one-time-code"
               pattern="[0-9]{6}"
               maxLength={6}
+              placeholder="000000"
               value={codigo}
               onChange={(e) => setCodigo(e.target.value.replace(/\D/g, ''))}
               required
@@ -101,20 +117,17 @@ export default function InicioSesion() {
         <Button
           type="submit"
           variante="primary"
+          className="acceso-enviar"
           cargando={enviando}
-          disabled={pideCodigo ? codigo.length !== 6 : !email.trim() || !contrasena}
         >
-          {pideCodigo ? 'Verificar' : 'Entrar'}
+          {enviando ? (pideCodigo ? 'Verificando…' : 'Entrando…') : pideCodigo ? 'Verificar' : 'Iniciar sesión'}
         </Button>
         {pideCodigo && (
-          <Button onClick={volver} disabled={enviando}>
+          <Button icono={ArrowLeft} className="acceso-volver" onClick={volver} disabled={enviando}>
             Usar otra cuenta
           </Button>
         )}
       </form>
-      {!pideCodigo && (
-        <p className="acceso-nota">¿Olvidaste tu contraseña o perdiste tu teléfono? Pide al administrador que la restablezca.</p>
-      )}
     </PantallaAcceso>
   )
 }
