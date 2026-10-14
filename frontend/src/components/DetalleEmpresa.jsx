@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { ArrowLeft, ArrowUpRight, FolderOpen, FolderPlus, MagnifyingGlass } from './iconos.js'
 import { CorregirEmpresa } from './CorreccionDatos.jsx'
+import usePermiso from '../hooks/usePermiso.js'
 import FolioExpediente from './FolioExpediente.jsx'
 import EstadoBadge from './EstadoBadge.jsx'
 import { Avatar, Badge, Button, Card, CopyChip, EmptyState, KeyValue, KeyValueList, Tag } from './ui/index.js'
@@ -40,6 +41,7 @@ export default function DetalleEmpresa({
   onRefresh,
   isOnline,
 }) {
+  const operar = usePermiso('operar')
   const ordenados = useMemo(
     () =>
       [...expedientes].sort(
@@ -86,12 +88,14 @@ export default function DetalleEmpresa({
             </h2>
             <p className="profile-sub">{lineaResumen}</p>
           </div>
-          <div className="empresa-acciones">
-            <CorregirEmpresa titular={titular} onCorregido={onRefresh} disabled={!isOnline} />
-            <Button variante="primary" compacto icono={FolderPlus} onClick={() => onAperturar(titular)} disabled={!isOnline}>
-              Aperturar expediente
-            </Button>
-          </div>
+          {operar && (
+            <div className="empresa-acciones">
+              <CorregirEmpresa titular={titular} onCorregido={onRefresh} disabled={!isOnline} />
+              <Button variante="primary" compacto icono={FolderPlus} onClick={() => onAperturar(titular)} disabled={!isOnline}>
+                Aperturar expediente
+              </Button>
+            </div>
+          )}
         </header>
         <KeyValueList className="profile-grid empresa-datos">
           <KeyValue etiqueta="RFC">

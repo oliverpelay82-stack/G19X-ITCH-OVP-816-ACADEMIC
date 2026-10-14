@@ -18,6 +18,7 @@ import {
 } from '../../constants.js'
 import { formatDia, plural } from '../../utils/format.js'
 import { AuditarPendientes } from './AuditarPendientes.jsx'
+import usePermiso from '../../hooks/usePermiso.js'
 
 /**
  * Filas del detalle: cada documento que exige el catálogo de reglas (RIE-01),
@@ -298,6 +299,8 @@ function CustodiarDocumento({ faltantes, subiendo, tipos, onArchivo, onLoteTermi
 
 /** Detalle desplegado: índice, motivos con su qué hacer, documentos requeridos, historial, carga y exportación. */
 export function DetalleExpediente({ exp, subiendo, onSubir, iaOnline, onRefresh, documentos, onAbrirDocumento }) {
+  // Módulo 7 (PRD §5.1): auditar, custodiar y renombrar son de la operación.
+  const operar = usePermiso('operar')
   const evaluacion = exp.evaluacion
   const filas = filasDetalle(evaluacion)
   const alertas = evaluacion?.alertas || []
@@ -415,23 +418,27 @@ export function DetalleExpediente({ exp, subiendo, onSubir, iaOnline, onRefresh,
             obligatorios={(evaluacion?.obligatorios || []).length}
           />
         </div>
-        <div className="exp-lateral-bloque">
-          <AuditarPendientes exp={exp} iaOnline={iaOnline} onTerminado={onRefresh} />
-        </div>
-        <div className="exp-lateral-bloque">
-          <CustodiarDocumento
-            faltantes={faltantes.length}
-            subiendo={subiendo}
-            tipos={tiposCarga}
-            onArchivo={(archivo, tipo, opciones) => onSubir(exp.id, archivo, tipo, opciones)}
-            onLoteTerminado={({ custodiados }) => custodiados && onRefresh()}
-          />
-        </div>
+        {operar && (
+          <>
+            <div className="exp-lateral-bloque">
+              <AuditarPendientes exp={exp} iaOnline={iaOnline} onTerminado={onRefresh} />
+            </div>
+            <div className="exp-lateral-bloque">
+              <CustodiarDocumento
+                faltantes={faltantes.length}
+                subiendo={subiendo}
+                tipos={tiposCarga}
+                onArchivo={(archivo, tipo, opciones) => onSubir(exp.id, archivo, tipo, opciones)}
+                onLoteTerminado={({ custodiados }) => custodiados && onRefresh()}
+              />
+            </div>
+          </>
+        )}
 
         <div className="exp-lateral-bloque">
           <p className="eyebrow">Nombre del expediente</p>
           <p className="field-hint">{exp.nombre || 'Sin nombre descriptivo.'}</p>
-          <RenombrarExpediente exp={exp} onRenombrado={onRefresh} />
+          {operar && <RenombrarExpediente exp={exp} onRenombrado={onRefresh} />}
         </div>
 
         <div className="exp-lateral-bloque">

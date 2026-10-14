@@ -19,6 +19,7 @@ from fastapi.responses import JSONResponse
 from config import observabilidad, seguridad
 from config.database import SessionLocal, engine, init_db
 from controllers.asignacion_controller import router as asignacion_router
+from controllers.asignacion_controller import router_usuarios as asignacion_usuarios_router
 from controllers.auth_controller import router as auth_router
 from controllers.usuario_controller import router as usuario_router
 from controllers.titular_controller import router as titular_router
@@ -154,6 +155,7 @@ app.add_middleware(
 app.include_router(health_router)
 app.include_router(auth_router)
 app.include_router(usuario_router)
+app.include_router(asignacion_usuarios_router)
 app.include_router(titular_router)
 # Antes que el de expedientes: /expedientes/asignados no es /expedientes/{expediente_id}.
 app.include_router(asignacion_router)

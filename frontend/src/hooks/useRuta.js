@@ -5,7 +5,8 @@ import { conTransicion } from '../utils/movimiento.js'
  * Navegación en la URL con hash, sin dependencias: #/expedientes,
  * #/expedientes/EXP-…-001 (el expediente desplegado), #/empresas,
  * #/empresas/<RFC> (el detalle de la empresa), #/boveda,
- * #/alertas, #/reportes y #/reglas. Recargar conserva la vista y un enlace
+ * #/alertas, #/reportes, #/reglas y, con el Módulo 7, #/usuarios (solo el
+ * administrador) y #/mis-expedientes (la consulta). Recargar conserva la vista y un enlace
  * lleva directo a un expediente. #/ui queda reservado al catálogo del sistema
  * de diseño en desarrollo (src/dev/RaizDesarrollo.jsx).
  */
@@ -16,6 +17,8 @@ const SECCION_POR_RUTA = {
   alertas: 'alertas',
   reportes: 'reportes',
   reglas: 'reglas',
+  usuarios: 'usuarios',
+  'mis-expedientes': 'consulta',
 }
 // Secciones con detalle en el segundo segmento: el folio del expediente o el RFC de la empresa.
 const CON_DETALLE = new Set(['expedientes', 'titulares'])

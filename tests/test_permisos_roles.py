@@ -62,6 +62,8 @@ MATRIZ = [
     ("GET", "/api/v1/usuarios", (A,)),
     ("POST", "/api/v1/usuarios", (A,)),
     ("PATCH", f"/api/v1/usuarios/{X}", (A,)),
+    ("GET", f"/api/v1/usuarios/{X}/expedientes", (A,)),
+    ("PUT", f"/api/v1/usuarios/{X}/expedientes", (A,)),
     ("GET", f"/api/v1/expedientes/{X}/asignaciones", (A,)),
     ("PUT", f"/api/v1/expedientes/{X}/asignaciones", (A,)),
     ("GET", "/api/v1/expedientes/asignados", (A, V, AU, C)),
@@ -177,6 +179,36 @@ def test_el_usuario_de_consulta_solo_ve_el_semaforo_de_sus_expedientes():
 
     r = admin.put(f"/api/v1/expedientes/{asignado['id']}/asignaciones", json={"usuario_ids": [X]})
     assert r.status_code == 422 and X in r.json()["detail"]
+
+
+def test_asignar_los_expedientes_de_una_persona():
+    """Vista Usuarios (F4): se eligen los expedientes de una cuenta; cada expediente afectado deja su evento."""
+    uno, dos, tres = _expediente(), _expediente(), _expediente()
+    persona = admin.post("/api/v1/usuarios", json={"email": f"asig{uuid.uuid4().hex[:6]}@example.com",
+                                                   "nombre_completo": "Consulta asignada", "rol": "CONSULTA",
+                                                   "contrasena_temporal": "Temporal-2026"}).json()
+    validador_id, validador_correo, _ = auth.cuenta(V)
+    admin.put(f"/api/v1/expedientes/{dos['id']}/asignaciones", json={"usuario_ids": [validador_id]})
+    url = f"/api/v1/usuarios/{persona['id']}/expedientes"
+
+    r = admin.put(url, json={"expediente_ids": [uno["id"], dos["id"]]})
+    assert r.status_code == 200 and r.json() == sorted([uno["id"], dos["id"]])
+    asignados_dos = admin.get(f"/api/v1/expedientes/{dos['id']}/asignaciones").json()
+    assert {u["email"] for u in asignados_dos} == {persona["email"], validador_correo}, "No quita a los demás"
+
+    r = admin.put(url, json={"expediente_ids": [dos["id"], tres["id"]]})
+    assert r.json() == sorted([dos["id"], tres["id"]]) and admin.get(url).json() == r.json()
+    por_expediente = {
+        clave: len(admin.get("/api/v1/bitacora", params={"expediente_id": exp["id"],
+                                                         "evento": "ASIGNACION_EXPEDIENTE"}).json())
+        for clave, exp in (("uno", uno), ("dos", dos), ("tres", tres))
+    }
+    assert por_expediente == {"uno": 2, "dos": 2, "tres": 1}, por_expediente  # alta y baja; validador + persona; alta
+    assert admin.put(url, json={"expediente_ids": [dos["id"], tres["id"]]}).json() == r.json()
+    assert len(admin.get("/api/v1/bitacora", params={"expediente_id": tres["id"],
+                                                     "evento": "ASIGNACION_EXPEDIENTE"}).json()) == 1, "Sin cambio, sin evento"
+    assert admin.put(url, json={"expediente_ids": [X]}).status_code == 422
+    assert admin.get(f"/api/v1/usuarios/{X}/expedientes").status_code == 404
 
 
 # ── Gestión de cuentas (HU-05) ───────────────────────────────────

@@ -19,6 +19,7 @@ import {
 import { SkeletonRows } from './Skeleton.jsx'
 import { sinRespuesta } from './sinRespuesta.js'
 import useToast from '../hooks/useToast.js'
+import usePermiso from '../hooks/usePermiso.js'
 import useDebounce from '../hooks/useDebounce.js'
 import { coincideEn, normalizar } from '../utils/busqueda.js'
 import { createRegla, toggleRegla } from '../services/api.js'
@@ -105,6 +106,10 @@ function DetalleRegla({ regla }) {
 
 export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true }) {
   const toast = useToast()
+  // Módulo 7 (PRD §5.1): pausar y dar de alta reglas de cualquier familia es del
+  // administrador; un tipo de documento nuevo (RDS-01), también del validador.
+  const administrar = usePermiso('administrarReglas')
+  const tipoNuevo = usePermiso('tipoDocumentoNuevo')
   const [filtroFamilia, setFiltroFamilia] = useState('TODAS')
   const [filtroSeveridad, setFiltroSeveridad] = useState('TODAS')
   const [filtroEstado, setFiltroEstado] = useState('TODAS')
@@ -295,10 +300,12 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
         />
         <Segmented label="Filtrar por familia normativa" valor={filtroFamilia} onChange={setFiltroFamilia} opciones={opcionesFamilia} />
 
-        <Button variante="primary" icono={Plus} className="toolbar-action" onClick={() => setModalAbierto(true)}>
-          Nueva regla
-        </Button>
-        <TipoDocumentoNuevo onCreado={onRefresh} disabled={!isOnline} />
+        {administrar && (
+          <Button variante="primary" icono={Plus} className="toolbar-action" onClick={() => setModalAbierto(true)}>
+            Nueva regla
+          </Button>
+        )}
+        {tipoNuevo && <TipoDocumentoNuevo onCreado={onRefresh} disabled={!isOnline} />}
       </div>
 
       {/* Los filtros secundarios van en su propio renglón, como en Expedientes: a
@@ -447,12 +454,18 @@ export default function ReglasTab({ reglas, loading, onRefresh, isOnline = true 
                             </div>
                           </td>
                           <td className="col-right" onClick={(e) => e.stopPropagation()}>
-                            <Switch
-                              checked={r.activo}
-                              onClick={() => setPorConfirmar(r)}
-                              loading={togglingId === r.id}
-                              label={`${r.activo ? 'Pausar' : 'Activar'} ${r.codigo_regla}`}
-                            />
+                            {administrar ? (
+                              <Switch
+                                checked={r.activo}
+                                onClick={() => setPorConfirmar(r)}
+                                loading={togglingId === r.id}
+                                label={`${r.activo ? 'Pausar' : 'Activar'} ${r.codigo_regla}`}
+                              />
+                            ) : (
+                              <Badge tono={r.activo ? 'ok' : 'neutral'} punto>
+                                {r.activo ? 'Activa' : 'Pausada'}
+                              </Badge>
+                            )}
                           </td>
                         </tr>
                         {abierta && (

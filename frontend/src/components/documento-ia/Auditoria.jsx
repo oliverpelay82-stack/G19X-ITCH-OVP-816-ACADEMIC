@@ -8,6 +8,7 @@ import DictamenesGuardados, { AvisoIntegridad } from '../DictamenesGuardados.jsx
 import CotejoRepresentacion from '../CotejoRepresentacion.jsx'
 import { Button, EmptyState } from '../ui/index.js'
 import useToast from '../../hooks/useToast.js'
+import usePermiso from '../../hooks/usePermiso.js'
 import { analizarDocumento, getVisorDocumento, prepararDocumento } from '../../services/api.js'
 import { DictamenEvidencia, DictamenResultado, DictamenTecnico } from './Dictamen.jsx'
 import { Stepper } from './Etapas.jsx'
@@ -35,6 +36,8 @@ export function AuditoriaIa({
   registroTecnico = null,
 }) {
   const toast = useToast()
+  // Módulo 7 (PRD §5.1): auditar es de la operación; el auditor consulta el resultado.
+  const operar = usePermiso('operar')
   const base = useId()
   const ids = { cotejo: `${base}-cotejo`, contenido: `${base}-contenido`, sellos: `${base}-sellos`, fechas: `${base}-fechas` }
   // Del resumen a su evidencia: se cambia de sección y, ya visible, se desplaza al bloque.
@@ -160,7 +163,7 @@ export function AuditoriaIa({
             Con dictamen, auditar de nuevo es secundario y va junto a las pestañas
             (ranura de la cabecera del panel): no ocupa un renglón ni compite con
             «Ratificar dictamen». Solo en la sección Resultado, donde se ve el avance. */}
-        {auditado ? (
+        {!operar ? null : auditado ? (
           ranuraAccion && seccion === 'resultado' && createPortal(botonAuditar, ranuraAccion)
         ) : (
           <div className="ai-cta">

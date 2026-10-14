@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { ArrowsClockwise, CaretRight, MagnifyingGlass, Moon, Sun } from './iconos.js'
 import SystemHealth from './SystemHealth.jsx'
+import MenuUsuario from './sesion/MenuUsuario.jsx'
 import { IconButton } from './ui/index.js'
 
 /** Si la página está desplazada: la cabecera fija marca entonces su borde con una sombra fina. */
@@ -40,8 +41,8 @@ function Actualizado({ momento }) {
 
 /**
  * Cabecera ejecutiva: migas navegables (Cumplimiento › Sección), título H1,
- * la franja de salud de los tres microservicios y las acciones globales en
- * micro-squircles (refrescar y tema).
+ * la franja de salud de los tres microservicios, las acciones globales en
+ * micro-squircles (buscar, refrescar y tema) y el menú del usuario en sesión.
  */
 export default function Header({
   titulo,
@@ -93,10 +94,12 @@ export default function Header({
 
         <Actualizado momento={actualizado} />
 
-        {/* D1: la paleta de comandos también se abre con Ctrl+K (⌘K en Mac). */}
-        <IconButton etiqueta="Buscar (Ctrl+K)" data-tooltip="Buscar · Ctrl+K" aria-haspopup="dialog" onClick={onAbrirPaleta}>
-          <MagnifyingGlass size={16} />
-        </IconButton>
+        {/* D1: la paleta de comandos también se abre con Ctrl+K (⌘K en Mac). La consulta no la tiene. */}
+        {onAbrirPaleta && (
+          <IconButton etiqueta="Buscar (Ctrl+K)" data-tooltip="Buscar · Ctrl+K" aria-haspopup="dialog" onClick={onAbrirPaleta}>
+            <MagnifyingGlass size={16} />
+          </IconButton>
+        )}
 
         <IconButton etiqueta="Actualizar datos" tooltip ocupado={refrescando} onClick={onRefresh} disabled={refrescando}>
           <ArrowsClockwise size={16} className="refresh-icon" />
@@ -113,6 +116,11 @@ export default function Header({
               tema (no al cargar la página), gira al entrar. */}
           {isDark ? <Sun key="sol" size={16} className={claseIcono} /> : <Moon key="luna" size={16} className={claseIcono} />}
         </IconButton>
+
+        <span className="header-divider" aria-hidden="true" />
+
+        {/* Módulo 7 (HU-06): quién está en sesión, con qué rol, y la salida. */}
+        <MenuUsuario />
       </div>
     </header>
   )

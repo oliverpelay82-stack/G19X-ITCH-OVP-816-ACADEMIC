@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { CaretLeft, CaretRight, CircleNotch, Scan, X } from './iconos.js'
 import { Badge, IconButton, Segmented } from './ui/index.js'
 import { getVisorDocumento, urlPaginaDocumento } from '../services/api.js'
+import useImagenAutenticada from '../hooks/useImagenAutenticada.js'
 
 const ZOOMS = [
   { id: 1, label: 'Ajustar' },
@@ -151,6 +152,8 @@ export default function VisorDocumento({ doc, busqueda, onCerrar }) {
   }
   const ancho = anchoSolicitado(anchoVisor, zoom)
   const tono = busqueda?.tono || 'ok'
+  // Módulo 7: la página se pide con el token de la sesión y se muestra desde una URL de objeto.
+  const imagen = useImagenAutenticada(info && !errorInfo ? urlPaginaDocumento(doc.id, pagina, ancho) : null)
 
   return (
     <section className="visor" aria-label="Visor del documento" onKeyDown={alTeclear}>
@@ -203,13 +206,13 @@ export default function VisorDocumento({ doc, busqueda, onCerrar }) {
                 aspectRatio: datosPagina ? `${datosPagina.ancho} / ${datosPagina.alto}` : undefined,
               }}
             >
-              {cargando && <div className="visor-cargando skeleton" aria-hidden="true" />}
-              {errorImagen ? (
+              {cargando && !imagen.error && <div className="visor-cargando skeleton" aria-hidden="true" />}
+              {errorImagen || imagen.error ? (
                 <p className="visor-aviso visor-aviso--warn">No se pudo mostrar la página {pagina}.</p>
               ) : (
-                <img
+                imagen.src && <img
                   key={`${pagina}-${ancho}`}
-                  src={urlPaginaDocumento(doc.id, pagina, ancho)}
+                  src={imagen.src}
                   alt={`Página ${pagina} de ${doc.nombre_archivo_original}`}
                   onLoad={() => setCargando(false)}
                   onError={() => {

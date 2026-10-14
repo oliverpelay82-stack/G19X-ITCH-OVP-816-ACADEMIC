@@ -9,7 +9,7 @@
 | Línea de negocio | Portafolio de soluciones LegalTech de PluriOne |
 | Patrocinador de negocio | Lic. Juan Méndez Herrera, Director Comercial (asesor empresarial y Product Owner) |
 | Elaborado por | Oliver Villanueva Pelay, residente — Instituto Tecnológico de Chilpancingo |
-| Versión del documento | 2.4 — 14 de octubre de 2026 (2.4: diseño del Módulo 7 y del correo, MR-14 y MR-15; 2.3: 1 de octubre; 2.2: P7 documentado; 2.1: P6; 2.0: P5; 1.9: revisión de requerimientos; 1.8: correcciones de la documentación; 1.7: 30 de septiembre; 1.6: 29 de septiembre; 1.5: índice de cumplimiento; 1.4: P3; 1.3: P2; 1.2: P1; 1.1: 28 de septiembre; 1.0: 27 de septiembre de 2026) |
+| Versión del documento | 2.5 — 14 de octubre de 2026 (2.5: Módulo 7 implementado, MR-15; 2.4: diseño del Módulo 7 y del correo, MR-14 y MR-15; 2.3: 1 de octubre; 2.2: P7 documentado; 2.1: P6; 2.0: P5; 1.9: revisión de requerimientos; 1.8: correcciones de la documentación; 1.7: 30 de septiembre; 1.6: 29 de septiembre; 1.5: índice de cumplimiento; 1.4: P3; 1.3: P2; 1.2: P1; 1.1: 28 de septiembre; 1.0: 27 de septiembre de 2026) |
 | Documento hermano | [PRD.md](PRD.md) — requerimientos del producto |
 
 > **Fuentes.** Este MRD se construye exclusivamente con el anteproyecto de residencia, los entregables DOC-01 a DOC-08 ([ESPECIFICACIONES_DOC01_A_DOC08.txt](ESPECIFICACIONES_DOC01_A_DOC08.txt)) y el DOCUMENTO GENERAL («DG»). La información de mercado que esas fuentes no contienen —tamaño de mercado, precio o modelo comercial— no se estima: se declara en la [sección 13](#13-información-de-mercado-no-documentada) como pendiente de definir con PluriOne.
@@ -334,7 +334,7 @@ Derivados de los objetivos y umbrales documentados [Anteproyecto; DG Caps. IV, V
 | Cada validación es demostrable ante una auditoría. | Bitácora inmutable y dictamen exportable (RF-23, RF-27). | Cumplido; el usuario autenticado se registrará con el Módulo 7. |
 | El análisis de un documento es operativo en tiempo de revisión. | ≤ 25 s por documento de hasta 20 páginas (RNF-02). | Con documentos sintéticos se cumple; con un acta real de 26 páginas densas el OCR cuesta ≈ 30 s en el equipo de desarrollo (límite del procesador, [VALIDACION_CUANTITATIVA](VALIDACION_CUANTITATIVA.md) §10.3). Desde el 04/10/2026 la lectura se anticipa al custodiar y la auditoría solo espera al modelo ([diagrama](uml/rnf02-actividad-lectura-anticipada.puml); PRD §21.9). |
 | El personal jurídico entiende el estado y los hallazgos sin conocimientos técnicos, en una pantalla de portátil. | Lenguaje llano en interfaz, alertas y reportes (RNF-08); vistas legibles a 1366 × 768 (RNF-07). | Cumplido (PRD §13.1, revisión del frontend). |
-| El acceso está controlado por rol. | RF-25 y RF-26. | Pendiente; diseñado el 14/10/2026 (PRD §5.1 y §5.2). |
+| El acceso está controlado por rol. | RF-25 y RF-26. | Cumplido el 14/10/2026 (Módulo 7, PRD §5.1 y §5.2). |
 | La reducción del tiempo de revisión se confirma con el cliente. | Estimación del 90 % (DG §6.7). | Por medir con PluriOne en la evaluación post-implementación (semana 16). |
 
 ---
@@ -371,7 +371,7 @@ Derivados de los objetivos y umbrales documentados [Anteproyecto; DG Caps. IV, V
 | MR-12 Semáforo y alertas con acción correctiva | RF-18, RF-19, RF-21, HU-15, HU-16, HU-27; índice de cumplimiento del DOC-05 (PRD §10.5) | Implementado, con el índice de cumplimiento del DOC-05 (C6 del análisis de brechas) |
 | MR-13 Reportes PDF y Excel | RF-22, RF-24, HU-26, HU-29 | Implementado (el tablero propio sustituye a Power BI: PRD §19) |
 | MR-14 Notificación por correo | RF-20, HU-17; RF-17 (umbrales), HU-31 (asignaciones) | Pendiente (diseñado el 14/10/2026: PRD §5.2; [diagrama](uml/rf20-actividad-notificacion-correo.puml)) |
-| MR-15 Acceso por rol | RF-25, RF-26, RF-27, HU-05, HU-06, HU-07, HU-31 | Pendiente (diseñado el 14/10/2026: cuatro roles del DOC-04, matriz de permisos y MFA TOTP opcional, PRD §5.1 y §5.2; diagramas `m7-*` en `docs/uml/`) |
+| MR-15 Acceso por rol | RF-25, RF-26, RF-27, HU-05, HU-06, HU-07, HU-31 | Implementado el 14/10/2026: cuatro roles del DOC-04, matriz de permisos en los tres servicios y en la interfaz, MFA TOTP opcional y la persona real en la bitácora (PRD §5.1 y §5.2; diagramas `m7-*` en `docs/uml/`) |
 | MR-16 Confidencialidad de los expedientes | RNF-04, RNF-05, RNF-06; PRD §12.5 | Parcial (minimización implementada; cifrado en reposo, TLS en el borde y red interna aislada pendientes) |
 | MR-17 Despliegue en la infraestructura de PluriOne | RNF-11 | Implementado |
 | MR-18 Búsqueda de expedientes | RF-05, HU-04 | Implementado |

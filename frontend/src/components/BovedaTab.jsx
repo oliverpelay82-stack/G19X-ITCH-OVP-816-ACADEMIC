@@ -9,6 +9,7 @@ import { firmaDeMime, tipoCorto } from '../utils/documentos.js'
 import { SkeletonRows } from './Skeleton.jsx'
 import { CORE_FUERA_DE_LINEA, sinRespuesta } from './sinRespuesta.js'
 import useToast from '../hooks/useToast.js'
+import usePermiso from '../hooks/usePermiso.js'
 import useDebounce from '../hooks/useDebounce.js'
 import { coincideEn, normalizar } from '../utils/busqueda.js'
 import useDesplazamiento from '../hooks/useDesplazamiento.js'
@@ -43,6 +44,8 @@ function EstadoEnBoveda({ estado, evaluado }) {
  */
 export default function BovedaTab({ documentos, expedientes, loading, onRefresh, isOnline = true, iaOnline = true }) {
   const toast = useToast()
+  // Módulo 7 (PRD §5.1): custodiar es de la operación; el auditor consulta y descarga.
+  const operar = usePermiso('operar')
   const [expedienteId, setExpedienteId] = useState('')
   const [subiendo, setSubiendo] = useState(false)
   const [ingestaAbierta, setIngestaAbierta] = useState(false)
@@ -148,16 +151,18 @@ export default function BovedaTab({ documentos, expedientes, loading, onRefresh,
           label="Buscar en la bóveda"
         />
         <Segmented label="Versiones a mostrar" valor={alcance} onChange={setAlcance} opciones={opcionesAlcance} />
-        <Button
-          variante="primary"
-          icono={UploadSimple}
-          className="toolbar-action"
-          onClick={() => setIngestaAbierta(true)}
-          disabled={!isOnline || expedientes.length === 0}
-          title={!isOnline ? 'El sistema de expedientes no responde' : undefined}
-        >
-          Custodiar documento
-        </Button>
+        {operar && (
+          <Button
+            variante="primary"
+            icono={UploadSimple}
+            className="toolbar-action"
+            onClick={() => setIngestaAbierta(true)}
+            disabled={!isOnline || expedientes.length === 0}
+            title={!isOnline ? 'El sistema de expedientes no responde' : undefined}
+          >
+            Custodiar documento
+          </Button>
+        )}
       </div>
 
       <div className="toolbar toolbar--sub">

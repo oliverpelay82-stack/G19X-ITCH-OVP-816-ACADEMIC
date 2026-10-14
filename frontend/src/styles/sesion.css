@@ -1,0 +1,264 @@
+/* ===================================================================
+   Módulo 7: inicio de sesión, cambio de contraseña, menú de usuario,
+   verificación en dos pasos, Usuarios y Consulta. Solo tokens.
+   =================================================================== */
+
+/* Pantallas sin sesión: una tarjeta centrada sobre el lienzo */
+.acceso {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: var(--s-6) var(--s-4);
+  background: var(--bg-canvas);
+}
+
+.acceso-tarjeta {
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  padding: var(--s-8) var(--s-6);
+  background: var(--bg-surface);
+  border: var(--border-default);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-card);
+}
+
+.acceso-marca {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2-5);
+  margin-bottom: var(--s-3);
+}
+
+.acceso-titulo {
+  font-size: var(--fs-h1);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  color: var(--text-primary);
+}
+
+.acceso-descripcion,
+.acceso-nota {
+  font-size: var(--fs-small);
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.acceso-nota {
+  color: var(--text-muted);
+  margin-top: var(--s-1);
+}
+
+.acceso-aviso,
+.acceso-error {
+  font-size: var(--fs-small);
+  line-height: 1.5;
+  padding: var(--s-2) var(--s-3);
+  border-radius: var(--r-sm);
+}
+
+.acceso-aviso {
+  color: var(--text-secondary);
+  background: var(--neutral-bg);
+  border: 1px solid var(--neutral-border);
+}
+
+.acceso-error {
+  color: var(--bad);
+  background: var(--bad-bg);
+  border: 1px solid var(--bad-border);
+}
+
+.acceso-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+
+.acceso-form .btn {
+  justify-content: center;
+}
+
+.acceso-codigo {
+  font-family: var(--font-mono);
+  font-size: var(--fs-title);
+  letter-spacing: 0.3em;
+  text-align: center;
+}
+
+/* Menú de usuario de la cabecera */
+.menu-usuario {
+  position: relative;
+}
+
+.menu-usuario-boton {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: var(--s-1) var(--s-2) var(--s-1) var(--s-1);
+  border-radius: var(--r-full);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+
+.menu-usuario-boton:hover,
+.menu-usuario-boton[aria-expanded='true'] {
+  background: var(--bg-subtle);
+  border-color: var(--line);
+}
+
+.menu-usuario-identidad {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.2;
+  text-align: left;
+}
+
+.menu-usuario-nombre {
+  font-size: var(--fs-small);
+  font-weight: 500;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.menu-usuario-rol {
+  font-size: var(--fs-micro);
+  color: var(--text-muted);
+}
+
+.menu-usuario-lista {
+  position: absolute;
+  right: 0;
+  top: calc(100% + var(--s-1-5));
+  z-index: 30;
+  min-width: 240px;
+  display: flex;
+  flex-direction: column;
+  padding: var(--s-1-5);
+  background: var(--bg-surface-elevated);
+  border: var(--border-default);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-pop);
+}
+
+.menu-usuario-correo {
+  padding: var(--s-2) var(--s-2-5);
+  font-size: var(--fs-micro);
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--line-subtle);
+  margin-bottom: var(--s-1);
+  overflow-wrap: anywhere;
+}
+
+.menu-usuario-opcion {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: var(--s-2) var(--s-2-5);
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--text-primary);
+  font-size: var(--fs-small);
+  text-align: left;
+  cursor: pointer;
+}
+
+.menu-usuario-estado {
+  margin-left: auto;
+  font-size: var(--fs-micro);
+  color: var(--text-muted);
+}
+
+.menu-usuario-opcion:hover,
+.menu-usuario-opcion:focus-visible {
+  background: var(--bg-subtle);
+}
+
+/* Verificación en dos pasos */
+.mfa-qr {
+  display: grid;
+  place-items: center;
+  padding: var(--s-3);
+  background: var(--bg-surface);
+  border: var(--border-default);
+  border-radius: var(--r-md);
+}
+
+.mfa-qr img {
+  width: 184px;
+  height: 184px;
+  image-rendering: pixelated;
+}
+
+.mfa-pasos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+
+.mfa-texto {
+  font-size: var(--fs-small);
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* Usuarios y Consulta */
+/* En la columna del formulario el buscador ocupa su alto y todo el ancho (en las
+   barras de herramientas, flex: 1 1 240px lo estira a lo ancho). */
+.asignacion > .search-box {
+  flex: 0 0 auto;
+  max-width: none;
+}
+
+.usuarios-acciones {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: var(--s-1-5);
+  justify-content: flex-end;
+}
+
+.asignacion-lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+  max-height: 360px;
+  overflow-y: auto;
+  padding: var(--s-1);
+  border: var(--border-default);
+  border-radius: var(--r-md);
+}
+
+.asignacion-opcion {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2-5);
+  padding: var(--s-2) var(--s-2-5);
+  border-radius: var(--r-sm);
+  cursor: pointer;
+}
+
+.asignacion-opcion:hover {
+  background: var(--bg-subtle);
+}
+
+.asignacion-detalle {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  font-size: var(--fs-small);
+}
+
+.asignacion-detalle span:last-child {
+  font-size: var(--fs-micro);
+  color: var(--text-muted);
+}

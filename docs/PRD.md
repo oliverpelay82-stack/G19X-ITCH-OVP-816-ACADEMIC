@@ -11,8 +11,8 @@
 | Desarrollo (Scrum Master / Desarrollador) | Oliver Villanueva Pelay, residente (No. de control 21520500) |
 | Stakeholder evaluador | Edgar Loheffelmman (PluriOne) |
 | Asesor interno | Dr. Wilfrido Campos Francisco |
-| Versión del documento | 4.0 — 14 de octubre de 2026 (4.0: Módulo 7, fase F3, MFA con TOTP; 3.9: Módulo 7, fase F2 en rules y ai; 3.8: Módulo 7, fase F1 en el core; 3.7: diseño del Módulo 7 y del correo RF-20, matriz de permisos, §5.1 y §5.2; 3.6: rubro que nombra lo preguntado en el chat, §21.9; 3.5: lectura anticipada y prioridad del OCR, RNF-02, §21.9; 3.4: frontend sin redundancias, §13.1; 3.3: PLUS-23, elementos expresos y cargo del apoderado, §21.9; 3.2: auditoría técnica y OCR en flujo continuo, §21.9; 3.1: depuración del alcance, §21.8; 3.0: RNF-10, respaldos; 2.9: RF-09, corrección de datos y RF-02; 2.8: Fase B del plan visual; 2.7: gráficas, Fase A; 2.6: P7 implementado; 2.5: P7 documentado; 2.4: P6; 2.3: P5 implementado; 2.2: P5 documentado; 2.1: revisión de requerimientos; 2.0: correcciones de la documentación; 1.9: revisión visual del frontend; 1.8: chat documental eficiente; 1.7: revisión del frontend; 1.6: índice de cumplimiento; 1.5: P3; 1.4: P2; 1.3: P1; 1.2: 28 de septiembre; 1.0: 27 de septiembre de 2026) |
-| Estado del producto | En desarrollo: Sprints 1 y 2 implementados, Sprint 3 implementado parcialmente, Sprint 4 implementado salvo HU-31, Módulo 7 diseñado (14/10/2026) y en implementación |
+| Versión del documento | 4.1 — 14 de octubre de 2026 (4.1: Módulo 7, fase F4, interfaz por rol; 4.0: Módulo 7, fase F3, MFA con TOTP; 3.9: Módulo 7, fase F2 en rules y ai; 3.8: Módulo 7, fase F1 en el core; 3.7: diseño del Módulo 7 y del correo RF-20, matriz de permisos, §5.1 y §5.2; 3.6: rubro que nombra lo preguntado en el chat, §21.9; 3.5: lectura anticipada y prioridad del OCR, RNF-02, §21.9; 3.4: frontend sin redundancias, §13.1; 3.3: PLUS-23, elementos expresos y cargo del apoderado, §21.9; 3.2: auditoría técnica y OCR en flujo continuo, §21.9; 3.1: depuración del alcance, §21.8; 3.0: RNF-10, respaldos; 2.9: RF-09, corrección de datos y RF-02; 2.8: Fase B del plan visual; 2.7: gráficas, Fase A; 2.6: P7 implementado; 2.5: P7 documentado; 2.4: P6; 2.3: P5 implementado; 2.2: P5 documentado; 2.1: revisión de requerimientos; 2.0: correcciones de la documentación; 1.9: revisión visual del frontend; 1.8: chat documental eficiente; 1.7: revisión del frontend; 1.6: índice de cumplimiento; 1.5: P3; 1.4: P2; 1.3: P1; 1.2: 28 de septiembre; 1.0: 27 de septiembre de 2026) |
+| Estado del producto | En desarrollo: Sprints 1 y 2 implementados, Sprint 3 implementado parcialmente, Sprint 4 implementado; Módulo 7 implementado salvo el correo (RF-20, fase F5) y la puesta a punto de pruebas y entrega (F6) |
 | Documento hermano | [MRD.md](MRD.md) — requerimientos de mercado |
 
 > **Fuentes.** Salvo las extensiones PLUS de la [sección 21](#21-extensiones-plus), que se marcan como tales y citan la norma que las respalda, este PRD no introduce requisitos nuevos: consolida los documentos oficiales del proyecto —el anteproyecto de residencia, los entregables DOC-01 a DOC-08 ([ESPECIFICACIONES_DOC01_A_DOC08.txt](ESPECIFICACIONES_DOC01_A_DOC08.txt)) y el DOCUMENTO GENERAL que los integra— y el estado verificado del sistema en el repositorio. Cada sección indica su fuente entre corchetes; «DG» es el DOCUMENTO GENERAL.
@@ -138,7 +138,7 @@ Tipos de documento: los tres inventarios del DOC-02 (corporativos, jurídicos y 
 
 El catálogo de endpoints (DOC-08) define la jerarquía de acceso ADMIN > AUDITOR > OPERADOR, más el perfil SISTEMA para las llamadas entre microservicios [DG Cap. VIII §8.4, Tabla 20].
 
-> **Estado:** la autorización por rol **aún no se aplica**. El Módulo 7 (RF-25, RF-26) quedó diseñado el 14/10/2026 (§5.1 y §5.2, diagramas en [`docs/uml/`](uml/README.md)) y se implementa por fases: F1 core-service, F2 rules-service y ai-service, F3 MFA, F4 frontend, F5 correo (RF-20) y F6 pruebas, scripts y entrega [DG Cap. X §10.6].
+> **Estado:** la autorización por rol **se aplica desde el 14/10/2026** en los tres servicios y en la interfaz. El Módulo 7 (RF-25, RF-26) quedó diseñado el 14/10/2026 (§5.1 y §5.2, diagramas en [`docs/uml/`](uml/README.md)) y se implementa por fases: F1 core-service, F2 rules-service y ai-service, F3 MFA, F4 frontend, F5 correo (RF-20) y F6 pruebas, scripts y entrega [DG Cap. X §10.6].
 
 **Roles que se implementan (decisión del 14/10/2026).** Los cuatro del DOC-04 (Tabla 1), de la HU-05 y del criterio de aceptación: `ADMIN`, `VALIDADOR`, `AUDITOR` y `CONSULTA`. El `OPERADOR` del DOC-08 es el `VALIDADOR`. La jerarquía lineal ADMIN > AUDITOR > OPERADOR del DOC-08 se sustituye por la matriz de §5.1, porque le daría al Auditor la edición del Operador, contra el «solo lectura» del DOC-04, y no contempla al Usuario de Consulta de la HU-31 (§19). `SISTEMA` es el perfil de servicio del DOC-08: nunca se asigna a una persona.
 
@@ -168,7 +168,7 @@ Por endpoint (lo que aplica cada servicio; «Lectura» = ADMIN, VALIDADOR y AUDI
 | core | `POST /auth/login` | Público |
 | core | `GET /auth/me`, `POST /auth/cambiar-contrasena`, `POST /auth/mfa/generar`, `POST /auth/mfa/activar`, `POST /auth/mfa/desactivar` | Cualquier usuario autenticado |
 | core | `GET`, `POST /usuarios`; `PATCH /usuarios/{id}` | ADMIN |
-| core | `GET`, `PUT /expedientes/{id}/asignaciones` | ADMIN |
+| core | `GET`, `PUT /expedientes/{id}/asignaciones`; `GET`, `PUT /usuarios/{id}/expedientes` (las mismas asignaciones vistas desde la cuenta, para la vista Usuarios) | ADMIN |
 | core | `GET /expedientes/asignados` | Cualquier usuario autenticado (devuelve solo los suyos) |
 | core | `POST /titulares`, `PATCH /titulares/{id}`, `POST /expedientes`, `PATCH /expedientes/{id}`, `POST /documentos/upload`, `POST /dictamenes/{id}/ratificar` | Operación |
 | core | `GET /titulares`, `GET /expedientes`, `GET /expedientes/{id}`, `GET /alertas`, `GET /bitacora`, `GET /bitacora/verificar-cadena`, `GET /reportes/*` | Lectura |
@@ -325,11 +325,11 @@ Prioridad tomada de las historias de usuario asociadas (Cap. VII); «—» cuand
 
 | ID | Requerimiento | Prioridad | Estado | Evidencia / nota |
 |---|---|---|---|---|
-| RF-25 | Autenticación con credenciales corporativas y soporte MFA. | Alta | **Parcial** | Diseñada el 14/10/2026 (§5.2): cuentas locales con bcrypt, JWT HMAC-SHA256 del DOC-08 y TOTP opcional por usuario. Implementada en el core (F1, 14/10/2026): inicio de sesión con bloqueo, contraseña temporal y cuentas iniciales; segundo factor TOTP opcional (F3, 14/10/2026, `tests/test_mfa.py`). Falta la interfaz (F4). |
-| RF-26 | Autorización por rol (RBAC). | Alta | **Parcial** | Matriz de permisos por endpoint (§5.1), aplicada desde el 14/10/2026 en los tres servicios: core (F1) y rules y ai (F2), con una prueba de matriz en cada uno. Falta la interfaz por rol (F4). |
+| RF-25 | Autenticación con credenciales corporativas y soporte MFA. | Alta | Implementado | Cuentas locales con bcrypt y JWT HMAC-SHA256 del DOC-08 (no Entra ID, §19), bloqueo por intentos, contraseña temporal y TOTP opcional por usuario (F1 y F3); pantallas de acceso, segundo paso y alta del MFA con código QR (F4). Implementado el 14/10/2026 (§5.2). |
+| RF-26 | Autorización por rol (RBAC). | Alta | Implementado | Matriz de permisos por endpoint (§5.1) en los tres servicios, con una prueba de matriz en cada uno (F1 y F2); la interfaz muestra a cada rol solo sus secciones y acciones (F4). Implementado el 14/10/2026. |
 | RF-27 | Bitácora inmutable protegida por el motor de base de datos. | Alta | Implementado | Disparador `trg_bitacora_inmutable` y, desde P3, cada evento sellado en cadena y verificable (`/bitacora/verificar-cadena`); el usuario autenticado se registrará con RF-25. |
 
-**Resumen:** 22 implementados, 1 parcial, 3 pendientes y 1 fuera del alcance de 27 (versión 2.1: RF-10 pasa a parcial y RF-12 sale del alcance; versión 2.9: RF-09 y RF-02 pasan a implementados). La Tabla 33 del DG (§10.7, corte al 03/10/2026) reporta las mismas cifras.
+**Resumen:** 24 implementados, 1 parcial, 1 pendiente (RF-20) y 1 fuera del alcance de 27 (versión 2.1: RF-10 pasa a parcial y RF-12 sale del alcance; versión 2.9: RF-09 y RF-02 pasan a implementados; versión 4.1: RF-25 y RF-26, con el Módulo 7). La Tabla 33 del DG (§10.7, corte al 03/10/2026) reporta las cifras anteriores al Módulo 7: 22, 1, 3 y 1.
 
 ---
 
@@ -343,8 +343,8 @@ Prioridad tomada de las historias de usuario asociadas (Cap. VII); «—» cuand
 | HU-02 | Crear un expediente con nombre, empresa y tipo. | M1 | 1 | Alta | 6 | Implementado |
 | HU-03 | Cargar PDF e imágenes con cálculo automático de SHA-256. | M1 | 1 | Alta | 8 | Implementado |
 | HU-04 | Buscar expedientes por nombre, empresa, tipo o fecha. | M1 | 1 | Alta | 5 | Implementado |
-| HU-05 | Gestionar usuarios y asignar roles. | M7 | 1 | Alta | 10 | Parcial (API del core, F1: `/usuarios`; falta la vista Usuarios, F4) |
-| HU-06 | Iniciar sesión y ver solo las funciones del propio rol. | M7 | 1 | Alta | 8 | Parcial (inicio de sesión y permisos en el core, F1; falta la interfaz, F4) |
+| HU-05 | Gestionar usuarios y asignar roles. | M7 | 1 | Alta | 10 | Implementado (API del core, F1; vista Usuarios con alta, edición y asignación de expedientes, F4) |
+| HU-06 | Iniciar sesión y ver solo las funciones del propio rol. | M7 | 1 | Alta | 8 | Implementado (inicio de sesión con segundo paso, cambio obligatorio de contraseña, menú y acciones por rol, F1 a F4) |
 | HU-07 | Registrar cada acción en la bitácora (usuario, fecha, acción, IP). | M7 | 1 | Alta | 6 | Implementado (14/10/2026): la bitácora registra la cuenta en sesión y su IP; el dictamen del ai-service, a la persona que pidió la auditoría (`X-Usuario-Actor`, F2); las tareas de fondo, `SISTEMA`. Los eventos anteriores conservan «OPERADOR» |
 | HU-08 | Verificar la integridad comparando la huella actual con la original. | M1 | 1 | Media | 5 | Implementado |
 | HU-09 | Definir documentos obligatorios y opcionales por tipo de expediente. | M2 | 2 | Alta | 8 | Implementado |
@@ -369,11 +369,11 @@ Prioridad tomada de las historias de usuario asociadas (Cap. VII); «—» cuand
 | HU-28 | Dictamen formal de cumplimiento por expediente. | M6 | 4 | Alta | 8 | Implementado |
 | HU-29 | Exportar reportes en PDF y Excel. | M6 | 4 | Alta | 8 | Implementado |
 | HU-30 | Consultar la bitácora completa de un expediente. | M7 | 4 | Alta | 5 | Implementado (historial del expediente en la interfaz, `HistorialExpediente.jsx`, sobre `GET /api/v1/bitacora`; eventos consecutivos iguales agrupados) |
-| HU-31 | Usuario de consulta: solo el semáforo de sus expedientes asignados. | M7 | 4 | Media | 4 | Parcial (`expediente_asignaciones` y `GET /expedientes/asignados` en el core, F1; falta la vista de Consulta, F4) |
+| HU-31 | Usuario de consulta: solo el semáforo de sus expedientes asignados. | M7 | 4 | Media | 4 | Implementado (`expediente_asignaciones` y `GET /expedientes/asignados`, F1; vista Mis expedientes, F4) |
 | HU-32 | Validación completa de un expediente (reglas + IA) con un solo botón. | Integración | 4 | Alta | 14 | Implementado («Auditar pendientes» en el detalle del expediente: audita en secuencia, con reglas e IA, los documentos vigentes sin dictamen y muestra el avance por documento y el semáforo y las alertas antes y después) |
 | HU-33 | Manejo controlado de errores (documento ilegible, IA no disponible). | Integración | 4 | Alta | 9 | Implementado: una falla no detiene el resto del expediente (DG §8.7), y las dos excepciones del DOC-05, «Documento ilegible, se requiere recarga» y «Procesamiento diferido», se implementan en P5 (§21.5) |
 
-**Resumen:** 27 implementadas, 2 parciales y 4 pendientes de 33 (HU-33 pasó a parcial en la versión 2.1 y se completó con P5). Respecto de la versión 1.0 pasan a implementadas HU-30 y HU-32 (versión 1.1), HU-19 (versión 1.2), HU-23 (versión 1.4) y HU-24 (versión 2.9). Las historias PLUS (HU-34 en adelante) se cuentan en la sección 21.
+**Resumen:** 31 implementadas, 1 parcial (HU-14) y 1 pendiente (HU-17) de 33 (HU-33 pasó a parcial en la versión 2.1 y se completó con P5; HU-05, HU-06, HU-07 y HU-31 se completaron con el Módulo 7, versiones 3.9 y 4.1). Respecto de la versión 1.0 pasan a implementadas HU-30 y HU-32 (versión 1.1), HU-19 (versión 1.2), HU-23 (versión 1.4) y HU-24 (versión 2.9). Las historias PLUS (HU-34 en adelante) se cuentan en la sección 21.
 
 ---
 
@@ -730,9 +730,9 @@ Revisión completa de la interfaz después de P1 a P3, en lotes aprobados por el
 
 **Seguridad y auditoría**
 
-- [ ] Acceso con autenticación y roles diferenciados *(pendiente: RF-25, RF-26)*.
+- [x] Acceso con autenticación y roles diferenciados *(Módulo 7, 14/10/2026: RF-25, RF-26)*.
 - [x] Cada acción relevante queda en la bitácora de forma inmutable.
-- [ ] Documentos protegidos mediante cifrado y control de acceso *(pendiente: RNF-04, RF-26)*.
+- [ ] Documentos protegidos mediante cifrado y control de acceso *(control de acceso por rol implementado con RF-26; cifrado en reposo pendiente: RNF-04)*.
 
 **Calidad y entrega**
 
@@ -792,10 +792,10 @@ Revisión completa de la interfaz después de P1 a P3, en lotes aprobados por el
 
 | Sprint | Semanas | Objetivo | HU | Estado |
 |---|---|---|---|---|
-| 1 — Cimientos del sistema | 5–6 | Base de datos, API REST, autenticación con roles y gestión de expedientes con carga. | HU-01 a HU-08 | Implementado, salvo autenticación y roles (HU-05, HU-06) |
+| 1 — Cimientos del sistema | 5–6 | Base de datos, API REST, autenticación con roles y gestión de expedientes con carga. | HU-01 a HU-08 | Implementado (autenticación y roles, HU-05 y HU-06, con el Módulo 7 el 14/10/2026) |
 | 2 — Motor de reglas y vigencias | 7–8 | Reglas configurables, vigencia y alertas; dictamen determinista sin IA. | HU-09 a HU-17 | Implementado, salvo correo (HU-17) y umbrales desde la interfaz (HU-14) |
 | 3 — Análisis inteligente con IA | 9–10 | OCR, análisis semántico, cita y confianza, Human-in-the-Loop. | HU-18 a HU-25 | Implementado parcialmente (HU-24) |
-| 4 — Reportes, dashboard e integración | 11–12 | Panel, reportes exportables e integración completa. | HU-26 a HU-33 | Implementado, salvo el usuario de consulta (HU-31, depende del Módulo 7) |
+| 4 — Reportes, dashboard e integración | 11–12 | Panel, reportes exportables e integración completa. | HU-26 a HU-33 | Implementado (el usuario de consulta, HU-31, con el Módulo 7 el 14/10/2026) |
 
 ---
 
@@ -866,7 +866,7 @@ Riesgos adicionales identificados en la implementación [DG §8.7 y §10.7]:
 
 **Pendientes de implementación** (orden acordado el 29/09/2026: P1 a P3 y la revisión completa del frontend terminados; en la fase final, el Módulo 7)
 
-1. Autenticación, usuarios y roles: RF-25, RF-26, HU-05, HU-06 y HU-31; registrar el usuario autenticado en la bitácora (HU-07). Diseño aprobado el 14/10/2026 (§5.1 y §5.2); F1 (core), F2 (rules y ai) y F3 (MFA) terminadas el 14/10/2026. Siguen F4 (interfaz), F5 (correo) y F6 (pruebas, scripts y entrega).
+1. Autenticación, usuarios y roles: RF-25, RF-26, HU-05, HU-06 y HU-31; registrar el usuario autenticado en la bitácora (HU-07). Diseño aprobado el 14/10/2026 (§5.1 y §5.2); F1 (core), F2 (rules y ai), F3 (MFA) y F4 (interfaz) terminadas el 14/10/2026. Siguen F5 (correo) y F6 (pruebas, scripts y entrega).
 2. Notificaciones por correo electrónico: RF-20, HU-17 (fase F5 del Módulo 7, §5.2).
 3. Requerimientos no funcionales: cifrado AES-256 en reposo (RNF-04), TLS 1.3 en el borde y red interna aislada (RNF-05); pruebas de concurrencia y disponibilidad (RNF-03, RNF-09).
 4. Después de P5 (revisión de requerimientos, versión 2.1): ciclo de vida del expediente activo, cerrado y archivado, sin eliminar nada, para que un expediente concluido deje de evaluarse y de alertar (complementa la conservación de §12.6). La corrección de los datos de una empresa o un expediente con registro en la bitácora, que este punto también pedía, se implementó en la versión 2.9 (`PATCH /titulares/{id}` y `PATCH /expedientes/{id}`).

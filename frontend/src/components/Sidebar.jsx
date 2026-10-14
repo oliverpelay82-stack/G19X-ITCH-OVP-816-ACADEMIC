@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { BellRinging, Buildings, ChartBar, FolderOpen, ListChecks, Vault } from './iconos.js'
+import { BellRinging, Buildings, ChartBar, FolderOpen, ListChecks, UsersThree, Vault } from './iconos.js'
 import LogoMotor from './LogoMotor.jsx'
 
 // Iconos del menú en peso regular y duotone en el ítem activo.
@@ -21,7 +21,14 @@ const GRUPOS = [
   },
   {
     label: 'Configuración',
-    items: [{ id: 'reglas', label: 'Reglas', icon: ListChecks }],
+    items: [
+      { id: 'reglas', label: 'Reglas', icon: ListChecks },
+      { id: 'usuarios', label: 'Usuarios', icon: UsersThree },
+    ],
+  },
+  {
+    label: 'Consulta',
+    items: [{ id: 'consulta', label: 'Mis expedientes', icon: FolderOpen }],
   },
 ]
 
@@ -48,8 +55,14 @@ function Contador({ total, tono }) {
  * versales y el ítem activo como tarjeta blanca elevada. Solo Alertas lleva
  * conteo, porque es lo único que pide acción; en tono de advertencia si hay
  * alertas críticas o altas.
+ *
+ * Módulo 7 (HU-06): solo aparecen las `secciones` del rol en sesión; un grupo
+ * sin secciones del rol no se muestra.
  */
-export default function Sidebar({ tabActiva, onTabChange, contadores }) {
+export default function Sidebar({ tabActiva, onTabChange, contadores, secciones }) {
+  const grupos = GRUPOS.map((g) => ({ ...g, items: g.items.filter((i) => secciones.includes(i.id)) })).filter(
+    (g) => g.items.length > 0
+  )
   return (
     <aside className="sidebar">
       <div className="sidebar-brand">
@@ -63,7 +76,7 @@ export default function Sidebar({ tabActiva, onTabChange, contadores }) {
       </div>
 
       <nav className="sidebar-nav" aria-label="Navegación principal">
-        {GRUPOS.map((grupo) => (
+        {grupos.map((grupo) => (
           <div className="nav-group" key={grupo.label}>
             <p className="sidebar-label">{grupo.label}</p>
             {grupo.items.map(({ id, label, icon: Icono }) => {

@@ -6,14 +6,20 @@ import ExpedientesTab from './components/ExpedientesTab.jsx'
 import { SkeletonRows } from './components/Skeleton.jsx'
 import PaletaComandos from './components/PaletaComandos.jsx'
 import ErrorVista from './components/ErrorVista.jsx'
+import { SesionProvider } from './components/sesion/SesionProvider.jsx'
+import InicioSesion from './components/sesion/InicioSesion.jsx'
+import CambioObligatorio from './components/sesion/CambioObligatorio.jsx'
+import useSesion from './hooks/useSesion.js'
 import useToast from './hooks/useToast.js'
 import useTheme from './hooks/useTheme.js'
 import useRuta from './hooks/useRuta.js'
 import { registrarTiposDeclarados } from './constants.js'
 import { valorTrasCarga } from './utils/carga.js'
+import { ROL, seccionPermitida, seccionesDe } from './utils/permisos.js'
 import {
   getDocumentos,
   getExpedientes,
+  getExpedientesAsignados,
   getHealthAi,
   getHealthCore,
   getHealthRules,
@@ -30,6 +36,8 @@ const BovedaTab = lazy(() => import('./components/BovedaTab.jsx'))
 const ReglasTab = lazy(() => import('./components/ReglasTab.jsx'))
 const AlertasTab = lazy(() => import('./components/AlertasTab.jsx'))
 const ReportesTab = lazy(() => import('./components/ReportesTab.jsx'))
+const ConsultaTab = lazy(() => import('./components/ConsultaTab.jsx'))
+const UsuariosTab = lazy(() => import('./components/usuarios/UsuariosTab.jsx'))
 
 /** Mientras llega el código de una vista: el mismo esqueleto de las tablas, sin aviso. */
 function CargandoVista() {
@@ -53,10 +61,12 @@ const SECCIONES = {
   alertas: { titulo: 'Alertas', grupo: 'Auditoría', miga: 'Alertas' },
   reportes: { titulo: 'Reportes', grupo: 'Auditoría', miga: 'Reportes' },
   reglas: { titulo: 'Reglas', grupo: 'Configuración', miga: 'Reglas' },
+  usuarios: { titulo: 'Usuarios', grupo: 'Configuración', miga: 'Usuarios' },
+  consulta: { titulo: 'Mis expedientes', grupo: 'Consulta', miga: 'Mis expedientes' },
 }
 
 /** Sección a la que lleva el clic en el grupo de las migas. */
-const INICIO_GRUPO = { Cumplimiento: 'expedientes', Auditoría: 'alertas', Configuración: 'reglas' }
+const INICIO_GRUPO = { Cumplimiento: 'expedientes', Auditoría: 'alertas', Configuración: 'reglas', Consulta: 'consulta' }
 
 /**
  * Las tarjetas de métricas solo acompañan a las vistas de seguimiento. En
@@ -96,14 +106,41 @@ const HEALTH_INICIAL = {
   ai: { online: null, latencia: null, payload: null },
 }
 
+/**
+ * Módulo 7 (HU-06): sin sesión, el inicio de sesión; con una contraseña temporal,
+ * solo su cambio; después, el sistema del rol. La clave por cuenta descarta el
+ * estado de quien salió si entra otra persona en la misma pestaña.
+ */
 export default function App() {
+  return (
+    <SesionProvider>
+      <Puerta />
+    </SesionProvider>
+  )
+}
+
+function Puerta() {
+  const { usuario } = useSesion()
+  if (!usuario) return <InicioSesion />
+  if (usuario.debe_cambiar_contrasena) return <CambioObligatorio />
+  return <Sistema key={usuario.id} rol={usuario.rol} />
+}
+
+function Sistema({ rol }) {
   const toast = useToast()
   const { isDark, toggleTheme } = useTheme()
+  const esConsulta = rol === ROL.CONSULTA
+  const secciones = useMemo(() => seccionesDe(rol), [rol])
 
-  // La URL es la fuente de verdad de la sección y del expediente desplegado.
+  // La URL es la fuente de verdad de la sección y del expediente desplegado. Una
+  // sección que el rol no tiene (un enlace ajeno, otro rol en la misma pestaña)
+  // lleva a la de inicio del rol.
   const [ruta, ir] = useRuta()
-  const tabActiva = ruta.seccion
+  const tabActiva = seccionPermitida(rol, ruta.seccion)
   const setTabActiva = useCallback((seccion) => ir(seccion), [ir])
+  useEffect(() => {
+    if (ruta.seccion !== tabActiva) ir(tabActiva, null, { reemplazar: true })
+  }, [ruta.seccion, tabActiva, ir])
   const [health, setHealth] = useState(HEALTH_INICIAL)
   const [loading, setLoading] = useState(true)
   const [refrescando, setRefrescando] = useState(false)
@@ -112,6 +149,8 @@ export default function App() {
   const [expedientes, setExpedientes] = useState([])
   const [documentos, setDocumentos] = useState([])
   const [reglas, setReglas] = useState([])
+  // HU-31: lo único que recibe el usuario de consulta.
+  const [asignados, setAsignados] = useState([])
   // Titular para el que se pidió aperturar un expediente desde Empresas.
   const [aperturaTitular, setAperturaTitular] = useState(null)
   // Filtro con el que otra vista pide abrir una sección: el estado del semáforo
@@ -129,6 +168,12 @@ export default function App() {
   const [actualizado, setActualizado] = useState(null)
 
   const cargarTodo = useCallback(async () => {
+    if (esConsulta) {
+      const [a] = await Promise.allSettled([getExpedientesAsignados()])
+      setAsignados((previo) => valorTrasCarga(a, previo))
+      setLoading(false)
+      return a.status === 'fulfilled'
+    }
     const [t, e, d, r] = await Promise.allSettled([
       getTitulares(),
       getExpedientes(),
@@ -143,7 +188,7 @@ export default function App() {
     setReglas((previo) => valorTrasCarga(r, previo))
     setLoading(false)
     return [t, e, d].some((x) => x.status === 'fulfilled')
-  }, [])
+  }, [esConsulta])
 
   const chequearSalud = useCallback(async () => {
     const [core, rules, ai] = await Promise.all([
@@ -303,6 +348,7 @@ export default function App() {
   // D1: Ctrl+K (⌘K en Mac) abre o cierra la paleta de comandos desde cualquier vista.
   const [paletaAbierta, setPaletaAbierta] = useState(false)
   useEffect(() => {
+    if (esConsulta) return undefined
     const alPulsar = (e) => {
       if ((e.ctrlKey || e.metaKey) && !e.altKey && e.key.toLowerCase() === 'k') {
         e.preventDefault()
@@ -311,11 +357,11 @@ export default function App() {
     }
     window.addEventListener('keydown', alPulsar)
     return () => window.removeEventListener('keydown', alPulsar)
-  }, [])
+  }, [esConsulta])
 
   return (
     <div className="app-shell">
-      <Sidebar tabActiva={tabActiva} onTabChange={setTabActiva} contadores={contadores} />
+      <Sidebar tabActiva={tabActiva} onTabChange={setTabActiva} contadores={contadores} secciones={secciones} />
 
       <div className="app-main">
         <Header
@@ -329,7 +375,7 @@ export default function App() {
           actualizado={actualizado}
           isDark={isDark}
           onToggleTheme={toggleTheme}
-          onAbrirPaleta={() => setPaletaAbierta(true)}
+          onAbrirPaleta={esConsulta ? null : () => setPaletaAbierta(true)}
         />
 
         <main className="app-content">
@@ -399,6 +445,10 @@ export default function App() {
                 isOnline={health.core.online}
                 iaOnline={health.ai.online}
               />
+            )}
+            {tabActiva === 'usuarios' && <UsuariosTab expedientes={expedientes} isOnline={health.core.online} />}
+            {tabActiva === 'consulta' && (
+              <ConsultaTab asignados={asignados} loading={loading} isOnline={health.core.online} />
             )}
             {tabActiva === 'reglas' && (
               <ReglasTab

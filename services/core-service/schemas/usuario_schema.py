@@ -168,6 +168,12 @@ class AsignacionesUpdate(BaseModel):
     usuario_ids: list[str] = Field(default_factory=list, max_length=200)
 
 
+class ExpedientesAsignadosUpdate(BaseModel):
+    """Lista completa de expedientes asignados a una cuenta (reemplaza la anterior)."""
+
+    expediente_ids: list[str] = Field(default_factory=list, max_length=2000)
+
+
 class ExpedienteAsignadoResponse(BaseModel):
     """Lo único que ve el usuario de consulta de un expediente (HU-31)."""
 

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Segmented } from './ui/index.js'
 import { AuditoriaIa } from './documento-ia/Auditoria.jsx'
 import { ChatDocumento } from './documento-ia/Chat.jsx'
+import usePermiso from '../hooks/usePermiso.js'
 
 const VISTAS = [
   { id: 'resultado', label: 'Resultado' },
@@ -36,6 +37,9 @@ export default function DocumentoIaPanel({
   ratificacionEnEncabezado = false,
   registroTecnico = null,
 }) {
+  // Módulo 7 (PRD §5.1): el chat es de la operación; el auditor no lo tiene.
+  const operar = usePermiso('operar')
+  const vistas = operar ? VISTAS : VISTAS.filter((v) => v.id !== 'chat')
   const [vistaPropia, setVistaPropia] = useState('resultado')
   // Ranura de la cabecera donde la auditoría pone «Volver a auditar» (portal).
   const [ranuraAccion, setRanuraAccion] = useState(null)
@@ -51,7 +55,7 @@ export default function DocumentoIaPanel({
         </div>
         <div className="ai-panel-acciones">
           <span ref={setRanuraAccion} className="ai-panel-ranura" />
-          <Segmented role="tablist" label="Sección del panel de IA" valor={vista} onChange={setVista} opciones={VISTAS} />
+          <Segmented role="tablist" label="Sección del panel de IA" valor={vista} onChange={setVista} opciones={vistas} />
         </div>
       </header>
 
@@ -71,9 +75,11 @@ export default function DocumentoIaPanel({
           registroTecnico={registroTecnico}
         />
       </div>
-      <div hidden={vista !== 'chat'}>
-        <ChatDocumento doc={doc} iaOnline={iaOnline} />
-      </div>
+      {operar && (
+        <div hidden={vista !== 'chat'}>
+          <ChatDocumento doc={doc} iaOnline={iaOnline} />
+        </div>
+      )}
     </section>
   )
 }

@@ -25,6 +25,7 @@ import {
 import { SkeletonCards, SkeletonRows } from './Skeleton.jsx'
 import { CORE_FUERA_DE_LINEA, sinRespuesta } from './sinRespuesta.js'
 import useToast from '../hooks/useToast.js'
+import usePermiso from '../hooks/usePermiso.js'
 import useDebounce from '../hooks/useDebounce.js'
 import { coincideEn, normalizar } from '../utils/busqueda.js'
 import useDesplazamiento from '../hooks/useDesplazamiento.js'
@@ -111,6 +112,8 @@ function AccionExpediente({ titular, expediente, onAbrir, onAperturar, isOnline,
       </Button>
     )
   }
+  // Módulo 7: el auditor no apertura expedientes.
+  if (!onAperturar) return null
   const etiqueta = `Aperturar expediente para ${titular.razon_social}`
   return compacta ? (
     <IconButton etiqueta={etiqueta} compacto onClick={() => onAperturar(titular)} disabled={!isOnline} title="Aperturar expediente">
@@ -201,6 +204,8 @@ export default function TitularesTab({
   isOnline = true,
 }) {
   const toast = useToast()
+  // Módulo 7 (PRD §5.1): registrar empresas y aperturar expedientes es de la operación.
+  const operar = usePermiso('operar')
   const [modalAbierto, setModalAbierto] = useState(false)
   const [form, setForm] = useState(FORM_INICIAL)
   const [enviando, setEnviando] = useState(false)
@@ -286,7 +291,7 @@ export default function TitularesTab({
 
   // El tipo de expediente (RF-01) se elige en el modal de Expedientes, que
   // llega con este titular preseleccionado.
-  const aperturar = (titular) => onAperturarExpediente?.(titular.id)
+  const aperturar = operar ? (titular) => onAperturarExpediente?.(titular.id) : null
 
   const acciones = {
     onAbrir: (id) => onAbrirExpediente?.(id),
@@ -331,9 +336,11 @@ export default function TitularesTab({
             : 'Prueba con otro término o cambia el filtro de tipo de persona.',
         children:
           titulares.length === 0 ? (
-            <Button variante="primary" compacto icono={Plus} onClick={() => setModalAbierto(true)} disabled={!isOnline}>
-              Alta de empresa
-            </Button>
+            operar && (
+              <Button variante="primary" compacto icono={Plus} onClick={() => setModalAbierto(true)} disabled={!isOnline}>
+                Alta de empresa
+              </Button>
+            )
           ) : (
             <Button
               compacto
@@ -372,16 +379,18 @@ export default function TitularesTab({
           ]}
         />
 
-        <Button
-          variante="primary"
-          icono={Plus}
-          className="toolbar-action"
-          onClick={() => setModalAbierto(true)}
-          disabled={!isOnline}
-          title={!isOnline ? 'El sistema de expedientes no responde' : undefined}
-        >
-          Alta de empresa
-        </Button>
+        {operar && (
+          <Button
+            variante="primary"
+            icono={Plus}
+            className="toolbar-action"
+            onClick={() => setModalAbierto(true)}
+            disabled={!isOnline}
+            title={!isOnline ? 'El sistema de expedientes no responde' : undefined}
+          >
+            Alta de empresa
+          </Button>
+        )}
       </div>
 
       {vista === 'tarjetas' ? (

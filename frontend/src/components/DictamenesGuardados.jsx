@@ -3,8 +3,10 @@ import { ClockCounterClockwise, FloppyDisk, ShieldWarning, UserCheck } from './i
 import { Skeleton } from './Skeleton.jsx'
 import EstadoBadge from './EstadoBadge.jsx'
 import { getEstadoBadge } from '../constants.js'
-import { Badge, Button, Field, Input, KeyValue, KeyValueList, Segmented } from './ui/index.js'
+import { Badge, Button, Field, KeyValue, KeyValueList, Segmented } from './ui/index.js'
 import useToast from '../hooks/useToast.js'
+import usePermiso from '../hooks/usePermiso.js'
+import useSesion from '../hooks/useSesion.js'
 import { getDictamenes, ratificarDictamen } from '../services/api.js'
 import { formatFecha, formatRelativo, hashCorto, plural } from '../utils/format.js'
 
@@ -63,7 +65,8 @@ function FormularioRatificacion({ dictamen, onRatificado, onCancelar }) {
   const toast = useToast()
   const [decision, setDecision] = useState('CONFORME')
   const [justificacion, setJustificacion] = useState('')
-  const [usuario, setUsuario] = useState('OPERADOR')
+  // Módulo 7: ratifica la cuenta en sesión (el core la toma del token, no de la petición).
+  const { usuario } = useSesion()
   const [tocado, setTocado] = useState(false)
   const [enviando, setEnviando] = useState(false)
   const [error, setError] = useState('')
@@ -71,7 +74,7 @@ function FormularioRatificacion({ dictamen, onRatificado, onCancelar }) {
   const largo = justificacion.trim().length
   const faltan = Math.max(0, MIN_JUSTIFICACION - largo)
   const justificacionValida = faltan === 0
-  const valida = justificacionValida && usuario.trim().length > 0
+  const valida = justificacionValida
   const estadoCampo = justificacionValida ? 'valido' : tocado ? 'invalido' : 'neutro'
 
   const enviar = async (e) => {
@@ -84,7 +87,6 @@ function FormularioRatificacion({ dictamen, onRatificado, onCancelar }) {
       const r = await ratificarDictamen(dictamen.id, {
         nuevo_estatus: decision,
         justificacion: justificacion.trim(),
-        usuario: usuario.trim(),
       })
       toast.exito(
         'Revisión humana registrada',
@@ -118,8 +120,8 @@ function FormularioRatificacion({ dictamen, onRatificado, onCancelar }) {
         <Field as="div" etiqueta="Decisión">
           <Segmented label="Decisión del analista" valor={decision} onChange={setDecision} opciones={DECISIONES} />
         </Field>
-        <Field etiqueta="Analista">
-          <Input value={usuario} onChange={(e) => setUsuario(e.target.value)} maxLength={100} required />
+        <Field as="div" etiqueta="Analista">
+          <span className="ratificacion-analista">{usuario.nombre_completo}</span>
         </Field>
       </div>
 
@@ -262,6 +264,8 @@ export default function DictamenesGuardados({
   dictamenSesionId = null,
   ratificacionEnEncabezado = false,
 }) {
+  // Módulo 7 (PRD §5.1): ratificar es de la operación; el auditor ve el dictamen y su historia.
+  const operar = usePermiso('operar')
   const [dictamenes, setDictamenes] = useState(null)
   const [error, setError] = useState('')
   const [ratificando, setRatificando] = useState(false)
@@ -307,11 +311,16 @@ export default function DictamenesGuardados({
   }
   if (error) return <p className="field-hint">No se pudo consultar el historial de dictámenes: {error}</p>
   if (dictamenes.length === 0) {
-    return <p className="field-hint">Este documento aún no tiene dictámenes guardados: audítalo para emitir el primero.</p>
+    return (
+      <p className="field-hint">
+        {operar ? 'Este documento aún no tiene dictámenes guardados: audítalo para emitir el primero.' : 'Este documento aún no se audita.'}
+      </p>
+    )
   }
 
   const [vigente, ...anteriores] = dictamenes
   const puedeRatificar =
+    operar &&
     vigente.estatus === 'EN_REVISION' &&
     !vigente.revisado_por_humano &&
     !SIN_RATIFICACION.has(vigente.origen) &&

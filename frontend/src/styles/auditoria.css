@@ -764,6 +764,15 @@
   color: var(--text-muted);
 }
 
+/* Módulo 7: quien ratifica es la cuenta en sesión, a la altura de los controles vecinos. */
+.ratificacion-analista {
+  display: flex;
+  align-items: center;
+  min-height: var(--control-md);
+  font-size: var(--fs-body);
+  color: var(--text-primary);
+}
+
 .ratificacion-grid {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);

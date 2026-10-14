@@ -8,6 +8,7 @@ import ExportarReporte from './ExportarReporte.jsx'
 import VisorDocumento from './VisorDocumento.jsx'
 import { EvidenciaContext } from './evidencia-context.js'
 import useToast from '../hooks/useToast.js'
+import usePermiso from '../hooks/usePermiso.js'
 import { descargarOriginal, localizarCita } from '../services/api.js'
 import { ESTADO_DOCUMENTO, TIPO_DOCUMENTO_LABEL } from '../constants.js'
 import { firmaDeMime, tipoCorto } from '../utils/documentos.js'
@@ -92,6 +93,8 @@ function estadoEnExpediente(doc, expediente) {
  * reiniciar el visor al cambiar de documento.
  */
 function InspectorDocumento({ doc, expediente, iaOnline, onRefresh, onVisor, onOcupado, visorInicial, entrada, children }) {
+  // Módulo 7 (PRD §5.1): ratificar es de la operación.
+  const operar = usePermiso('operar')
   // Al pasar al documento siguiente el visor sigue abierto si lo estaba.
   const [visorAbierto, setVisorAbierto] = useState(Boolean(visorInicial) && iaOnline)
   // Sección del panel de IA y solicitudes de ratificación desde el encabezado.
@@ -161,7 +164,7 @@ function InspectorDocumento({ doc, expediente, iaOnline, onRefresh, onVisor, onO
               )}
             </div>
             <div className="doc-veredicto-acciones">
-              {estado?.ratificable && (
+              {operar && estado?.ratificable && (
                 <Button variante="primary" compacto icono={UserCheck} onClick={ratificar}>
                   Ratificar dictamen
                 </Button>
@@ -190,7 +193,7 @@ function InspectorDocumento({ doc, expediente, iaOnline, onRefresh, onVisor, onO
             vista={vista}
             onVista={setVista}
             solicitudRatificar={solicitudRatificar}
-            ratificacionEnEncabezado={Boolean(estado?.ratificable)}
+            ratificacionEnEncabezado={Boolean(operar && estado?.ratificable)}
             registroTecnico={
               <>
                 <section className="ia-bloque" aria-label="Archivo original">

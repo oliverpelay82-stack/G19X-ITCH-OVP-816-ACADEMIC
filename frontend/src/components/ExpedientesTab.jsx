@@ -5,6 +5,7 @@ import { SkeletonCards } from './Skeleton.jsx'
 import { CORE_FUERA_DE_LINEA, sinRespuesta } from './sinRespuesta.js'
 import EstadoBadge from './EstadoBadge.jsx'
 import useToast from '../hooks/useToast.js'
+import usePermiso from '../hooks/usePermiso.js'
 import DetalleDocumentoModal from './DetalleDocumentoModal.jsx'
 import useDebounce from '../hooks/useDebounce.js'
 import { coincideEn, normalizar } from '../utils/busqueda.js'
@@ -55,6 +56,8 @@ export default function ExpedientesTab({
   onFiltroAtendido,
 }) {
   const toast = useToast()
+  // Módulo 7 (PRD §5.1): aperturar y custodiar son de la operación; el auditor solo consulta.
+  const operar = usePermiso('operar')
   const [modalAbierto, setModalAbierto] = useState(false)
   const [form, setForm] = useState({ titularId: '', tipo: 'CORPORATIVO', nombre: '' })
   const [enviando, setEnviando] = useState(false)
@@ -220,16 +223,18 @@ export default function ExpedientesTab({
           opciones={opcionesEstado}
         />
 
-        <Button
-          variante="primary"
-          icono={Plus}
-          className="toolbar-action"
-          onClick={() => setModalAbierto(true)}
-          disabled={titulares.length === 0 || !isOnline}
-          title={titulares.length === 0 ? 'Primero registra una empresa' : undefined}
-        >
-          Aperturar expediente
-        </Button>
+        {operar && (
+          <Button
+            variante="primary"
+            icono={Plus}
+            className="toolbar-action"
+            onClick={() => setModalAbierto(true)}
+            disabled={titulares.length === 0 || !isOnline}
+            title={titulares.length === 0 ? 'Primero registra una empresa' : undefined}
+          >
+            Aperturar expediente
+          </Button>
+        )}
       </div>
 
       <div className="toolbar toolbar--sub">
@@ -303,16 +308,18 @@ export default function ExpedientesTab({
             }
           >
             {expedientes.length === 0 ? (
-              <Button
-                variante="primary"
-                compacto
-                icono={Plus}
-                onClick={() => setModalAbierto(true)}
-                disabled={titulares.length === 0 || !isOnline}
-                title={titulares.length === 0 ? 'Primero registra una empresa' : undefined}
-              >
-                Aperturar expediente
-              </Button>
+              operar && (
+                <Button
+                  variante="primary"
+                  compacto
+                  icono={Plus}
+                  onClick={() => setModalAbierto(true)}
+                  disabled={titulares.length === 0 || !isOnline}
+                  title={titulares.length === 0 ? 'Primero registra una empresa' : undefined}
+                >
+                  Aperturar expediente
+                </Button>
+              )
             ) : (
               <Button
                 compacto

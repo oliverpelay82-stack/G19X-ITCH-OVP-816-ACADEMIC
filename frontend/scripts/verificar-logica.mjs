@@ -23,6 +23,8 @@ const { idAleatorio } = await import('../src/utils/id.js')
 const { aFecha, diaLocal, formatRelativo } = await import('../src/utils/format.js')
 const { agruparCambios } = await import('../src/components/graficas/cambios.js')
 const { valorTrasCarga } = await import('../src/utils/carga.js')
+const { puede, seccionPermitida, seccionesDe } = await import('../src/utils/permisos.js')
+const sesion = await import('../src/services/sesion.js')
 
 /** Marca de tiempo como la devuelve la API: UTC sin zona, con microsegundos. */
 const comoApi = (fecha) => `${fecha.toISOString().slice(0, -1)}123`
@@ -35,6 +37,38 @@ function archivos(dir) {
 }
 
 const CASOS = [
+  {
+    nombre: 'Módulo 7: la interfaz sigue la matriz de permisos del PRD §5.1',
+    probar: () =>
+      puede('ADMIN', 'gestionarUsuarios') && !puede('VALIDADOR', 'gestionarUsuarios') &&
+      puede('VALIDADOR', 'operar') && !puede('AUDITOR', 'operar') && puede('AUDITOR', 'leer') &&
+      puede('VALIDADOR', 'tipoDocumentoNuevo') && !puede('VALIDADOR', 'administrarReglas') &&
+      !puede('CONSULTA', 'leer') && !puede(undefined, 'leer') && !puede('ADMIN', 'permiso-inexistente'),
+  },
+  {
+    nombre: 'Módulo 7: cada rol ve solo sus secciones; una ruta ajena lleva a su inicio',
+    probar: () =>
+      seccionesDe('CONSULTA').join() === 'consulta' &&
+      seccionesDe('ADMIN').includes('usuarios') && !seccionesDe('AUDITOR').includes('usuarios') &&
+      seccionPermitida('CONSULTA', 'reglas') === 'consulta' &&
+      seccionPermitida('AUDITOR', 'usuarios') === 'expedientes' &&
+      seccionPermitida('ADMIN', 'usuarios') === 'usuarios',
+  },
+  {
+    nombre: 'Módulo 7: la sesión avisa al iniciar y al expirar, y un token vencido no se usa',
+    probar: () => {
+      const motivos = []
+      const dejar = sesion.suscribir((_, motivo) => motivos.push(motivo))
+      sesion.iniciarSesion({ access_token: 't1', expira_en: 60, usuario: { rol: 'AUDITOR' } })
+      const vigente = sesion.tokenActual() === 't1'
+      sesion.terminarSesion(sesion.MOTIVO.EXPIRADA)
+      sesion.iniciarSesion({ access_token: 't2', expira_en: -1, usuario: { rol: 'AUDITOR' } })
+      const vencido = sesion.tokenActual() === null
+      dejar()
+      sesion.terminarSesion()
+      return vigente && vencido && motivos.join() === 'inicio,expirada,inicio'
+    },
+  },
   {
     nombre: 'Una hora del backend sin zona se lee como UTC',
     probar: () =>
