@@ -463,6 +463,33 @@ def _auditoria_ilegible(
     return respuesta
 
 
+def _titular_del_expediente(
+    peticion: AnalisisSemanticoRequest, documento: repositorio_texto.TextoDocumento | None
+) -> tuple[str | None, str | None, str | None]:
+    """
+    RFC y razón social del titular contra los que se coteja la titularidad, y una
+    nota si la petición traía otros. Con un documento de la bóveda manda el
+    expediente según el core (hallazgo 6 de la auditoría del 14/10/2026): un
+    cliente que omitiera el RFC o enviara otro cambiaba el dictamen. Un texto
+    suelto, o un core sin esos campos, usa los de la petición.
+    """
+    metadatos = (documento.metadatos or {}) if documento else {}
+    if not peticion.documento_id or "rfc_titular" not in metadatos:
+        return peticion.rfc_titular, peticion.razon_social_titular, None
+    # La ficha en memoria puede ser anterior a una corrección de la razón social.
+    try:
+        metadatos = core_client.obtener_metadatos(peticion.documento_id)
+    except (CoreNoDisponibleError, DocumentoNoEncontradoError):
+        pass
+    rfc, razon = metadatos.get("rfc_titular"), metadatos.get("razon_social_titular")
+    enviado = (peticion.rfc_titular or "").strip().upper()
+    nota = None
+    if enviado and rfc and enviado != rfc.strip().upper():
+        nota = (f"El RFC del titular recibido en la solicitud ({enviado}) no es el del expediente ({rfc}); "
+                "la titularidad se verificó con el del expediente.")
+    return rfc, razon, nota
+
+
 def _tope_revision(resultado: pipeline_analisis.ResultadoAnalisis, motivos: list[str]) -> None:
     """
     Una señal del archivo deja la auditoría En revisión (Nivel 5: la decide un
@@ -507,6 +534,7 @@ def auditar(peticion: AnalisisSemanticoRequest) -> dict:
             return _auditoria_ilegible(peticion, documento, motivo)
 
     confianza_extraccion = documento.traza.get("confidence_score") if documento else None
+    rfc_titular, razon_social_titular, nota_titular = _titular_del_expediente(peticion, documento)
     tipo_registrado = (documento.metadatos or {}).get("tipo_documento") if documento else None
 
     # Elementos que el catálogo exige a este tipo de documento (reglas RSC y RDS).
@@ -524,8 +552,8 @@ def auditar(peticion: AnalisisSemanticoRequest) -> dict:
     try:
         resultado = pipeline_analisis.analizar(
             texto=texto,
-            rfc_titular=peticion.rfc_titular,
-            razon_social_titular=peticion.razon_social_titular,
+            rfc_titular=rfc_titular,
+            razon_social_titular=razon_social_titular,
             confianza_extraccion=confianza_extraccion,
             # El tipo registrado en el expediente decide qué reglas de vigencia aplican.
             tipo_documento_registrado=tipo_registrado,
@@ -542,6 +570,8 @@ def auditar(peticion: AnalisisSemanticoRequest) -> dict:
 
     if nota_criterios:
         resultado.observaciones.append(nota_criterios)
+    if nota_titular:
+        resultado.observaciones.append(nota_titular)
     # P6 (PLUS-18): el contenido activo que detectó el core lleva la auditoría a
     # revisión humana; nunca la rechaza.
     motivos_archivo = list(((documento.metadatos or {}).get("senales_revision") or []) if documento else [])

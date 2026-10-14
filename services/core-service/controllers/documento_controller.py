@@ -22,7 +22,7 @@ from models.expediente import Expediente
 from motor import archivo_protegido, bitacora, cumplimiento, integridad, senales_pdf
 from motor.tipos_documento import tipo_admitido
 from schemas.dictamen_schema import ProcesamientoDiferidoRequest
-from schemas.documento_schema import DocumentoResponse
+from schemas.documento_schema import DocumentoDetalleResponse, DocumentoResponse
 
 router = APIRouter(prefix="/api/v1/documentos", tags=["Documentos"])
 
@@ -322,11 +322,16 @@ def listar_todos_documentos(db: Session = Depends(get_db)):
 
 @router.get(
     "/{documento_id}",
-    response_model=DocumentoResponse,
-    summary="Consultar la ficha de un documento",
+    response_model=DocumentoDetalleResponse,
+    summary="Consultar la ficha de un documento, con el titular de su expediente",
 )
 def obtener_documento(documento_id: str, db: Session = Depends(get_db)):
-    return _documento_o_404(db, documento_id)
+    documento = _documento_o_404(db, documento_id)
+    titular = documento.expediente.titular if documento.expediente else None
+    return DocumentoDetalleResponse.model_validate(documento).model_copy(update={
+        "rfc_titular": titular.rfc if titular else None,
+        "razon_social_titular": titular.razon_social if titular else None,
+    })
 
 
 @router.get(

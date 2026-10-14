@@ -157,3 +157,20 @@ def test_renombrar_un_expediente_queda_en_su_historial():
     assert client.patch(f"/api/v1/expedientes/{exp['id']}", json={"nombre": "  "}).json()["nombre"] is None
     assert len(client.get("/api/v1/bitacora", params=filtro).json()) == 2
     assert client.patch(f"/api/v1/expedientes/{exp['id']}", json={"tipo_expediente": "JURIDICO"}).status_code == 422
+
+
+def test_la_ficha_del_documento_trae_el_titular_vigente():
+    """
+    Hallazgo 6 (auditoría del 14/10/2026): el ai-service toma de la ficha el RFC y
+    la razón social del titular para la titularidad; tras una corrección, la nueva.
+    """
+    doc, _ = _documento("csf.pdf")
+    expediente = client.get(f"/api/v1/expedientes/{doc['expediente_id']}").json()
+    ficha = client.get(f"/api/v1/documentos/{doc['id']}").json()
+    assert ficha["rfc_titular"] == expediente["titular"]["rfc"]
+    assert ficha["razon_social_titular"] == "Descargas de Prueba S.A. de C.V."
+
+    r = client.patch(f"/api/v1/titulares/{expediente['titular_id']}", json={"razon_social": "Razón Corregida S.A. de C.V."})
+    assert r.status_code == 200, r.text
+    assert client.get(f"/api/v1/documentos/{doc['id']}").json()["razon_social_titular"] == "Razón Corregida S.A. de C.V."
+

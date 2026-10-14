@@ -39,3 +39,14 @@ class DocumentoResponse(BaseModel):
     @property
     def senales_revision(self) -> list[str]:
         return senales.revision(self.tipo_documento, self.senales_pdf)
+
+
+class DocumentoDetalleResponse(DocumentoResponse):
+    """
+    Ficha de un documento (GET /documentos/{id}) con el titular de su expediente.
+    El ai-service toma de aquí el RFC y la razón social para la titularidad del
+    Nivel 4, en lugar de confiar en los que envía el cliente (hallazgo 6 de la
+    auditoría del 14/10/2026). Campos opcionales: el contrato solo crece.
+    """
+    rfc_titular: str | None = None
+    razon_social_titular: str | None = None
