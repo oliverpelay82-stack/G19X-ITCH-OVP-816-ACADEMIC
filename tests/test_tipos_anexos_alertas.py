@@ -36,7 +36,6 @@ import bd_pruebas  # noqa: E402
 
 BOVEDA = bd_pruebas.preparar_entorno()
 
-from fastapi.testclient import TestClient  # noqa: E402
 from openpyxl import load_workbook  # noqa: E402
 from pypdf import PdfReader  # noqa: E402
 
@@ -49,7 +48,8 @@ from motor import cumplimiento, reevaluacion_programada  # noqa: E402
 
 bd_pruebas.verificar_aislamiento(engine)
 init_db()
-client = TestClient(app)
+auth = bd_pruebas.Autenticacion()
+client = auth.cliente(app)
 _resultados: list[bool] = []
 
 OBTENER_REAL = rules_client.obtener_documentos_obligatorios
@@ -114,7 +114,7 @@ def subir(exp_id: str, tipo: str, nombre: str) -> dict:
 def dictaminar(doc_id: str, estatus: str = "CONFORME", **extra) -> dict:
     cuerpo = {"documento_id": doc_id, "estatus": estatus, "nivel_confianza": 0.95,
               "observaciones": ["Prueba automatizada."], **extra}
-    r = client.post("/api/v1/dictamenes", json=cuerpo)
+    r = client.post("/api/v1/dictamenes", headers=auth.sistema(), json=cuerpo)
     assert r.status_code == 201, r.text
     return r.json()
 

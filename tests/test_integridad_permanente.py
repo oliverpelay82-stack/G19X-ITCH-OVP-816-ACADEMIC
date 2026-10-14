@@ -27,7 +27,6 @@ os.environ["REEVALUACION_INTERVALO_HORAS"] = "0"
 
 from io import BytesIO  # noqa: E402
 
-from fastapi.testclient import TestClient  # noqa: E402
 from openpyxl import load_workbook  # noqa: E402
 from pypdf import PdfReader  # noqa: E402
 from main import app  # noqa: E402
@@ -44,7 +43,8 @@ rules_client.obtener_documentos_obligatorios = lambda *_: rules_client.Inventari
     documentos={"CSF_SAT": {"codigo_regla": "RIE-01", "severidad": "CRITICA"}},
     fuente=rules_client.FUENTE_CATALOGO,
 )
-client = TestClient(app)
+auth = bd_pruebas.Autenticacion()
+client = auth.cliente(app)
 
 
 def _documento(rfc: str) -> dict:

@@ -19,7 +19,6 @@ import bd_pruebas  # noqa: E402
 
 BOVEDA = bd_pruebas.preparar_entorno()
 
-from fastapi.testclient import TestClient  # noqa: E402
 from main import app  # noqa: E402
 from clients import rules_client  # noqa: E402
 from config.database import SessionLocal, engine, init_db  # noqa: E402
@@ -28,7 +27,8 @@ from models.expediente import Expediente  # noqa: E402
 
 bd_pruebas.verificar_aislamiento(engine)
 init_db()
-client = TestClient(app)
+auth = bd_pruebas.Autenticacion()
+client = auth.cliente(app)
 
 CODIGO_EXPEDIENTE_TMP = "EXP-TEST-TMP"
 RFC_TITULAR_TMP = "TMP010101AAA"

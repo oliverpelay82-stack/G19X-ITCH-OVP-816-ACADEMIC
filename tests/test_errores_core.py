@@ -16,6 +16,10 @@ bd_pruebas.preparar_entorno()
 
 from fastapi.testclient import TestClient  # noqa: E402
 from main import app  # noqa: E402
+from config.database import init_db  # noqa: E402
+
+init_db()
+auth = bd_pruebas.Autenticacion()
 
 RUTA = "/api/v1/__prueba-error-no-controlado"
 ORIGEN = "http://127.0.0.1:5173"
@@ -58,7 +62,7 @@ def test_cabeceras_de_seguridad_en_toda_respuesta():
 
 def test_caracter_nulo_en_un_filtro_responde_422_y_no_500():
     """Q-c (OWASP ZAP): ?expediente_id=%00 llegaba a PostgreSQL y respondía 500."""
-    cliente = TestClient(app, raise_server_exceptions=False)
+    cliente = auth.cliente(app, raise_server_exceptions=False)
     for ruta in ("/api/v1/bitacora?expediente_id=%00", "/api/v1/dictamenes?documento_id=%00"):
         r = cliente.get(ruta)
         assert r.status_code == 422, (ruta, r.status_code, r.text)

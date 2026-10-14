@@ -23,7 +23,6 @@ import bd_pruebas  # noqa: E402
 BOVEDA = bd_pruebas.preparar_entorno()
 os.environ["REEVALUACION_INTERVALO_HORAS"] = "0"
 
-from fastapi.testclient import TestClient  # noqa: E402
 from main import app  # noqa: E402
 from clients import rules_client  # noqa: E402
 from config.boveda import ruta_en_boveda  # noqa: E402
@@ -36,7 +35,8 @@ rules_client.obtener_documentos_obligatorios = lambda *_: rules_client.Inventari
     documentos={"CSF_SAT": {"codigo_regla": "RIE-01", "severidad": "CRITICA"}},
     fuente=rules_client.FUENTE_CATALOGO,
 )
-client = TestClient(app)
+auth = bd_pruebas.Autenticacion()
+client = auth.cliente(app)
 
 
 def _rfc() -> str:
@@ -89,7 +89,7 @@ def test_la_descarga_entrega_el_original_con_su_nombre_y_queda_en_la_bitacora():
 def test_la_lectura_del_ai_service_no_se_registra_como_descarga():
     doc, contenido = _documento("csf.pdf")
 
-    r = client.get(f"/api/v1/documentos/{doc['id']}/contenido")
+    r = client.get(f"/api/v1/documentos/{doc['id']}/contenido", headers=auth.sistema())
 
     assert r.status_code == 200 and r.content == contenido
     assert "content-disposition" not in r.headers

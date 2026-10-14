@@ -36,6 +36,13 @@ EVENTO_DESCARGA_DOCUMENTO = "DESCARGA_DOCUMENTO"
 # Corrección de datos de captura (RF-27, RN-04): el valor anterior y el nuevo de cada campo.
 EVENTO_ACTUALIZACION_TITULAR = "ACTUALIZACION_TITULAR"
 EVENTO_ACTUALIZACION_EXPEDIENTE = "ACTUALIZACION_EXPEDIENTE"
+# Módulo 7 (RF-25, RF-26, HU-05, HU-07, HU-31; PRD §5.2).
+EVENTO_INICIO_SESION = "INICIO_SESION"
+EVENTO_INICIO_SESION_FALLIDO = "INICIO_SESION_FALLIDO"
+EVENTO_ALTA_USUARIO = "ALTA_USUARIO"
+EVENTO_ACTUALIZACION_USUARIO = "ACTUALIZACION_USUARIO"
+EVENTO_CAMBIO_CONTRASENA = "CAMBIO_CONTRASENA"
+EVENTO_ASIGNACION_EXPEDIENTE = "ASIGNACION_EXPEDIENTE"
 
 
 class BitacoraAuditoria(Base):
@@ -46,7 +53,8 @@ class BitacoraAuditoria(Base):
     expediente_id = Column(String(36), nullable=True, index=True)
     documento_id = Column(String(36), nullable=True, index=True)
     dictamen_id = Column(String(36), nullable=True)
-    usuario = Column(String(100), nullable=False, default="OPERADOR")
+    # Correo del usuario autenticado, SISTEMA o, en eventos anteriores al Módulo 7, OPERADOR.
+    usuario = Column(String(150), nullable=False, default="OPERADOR")
     ip_origen = Column(String(45), nullable=True)
     detalle = Column(JSON, nullable=False, default=dict)
     creado_en = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc), index=True)

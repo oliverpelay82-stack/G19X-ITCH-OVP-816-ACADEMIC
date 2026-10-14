@@ -11,6 +11,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
+from config.autorizacion import Actor, lectura
 from config.database import get_db
 from controllers.expediente_controller import consultar_expedientes, evaluar_lista
 from motor import cumplimiento
@@ -29,6 +30,7 @@ def listar_alertas(
     codigo: Optional[str] = Query(None, description="DOCUMENTO_FALTANTE, ANEXO_FALTANTE, DOCUMENTO_VENCIDO, ..."),
     tipo_expediente: Optional[str] = Query(None, description="JURIDICO, CORPORATIVO o REGULATORIO"),
     expediente_id: Optional[str] = None,
+    _: Actor = Depends(lectura),
     db: Session = Depends(get_db),
 ):
     expedientes = consultar_expedientes(db, tipo_expediente=tipo_expediente)

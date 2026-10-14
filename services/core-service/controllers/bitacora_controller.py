@@ -10,6 +10,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
+from config.autorizacion import Actor, lectura
 from config.database import get_db
 from models.bitacora import BitacoraAuditoria
 from motor import bitacora
@@ -24,6 +25,7 @@ def consultar_bitacora(
     documento_id: Optional[str] = None,
     evento: Optional[str] = None,
     limite: int = Query(100, ge=1, le=500),
+    _: Actor = Depends(lectura),
     db: Session = Depends(get_db),
 ):
     query = db.query(BitacoraAuditoria)
@@ -45,7 +47,7 @@ def consultar_bitacora(
     response_model=VerificacionCadenaResponse,
     summary="Recalcular la cadena sellada de la bitácora (P3, PLUS-05)",
 )
-def verificar_cadena(db: Session = Depends(get_db)):
+def verificar_cadena(_: Actor = Depends(lectura), db: Session = Depends(get_db)):
     """
     Recalcula el hash y el enlace de cada evento sellado, la huella del
     historial previo contra la del génesis y detecta eventos sin sellar

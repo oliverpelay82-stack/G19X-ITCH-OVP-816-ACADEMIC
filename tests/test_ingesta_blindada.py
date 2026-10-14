@@ -39,7 +39,6 @@ import bd_pruebas  # noqa: E402
 BOVEDA = bd_pruebas.preparar_entorno()
 os.environ["REEVALUACION_INTERVALO_HORAS"] = "0"
 
-from fastapi.testclient import TestClient  # noqa: E402
 from pypdf import PdfWriter  # noqa: E402
 from main import app  # noqa: E402
 from clients import rules_client  # noqa: E402
@@ -58,7 +57,8 @@ rules_client.obtener_documentos_obligatorios = lambda *_: rules_client.Inventari
     documentos={"CSF_SAT": {"codigo_regla": "RIE-01", "severidad": "CRITICA"}},
     fuente=rules_client.FUENTE_CATALOGO,
 )
-client = TestClient(app)
+auth = bd_pruebas.Autenticacion()
+client = auth.cliente(app)
 
 
 def _expediente(codigo: str, rfc: str) -> str:
@@ -177,7 +177,7 @@ def test_cargas_simultaneas_del_mismo_archivo_dejan_un_solo_documento(monkeypatc
     def cargar():
         # Sin «with»: el lifespan ejecuta init_db, cuyo ALTER TABLE espera a la
         # otra transacción y serializaría las cargas antes de la verificación.
-        respuestas.append(_subir(exp_id, contenido, cliente=TestClient(app)).status_code)
+        respuestas.append(_subir(exp_id, contenido, cliente=auth.cliente(app)).status_code)
 
     hilos = [threading.Thread(target=cargar) for _ in range(2)]
     for hilo in hilos:
@@ -283,7 +283,7 @@ def test_pdf_con_estructura_ilegible_no_se_declara_protegido():
 # ── PLUS-03 · Opinión de cumplimiento 32-D en el semáforo ─────────────
 def _dictaminar_opinion(doc_id: str, estatus: str, emitida_hace: int, verificaciones: list[dict]) -> None:
     resultado = "VENCIDO" if emitida_hace > 30 else "VIGENTE"
-    respuesta = client.post("/api/v1/dictamenes", json={
+    respuesta = client.post("/api/v1/dictamenes", headers=auth.sistema(), json={
         "documento_id": doc_id, "estatus": estatus, "nivel_confianza": 0.95,
         "fecha_emision": (date.today() - timedelta(days=emitida_hace)).isoformat(),
         "vigencia": {"disponible": True, "resultado": resultado, "evaluaciones": [

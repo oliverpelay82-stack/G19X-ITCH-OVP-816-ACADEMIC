@@ -1,0 +1,68 @@
+@startuml m7-secuencia-inicio-sesion
+' Módulo 7 — Inicio de sesión, segundo factor y autorización de cada petición (DOC-04, no PLUS).
+' Trazabilidad: RF-25 (autenticación con soporte MFA), RF-26 (RBAC), RF-27 y HU-07
+' (INICIO_SESION, INICIO_SESION_FALLIDO con usuario e IP), HU-06; DOC-08 (POST /auth/login,
+' GET /auth/me, token Bearer JWT HMAC-SHA256, contraseñas con bcrypt);
+' ISO/IEC 27001 A.5.17 (información de autenticación) y A.8.5 (autenticación segura).
+' Diseño: PRD §5.2. MFA: TOTP opcional por usuario (RFC 6238, decisión del 14/10/2026).
+' Implementación prevista: core-service controllers/auth_controller.py, config/seguridad.py,
+' models/usuario.py; frontend components/InicioSesion.jsx y el contexto de sesión.
+
+title Módulo 7 — Inicio de sesión y autorización de una petición
+
+actor "Usuario" as U
+participant "Interfaz\n(React)" as UI
+participant "core-service\n/auth" as AUTH
+participant "Dependencia\nusuario_actual" as DEP
+database "PostgreSQL\nusuarios /\nbitacora_auditoria" as BD
+
+== Inicio de sesión ==
+U -> UI : correo y contraseña
+UI -> AUTH : POST /api/v1/auth/login {email, contrasena}
+AUTH -> BD : usuario activo por correo
+alt bloqueado_hasta > ahora
+  AUTH --> UI : 429 «Cuenta bloqueada temporalmente» (Retry-After)
+else correo inexistente o contraseña incorrecta (bcrypt)
+  AUTH -> BD : intentos_fallidos + 1\n(al quinto: bloqueado_hasta = ahora + 15 min)
+  AUTH -> BD : evento INICIO_SESION_FALLIDO\n(correo intentado, IP)
+  AUTH --> UI : 401 «Correo o contraseña incorrectos»\n(el mismo mensaje en ambos casos)
+else contraseña correcta y MFA activo, sin código
+  AUTH --> UI : 200 {requiere_codigo: true} (sin token)
+  U -> UI : código de 6 dígitos de su app
+  UI -> AUTH : POST /auth/login {email, contrasena, codigo}
+  AUTH -> AUTH : verifica el TOTP (ventana de ±30 s);\nun código inválido cuenta como intento fallido
+end
+AUTH -> BD : intentos_fallidos = 0; ultimo_acceso = ahora
+AUTH -> BD : evento INICIO_SESION (usuario, IP)
+AUTH --> UI : 200 {access_token, token_type: bearer, expira_en,\nusuario: {id, email, nombre_completo, rol,\ndebe_cambiar_contrasena, mfa_activo}}
+UI -> UI : guarda el token en sessionStorage\ny arma el menú del rol
+opt debe_cambiar_contrasena
+  UI -> AUTH : POST /auth/cambiar-contrasena {actual, nueva}
+  note right : Mientras no la cambie, el token solo\nsirve para /auth/me y este endpoint (403).
+end
+
+== Cada petición ==
+UI -> DEP : Authorization: Bearer <JWT>
+DEP -> DEP : firma HS256 con JWT_SECRET y vigencia (exp)
+alt sin token, firma inválida o vencido
+  DEP --> UI : 401
+  UI -> UI : vuelve al inicio de sesión:\n«Tu sesión expiró»
+else token válido
+  DEP -> BD : la cuenta (id = sub): activa y su rol actual
+  alt cuenta desactivada o inexistente
+    DEP --> UI : 401
+  else el rol no tiene el permiso del endpoint (PRD §5.1)
+    DEP --> UI : 403 en lenguaje llano
+  else autorizado
+    DEP -> DEP : el endpoint recibe el usuario;\nla bitácora guarda su correo y su IP
+  end
+end
+
+note over UI, BD
+  Token: sub (id), email, nombre, rol, iat y exp (JWT_EXPIRACION_MINUTOS, 480 por omisión);
+  sin tokens de renovación: al vencer, se inicia sesión de nuevo. El rol del token solo
+  sirve para armar el menú; el core autoriza con el rol guardado en la base.
+  Cerrar sesión descarta el token en el navegador. Rutas públicas: /health y /auth/login.
+end note
+
+@enduml

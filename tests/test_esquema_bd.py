@@ -85,6 +85,7 @@ CHECKS = {
     "ck_expedientes_estado_cumplimiento", "ck_expedientes_tipo_expediente",
     "ck_documentos_tipo_documento", "ck_documentos_estado_integridad",
     "ck_dictamenes_auditoria_estatus", "ck_dictamenes_auditoria_estatus_preliminar",
+    "ck_usuarios_rol",
 }
 
 
@@ -192,3 +193,38 @@ if __name__ == "__main__":
         test_valor_fuera_del_catalogo_se_rechaza(campos)
     test_tipo_documento_valida_el_formato_del_codigo()
     print("PASÓ: índice, claves foráneas de custodia y restricciones CHECK")
+
+
+def test_tablas_del_modulo_7():
+    """
+    Módulo 7 (PRD §5.2): usuarios con correo único y solo los cuatro roles del DOC-04
+    (SISTEMA no se asigna a personas); asignaciones únicas por par y sin borrado en
+    cascada; el usuario de la bitácora y de la ratificación admite el correo completo.
+    """
+    inspector = inspect(engine)
+    assert {"email", "password_hash", "nombre_completo", "rol", "activo", "creado_en", "debe_cambiar_contrasena",
+            "intentos_fallidos", "bloqueado_hasta", "ultimo_acceso"} <= {c["name"] for c in inspector.get_columns("usuarios")}
+    assert any(u["column_names"] == ["expediente_id", "usuario_id"]
+               for u in inspector.get_unique_constraints("expediente_asignaciones"))
+    with engine.connect() as c:
+        borrados = dict(c.execute(text("""
+            SELECT a.attname, c.confdeltype FROM pg_constraint c
+              JOIN pg_attribute a ON a.attrelid = c.conrelid AND a.attnum = c.conkey[1]
+             WHERE c.contype = 'f' AND c.conrelid = 'expediente_asignaciones'::regclass""")).all())
+        assert borrados == {"expediente_id": "r", "usuario_id": "r"}
+        longitudes = dict(c.execute(text("""
+            SELECT table_name, character_maximum_length FROM information_schema.columns
+             WHERE (table_name, column_name) IN (('bitacora_auditoria', 'usuario'), ('dictamenes_auditoria', 'revisado_por'))""")).all())
+        assert longitudes == {"bitacora_auditoria": 150, "dictamenes_auditoria": 150}
+        c.rollback()  # cierra la transacción implícita de las consultas anteriores
+        for rol, admitido in (("VALIDADOR", True), ("SISTEMA", False), ("OPERADOR", False)):
+            tx = c.begin()
+            try:
+                c.execute(text("INSERT INTO usuarios (id, email, password_hash, nombre_completo, rol, activo, creado_en, "
+                               "debe_cambiar_contrasena, intentos_fallidos) VALUES (:id, :email, 'x', 'X', :rol, true, now(), "
+                               "false, 0)"), {"id": str(uuid.uuid4()), "email": f"{uuid.uuid4().hex}@example.com", "rol": rol})
+                assert admitido, f"{rol} debió rechazarse"
+            except IntegrityError as exc:
+                assert not admitido and exc.orig.pgcode == "23514", rol
+            finally:
+                tx.rollback()

@@ -29,7 +29,6 @@ import bd_pruebas  # noqa: E402
 BOVEDA = bd_pruebas.preparar_entorno()
 os.environ["REEVALUACION_INTERVALO_HORAS"] = "0"
 
-from fastapi.testclient import TestClient  # noqa: E402
 from openpyxl import load_workbook  # noqa: E402
 from pypdf import PdfReader  # noqa: E402
 from sqlalchemy import text  # noqa: E402
@@ -46,7 +45,8 @@ rules_client.obtener_documentos_obligatorios = lambda *_: rules_client.Inventari
     documentos={"CSF_SAT": {"codigo_regla": "RIE-01", "severidad": "CRITICA"}},
     fuente=rules_client.FUENTE_CATALOGO,
 )
-client = TestClient(app)
+auth = bd_pruebas.Autenticacion()
+client = auth.cliente(app)
 
 
 @contextmanager
@@ -239,7 +239,7 @@ def _subir_csf(exp_id: str, nombre: str) -> dict:
 
 def test_la_ficha_de_custodia_reune_el_ciclo_de_vida_del_documento():
     exp_id, v1 = _expediente_con_documento("CUS010101AAA")
-    dictamen = client.post("/api/v1/dictamenes", json={
+    dictamen = client.post("/api/v1/dictamenes", headers=auth.sistema(), json={
         "documento_id": v1["id"], "estatus": "EN_REVISION", "nivel_confianza": 0.8, "observaciones": ["Prueba."]}).json()
     assert client.post(f"/api/v1/dictamenes/{dictamen['id']}/ratificar", json={
         "nuevo_estatus": "CONFORME", "justificacion": "Constancia revisada contra el portal del SAT.",
@@ -259,7 +259,9 @@ def test_la_ficha_de_custodia_reune_el_ciclo_de_vida_del_documento():
     versiones = list(libro["Versiones"].iter_rows(min_row=2, values_only=True))
     assert [v[4] for v in versiones] == ["Sustituida", "Vigente"]
     [fila_dictamen] = list(libro["Dictámenes"].iter_rows(min_row=2, values_only=True))
-    assert "auditora.p3" in fila_dictamen[5] and fila_dictamen[4] == "Coincide con la carga"
+    # Módulo 7: la ficha nombra a la cuenta que ratificó, no el «usuario» escrito en la petición.
+    assert auth.correo("ADMIN") in fila_dictamen[5] and "auditora.p3" not in fila_dictamen[5]
+    assert fila_dictamen[4] == "Coincide con la carga"
     eventos = list(libro["Eventos"].iter_rows(min_row=2, values_only=True))
     # Nombre legible y, al lado, el código tal como quedó sellado (RNF-08 sin perder la evidencia).
     assert {"INGESTA_DOCUMENTO", "DICTAMEN_IA", "RATIFICACION_HUMANA"} <= {e[3] for e in eventos}
@@ -272,7 +274,7 @@ def test_la_ficha_de_custodia_reune_el_ciclo_de_vida_del_documento():
     exportaciones = client.get("/api/v1/bitacora", params={"documento_id": v1["id"],
                                                           "evento": "EXPORTACION_REPORTE"}).json()
     assert len(exportaciones) == 2 and all(e["detalle"]["reporte"] == "FICHA_CUSTODIA" and e["hash_evento"]
-                                           for e in exportaciones)
+                                           and e["usuario"] == auth.correo("ADMIN") for e in exportaciones)
     assert _verificar()["integra"]
 
 

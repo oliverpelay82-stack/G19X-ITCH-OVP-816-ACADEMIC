@@ -53,6 +53,7 @@ class DictamenCreate(BaseModel):
         None, max_length=200,
         description="PRD §21.9: nombre del documento que identificó la IA cuando no es del tipo registrado",
     )
+    # Sin uso desde el Módulo 7: la persona llega en X-Usuario-Actor con el token SISTEMA.
     usuario: str = Field("SISTEMA", min_length=1, max_length=100)
     representacion: Optional[dict[str, Any]] = Field(
         None,
@@ -65,6 +66,7 @@ class RatificacionRequest(BaseModel):
     """Decisión del analista sobre un dictamen (Nivel 5, RN-05)."""
     nuevo_estatus: Literal["CONFORME", "NO_CONFORME"]
     justificacion: str = Field(..., min_length=10, max_length=2000)
+    # Sin uso desde el Módulo 7: ratifica el usuario en sesión (se conserva para no romper el contrato).
     usuario: str = Field("OPERADOR", min_length=1, max_length=100)
 
     @field_validator("justificacion", "usuario")

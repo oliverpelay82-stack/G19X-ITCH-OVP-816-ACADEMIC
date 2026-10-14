@@ -8,6 +8,7 @@ quedaría para siempre junto a los expedientes reales. Este módulo:
 
   1. Recrea desde cero la base ``plurione_compliance_test`` en el mismo servidor.
   2. Apunta la bóveda (STORAGE_VAULT_PATH) a un directorio temporal.
+  3. Fija un JWT_SECRET de pruebas y apaga las cuentas de demostración (Módulo 7).
 
 Debe invocarse ANTES de importar cualquier módulo del core-service, porque
 ``config.database`` y ``config.boveda`` leen el entorno al importarse. Si varias
@@ -30,6 +31,7 @@ import servicios  # noqa: E402
 
 CORE_SERVICE_DIR = servicios.directorio("core-service")
 NOMBRE_BD_PRUEBAS = "plurione_compliance_test"
+SECRETO_PRUEBAS = "secreto-de-las-pruebas-del-motor-de-validacion"
 
 _bd_recreada = False
 
@@ -42,6 +44,10 @@ def preparar_entorno() -> str:
     os.environ["DB_NAME"] = NOMBRE_BD_PRUEBAS
     boveda = tempfile.mkdtemp(prefix="plurione_boveda_pruebas_")
     os.environ["STORAGE_VAULT_PATH"] = boveda
+    os.environ["JWT_SECRET"] = SECRETO_PRUEBAS
+    os.environ["USUARIOS_DEMO"] = "false"
+    for variable in ("ADMIN_INICIAL_EMAIL", "ADMIN_INICIAL_CONTRASENA", "CORS_ORIGENES"):
+        os.environ.pop(variable, None)
 
     global _bd_recreada
     if not _bd_recreada:
@@ -80,3 +86,52 @@ def _recrear_bd() -> None:
 
 def limpiar_boveda(boveda: str) -> None:
     shutil.rmtree(boveda, ignore_errors=True)
+
+
+class Autenticacion:
+    """
+    Sesiones para las pruebas del core (Módulo 7). Se crea en cada módulo de prueba
+    después de importar el core-service y de ``init_db()``, y se queda con esos
+    módulos: al correr, ``sys.modules`` puede tener ya los de otro servicio.
+
+    Los tokens son reales (firmados con SECRETO_PRUEBAS) y las cuentas existen en la
+    base de pruebas, así que cada petición pasa por la autorización verdadera.
+    """
+
+    def __init__(self) -> None:
+        from config import seguridad
+        from config.database import SessionLocal
+        from models.usuario import Usuario
+
+        self._seguridad, self._sesion, self._usuario = seguridad, SessionLocal, Usuario
+
+    @staticmethod
+    def correo(rol: str) -> str:
+        return f"prueba-{rol.lower()}@example.com"
+
+    def cuenta(self, rol: str = "ADMIN") -> tuple[str, str, str]:
+        """(id, correo, nombre) de la cuenta de prueba de ese rol; la crea si falta."""
+        correo = self.correo(rol)
+        with self._sesion() as db:
+            usuario = db.query(self._usuario).filter(self._usuario.email == correo).first()
+            if usuario is None:
+                usuario = self._usuario(email=correo, nombre_completo=f"Prueba {rol}", rol=rol,
+                                        password_hash=self._seguridad.hash_contrasena(f"Clave-{rol}-pruebas"))
+                db.add(usuario)
+                db.commit()
+            return usuario.id, usuario.email, usuario.nombre_completo
+
+    def cabeceras(self, rol: str = "ADMIN") -> dict[str, str]:
+        id_, correo, nombre = self.cuenta(rol)
+        token, _ = self._seguridad.emitir_token(id_, correo, nombre, rol)
+        return {"Authorization": f"Bearer {token}"}
+
+    def sistema(self, actor: str | None = None) -> dict[str, str]:
+        """Cabeceras del ai-service: token SISTEMA y, si se da, la persona que pidió la acción."""
+        return self._seguridad.cabeceras_sistema("ai-service", actor)
+
+    def cliente(self, app, rol: str = "ADMIN", **kwargs):
+        """TestClient que envía en cada petición el token de la cuenta de ese rol."""
+        from fastapi.testclient import TestClient
+
+        return TestClient(app, headers=self.cabeceras(rol), **kwargs)

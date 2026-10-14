@@ -23,7 +23,6 @@ BOVEDA = bd_pruebas.preparar_entorno()
 # la medición de latencia; esta prueba no la necesita.
 os.environ["REEVALUACION_INTERVALO_HORAS"] = "0"
 
-from fastapi.testclient import TestClient  # noqa: E402
 from main import app  # noqa: E402
 from clients import rules_client  # noqa: E402
 from config.database import SessionLocal, engine, init_db  # noqa: E402
@@ -33,6 +32,7 @@ from models.titular import TitularExpediente  # noqa: E402
 
 bd_pruebas.verificar_aislamiento(engine)
 init_db()
+auth = bd_pruebas.Autenticacion()
 
 MAX = documento_controller.MAX_FILE_SIZE_BYTES
 INVENTARIO = rules_client.InventarioObligatorio(
@@ -79,7 +79,7 @@ def test_archivo_mayor_al_limite_se_rechaza_con_400():
     rules_client.obtener_documentos_obligatorios = lambda *_: INVENTARIO
     exp_id = _expediente("EXP-TEST-GRANDE", "GRA010101AAA")
     try:
-        res = TestClient(app).post(
+        res = auth.cliente(app).post(
             "/api/v1/documentos/upload",
             data={"expediente_id": exp_id, "tipo_documento": "CSF_SAT"},
             files={"file": ("enorme.pdf", b"%PDF-" + b"0" * (MAX + 1024), "application/pdf")},
@@ -102,7 +102,7 @@ def test_ingesta_no_bloquea_el_servicio():
     exp_id = _expediente("EXP-TEST-CONCURRENTE", "CON010101AAA")
     respuestas = {}
     try:
-        with TestClient(app) as cliente:  # un solo bucle de eventos para las dos peticiones
+        with auth.cliente(app) as cliente:  # un solo bucle de eventos para las dos peticiones
             carga = threading.Thread(
                 target=lambda: respuestas.setdefault(
                     "carga",

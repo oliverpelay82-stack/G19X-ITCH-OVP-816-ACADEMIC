@@ -11,8 +11,8 @@
 | Desarrollo (Scrum Master / Desarrollador) | Oliver Villanueva Pelay, residente (No. de control 21520500) |
 | Stakeholder evaluador | Edgar Loheffelmman (PluriOne) |
 | Asesor interno | Dr. Wilfrido Campos Francisco |
-| Versión del documento | 3.6 — 10 de octubre de 2026 (3.6: rubro que nombra lo preguntado en el chat, §21.9; 3.5: lectura anticipada y prioridad del OCR, RNF-02, §21.9; 3.4: frontend sin redundancias, §13.1; 3.3: PLUS-23, elementos expresos y cargo del apoderado, §21.9; 3.2: auditoría técnica y OCR en flujo continuo, §21.9; 3.1: depuración del alcance, §21.8; 3.0: RNF-10, respaldos; 2.9: RF-09, corrección de datos y RF-02; 2.8: Fase B del plan visual; 2.7: gráficas, Fase A; 2.6: P7 implementado; 2.5: P7 documentado; 2.4: P6; 2.3: P5 implementado; 2.2: P5 documentado; 2.1: revisión de requerimientos; 2.0: correcciones de la documentación; 1.9: revisión visual del frontend; 1.8: chat documental eficiente; 1.7: revisión del frontend; 1.6: índice de cumplimiento; 1.5: P3; 1.4: P2; 1.3: P1; 1.2: 28 de septiembre; 1.0: 27 de septiembre de 2026) |
-| Estado del producto | En desarrollo: Sprints 1 y 2 implementados, Sprint 3 implementado parcialmente, Sprint 4 implementado salvo HU-31, Módulo 7 pendiente |
+| Versión del documento | 3.8 — 14 de octubre de 2026 (3.8: Módulo 7, fase F1 en el core; 3.7: diseño del Módulo 7 y del correo RF-20, matriz de permisos, §5.1 y §5.2; 3.6: rubro que nombra lo preguntado en el chat, §21.9; 3.5: lectura anticipada y prioridad del OCR, RNF-02, §21.9; 3.4: frontend sin redundancias, §13.1; 3.3: PLUS-23, elementos expresos y cargo del apoderado, §21.9; 3.2: auditoría técnica y OCR en flujo continuo, §21.9; 3.1: depuración del alcance, §21.8; 3.0: RNF-10, respaldos; 2.9: RF-09, corrección de datos y RF-02; 2.8: Fase B del plan visual; 2.7: gráficas, Fase A; 2.6: P7 implementado; 2.5: P7 documentado; 2.4: P6; 2.3: P5 implementado; 2.2: P5 documentado; 2.1: revisión de requerimientos; 2.0: correcciones de la documentación; 1.9: revisión visual del frontend; 1.8: chat documental eficiente; 1.7: revisión del frontend; 1.6: índice de cumplimiento; 1.5: P3; 1.4: P2; 1.3: P1; 1.2: 28 de septiembre; 1.0: 27 de septiembre de 2026) |
+| Estado del producto | En desarrollo: Sprints 1 y 2 implementados, Sprint 3 implementado parcialmente, Sprint 4 implementado salvo HU-31, Módulo 7 diseñado (14/10/2026) y en implementación |
 | Documento hermano | [MRD.md](MRD.md) — requerimientos de mercado |
 
 > **Fuentes.** Salvo las extensiones PLUS de la [sección 21](#21-extensiones-plus), que se marcan como tales y citan la norma que las respalda, este PRD no introduce requisitos nuevos: consolida los documentos oficiales del proyecto —el anteproyecto de residencia, los entregables DOC-01 a DOC-08 ([ESPECIFICACIONES_DOC01_A_DOC08.txt](ESPECIFICACIONES_DOC01_A_DOC08.txt)) y el DOCUMENTO GENERAL que los integra— y el estado verificado del sistema en el repositorio. Cada sección indica su fuente entre corchetes; «DG» es el DOCUMENTO GENERAL.
@@ -138,7 +138,107 @@ Tipos de documento: los tres inventarios del DOC-02 (corporativos, jurídicos y 
 
 El catálogo de endpoints (DOC-08) define la jerarquía de acceso ADMIN > AUDITOR > OPERADOR, más el perfil SISTEMA para las llamadas entre microservicios [DG Cap. VIII §8.4, Tabla 20].
 
-> **Estado:** la autorización por rol **aún no se aplica**. Los roles están definidos y previstos por endpoint, y el Módulo 7 (RF-25, RF-26) está programado para la siguiente iteración [DG Cap. X §10.6].
+> **Estado:** la autorización por rol **aún no se aplica**. El Módulo 7 (RF-25, RF-26) quedó diseñado el 14/10/2026 (§5.1 y §5.2, diagramas en [`docs/uml/`](uml/README.md)) y se implementa por fases: F1 core-service, F2 rules-service y ai-service, F3 MFA, F4 frontend, F5 correo (RF-20) y F6 pruebas, scripts y entrega [DG Cap. X §10.6].
+
+**Roles que se implementan (decisión del 14/10/2026).** Los cuatro del DOC-04 (Tabla 1), de la HU-05 y del criterio de aceptación: `ADMIN`, `VALIDADOR`, `AUDITOR` y `CONSULTA`. El `OPERADOR` del DOC-08 es el `VALIDADOR`. La jerarquía lineal ADMIN > AUDITOR > OPERADOR del DOC-08 se sustituye por la matriz de §5.1, porque le daría al Auditor la edición del Operador, contra el «solo lectura» del DOC-04, y no contempla al Usuario de Consulta de la HU-31 (§19). `SISTEMA` es el perfil de servicio del DOC-08: nunca se asigna a una persona.
+
+### 5.1 Matriz de permisos
+
+[DOC-04 Tabla 1; DOC-05 RDS-01 («el administrador o validador puede dar de alta… un nuevo tipo de documento»); DOC-08 Tabla 3; [diagrama de casos de uso](uml/m7-casos-de-uso-acceso.puml)]
+
+Por acción (lo que ve cada rol en la interfaz):
+
+| Acción | ADMIN | VALIDADOR | AUDITOR | CONSULTA |
+|---|:-:|:-:|:-:|:-:|
+| Gestionar usuarios: alta, rol, desactivar o reactivar, restablecer contraseña o MFA (HU-05) | ✔ | | | |
+| Asignar usuarios a un expediente (HU-31, RF-20) | ✔ | | | |
+| Pausar o reactivar reglas; dar de alta reglas de cualquier familia | ✔ | | | |
+| Dar de alta un tipo de documento nuevo con su criterio para la IA (RF-09, RDS-01) | ✔ | ✔ | | |
+| Registrar empresas y expedientes, cargar documentos y corregir datos de captura | ✔ | ✔ | | |
+| Auditar documentos, usar el chat documental y ratificar dictámenes | ✔ | ✔ | | |
+| Consultar expedientes, documentos, visor, dictámenes, alertas, reglas y bitácora; exportar reportes y descargar el original | ✔ | ✔ | ✔ | |
+| Ver el semáforo de sus expedientes asignados (HU-31) | ✔ | ✔ | ✔ | ✔ |
+| Iniciar sesión, cambiar su contraseña y activar su MFA | ✔ | ✔ | ✔ | ✔ |
+
+Por endpoint (lo que aplica cada servicio; «Lectura» = ADMIN, VALIDADOR y AUDITOR; «Operación» = ADMIN y VALIDADOR):
+
+| Servicio | Endpoint | Acceso |
+|---|---|---|
+| Los tres | `GET /health` | Público |
+| core | `POST /auth/login` | Público |
+| core | `GET /auth/me`, `POST /auth/cambiar-contrasena`, `POST /auth/mfa/activar`, `POST /auth/mfa/confirmar`, `POST /auth/mfa/desactivar` | Cualquier usuario autenticado |
+| core | `GET`, `POST /usuarios`; `PATCH /usuarios/{id}` | ADMIN |
+| core | `GET`, `PUT /expedientes/{id}/asignaciones` | ADMIN |
+| core | `GET /expedientes/asignados` | Cualquier usuario autenticado (devuelve solo los suyos) |
+| core | `POST /titulares`, `PATCH /titulares/{id}`, `POST /expedientes`, `PATCH /expedientes/{id}`, `POST /documentos/upload`, `POST /dictamenes/{id}/ratificar` | Operación |
+| core | `GET /titulares`, `GET /expedientes`, `GET /expedientes/{id}`, `GET /alertas`, `GET /bitacora`, `GET /bitacora/verificar-cadena`, `GET /reportes/*` | Lectura |
+| core | `GET /documentos`, `GET /documentos/{id}`, `GET /documentos/expediente/{id}`, `GET /documentos/{id}/integridad`, `GET /dictamenes`, `GET /dictamenes/{id}` | Lectura y SISTEMA |
+| core | `GET /documentos/{id}/contenido?descarga=true` (descarga del original) | Lectura |
+| core | `GET /documentos/{id}/contenido` (lectura de máquina), `POST /dictamenes`, `POST /documentos/{id}/procesamiento-diferido` | Solo SISTEMA |
+| rules | `GET /reglas`, `GET /reglas/{id}`, `GET /reglas/version`, `GET /reglas/tipos-documento`, `GET /reglas/documentos-obligatorios`, `POST /reglas/evaluar-vigencia` | Lectura y SISTEMA |
+| rules | `POST /reglas` | ADMIN (cualquier familia); VALIDADOR solo con `familia_regla` RDS |
+| rules | `PATCH /reglas/{id}/activo` | ADMIN |
+| ai | `POST /ai/analisis-semantico`, `POST /ai/documentos/{id}/preparar`, `POST /ai/documentos/{id}/anticipar`, `POST /ai/chat-documento`, `POST /ai/extraer-texto` | Operación |
+| ai | `GET /ai/documentos/{id}/visor`, `GET /ai/documentos/{id}/paginas/{n}`, `POST /ai/documentos/{id}/localizar`, `GET /ai/configuracion-ocr` | Lectura |
+
+Sin token, con un token inválido o vencido, o con la cuenta desactivada: 401. Con un rol sin permiso: 403. La interfaz oculta lo que el rol no puede hacer, pero la regla la aplica el servicio. Una prueba recorre la matriz completa (cada endpoint con cada rol y el estado esperado).
+
+### 5.2 Diseño del Módulo 7
+
+[DOC-08: JWT HMAC-SHA256, bcrypt, tabla `usuarios`, perfil SISTEMA; DOC-04 RF-20, RF-25 a RF-27; DOC-03: ISO/IEC 27001 A.5.15, A.5.17, A.8.5 y A.8.15. Diagramas: [inicio de sesión](uml/m7-secuencia-inicio-sesion.puml), [propagación SISTEMA](uml/m7-secuencia-propagacion-sistema.puml) y [correo](uml/rf20-actividad-notificacion-correo.puml)]
+
+**Autenticación (RF-25, HU-06).**
+- Cuentas locales con correo y contraseña (bcrypt). Ya no se usa Microsoft Entra ID (§19): el token es un JWT HS256 firmado con `JWT_SECRET`, con `sub`, `email`, `nombre`, `rol`, `iat` y `exp`. Vigencia: `JWT_EXPIRACION_MINUTOS` (480 por omisión, una jornada), sin tokens de renovación. La interfaz lo guarda en `sessionStorage` y lo envía como `Authorization: Bearer`.
+- **MFA (RF-25, decisión del 14/10/2026):** TOTP opcional por usuario (RFC 6238, apps autenticadoras), activado por el propio usuario con su contraseña y un código de confirmación. Con MFA activo, `POST /auth/login` responde `{requiere_codigo: true}` sin token hasta recibir el código. El administrador puede restablecer el MFA de una cuenta (teléfono perdido).
+- Contraseña de al menos 10 caracteres. Tras cinco intentos fallidos seguidos (contraseña o código), la cuenta se bloquea 15 min (429). Un correo inexistente y una contraseña incorrecta reciben el mismo 401, para no revelar qué cuentas existen.
+- Una cuenta creada o restablecida por el administrador tiene una contraseña temporal y `debe_cambiar_contrasena`: hasta cambiarla, el token solo sirve para `/auth/me` y `/auth/cambiar-contrasena`.
+
+**Autorización (RF-26).**
+- El core lee la cuenta en cada petición y autoriza con su rol guardado, no con el del token: desactivar una cuenta o cambiarle el rol surte efecto en la siguiente petición.
+- El rules-service comparte la base y hace la misma comprobación antes de crear o pausar una regla.
+- El ai-service confirma la cuenta con `GET /auth/me` del core (60 s en memoria por token).
+- El módulo `config/seguridad.py` (firma y lectura del JWT, roles y dependencias de FastAPI) es idéntico en los tres servicios, porque cada uno se construye en su propio contexto de Docker; una prueba compara las tres copias.
+
+**Propagación entre servicios (DOC-08, perfil SISTEMA).**
+- El ai-service valida el token del usuario y llama al core y al rules con un token SISTEMA de 5 min, firmado con el mismo secreto, más la cabecera `X-Usuario-Actor` con el correo de quien pidió la acción. El core llama al rules con un token SISTEMA.
+- `X-Usuario-Actor` solo cuenta con un token SISTEMA. Así la bitácora registra a la persona que pidió la auditoría (HU-07), y `POST /dictamenes` deja de estar abierto: solo el ai-service puede registrar un dictamen.
+- Las tareas de fondo (lectura anticipada, procesamiento diferido y reevaluación programada) actúan como `SISTEMA`, como hoy.
+
+**Bitácora (RF-27, HU-07).**
+- `usuario` guarda el correo autenticado (o `SISTEMA`) e `ip_origen` la IP de la petición.
+- Eventos nuevos: `INICIO_SESION`, `INICIO_SESION_FALLIDO`, `ALTA_USUARIO`, `ACTUALIZACION_USUARIO` (rol, estado, restablecimientos; con el valor anterior y el nuevo), `CAMBIO_CONTRASENA`, `CAMBIO_MFA`, `ASIGNACION_EXPEDIENTE` y `NOTIFICACION_CORREO`.
+- La ratificación toma `revisado_por` del token; el campo `usuario` de su cuerpo deja de usarse (sigue siendo opcional para no romper el contrato).
+- Los eventos anteriores al Módulo 7 conservan «OPERADOR»: la bitácora es inmutable y su cadena sellada no cambia.
+
+**Datos (migración idempotente en el core).**
+- `usuarios`: las columnas del DOC-08 (`id`, `email` único, `password_hash`, `nombre_completo`, `rol` con CHECK de los cuatro roles, `activo`, `creado_en`), más `debe_cambiar_contrasena`, `intentos_fallidos`, `bloqueado_hasta`, `ultimo_acceso`, `mfa_activo` y `totp_secreto`.
+- `expediente_asignaciones` (`expediente_id`, `usuario_id`, `asignado_por`, `creado_en`; únicos por par): no la define el DOC-08, pero la exigen la HU-31 («sus expedientes asignados») y el RF-20 («los responsables asignados»).
+- Sin borrado físico de usuarios (RN-04): una cuenta se desactiva. Una asignación sí se retira, y el cambio queda en la bitácora con la lista anterior y la nueva.
+
+**Usuario de consulta (HU-31).** `GET /expedientes/asignados` devuelve folio, nombre, empresa, semáforo y fecha de actualización de los expedientes asignados al usuario. La interfaz de CONSULTA es solo esa lista, sin documentos, dictámenes, reglas ni configuración.
+
+**Interfaz (HU-06).**
+- Pantalla de inicio de sesión (con el paso del código TOTP) y cambio obligatorio de contraseña.
+- Menú y rutas por rol, y acciones ocultas según el permiso.
+- En la cabecera, el nombre y el rol, con un botón para cerrar sesión. Vista **Usuarios** (ADMIN), con la asignación de expedientes, y vista de **Consulta**.
+- Un 401 regresa al inicio de sesión («Tu sesión expiró»).
+- Las páginas del visor se piden con `fetch` y se muestran desde una URL de objeto, porque `<img src>` no puede enviar la cabecera de autorización.
+
+**Correo (RF-20, HU-17).**
+- **Cuándo:** cuando el semáforo de un expediente pasa a NO CONFORME (estatus crítico), y en la reevaluación programada cuando un documento cruza el umbral de 30, 15 o 5 días antes de vencer (RF-17).
+- **A quién:** a los usuarios activos con rol VALIDADOR asignados al expediente.
+- **Cómo:** SMTP genérico (`SMTP_HOST`, `SMTP_PORT`, `SMTP_USUARIO`, `SMTP_CONTRASENA`, `SMTP_REMITENTE`, `SMTP_STARTTLS`), en un hilo que no retrasa la petición. El mensaje va en lenguaje llano, con un enlace a `FRONTEND_URL`.
+- Cada aviso queda en la bitácora (`NOTIFICACION_CORREO`: ENVIADO, FALLIDO, SIN_DESTINATARIOS o ENVIO_DESACTIVADO), y el aviso de un umbral no se repite. Sin `SMTP_HOST`, el envío está apagado.
+
+**Arranque y entrega.**
+- Si no hay ningún usuario, el core crea el administrador inicial de `ADMIN_INICIAL_EMAIL` y `ADMIN_INICIAL_CONTRASENA`, que debe cambiar la contraseña en su primer acceso.
+- Con `USUARIOS_DEMO=true`, como en el `docker-compose.yml` de la entrega, crea además un usuario ficticio por rol, con correos del dominio reservado `example.com` (RFC 2606) y contraseñas documentadas en el README, para que PluriOne pruebe el RBAC de inmediato.
+- `JWT_SECRET` se lee del `.env`. El compose trae uno de demostración, y `/health` del core advierte mientras siga en uso.
+- `CORS_ORIGENES` sustituye `allow_origins=["*"]` (informe de ZAP).
+
+**Riesgos aceptados.**
+- El token en `sessionStorage` es legible por un script inyectado (XSS). React escapa el contenido y la interfaz no inserta HTML; la alternativa con cookies exige protección CSRF entre tres orígenes.
+- El secreto TOTP se guarda sin cifrar en la base, como el resto de los datos mientras RNF-04 siga pendiente.
 
 ---
 
@@ -209,7 +309,7 @@ Prioridad tomada de las historias de usuario asociadas (Cap. VII); «—» cuand
 |---|---|---|---|---|
 | RF-18 | Alertas inmediatas ante documento ausente, vencido, anexo faltante o cláusula incumplida. | Alta | Implementado | Once categorías de alerta (sección 10.3; P5 suma DOCUMENTO_ILEGIBLE y PROCESAMIENTO_DIFERIDO); la cláusula incumplida es CONTENIDO_NO_LOCALIZADO. |
 | RF-19 | Semáforo Verde / Amarillo / Rojo por expediente. | Alta | Implementado | Reglas del semáforo en la sección 10.2. |
-| RF-20 | Notificaciones por correo electrónico ante estatus crítico o vencimiento próximo. | Media | **Pendiente** | Programado para la siguiente iteración del Módulo 5. |
+| RF-20 | Notificaciones por correo electrónico ante estatus crítico o vencimiento próximo. | Media | **Pendiente** | Diseñado el 14/10/2026 con el Módulo 7 (§5.2, fase F5): SMTP genérico a los validadores asignados al expediente. |
 | RF-21 | Recomendación estructurada junto a cada alerta. | Media | Implementado | Campo `recomendacion` de cada alerta. |
 
 ### M6 — Reportes y Panel de Control
@@ -224,8 +324,8 @@ Prioridad tomada de las historias de usuario asociadas (Cap. VII); «—» cuand
 
 | ID | Requerimiento | Prioridad | Estado | Evidencia / nota |
 |---|---|---|---|---|
-| RF-25 | Autenticación con credenciales corporativas y soporte MFA. | Alta | **Pendiente** | Diseñada en DOC-08 (tabla `usuarios`, JWT HMAC-SHA256). |
-| RF-26 | Autorización por rol (RBAC). | Alta | **Pendiente** | Roles definidos (sección 5). |
+| RF-25 | Autenticación con credenciales corporativas y soporte MFA. | Alta | **Parcial** | Diseñada el 14/10/2026 (§5.2): cuentas locales con bcrypt, JWT HMAC-SHA256 del DOC-08 y TOTP opcional por usuario. Implementada en el core (F1, 14/10/2026): inicio de sesión con bloqueo, contraseña temporal y cuentas iniciales. Faltan el MFA (F3) y la interfaz (F4). |
+| RF-26 | Autorización por rol (RBAC). | Alta | **Parcial** | Matriz de permisos por endpoint (§5.1), aplicada en todo el core desde el 14/10/2026 (F1, `tests/test_permisos_roles.py`). Faltan el rules-service y el ai-service (F2) y la interfaz por rol (F4). |
 | RF-27 | Bitácora inmutable protegida por el motor de base de datos. | Alta | Implementado | Disparador `trg_bitacora_inmutable` y, desde P3, cada evento sellado en cadena y verificable (`/bitacora/verificar-cadena`); el usuario autenticado se registrará con RF-25. |
 
 **Resumen:** 22 implementados, 1 parcial, 3 pendientes y 1 fuera del alcance de 27 (versión 2.1: RF-10 pasa a parcial y RF-12 sale del alcance; versión 2.9: RF-09 y RF-02 pasan a implementados). La Tabla 33 del DG (§10.7, corte al 03/10/2026) reporta las mismas cifras.
@@ -242,9 +342,9 @@ Prioridad tomada de las historias de usuario asociadas (Cap. VII); «—» cuand
 | HU-02 | Crear un expediente con nombre, empresa y tipo. | M1 | 1 | Alta | 6 | Implementado |
 | HU-03 | Cargar PDF e imágenes con cálculo automático de SHA-256. | M1 | 1 | Alta | 8 | Implementado |
 | HU-04 | Buscar expedientes por nombre, empresa, tipo o fecha. | M1 | 1 | Alta | 5 | Implementado |
-| HU-05 | Gestionar usuarios y asignar roles. | M7 | 1 | Alta | 10 | Pendiente |
-| HU-06 | Iniciar sesión y ver solo las funciones del propio rol. | M7 | 1 | Alta | 8 | Pendiente |
-| HU-07 | Registrar cada acción en la bitácora (usuario, fecha, acción, IP). | M7 | 1 | Alta | 6 | Parcial (registra un usuario genérico hasta RF-25) |
+| HU-05 | Gestionar usuarios y asignar roles. | M7 | 1 | Alta | 10 | Parcial (API del core, F1: `/usuarios`; falta la vista Usuarios, F4) |
+| HU-06 | Iniciar sesión y ver solo las funciones del propio rol. | M7 | 1 | Alta | 8 | Parcial (inicio de sesión y permisos en el core, F1; falta la interfaz, F4) |
+| HU-07 | Registrar cada acción en la bitácora (usuario, fecha, acción, IP). | M7 | 1 | Alta | 6 | Parcial (el core registra la cuenta en sesión y, con un token SISTEMA, la persona de `X-Usuario-Actor`, F1; falta que el ai-service la envíe, F2) |
 | HU-08 | Verificar la integridad comparando la huella actual con la original. | M1 | 1 | Media | 5 | Implementado |
 | HU-09 | Definir documentos obligatorios y opcionales por tipo de expediente. | M2 | 2 | Alta | 8 | Implementado |
 | HU-10 | Vincular anexos obligatorios a documentos principales. | M2 | 2 | Alta | 6 | Implementado |
@@ -254,7 +354,7 @@ Prioridad tomada de las historias de usuario asociadas (Cap. VII); «—» cuand
 | HU-14 | Configurar los umbrales de anticipación (30, 15 y 5 días). | M4 | 2 | Media | 4 | Parcial (por variable de entorno, no desde la interfaz) |
 | HU-15 | Recibir alertas por documentos faltantes, vencidos o anexos ausentes. | M5 | 2 | Alta | 8 | Implementado |
 | HU-16 | Que cada alerta incluya una recomendación. | M5 | 2 | Media | 5 | Implementado |
-| HU-17 | Notificaciones por correo ante estatus crítico. | M5 | 2 | Media | 6 | Pendiente |
+| HU-17 | Notificaciones por correo ante estatus crítico. | M5 | 2 | Media | 6 | Pendiente (diseñada con RF-20, §5.2) |
 | HU-18 | Extraer el texto por OCR y almacenarlo segmentado por páginas. | M3 | 3 | Alta | 12 | Implementado |
 | HU-19 | Verificar semánticamente las cláusulas obligatorias de un contrato. | M3 | 3 | Alta | 14 | Implementado (reglas RSC-01 del contrato: objeto, vigencia y terminación, penalización, confidencialidad y firmas de las partes, cada una con su cita literal o su recomendación si falta) |
 | HU-20 | Cita textual y porcentaje de confianza en cada resultado de la IA. | M3 | 3 | Alta | 6 | Implementado |
@@ -268,7 +368,7 @@ Prioridad tomada de las historias de usuario asociadas (Cap. VII); «—» cuand
 | HU-28 | Dictamen formal de cumplimiento por expediente. | M6 | 4 | Alta | 8 | Implementado |
 | HU-29 | Exportar reportes en PDF y Excel. | M6 | 4 | Alta | 8 | Implementado |
 | HU-30 | Consultar la bitácora completa de un expediente. | M7 | 4 | Alta | 5 | Implementado (historial del expediente en la interfaz, `HistorialExpediente.jsx`, sobre `GET /api/v1/bitacora`; eventos consecutivos iguales agrupados) |
-| HU-31 | Usuario de consulta: solo el semáforo de sus expedientes asignados. | M7 | 4 | Media | 4 | Pendiente (depende de RF-25/26) |
+| HU-31 | Usuario de consulta: solo el semáforo de sus expedientes asignados. | M7 | 4 | Media | 4 | Parcial (`expediente_asignaciones` y `GET /expedientes/asignados` en el core, F1; falta la vista de Consulta, F4) |
 | HU-32 | Validación completa de un expediente (reglas + IA) con un solo botón. | Integración | 4 | Alta | 14 | Implementado («Auditar pendientes» en el detalle del expediente: audita en secuencia, con reglas e IA, los documentos vigentes sin dictamen y muestra el avance por documento y el semáforo y las alertas antes y después) |
 | HU-33 | Manejo controlado de errores (documento ilegible, IA no disponible). | Integración | 4 | Alta | 9 | Implementado: una falla no detiene el resto del expediente (DG §8.7), y las dos excepciones del DOC-05, «Documento ilegible, se requiere recarga» y «Procesamiento diferido», se implementan en P5 (§21.5) |
 
@@ -497,6 +597,8 @@ Microservicios desacoplados orquestados con Docker Compose en la red `plurione-n
 | rules-service | `/health`; `/reglas` (catálogo, alta y pausa); `/reglas/documentos-obligatorios?tipo_expediente=`; `/reglas/tipos-documento` (tipos declarados por reglas RDS, RF-09); `/reglas/evaluar-vigencia` |
 | ai-service | `/health`; `/ai/extraer-texto`; `/ai/documentos/{id}/preparar`; `/ai/analisis-semantico`; `/ai/chat-documento`; `/ai/configuracion-ocr` |
 
+Módulo 7 (§5.1 y §5.2), en el core: `/auth/login`, `/auth/me`, `/auth/cambiar-contrasena`, `/usuarios` y `/usuarios/{id}`, `/expedientes/{id}/asignaciones` y `/expedientes/asignados`, implementados el 14/10/2026 (F1); `/auth/mfa/activar|confirmar|desactivar`, en F3. Todos los endpoints salvo `/health` y `/auth/login` exigen `Authorization: Bearer`.
+
 Documentación interactiva OpenAPI en `/docs` de cada servicio.
 
 ### 12.4 Modelo de datos
@@ -512,7 +614,7 @@ Documentación interactiva OpenAPI en `/docs` de cada servicio.
 | `dictamenes_auditoria` | Resultado de cada auditoría y su ratificación humana (protegido por `trg_dictamen_protegido`), con los firmantes o apoderados extraídos en `representacion_legal` (P2). |
 | `bitacora_auditoria` | Eventos inmutables (protegida por `trg_bitacora_inmutable`), sellados en cadena con `secuencia`, `hash_anterior` y `hash_evento` (P3). |
 
-Diseñada en DOC-08 y pendiente de implementar: la tabla `usuarios` (email, password_hash bcrypt, nombre_completo, rol, activo) para el Módulo 7.
+Módulo 7 (§5.2), creadas el 14/10/2026: la tabla `usuarios` del DOC-08 (email, password_hash bcrypt, nombre_completo, rol con CHECK de los cuatro roles, activo, creado_en), con las columnas de operación de la sesión (las del MFA llegan en F3), y `expediente_asignaciones` (HU-31, RF-20), única por par y con FK RESTRICT. `bitacora_auditoria.usuario` y `dictamenes_auditoria.revisado_por` se ampliaron a 150 caracteres para guardar el correo.
 
 #### Nota técnica: tipos de datos respecto del diccionario del DOC-08
 
@@ -743,7 +845,7 @@ Riesgos adicionales identificados en la implementación [DG §8.7 y §10.7]:
 | Azure OpenAI + LangChain para el análisis semántico | Groq Cloud (Qwen 3.8, 27B) mediante el SDK compatible con OpenAI | Se evaluó primero un modelo local (Ollama), inviable sin GPU y con 8 GB de RAM; Groq responde en 1–2 s y su plan gratuito cubre la residencia. |
 | Azure AI Search | Recuperación de fragmentos BM25 sobre el texto persistido | Método determinista y auditable, sin dependencias adicionales. |
 | Power BI para el tablero (DOC-04: «visualización de métricas ejecutivas en dashboard con integración a Power BI») | Tablero propio con gráficas de una librería de código abierto (licencia MIT) y reportes PDF y Excel con gráficas generadas por el sistema | Power BI requiere licencia de pago para publicar y compartir tableros, y conectarlo exigiría exponer los datos de cumplimiento a un servicio externo. El tablero integrado cubre RF-22 a RF-24 sin costo de licencia, con los datos dentro de la infraestructura de PluriOne (RNF-06) y con el mismo semáforo y vocabulario que el resto del sistema. |
-| Microsoft Entra ID | Autenticación JWT HMAC-SHA256 diseñada en DOC-08 | Pendiente de implementar (Módulo 7). |
+| Microsoft Entra ID (DOC-04, RF-25: «identidad corporativa federada») | Cuentas locales con bcrypt y JWT HMAC-SHA256, como los diseña el DOC-08, más TOTP opcional por usuario para el MFA (§5.2) | La federación con Entra ID requiere un inquilino de Azure de PluriOne y su registro de aplicación, que no forman parte de la entrega; el DOC-08, posterior, ya especifica el JWT local. El MFA se cubre con TOTP, que funciona sin servicios externos. Diseñado el 14/10/2026; pendiente de implementar. |
 
 **Decisiones respecto de los DOC-04, DOC-05 y DOC-08** (declaradas a partir del análisis de brechas, C1 a C5 y C7):
 
@@ -754,6 +856,7 @@ Riesgos adicionales identificados en la implementación [DG §8.7 y §10.7]:
 | DOC-04, RF-14: revisión humana con confianza inferior al 80 % | Bandas del DOC-05 y del DOC-08 §6.2: CONFORME desde 85 %; de 70 % a 84 % y por debajo de 70 %, revisión humana | El DOC-05 y el DOC-08, posteriores y más específicos, fijan 85 %; se aplica el criterio más estricto. |
 | DOC-04 (RF-08): severidades Alta, Media y Baja; DOC-07 (HU-11): Crítica, Alta y Media | Las cuatro severidades del DOC-05: Crítica, Alta, Media-Alta y Media | El DOC-05 es el que define el catálogo de reglas y su criticidad. |
 | Amarillo del semáforo: «próximo a vencer» (DOC-03), «próximos a vencer o pendientes de ratificación» (DOC-04), «advertencia» (DOC-06) | Amarillo también con documentos sin auditar y obligatorios no críticos faltantes (§10.2) | Un expediente con documentos sin revisar no puede mostrarse en verde: subir archivos nunca aprueba un expediente. |
+| DOC-08: roles ADMIN > AUDITOR > OPERADOR en jerarquía; DOC-04 y HU-05: Administrador, Validador, Auditor y Consulta | Los cuatro roles del DOC-04 (`ADMIN`, `VALIDADOR`, `AUDITOR`, `CONSULTA`) con una matriz de permisos por endpoint (§5.1); el OPERADOR del DOC-08 es el VALIDADOR | La jerarquía del DOC-08 le daría al Auditor la edición del Operador (el DOC-04 lo define de solo lectura) y no tiene al Usuario de Consulta que exige la HU-31. Decisión del 14/10/2026. |
 | DOC-08: estado `BLOQUEADO` del expediente | El documento alterado queda ALTERADO, con un dictamen No conforme y respuesta 409 (RIE-03) | Equivalente funcional: el bloqueo se aplica al documento comprometido y el expediente pasa a No conforme por ese dictamen. |
 
 ---
@@ -762,8 +865,8 @@ Riesgos adicionales identificados en la implementación [DG §8.7 y §10.7]:
 
 **Pendientes de implementación** (orden acordado el 29/09/2026: P1 a P3 y la revisión completa del frontend terminados; en la fase final, el Módulo 7)
 
-1. Autenticación, usuarios y roles: RF-25, RF-26, HU-05, HU-06 y HU-31; registrar el usuario autenticado en la bitácora (HU-07).
-2. Notificaciones por correo electrónico: RF-20, HU-17.
+1. Autenticación, usuarios y roles: RF-25, RF-26, HU-05, HU-06 y HU-31; registrar el usuario autenticado en la bitácora (HU-07). Diseño aprobado el 14/10/2026 (§5.1 y §5.2); F1 (core) terminada el 14/10/2026. Siguen F2 (rules y ai), F3 (MFA), F4 (interfaz), F5 (correo) y F6 (pruebas, scripts y entrega).
+2. Notificaciones por correo electrónico: RF-20, HU-17 (fase F5 del Módulo 7, §5.2).
 3. Requerimientos no funcionales: cifrado AES-256 en reposo (RNF-04), TLS 1.3 en el borde y red interna aislada (RNF-05); pruebas de concurrencia y disponibilidad (RNF-03, RNF-09).
 4. Después de P5 (revisión de requerimientos, versión 2.1): ciclo de vida del expediente activo, cerrado y archivado, sin eliminar nada, para que un expediente concluido deje de evaluarse y de alertar (complementa la conservación de §12.6). La corrección de los datos de una empresa o un expediente con registro en la bitácora, que este punto también pedía, se implementó en la versión 2.9 (`PATCH /titulares/{id}` y `PATCH /expedientes/{id}`).
 5. Iteración posterior: revocación de poderes y vigencias ligadas entre documentos (fianza y convenio modificatorio atados a la vigencia del contrato), que exige el DOC-02.
@@ -773,8 +876,8 @@ Riesgos adicionales identificados en la implementación [DG §8.7 y §10.7]:
 **Preguntas abiertas para el Product Owner**
 
 - ¿Qué documentos adicionales de los inventarios del DOC-02 deben declararse obligatorios por defecto en cada tipo de expediente?
-- ¿Qué proveedor de correo y qué destinatarios se usarán para las notificaciones (RF-20)?
-- ¿Se requiere MFA desde la primera versión del Módulo 7 (RF-25)?
+- ¿Qué servidor de correo usará PluriOne para las notificaciones (RF-20)? El diseño (§5.2) funciona con cualquier servidor SMTP configurado en el `.env`; los destinatarios son los validadores asignados al expediente (decisión del 14/10/2026).
+- MFA (RF-25): resuelta el 14/10/2026 con TOTP opcional por usuario (§5.2). Falta que PluriOne indique si lo quiere obligatorio para algún rol.
 - ¿Dónde se guarda la segunda copia de los respaldos (RNF-10)? El DOC-04 pide almacenamiento redundante en la nube, pero el paquete contiene los originales y MR-16 exige que no salgan de la infraestructura: ¿un recurso de red de PluriOne, o una nube aprobada una vez que el respaldo vaya cifrado (RNF-04)?
 - ¿Se mantiene el límite de 15 MB por archivo (§19) o se adopta el de 50 MB del DOC-08? Un acta escaneada de muchas páginas puede rebasar 15 MB.
 - ¿Confirma PluriOne el plazo de conservación de §12.6 o aplica uno mayor por contrato o por regulación sectorial?

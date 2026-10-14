@@ -1,0 +1,121 @@
+@startuml m7-casos-de-uso-acceso
+' Módulo 7 — Administración y Seguridad: autenticación, usuarios y roles (DOC-04, no PLUS).
+' Trazabilidad: RF-25 (autenticación con soporte MFA), RF-26 (RBAC), RF-27 (bitácora con
+' el usuario real), RF-20 (correo a los responsables asignados); HU-05, HU-06, HU-07,
+' HU-17, HU-31; DOC-08 (POST /auth/login, GET /auth/me, JWT HMAC-SHA256, tabla usuarios,
+' perfil SISTEMA); RDS-01 del DOC-05 («el administrador o validador» da de alta un tipo de
+' documento); RN-04 (sin borrado físico); ISO/IEC 27001 A.5.15, A.5.17, A.8.5 (DOC-03);
+' MRD MR-14 y MR-15. Matriz de permisos completa: PRD §5.1; diseño: PRD §5.2.
+' Roles: los cuatro del DOC-04 (el OPERADOR del DOC-08 es el VALIDADOR; decisión del
+' 14/10/2026, PRD §19).
+' Implementación prevista: core-service (models/usuario.py, controllers/auth_controller.py,
+' controllers/usuario_controller.py, config/seguridad.py), rules-service y ai-service
+' (config/seguridad.py) y frontend (sesión, menú por rol, vistas Usuarios y Consulta).
+
+title Módulo 7 — Acceso por rol: casos de uso
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+
+actor "Usuario\n(cualquier rol)" as USR
+actor "Administrador\ndel Sistema\n(ADMIN)" as ADM
+actor "Responsable de\nCumplimiento\n(VALIDADOR)" as VAL
+actor "Auditor\n(AUDITOR)" as AUD
+actor "Usuario de\nConsulta\n(CONSULTA)" as CON
+actor "Microservicios y\ntareas de fondo\n(SISTEMA)" as SIS <<sistema>>
+
+ADM -|> USR
+VAL -|> USR
+AUD -|> USR
+CON -|> USR
+
+rectangle "Motor de Validación de Cumplimiento Documental" {
+
+  package "Sesión (RF-25, HU-06)" {
+    usecase "Iniciar sesión con correo\ny contraseña\n(POST /auth/login → JWT)" as UC_LOGIN
+    usecase "Ingresar el código de la\napp autenticadora (TOTP)" as UC_TOTP
+    usecase "Activar o desactivar\nsu propio MFA" as UC_MFA
+    usecase "Cambiar su contraseña\n(obligatorio en el primer acceso\no tras un restablecimiento)" as UC_PASS
+    usecase "Ver solo las secciones\ny acciones de su rol" as UC_MENU
+  }
+
+  package "Administración (HU-05, HU-31)" {
+    usecase "Dar de alta un usuario\ncon su rol y una\ncontraseña temporal" as UC_ALTA
+    usecase "Cambiar el rol, desactivar\no reactivar una cuenta\n(sin borrado, RN-04)" as UC_ROL
+    usecase "Restablecer la contraseña\no el MFA de un usuario" as UC_REST
+    usecase "Asignar usuarios\na un expediente" as UC_ASIG
+    usecase "Dar de alta reglas de\ncualquier familia; pausarlas\no reactivarlas" as UC_REGLAS
+  }
+
+  package "Operación (RF-26)" {
+    usecase "Registrar empresas y expedientes,\ncargar, corregir datos,\nauditar, preguntar y ratificar" as UC_OPERAR
+    usecase "Dar de alta un tipo de\ndocumento nuevo (RDS-01)" as UC_RDS
+    usecase "Consultar expedientes, documentos,\nvisor, dictámenes, alertas y bitácora;\nexportar reportes y descargar el original" as UC_LEER
+    usecase "Ver el semáforo de sus\nexpedientes asignados" as UC_SEMAFORO
+  }
+
+  package "Trazabilidad y avisos (RF-27, HU-07, RF-20)" {
+    usecase "Registrar en la bitácora el\nusuario autenticado y su IP" as UC_BIT
+    usecase "Avisar por correo a los\nvalidadores asignados" as UC_CORREO
+    usecase "Llamar a otro servicio con\nun token SISTEMA y el actor" as UC_SIS
+  }
+}
+
+USR --> UC_LOGIN
+USR --> UC_MFA
+USR --> UC_PASS
+USR --> UC_MENU
+
+ADM --> UC_ALTA
+ADM --> UC_ROL
+ADM --> UC_REST
+ADM --> UC_ASIG
+ADM --> UC_REGLAS
+ADM --> UC_OPERAR
+ADM --> UC_RDS
+ADM --> UC_LEER
+
+VAL --> UC_OPERAR
+VAL --> UC_RDS
+VAL --> UC_LEER
+
+AUD --> UC_LEER
+
+CON --> UC_SEMAFORO
+
+SIS --> UC_SIS
+SIS --> UC_CORREO
+
+UC_TOTP .up.> UC_LOGIN : <<extend>>\n[el usuario activó MFA]
+UC_LOGIN ..> UC_BIT : <<include>>
+UC_ALTA ..> UC_BIT : <<include>>
+UC_ROL ..> UC_BIT : <<include>>
+UC_ASIG ..> UC_BIT : <<include>>
+UC_OPERAR ..> UC_BIT : <<include>>
+UC_OPERAR ..> UC_SIS : <<include>>
+UC_CORREO ..> UC_ASIG : usa las\nasignaciones
+
+note right of UC_SEMAFORO
+  HU-31: GET /expedientes/asignados devuelve
+  folio, nombre, empresa y semáforo de los
+  expedientes asignados a ese usuario; el
+  usuario de consulta no ve documentos,
+  dictámenes, reglas ni configuración.
+end note
+
+note right of UC_ROL
+  Una cuenta desactivada deja de operar en
+  la siguiente petición: el core lee la cuenta
+  y su rol en cada llamada (no confía en el
+  rol escrito en el token).
+end note
+
+note bottom of UC_LEER
+  El Auditor es de solo lectura (DOC-04, Tabla 1).
+  La jerarquía ADMIN > AUDITOR > OPERADOR del DOC-08
+  le daría edición: se sustituye por la matriz de
+  permisos del PRD §5.1.
+end note
+
+@enduml

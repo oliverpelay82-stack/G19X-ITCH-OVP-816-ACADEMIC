@@ -6,6 +6,7 @@ y que su conexión con PostgreSQL funciona correctamente.
 from fastapi import APIRouter
 from sqlalchemy import text
 
+from config import seguridad
 from config.database import engine
 
 router = APIRouter(prefix="/api/v1", tags=["Salud"])
@@ -27,4 +28,9 @@ def health_check():
         "puerto": 8001,
         "conexion_bd": conexion_bd,
         "version": "1.0.0",
+        # Módulo 7: el secreto de demostración del docker-compose no sirve para producción.
+        "advertencias": (
+            ["Las sesiones se firman con el secreto de demostración: defina JWT_SECRET en el .env."]
+            if seguridad.usa_secreto_demostracion() else []
+        ),
     }

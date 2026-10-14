@@ -9,10 +9,12 @@ import uuid
 from datetime import datetime, timezone
 from urllib.parse import quote
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Request, Response, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Response, UploadFile, status
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from config import seguridad
+from config.autorizacion import Actor, lectura_o_sistema, operacion, solo_sistema
 from config.boveda import ruta_en_boveda
 from config.catalogo import etiqueta_documento
 from config.database import get_db
@@ -35,10 +37,6 @@ ALLOWED_MIME_TYPES = {
     "image/jpeg": [b"\xff\xd8\xff"],
     "image/png": [b"\x89PNG\r\n\x1a\n"],
 }
-
-
-def _ip(request: Request) -> str | None:
-    return request.client.host if request.client else None
 
 
 def _documento_o_404(db: Session, documento_id: str) -> Documento:
@@ -117,10 +115,10 @@ def _advertencia_activo(senales_archivo: dict | None) -> str | None:
             "habilitado y solicite al emisor una versión sin contenido activo.")
 
 
-def _leer_verificado(db: Session, documento: Documento, request: Request) -> bytes:
+def _leer_verificado(db: Session, documento: Documento, actor: Actor) -> bytes:
     """Lectura con RIE-03: 409 si la huella del binario no coincide con la registrada."""
     try:
-        return integridad.leer_verificado(db, documento, ip_origen=_ip(request))
+        return integridad.leer_verificado(db, documento, usuario=actor.email, ip_origen=actor.ip)
     except integridad.DocumentoAlteradoError as exc:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from exc
 
@@ -138,14 +136,13 @@ def _leer_verificado(db: Session, documento: Documento, request: Request) -> byt
 # `async`, ese trabajo detenía el bucle de eventos y el servicio completo
 # dejaba de responder mientras duraba la carga.
 def subir_documento(
-    request: Request,
     expediente_id: str = Form(..., description="ID del expediente al que se vinculará"),
     tipo_documento: str = Form(
         "CSF_SAT", max_length=50,
         description="Tipo del catálogo base (DOC-02) o declarado por una regla RDS activa (RF-09)",
     ),
     file: UploadFile = File(..., description="Archivo digitalizado (PDF o Imagen)"),
-    usuario: str = Form("OPERADOR", max_length=100, description="Usuario que realiza la carga (bitácora)"),
+    actor: Actor = Depends(operacion),
     db: Session = Depends(get_db),
 ):
     """
@@ -267,8 +264,8 @@ def subir_documento(
             EVENTO_INGESTA_DOCUMENTO,
             expediente_id=expediente.id,
             documento_id=nuevo_documento.id,
-            usuario=usuario,
-            ip_origen=_ip(request),
+            usuario=actor.email,
+            ip_origen=actor.ip,
             detalle={
                 "tipo_documento": tipo_documento,
                 "nombre_archivo_original": nombre_original,
@@ -280,10 +277,10 @@ def subir_documento(
         )
 
         if protegido:
-            archivo_protegido.registrar(db, nuevo_documento, usuario, _ip(request))
+            archivo_protegido.registrar(db, nuevo_documento, actor.email, actor.ip)
 
         # 8. Semáforo consolidado del expediente (RIE-01 contra el catálogo de reglas)
-        cumplimiento.reevaluar(db, expediente, causa="INGESTA_DOCUMENTO", usuario=usuario, ip_origen=_ip(request))
+        cumplimiento.reevaluar(db, expediente, causa="INGESTA_DOCUMENTO", usuario=actor.email, ip_origen=actor.ip)
         db.commit()
     except Exception:
         db.rollback()
@@ -305,7 +302,8 @@ def subir_documento(
     response_model=list[DocumentoResponse],
     summary="Listar documentos asociados a un expediente",
 )
-def listar_documentos_de_expediente(expediente_id: str, db: Session = Depends(get_db)):
+def listar_documentos_de_expediente(expediente_id: str, _: Actor = Depends(lectura_o_sistema),
+                                    db: Session = Depends(get_db)):
     """Retorna todos los archivos digitalizados que pertenecen a un expediente."""
     return db.query(Documento).filter(Documento.expediente_id == expediente_id).order_by(Documento.creado_en.desc()).all()
 
@@ -315,7 +313,7 @@ def listar_documentos_de_expediente(expediente_id: str, db: Session = Depends(ge
     response_model=list[DocumentoResponse],
     summary="Listar todos los documentos digitalizados",
 )
-def listar_todos_documentos(db: Session = Depends(get_db)):
+def listar_todos_documentos(_: Actor = Depends(lectura_o_sistema), db: Session = Depends(get_db)):
     """Retorna todos los documentos cargados en el sistema con su hash SHA-256."""
     return db.query(Documento).order_by(Documento.creado_en.desc()).all()
 
@@ -325,7 +323,7 @@ def listar_todos_documentos(db: Session = Depends(get_db)):
     response_model=DocumentoDetalleResponse,
     summary="Consultar la ficha de un documento, con el titular de su expediente",
 )
-def obtener_documento(documento_id: str, db: Session = Depends(get_db)):
+def obtener_documento(documento_id: str, _: Actor = Depends(lectura_o_sistema), db: Session = Depends(get_db)):
     documento = _documento_o_404(db, documento_id)
     titular = documento.expediente.titular if documento.expediente else None
     return DocumentoDetalleResponse.model_validate(documento).model_copy(update={
@@ -339,14 +337,14 @@ def obtener_documento(documento_id: str, db: Session = Depends(get_db)):
     summary="Verificar la integridad criptográfica del documento (RIE-03)",
     responses={409: {"description": "La huella del binario no coincide con la registrada: documento bloqueado"}},
 )
-def verificar_integridad(documento_id: str, request: Request, db: Session = Depends(get_db)):
+def verificar_integridad(documento_id: str, actor: Actor = Depends(lectura_o_sistema), db: Session = Depends(get_db)):
     """
     Recalcula el SHA-256 del binario en la bóveda y lo compara con la huella
     registrada en la carga. Una discrepancia bloquea el documento, emite un
     dictamen NO_CONFORME (RIE-03), la registra en la bitácora y responde 409.
     """
     documento = _documento_o_404(db, documento_id)
-    _leer_verificado(db, documento, request)
+    _leer_verificado(db, documento, actor)
     return {
         "documento_id": documento.id,
         "regla": "RIE-03",
@@ -363,17 +361,23 @@ def verificar_integridad(documento_id: str, request: Request, db: Session = Depe
 )
 def descargar_contenido(
     documento_id: str,
-    request: Request,
     descarga: bool = Query(
         False,
         description="Descarga de un usuario: el archivo llega con su nombre de carga y queda en la bitácora "
                     "(DESCARGA_DOCUMENTO). Sin ella es la lectura del ai-service, que no se registra.",
     ),
+    actor: Actor = Depends(lectura_o_sistema),
     db: Session = Depends(get_db),
 ):
-    """Entrega el binario solo si su huella coincide con la registrada (RIE-03)."""
+    """
+    Entrega el binario solo si su huella coincide con la registrada (RIE-03).
+    Módulo 7 (PRD §5.1): una persona solo descarga (queda en la bitácora); la
+    lectura sin registro es del ai-service, con su token SISTEMA.
+    """
+    if descarga == actor.es_sistema:
+        raise seguridad.sin_permiso()
     documento = _documento_o_404(db, documento_id)
-    contenido = _leer_verificado(db, documento, request)
+    contenido = _leer_verificado(db, documento, actor)
     cabeceras = {"X-Hash-SHA256": documento.hash_sha256}
     if descarga:
         nombre = documento.nombre_archivo_original or f"documento-{documento.id}"
@@ -382,7 +386,7 @@ def descargar_contenido(
         cabeceras["Content-Disposition"] = f"attachment; filename=\"{respaldo}\"; filename*=UTF-8''{quote(nombre)}"
         bitacora.registrar(
             db, EVENTO_DESCARGA_DOCUMENTO, expediente_id=documento.expediente_id, documento_id=documento.id,
-            usuario="OPERADOR", ip_origen=_ip(request),
+            usuario=actor.email, ip_origen=actor.ip,
             detalle={"nombre_archivo_original": documento.nombre_archivo_original,
                      "hash_sha256": documento.hash_sha256},
         )
@@ -396,7 +400,8 @@ def descargar_contenido(
     summary="Marcar la auditoría de un documento como diferida (DOC-05, Tabla 1)",
 )
 def marcar_procesamiento_diferido(
-    documento_id: str, dto: ProcesamientoDiferidoRequest, request: Request, db: Session = Depends(get_db)
+    documento_id: str, dto: ProcesamientoDiferidoRequest, actor: Actor = Depends(solo_sistema),
+    db: Session = Depends(get_db),
 ):
     """
     El ai-service avisa que la IA no respondió tras sus reintentos y que la
@@ -420,12 +425,13 @@ def marcar_procesamiento_diferido(
         EVENTO_PROCESAMIENTO_DIFERIDO,
         expediente_id=documento.expediente_id,
         documento_id=documento.id,
-        ip_origen=_ip(request),
+        usuario=actor.email,
+        ip_origen=actor.ip,
         detalle=marca,
     )
     expediente = db.query(Expediente).filter(Expediente.id == documento.expediente_id).first()
     if expediente:
-        cumplimiento.reevaluar(db, expediente, causa="PROCESAMIENTO_DIFERIDO", ip_origen=_ip(request))
+        cumplimiento.reevaluar(db, expediente, causa="PROCESAMIENTO_DIFERIDO", usuario=actor.email, ip_origen=actor.ip)
     db.commit()
     db.refresh(documento)
     return documento

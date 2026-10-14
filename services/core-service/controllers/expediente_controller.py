@@ -11,10 +11,11 @@ from datetime import date, datetime, time, timedelta
 from dataclasses import asdict
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
+from config.autorizacion import Actor, lectura, operacion
 from config.catalogo import TIPOS_EXPEDIENTE
 from config import zona_horaria
 from config.database import get_db
@@ -113,7 +114,7 @@ def evaluar_lista(
     status_code=status.HTTP_201_CREATED,
     summary="Aperturar un nuevo expediente para un titular",
 )
-def crear_expediente(dto: ExpedienteCreate, request: Request, db: Session = Depends(get_db)):
+def crear_expediente(dto: ExpedienteCreate, actor: Actor = Depends(operacion), db: Session = Depends(get_db)):
     """
     Equivalente a @PostMapping.
     Crea un expediente vinculado a un titular existente, con su clasificación
@@ -150,13 +151,12 @@ def crear_expediente(dto: ExpedienteCreate, request: Request, db: Session = Depe
     db.add(nuevo_expediente)
     db.flush()
 
-    ip = request.client.host if request.client else None
     bitacora.registrar(
         db,
         EVENTO_APERTURA_EXPEDIENTE,
         expediente_id=nuevo_expediente.id,
-        usuario="OPERADOR",
-        ip_origen=ip,
+        usuario=actor.email,
+        ip_origen=actor.ip,
         detalle={
             "codigo_expediente": codigo,
             "tipo_expediente": nuevo_expediente.tipo_expediente,
@@ -165,7 +165,9 @@ def crear_expediente(dto: ExpedienteCreate, request: Request, db: Session = Depe
             "rfc_titular": titular.rfc,
         },
     )
-    evaluacion = cumplimiento.reevaluar(db, nuevo_expediente, causa="APERTURA_EXPEDIENTE", ip_origen=ip)
+    evaluacion = cumplimiento.reevaluar(
+        db, nuevo_expediente, causa="APERTURA_EXPEDIENTE", usuario=actor.email, ip_origen=actor.ip
+    )
     db.commit()
     db.refresh(nuevo_expediente)
     return _respuesta(nuevo_expediente, evaluacion)
@@ -182,6 +184,7 @@ def listar_expedientes(
     estado: Optional[str] = Query(None, description="CONFORME, EN_REVISION o NO_CONFORME"),
     desde: Optional[date] = Query(None, description="Apertura a partir de esta fecha (inclusive)"),
     hasta: Optional[date] = Query(None, description="Apertura hasta esta fecha (inclusive)"),
+    _: Actor = Depends(lectura),
     db: Session = Depends(get_db),
 ):
     """
@@ -202,7 +205,7 @@ def listar_expedientes(
     response_model=ExpedienteResponse,
     summary="Consultar un expediente con su estado consolidado de cumplimiento",
 )
-def obtener_expediente_por_id(expediente_id: str, db: Session = Depends(get_db)):
+def obtener_expediente_por_id(expediente_id: str, _: Actor = Depends(lectura), db: Session = Depends(get_db)):
     """
     Retorna el expediente con el desglose del semáforo: documentos obligatorios
     y faltantes, anexos exigidos, estado y vigencia de cada documento, motivos
@@ -224,7 +227,8 @@ def obtener_expediente_por_id(expediente_id: str, db: Session = Depends(get_db))
     response_model=ExpedienteResponse,
     summary="Renombrar un expediente (el tipo no se edita)",
 )
-def renombrar_expediente(expediente_id: str, dto: ExpedienteUpdate, request: Request, db: Session = Depends(get_db)):
+def renombrar_expediente(expediente_id: str, dto: ExpedienteUpdate, actor: Actor = Depends(operacion),
+                         db: Session = Depends(get_db)):
     """
     Corrección del nombre descriptivo (RF-01, PRD §13.1). El cambio queda en la
     bitácora sellada con el nombre anterior y el nuevo (RF-27, RN-04) y aparece
@@ -239,8 +243,7 @@ def renombrar_expediente(expediente_id: str, dto: ExpedienteUpdate, request: Req
     if nombre != exp.nombre:
         anterior, exp.nombre = exp.nombre, nombre
         bitacora.registrar(
-            db, EVENTO_ACTUALIZACION_EXPEDIENTE, expediente_id=exp.id, usuario="OPERADOR",
-            ip_origen=request.client.host if request.client else None,
+            db, EVENTO_ACTUALIZACION_EXPEDIENTE, expediente_id=exp.id, usuario=actor.email, ip_origen=actor.ip,
             detalle={"codigo_expediente": exp.codigo_expediente,
                      "cambios": {"nombre": {"anterior": anterior, "nuevo": nombre}}},
         )

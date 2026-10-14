@@ -26,3 +26,7 @@ pypdf==6.19.0
 cryptography==50.0.2
 # Q-a: base de zonas horarias para zoneinfo (Windows e imágenes slim no la traen).
 tzdata==2026.4
+
+# Módulo 7 (RF-25, DOC-08): sesiones JWT HMAC-SHA256 y contraseñas con bcrypt.
+PyJWT==2.15.1
+bcrypt==5.0.0

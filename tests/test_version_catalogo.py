@@ -23,7 +23,6 @@ from io import BytesIO  # noqa: E402
 from types import SimpleNamespace  # noqa: E402
 
 import pytest  # noqa: E402
-from fastapi.testclient import TestClient  # noqa: E402
 from openpyxl import load_workbook  # noqa: E402
 from sqlalchemy import text  # noqa: E402
 from sqlalchemy.exc import DBAPIError  # noqa: E402
@@ -41,7 +40,8 @@ rules_client.obtener_documentos_obligatorios = lambda *_: rules_client.Inventari
     documentos={"CSF_SAT": {"codigo_regla": "RIE-01", "severidad": "CRITICA"}},
     fuente=rules_client.FUENTE_CATALOGO, version_catalogo=VERSION, versiones_por_tipo=dict(VERSIONES_TIPO),
 )
-client = TestClient(app)
+auth = bd_pruebas.Autenticacion()
+client = auth.cliente(app)
 
 
 def _documento(rfc: str) -> dict:
@@ -61,7 +61,7 @@ def _documento(rfc: str) -> dict:
 
 
 def _dictaminar(doc: dict, **extra) -> dict:
-    r = client.post("/api/v1/dictamenes", json={"documento_id": doc["id"], "estatus": "EN_REVISION",
+    r = client.post("/api/v1/dictamenes", headers=auth.sistema(), json={"documento_id": doc["id"], "estatus": "EN_REVISION",
                                                  "nivel_confianza": 0.8, "observaciones": ["M6."], **extra})
     assert r.status_code == 201, r.text
     return r.json()

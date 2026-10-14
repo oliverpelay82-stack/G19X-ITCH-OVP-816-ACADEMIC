@@ -8,13 +8,18 @@ Controlador de Dictámenes de Auditoría (Niveles 2, 4 y 5 del pipeline).
   * ``POST /api/v1/dictamenes/{id}/ratificar`` — Human-in-the-Loop (RF-14,
     RN-05): el analista confirma o corrige el dictamen con una justificación
     que queda en la bitácora, y el semáforo del expediente se recalcula.
+
+Módulo 7 (PRD §5.1): solo el ai-service (token SISTEMA) registra dictámenes, y la
+bitácora atribuye cada uno a la persona que pidió la auditoría (X-Usuario-Actor).
+Quien ratifica es el usuario en sesión, no un nombre escrito en la petición.
 """
 from datetime import datetime, timezone
 from typing import Any, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
+from config.autorizacion import Actor, lectura_o_sistema, operacion, solo_sistema
 from config.database import get_db
 from models.bitacora import EVENTO_DICTAMEN_IA, EVENTO_RATIFICACION_HUMANA
 from models.dictamen import ORIGEN_NIVEL_1, ORIGEN_NIVEL_3_ILEGIBLE, ORIGEN_NIVEL_4, ORIGEN_RIE_03, DictamenAuditoria
@@ -30,10 +35,6 @@ class DictamenRegistradoResponse(DictamenResponse):
     """Dictamen más el estado del expediente que resultó de registrarlo."""
     estado_expediente: str
     porcentaje_completitud: float
-
-
-def _ip(request: Request) -> Optional[str]:
-    return request.client.host if request.client else None
 
 
 def _dictamen_o_404(db: Session, dictamen_id: str) -> DictamenAuditoria:
@@ -134,15 +135,14 @@ def _reglas_aplicadas(vigencia: Optional[dict[str, Any]], hash_sha256: str) -> t
     summary="Persistir el dictamen de un documento (Nivel 4 con reglas del Nivel 2)",
     responses={409: {"description": "El binario del documento está alterado (RIE-03)"}},
 )
-def registrar_dictamen(dto: DictamenCreate, request: Request, db: Session = Depends(get_db)):
+def registrar_dictamen(dto: DictamenCreate, actor: Actor = Depends(solo_sistema), db: Session = Depends(get_db)):
     documento = db.query(Documento).filter(Documento.id == dto.documento_id).first()
     if not documento:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=f"Documento con ID '{dto.documento_id}' no encontrado."
         )
-    ip = _ip(request)
     try:
-        integridad.leer_verificado(db, documento, usuario=dto.usuario, ip_origen=ip)
+        integridad.leer_verificado(db, documento, usuario=actor.email, ip_origen=actor.ip)
     except integridad.DocumentoAlteradoError as exc:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from exc
 
@@ -183,8 +183,8 @@ def registrar_dictamen(dto: DictamenCreate, request: Request, db: Session = Depe
         expediente_id=documento.expediente_id,
         documento_id=documento.id,
         dictamen_id=dictamen.id,
-        usuario=dto.usuario,
-        ip_origen=ip,
+        usuario=actor.email,
+        ip_origen=actor.ip,
         detalle={
             "estatus": dto.estatus,
             "nivel_confianza": dto.nivel_confianza,
@@ -203,7 +203,7 @@ def registrar_dictamen(dto: DictamenCreate, request: Request, db: Session = Depe
         },
     )
     expediente = db.query(Expediente).filter(Expediente.id == documento.expediente_id).first()
-    cumplimiento.reevaluar(db, expediente, causa="DICTAMEN_IA", usuario=dto.usuario, ip_origen=ip)
+    cumplimiento.reevaluar(db, expediente, causa="DICTAMEN_IA", usuario=actor.email, ip_origen=actor.ip)
     db.commit()
     db.refresh(dictamen)
     return _registrado(dictamen, expediente)
@@ -215,6 +215,7 @@ def listar_dictamenes(
     expediente_id: Optional[str] = None,
     estatus: Optional[str] = None,
     limite: int = Query(100, ge=1, le=500),
+    _: Actor = Depends(lectura_o_sistema),
     db: Session = Depends(get_db),
 ):
     query = db.query(DictamenAuditoria)
@@ -228,7 +229,7 @@ def listar_dictamenes(
 
 
 @router.get("/{dictamen_id}", response_model=DictamenResponse, summary="Consultar un dictamen")
-def obtener_dictamen(dictamen_id: str, db: Session = Depends(get_db)):
+def obtener_dictamen(dictamen_id: str, _: Actor = Depends(lectura_o_sistema), db: Session = Depends(get_db)):
     return _dictamen_o_404(db, dictamen_id)
 
 
@@ -238,7 +239,8 @@ def obtener_dictamen(dictamen_id: str, db: Session = Depends(get_db)):
     summary="Ratificación humana de un dictamen (Human-in-the-Loop, RN-05)",
     responses={409: {"description": "El dictamen ya fue ratificado, fue sustituido o no admite ratificación"}},
 )
-def ratificar_dictamen(dictamen_id: str, dto: RatificacionRequest, request: Request, db: Session = Depends(get_db)):
+def ratificar_dictamen(dictamen_id: str, dto: RatificacionRequest, actor: Actor = Depends(operacion),
+                       db: Session = Depends(get_db)):
     """
     El analista confirma o corrige el dictamen vigente de un documento. La
     decisión prevalece sobre la del motor (RN-05), pero no borra nada: el
@@ -292,12 +294,11 @@ def ratificar_dictamen(dictamen_id: str, dto: RatificacionRequest, request: Requ
             detail="Existe un dictamen más reciente de este documento; ratifique el vigente.",
         )
 
-    ip = _ip(request)
     estatus_anterior = dictamen.estatus
     dictamen.estatus = dto.nuevo_estatus
     dictamen.revisado_por_humano = True
     dictamen.justificacion_humana = dto.justificacion
-    dictamen.revisado_por = dto.usuario
+    dictamen.revisado_por = actor.email
     dictamen.revisado_en = datetime.now(timezone.utc)
     bitacora.registrar(
         db,
@@ -305,8 +306,8 @@ def ratificar_dictamen(dictamen_id: str, dto: RatificacionRequest, request: Requ
         expediente_id=dictamen.expediente_id,
         documento_id=dictamen.documento_id,
         dictamen_id=dictamen.id,
-        usuario=dto.usuario,
-        ip_origen=ip,
+        usuario=actor.email,
+        ip_origen=actor.ip,
         detalle={
             "estatus_anterior": estatus_anterior,
             "estatus_preliminar": dictamen.estatus_preliminar,
@@ -316,7 +317,7 @@ def ratificar_dictamen(dictamen_id: str, dto: RatificacionRequest, request: Requ
         },
     )
     expediente = db.query(Expediente).filter(Expediente.id == dictamen.expediente_id).first()
-    cumplimiento.reevaluar(db, expediente, causa="RATIFICACION_HUMANA", usuario=dto.usuario, ip_origen=ip)
+    cumplimiento.reevaluar(db, expediente, causa="RATIFICACION_HUMANA", usuario=actor.email, ip_origen=actor.ip)
     db.commit()
     db.refresh(dictamen)
     return _registrado(dictamen, expediente)

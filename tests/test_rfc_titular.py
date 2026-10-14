@@ -21,7 +21,6 @@ bd_pruebas.preparar_entorno()
 os.environ["REEVALUACION_INTERVALO_HORAS"] = "0"
 
 import pytest  # noqa: E402
-from fastapi.testclient import TestClient  # noqa: E402
 from main import app  # noqa: E402
 from config.database import SessionLocal, engine, init_db  # noqa: E402
 from models.titular import TitularExpediente  # noqa: E402
@@ -29,7 +28,8 @@ from motor import rfc  # noqa: E402
 
 bd_pruebas.verificar_aislamiento(engine)
 init_db()
-client = TestClient(app)
+auth = bd_pruebas.Autenticacion()
+client = auth.cliente(app)
 
 # RFC reales y públicos de personas morales (dígito verificador correcto).
 RFC_REALES = ["BIM011108DJ5", "SAT970701NN3"]

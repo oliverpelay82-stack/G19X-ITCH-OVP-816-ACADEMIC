@@ -6,6 +6,7 @@ alertas y recomendaciones, y de los reportes de auditoría exportables.
 Puerto: 8001.
 """
 import asyncio
+import os
 import re
 import traceback
 from contextlib import asynccontextmanager, suppress
@@ -15,8 +16,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse
 
-from config import observabilidad
-from config.database import engine, init_db
+from config import observabilidad, seguridad
+from config.database import SessionLocal, engine, init_db
+from controllers.asignacion_controller import router as asignacion_router
+from controllers.auth_controller import router as auth_router
+from controllers.usuario_controller import router as usuario_router
 from controllers.titular_controller import router as titular_router
 from controllers.expediente_controller import router as expediente_router
 from controllers.documento_controller import router as documento_router
@@ -25,13 +29,23 @@ from controllers.dictamen_controller import router as dictamen_router
 from controllers.bitacora_controller import router as bitacora_router
 from controllers.alerta_controller import router as alerta_router
 from controllers.reporte_controller import router as reporte_router
-from motor import reevaluacion_programada
+from motor import reevaluacion_programada, usuarios_iniciales
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Módulo 7: sin un JWT_SECRET válido el servicio no arranca (no podría firmar sesiones).
+    seguridad.verificar_configuracion()
     print("[core-service] Sincronizando modelos con PostgreSQL...")
     init_db()
+    with SessionLocal() as db:
+        creados = usuarios_iniciales.crear(db)
+        sin_cuentas = not usuarios_iniciales.hay_cuentas(db)
+    if creados:
+        print(f"[core-service] Cuentas creadas al arrancar: {', '.join(creados)}")
+    if sin_cuentas:
+        print("[core-service] AVISO: no hay cuentas de usuario. Defina ADMIN_INICIAL_EMAIL y "
+              "ADMIN_INICIAL_CONTRASENA (o USUARIOS_DEMO=true) y reinicie el servicio.")
     horas = reevaluacion_programada.intervalo_horas()
     tarea = asyncio.create_task(reevaluacion_programada.ciclo(horas)) if horas else None
     yield
@@ -123,11 +137,14 @@ async def cabeceras_seguridad(request: Request, call_next):
     return respuesta
 
 
-# Permitir llamadas CORS desde el frontend
+# CORS: solo los orígenes de la interfaz (Módulo 7; el informe de ZAP pedía dejar el
+# comodín al llegar la autenticación). El token viaja en Authorization, sin cookies.
+# Por omisión, Vite en desarrollo (5173) y el puerto de las pruebas aisladas (5174).
+_ORIGENES_PREDETERMINADOS = "http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174"
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=[o.strip() for o in os.getenv("CORS_ORIGENES", _ORIGENES_PREDETERMINADOS).split(",") if o.strip()],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
     # El frontend lee el nombre de los reportes descargados (RF-24) y la huella del binario.
@@ -135,7 +152,11 @@ app.add_middleware(
 )
 
 app.include_router(health_router)
+app.include_router(auth_router)
+app.include_router(usuario_router)
 app.include_router(titular_router)
+# Antes que el de expedientes: /expedientes/asignados no es /expedientes/{expediente_id}.
+app.include_router(asignacion_router)
 app.include_router(expediente_router)
 app.include_router(documento_router)
 app.include_router(dictamen_router)

@@ -32,7 +32,6 @@ import bd_pruebas  # noqa: E402
 BOVEDA = bd_pruebas.preparar_entorno()
 os.environ["REEVALUACION_INTERVALO_HORAS"] = "0"
 
-from fastapi.testclient import TestClient  # noqa: E402
 from sqlalchemy import text  # noqa: E402
 from sqlalchemy.exc import DBAPIError  # noqa: E402
 from main import app  # noqa: E402
@@ -49,7 +48,8 @@ rules_client.obtener_documentos_obligatorios = lambda *_: rules_client.Inventari
                 for t in ("CONTRATO_SERVICIOS", "ACUERDO_CONFIDENCIALIDAD", "PODER_NOTARIAL")},
     fuente=rules_client.FUENTE_CATALOGO,
 )
-client = TestClient(app)
+auth = bd_pruebas.Autenticacion()
+client = auth.cliente(app)
 RAZON = "Constructora Sierra Madre, S.A. de C.V."
 
 
@@ -78,7 +78,7 @@ def _subir(exp_id: str, tipo: str, nombre: str) -> str:
 
 
 def _dictaminar(doc_id: str, representacion: dict | None, estatus: str = "EN_REVISION", **extra) -> dict:
-    r = client.post("/api/v1/dictamenes", json={
+    r = client.post("/api/v1/dictamenes", headers=auth.sistema(), json={
         "documento_id": doc_id, "estatus": estatus, "nivel_confianza": 0.95, "match_titular": True,
         "observaciones": ["Prueba automatizada."], "representacion": representacion, **extra,
     })

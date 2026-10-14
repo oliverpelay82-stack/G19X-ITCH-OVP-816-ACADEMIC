@@ -21,7 +21,6 @@ import bd_pruebas  # noqa: E402
 bd_pruebas.preparar_entorno()
 os.environ["REEVALUACION_INTERVALO_HORAS"] = "0"
 
-from fastapi.testclient import TestClient  # noqa: E402
 from pypdf import PdfWriter  # noqa: E402
 from pypdf.generic import ArrayObject, DictionaryObject, NameObject, TextStringObject  # noqa: E402
 from main import app  # noqa: E402
@@ -37,7 +36,8 @@ rules_client.obtener_documentos_obligatorios = lambda *_: rules_client.Inventari
     documentos={"CSF_SAT": {"codigo_regla": "RIE-01", "severidad": "CRITICA"}},
     fuente=rules_client.FUENTE_CATALOGO,
 )
-client = TestClient(app)
+auth = bd_pruebas.Autenticacion()
+client = auth.cliente(app)
 
 
 def _pdf(semilla: str, *, incremental=False, modificado=None, javascript=False, productor="Generador del SAT") -> bytes:
@@ -118,7 +118,7 @@ def test_pdf_con_javascript_se_custodia_y_se_advierte():
 
 def test_el_contenido_activo_sigue_aunque_se_ratifique():
     activo = _subir(_expediente("SEN060606AAA"), _pdf("activo-ratificado", javascript=True), tipo="ACTA_CONSTITUTIVA")
-    dictamen = client.post("/api/v1/dictamenes", json={"documento_id": activo["id"], "estatus": "EN_REVISION",
+    dictamen = client.post("/api/v1/dictamenes", headers=auth.sistema(), json={"documento_id": activo["id"], "estatus": "EN_REVISION",
                                                        "nivel_confianza": 0.8, "observaciones": ["P6."]}).json()
     r = client.post(f"/api/v1/dictamenes/{dictamen['id']}/ratificar", json={
         "nuevo_estatus": "CONFORME", "justificacion": "Revisado contra el original.", "usuario": "p6"})

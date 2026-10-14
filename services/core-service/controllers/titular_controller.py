@@ -1,9 +1,10 @@
 """
 Controlador de Titulares de Expediente.
 """
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
+from config.autorizacion import Actor, lectura, operacion
 from config.database import get_db
 from models.bitacora import EVENTO_ACTUALIZACION_TITULAR
 from models.titular import TitularExpediente
@@ -19,7 +20,7 @@ router = APIRouter(prefix="/api/v1/titulares", tags=["Titulares"])
     status_code=status.HTTP_201_CREATED,
     summary="Registrar un nuevo titular",
 )
-def registrar_titular(titular_dto: TitularCreate, db: Session = Depends(get_db)):
+def registrar_titular(titular_dto: TitularCreate, _: Actor = Depends(operacion), db: Session = Depends(get_db)):
     """
     Equivalente a @PostMapping.
     Valida si el RFC ya existe y guarda en la tabla titulares_expediente.
@@ -53,7 +54,7 @@ def registrar_titular(titular_dto: TitularCreate, db: Session = Depends(get_db))
     response_model=list[TitularResponse],
     summary="Listar todos los titulares",
 )
-def listar_titulares(db: Session = Depends(get_db)):
+def listar_titulares(_: Actor = Depends(lectura), db: Session = Depends(get_db)):
     """
     Equivalente a @GetMapping.
     Consulta todos los registros de la tabla titulares_expediente.
@@ -66,7 +67,8 @@ def listar_titulares(db: Session = Depends(get_db)):
     response_model=TitularResponse,
     summary="Corregir la razón social o la categoría de un titular (el RFC no se edita)",
 )
-def corregir_titular(titular_id: str, dto: TitularUpdate, request: Request, db: Session = Depends(get_db)):
+def corregir_titular(titular_id: str, dto: TitularUpdate, actor: Actor = Depends(operacion),
+                     db: Session = Depends(get_db)):
     """
     Corrección de datos de captura (PRD §13.1). Solo los campos que cambian
     quedan en la bitácora sellada, con su valor anterior y el nuevo (RF-27,
@@ -88,8 +90,7 @@ def corregir_titular(titular_id: str, dto: TitularUpdate, request: Request, db: 
     for campo, valores in cambios.items():
         setattr(titular, campo, valores["nuevo"])
     bitacora.registrar(
-        db, EVENTO_ACTUALIZACION_TITULAR, usuario="OPERADOR",
-        ip_origen=request.client.host if request.client else None,
+        db, EVENTO_ACTUALIZACION_TITULAR, usuario=actor.email, ip_origen=actor.ip,
         detalle={"titular_id": titular.id, "rfc": titular.rfc, "cambios": cambios},
     )
     db.commit()

@@ -1,0 +1,58 @@
+@startuml m7-secuencia-propagacion-sistema
+' Módulo 7 — Propagación de la identidad entre microservicios con el perfil SISTEMA (DOC-04, no PLUS).
+' Trazabilidad: RF-26 (RBAC en los tres servicios), RF-27 y HU-07 (la bitácora registra a
+' quien pidió la auditoría, no al servicio que la ejecutó); DOC-08 (perfil SISTEMA para las
+' llamadas entre microservicios, JWT HMAC-SHA256); RIE-03 (el ai-service lee el binario solo
+' a través del core); PLUS-21 (el folio X-Request-ID sigue viajando); P5 (procesamiento
+' diferido) y RNF-02 (lectura anticipada) como tareas de fondo; ISO/IEC 27001 A.8.15.
+' Diseño: PRD §5.2. Implementación prevista: config/seguridad.py en los tres servicios
+' (copias idénticas, vigiladas por una prueba), ai-service clients/core_client.py y
+' clients/rules_client.py, core-service clients/rules_client.py.
+
+title Módulo 7 — Auditoría de un documento: identidad del usuario y token SISTEMA
+
+actor "Validador" as V
+participant "Interfaz" as UI
+participant "ai-service" as AI
+participant "core-service" as CORE
+participant "rules-service" as RULES
+database "PostgreSQL" as BD
+
+V -> UI : «Auditar»
+UI -> AI : POST /ai/analisis-semantico\nAuthorization: Bearer <JWT del usuario>
+AI -> AI : firma y vigencia del JWT; rol con permiso\nde auditar (ADMIN o VALIDADOR)
+AI -> CORE : GET /auth/me con el JWT del usuario
+note right : Confirma que la cuenta sigue activa y su rol;\nla respuesta se recuerda 60 s por token.
+CORE --> AI : {email, rol, activo}
+
+group Llamadas de servicio a servicio
+  AI -> AI : token SISTEMA (sub = ai-service, rol = SISTEMA,\nexp = 5 min), firmado con el mismo JWT_SECRET
+  AI -> CORE : GET /documentos/{id}/contenido\nAuthorization: Bearer <SISTEMA>\nX-Usuario-Actor: validador@…
+  CORE -> CORE : RIE-03: recalcula la huella del binario
+  CORE --> AI : binario verificado
+  AI -> RULES : GET /reglas?… (criterios RSC/RDS)\nAuthorization: Bearer <SISTEMA>
+  RULES --> AI : criterios
+  AI -> AI : Niveles 3 y 4
+  AI -> RULES : POST /reglas/evaluar-vigencia\nAuthorization: Bearer <SISTEMA>
+  RULES --> AI : vigencia RCV
+  AI -> CORE : POST /dictamenes {…}\nAuthorization: Bearer <SISTEMA>\nX-Usuario-Actor: validador@…
+  CORE -> CORE : POST /dictamenes solo admite SISTEMA:\nun usuario no puede registrar un dictamen a mano
+  CORE -> RULES : GET /reglas/documentos-obligatorios\n(reevaluación del semáforo)\nAuthorization: Bearer <SISTEMA>
+  CORE -> BD : dictamen y evento DICTAMEN_IA\ncon usuario = validador@… (el actor)
+  CORE --> AI : 201
+end
+AI --> UI : resultado de la auditoría
+
+== Tareas de fondo (sin usuario en sesión) ==
+AI -> CORE : lectura anticipada (RNF-02), ciclo de diferidos (P5)\nAuthorization: Bearer <SISTEMA>, sin X-Usuario-Actor
+CORE -> BD : eventos con usuario = SISTEMA
+CORE -> RULES : reevaluación programada:\nAuthorization: Bearer <SISTEMA>
+
+note over AI, RULES
+  X-Usuario-Actor solo se toma en cuenta con un token SISTEMA; con un token de usuario,
+  el actor es siempre el dueño del token. SISTEMA no es un rol asignable a personas.
+  El rules-service comparte la base: confirma en la tabla usuarios que la cuenta
+  de un token de persona sigue activa antes de pausar o crear una regla.
+end note
+
+@enduml

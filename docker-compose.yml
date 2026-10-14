@@ -45,6 +45,15 @@ services:
       RFC_DIGITO_ESTRICTO: ${RFC_DIGITO_ESTRICTO:-false}
       # Documentos obligatorios del expediente (reglas RIE activas, HU-09).
       RULES_BASE_URL: http://plurione-rules:8002
+      # Módulo 7 (PRD §5.2). El secreto por omisión es el de demostración (/health lo
+      # advierte): en producción, JWT_SECRET en el .env de la raíz, el mismo en los tres servicios.
+      JWT_SECRET: ${JWT_SECRET:-secreto-de-demostracion-del-motor-cambielo-en-produccion}
+      JWT_EXPIRACION_MINUTOS: ${JWT_EXPIRACION_MINUTOS:-480}
+      # Un usuario ficticio por rol (example.com, contraseñas en el README); en producción, false.
+      USUARIOS_DEMO: ${USUARIOS_DEMO:-true}
+      ADMIN_INICIAL_EMAIL: ${ADMIN_INICIAL_EMAIL:-}
+      ADMIN_INICIAL_CONTRASENA: ${ADMIN_INICIAL_CONTRASENA:-}
+      CORS_ORIGENES: ${CORS_ORIGENES:-http://localhost:5173,http://127.0.0.1:5173}
     volumes:
       - ./storage_vault:/app/storage_vault
     depends_on:

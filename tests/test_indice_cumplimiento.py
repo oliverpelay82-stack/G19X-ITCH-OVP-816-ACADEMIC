@@ -32,7 +32,6 @@ import bd_pruebas  # noqa: E402
 BOVEDA = bd_pruebas.preparar_entorno()
 os.environ["REEVALUACION_INTERVALO_HORAS"] = "0"
 
-from fastapi.testclient import TestClient  # noqa: E402
 from main import app  # noqa: E402
 from clients import rules_client  # noqa: E402
 from config.database import SessionLocal, engine, init_db  # noqa: E402
@@ -42,6 +41,7 @@ from motor.cumplimiento import CUMPLIDA, INCUMPLIDA, PENDIENTE, EstadoDocumento,
 
 bd_pruebas.verificar_aislamiento(engine)
 init_db()
+auth = bd_pruebas.Autenticacion()
 
 HOY = date(2026, 9, 29)
 
@@ -239,7 +239,7 @@ def test_la_api_expone_el_indice(monkeypatch):
                     "COMP_DOMICILIO": {"codigo_regla": "RIE-01-DOM", "severidad": "CRITICA"}},
         fuente=rules_client.FUENTE_CATALOGO,
     ))
-    client = TestClient(app)
+    client = auth.cliente(app)
     db = SessionLocal()
     try:
         titular = TitularExpediente(rfc="IND010101AAA", razon_social="Índice de Prueba, S.A. de C.V.",

@@ -81,7 +81,7 @@ class DictamenAuditoria(Base):
     # Nivel 5 — ratificación humana (RF-14, RN-05).
     revisado_por_humano = Column(Boolean, nullable=False, default=False)
     justificacion_humana = Column(Text, nullable=True)
-    revisado_por = Column(String(100), nullable=True)
+    revisado_por = Column(String(150), nullable=True)
     revisado_en = Column(DateTime, nullable=True)
 
     creado_en = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))

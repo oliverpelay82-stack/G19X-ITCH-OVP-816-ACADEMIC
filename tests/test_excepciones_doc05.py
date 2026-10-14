@@ -22,7 +22,6 @@ import bd_pruebas  # noqa: E402
 bd_pruebas.preparar_entorno()
 os.environ["REEVALUACION_INTERVALO_HORAS"] = "0"
 
-from fastapi.testclient import TestClient  # noqa: E402
 from main import app  # noqa: E402
 from clients import rules_client  # noqa: E402
 from config.database import SessionLocal, engine, init_db  # noqa: E402
@@ -34,7 +33,8 @@ rules_client.obtener_documentos_obligatorios = lambda *_: rules_client.Inventari
     documentos={"CSF_SAT": {"codigo_regla": "RIE-01", "severidad": "CRITICA"}},
     fuente=rules_client.FUENTE_CATALOGO,
 )
-client = TestClient(app)
+auth = bd_pruebas.Autenticacion()
+client = auth.cliente(app)
 
 
 def _documento(rfc: str) -> dict:
@@ -69,7 +69,7 @@ def _codigos(evaluacion: dict) -> set[str]:
 
 
 def _dictamen_ilegible(doc: dict) -> dict:
-    r = client.post("/api/v1/dictamenes", json={
+    r = client.post("/api/v1/dictamenes", headers=auth.sistema(), json={
         "documento_id": doc["id"], "estatus": "EN_REVISION", "nivel_confianza": 0.12,
         "requiere_revision_humana": True, "origen": "NIVEL_3_ILEGIBLE",
         "observaciones": ["Documento ilegible, se requiere recarga: la lectura no obtuvo texto suficiente."]})
@@ -109,7 +109,7 @@ def test_un_documento_ilegible_no_se_ratifica_como_conforme():
 
 
 def _diferir(doc: dict, **extra) -> dict:
-    r = client.post(f"/api/v1/documentos/{doc['id']}/procesamiento-diferido", json={
+    r = client.post(f"/api/v1/documentos/{doc['id']}/procesamiento-diferido", headers=auth.sistema(), json={
         "motivo": "El servicio de IA no respondió tras 3 intentos.", "intentos": 1, "max_intentos": 6,
         "proximo_intento": "2026-10-01T10:15:00+00:00", **extra})
     assert r.status_code == 200, r.text
@@ -148,7 +148,7 @@ def test_al_guardarse_el_dictamen_la_marca_y_la_alerta_desaparecen():
     doc = _documento("EXC050505AAA")
     _diferir(doc)
 
-    r = client.post("/api/v1/dictamenes", json={"documento_id": doc["id"], "estatus": "EN_REVISION",
+    r = client.post("/api/v1/dictamenes", headers=auth.sistema(), json={"documento_id": doc["id"], "estatus": "EN_REVISION",
                                                  "nivel_confianza": 0.8, "observaciones": ["Reintento exitoso."]})
     assert r.status_code == 201, r.text
 
@@ -158,6 +158,6 @@ def test_al_guardarse_el_dictamen_la_marca_y_la_alerta_desaparecen():
 
 
 def test_diferir_un_documento_inexistente():
-    r = client.post("/api/v1/documentos/no-existe/procesamiento-diferido",
+    r = client.post("/api/v1/documentos/no-existe/procesamiento-diferido", headers=auth.sistema(),
                     json={"motivo": "x", "intentos": 1, "max_intentos": 6})
     assert r.status_code == 404

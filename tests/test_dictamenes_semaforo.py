@@ -28,7 +28,6 @@ import bd_pruebas  # noqa: E402
 
 BOVEDA = bd_pruebas.preparar_entorno()
 
-from fastapi.testclient import TestClient  # noqa: E402
 from sqlalchemy import text  # noqa: E402
 from sqlalchemy.exc import DBAPIError  # noqa: E402
 
@@ -41,7 +40,8 @@ from motor import integridad  # noqa: E402
 
 bd_pruebas.verificar_aislamiento(engine)
 init_db()
-client = TestClient(app)
+auth = bd_pruebas.Autenticacion()
+client = auth.cliente(app)
 _resultados: list[bool] = []
 
 OBTENER_REAL = rules_client.obtener_documentos_obligatorios
@@ -100,7 +100,7 @@ def dictaminar(doc_id: str, estatus: str, confianza: float = 0.95, vigencia: dic
         "vigencia": vigencia,
         **extra,
     }
-    r = client.post("/api/v1/dictamenes", json=cuerpo)
+    r = client.post("/api/v1/dictamenes", headers=auth.sistema(), json=cuerpo)
     assert r.status_code == 201, r.text
     return r.json()
 
@@ -189,7 +189,7 @@ def prueba_semaforo_y_dictamenes() -> tuple[str, dict]:
     uno = client.get(f"/api/v1/dictamenes/{d_dom['id']}")
     verificar(uno.status_code == 200 and uno.json()["estatus_preliminar"] == "NO_CONFORME", "Consulta por identificador")
     verificar(client.get("/api/v1/dictamenes/no-existe").status_code == 404, "Dictamen inexistente: 404")
-    estatus_invalido = client.post("/api/v1/dictamenes", json={"documento_id": csf["id"], "estatus": "APROBADO",
+    estatus_invalido = client.post("/api/v1/dictamenes", headers=auth.sistema(), json={"documento_id": csf["id"], "estatus": "APROBADO",
                                                             "nivel_confianza": 0.9})
     verificar(estatus_invalido.status_code == 422, "Un estatus fuera del catálogo se rechaza con 422")
     eventos = {e["evento"] for e in client.get("/api/v1/bitacora", params={"expediente_id": exp_id}).json()}
@@ -221,13 +221,14 @@ def prueba_ratificacion(exp_id: str, docs: dict) -> None:
     verificar(corta.status_code == 422, "Una justificación de menos de 10 caracteres se rechaza (422)")
 
     justificacion = "Recibo de CFE de agosto de 2026 cotejado contra el original; domicilio y titular correctos."
-    r = client.post(f"/api/v1/dictamenes/{d_rev['id']}/ratificar",
+    # Módulo 7: ratifica el validador en sesión; el «usuario» del cuerpo ya no cuenta.
+    r = client.post(f"/api/v1/dictamenes/{d_rev['id']}/ratificar", headers=auth.cabeceras("VALIDADOR"),
                     json={"nuevo_estatus": "CONFORME", "justificacion": justificacion, "usuario": "ana.lopez"})
     cuerpo = r.json()
     verificar(r.status_code == 200 and cuerpo["estatus"] == "CONFORME" and cuerpo["revisado_por_humano"],
               "Ratificación CONFORME aceptada", f"HTTP {r.status_code}")
     verificar(cuerpo["estatus_preliminar"] == "EN_REVISION", "El estatus automático original se conserva")
-    verificar(cuerpo["justificacion_humana"] == justificacion and cuerpo["revisado_por"] == "ana.lopez",
+    verificar(cuerpo["justificacion_humana"] == justificacion and cuerpo["revisado_por"] == auth.correo("VALIDADOR"),
               "Justificación y analista registrados en el dictamen")
     verificar(cuerpo["estado_expediente"] == "CONFORME",
               "Todos los vigentes conformes: el expediente pasa a CONFORME", cuerpo["estado_expediente"])
@@ -239,7 +240,7 @@ def prueba_ratificacion(exp_id: str, docs: dict) -> None:
     ratificaciones = client.get("/api/v1/bitacora", params={"documento_id": dom2["id"],
                                                              "evento": "RATIFICACION_HUMANA"}).json()
     verificar(len(ratificaciones) == 1 and ratificaciones[0]["detalle"]["justificacion"] == justificacion
-              and ratificaciones[0]["usuario"] == "ana.lopez", "La bitácora guarda la ratificación con su justificación")
+              and ratificaciones[0]["usuario"] == auth.correo("VALIDADOR"), "La bitácora guarda la ratificación con su justificación")
 
     # Una auditoría posterior sustituye al dictamen ratificado: el anterior ya no es el vigente.
     d_nuevo = dictaminar(dom2["id"], "CONFORME")
@@ -251,7 +252,7 @@ def prueba_rie03(exp_id: str, docs: dict) -> None:
     csf = docs["csf"]
     ok = client.get(f"/api/v1/documentos/{csf['id']}/integridad")
     verificar(ok.status_code == 200 and ok.json()["integro"], "Binario intacto: integridad verificada")
-    contenido = client.get(f"/api/v1/documentos/{csf['id']}/contenido")
+    contenido = client.get(f"/api/v1/documentos/{csf['id']}/contenido", headers=auth.sistema())
     verificar(contenido.status_code == 200 and contenido.headers.get("X-Hash-SHA256") == csf["hash_sha256"],
               "Descarga verificada del binario")
 
@@ -267,7 +268,7 @@ def prueba_rie03(exp_id: str, docs: dict) -> None:
     verificar(r.status_code == 409 and "RIE-03" in r.json()["detail"], "Huella distinta: HTTP 409", f"HTTP {r.status_code}")
     ficha = client.get(f"/api/v1/documentos/{csf['id']}").json()
     verificar(ficha["estado_integridad"] == "ALTERADO", "El documento queda marcado ALTERADO")
-    verificar(client.get(f"/api/v1/documentos/{csf['id']}/contenido").status_code == 409,
+    verificar(client.get(f"/api/v1/documentos/{csf['id']}/contenido", headers=auth.sistema()).status_code == 409,
               "Un documento alterado no se entrega (409)")
     historial = client.get("/api/v1/dictamenes", params={"documento_id": csf["id"]}).json()
     verificar(historial[0]["origen"] == "RIE-03" and historial[0]["estatus"] == "NO_CONFORME",
@@ -280,7 +281,7 @@ def prueba_rie03(exp_id: str, docs: dict) -> None:
     verificar(datos["estado_cumplimiento"] == "NO_CONFORME", "El expediente pasa a NO_CONFORME",
               datos["estado_cumplimiento"])
 
-    r = client.post("/api/v1/dictamenes", json={"documento_id": csf["id"], "estatus": "CONFORME", "nivel_confianza": 0.99})
+    r = client.post("/api/v1/dictamenes", headers=auth.sistema(), json={"documento_id": csf["id"], "estatus": "CONFORME", "nivel_confianza": 0.99})
     verificar(r.status_code == 409, "No se puede dictaminar un documento alterado (409)")
     r = client.post(f"/api/v1/dictamenes/{historial[0]['id']}/ratificar",
                     json={"nuevo_estatus": "CONFORME", "justificacion": "Intento de aprobar un archivo alterado."})

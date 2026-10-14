@@ -24,7 +24,6 @@ BOVEDA = bd_pruebas.preparar_entorno()
 os.environ["REEVALUACION_INTERVALO_HORAS"] = "0"
 
 import pytest  # noqa: E402
-from fastapi.testclient import TestClient  # noqa: E402
 from main import app  # noqa: E402
 from clients import rules_client  # noqa: E402
 from config import catalogo  # noqa: E402
@@ -34,7 +33,8 @@ from models.titular import TitularExpediente  # noqa: E402
 
 bd_pruebas.verificar_aislamiento(engine)
 init_db()
-client = TestClient(app)
+auth = bd_pruebas.Autenticacion()
+client = auth.cliente(app)
 
 NUEVO = "PERMISO_DE_IMPACTO_AMBIENTAL"
 DECLARADOS = [

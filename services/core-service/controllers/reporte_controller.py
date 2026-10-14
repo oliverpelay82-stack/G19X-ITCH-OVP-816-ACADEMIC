@@ -8,15 +8,16 @@ Controlador de Reportes de Auditoría (Módulo 6: RF-22, RF-23, RF-24; HU-28, HU
     de custodia de un documento para una auditoría externa (P3, PLUS-06).
 
 Cada exportación queda en la bitácora (EXPORTACION_REPORTE): qué se exportó,
-en qué formato y desde qué IP.
+en qué formato, quién lo pidió y desde qué IP.
 """
 import hashlib
 from datetime import datetime
 from typing import Literal, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy.orm import Session
 
+from config.autorizacion import Actor, lectura
 from config.database import get_db
 from controllers.expediente_controller import consultar_expedientes, evaluar_lista
 from models.bitacora import EVENTO_EXPORTACION_REPORTE, BitacoraAuditoria
@@ -39,7 +40,7 @@ def _archivo(contenido: bytes, formato: str, nombre: str) -> Response:
 
 
 def _registrar(
-    db: Session, request: Request, detalle: dict, contenido: bytes, sello: str,
+    db: Session, actor: Actor, detalle: dict, contenido: bytes, sello: str,
     expediente_id: str | None = None, documento_id: str | None = None,
 ) -> None:
     """
@@ -48,8 +49,8 @@ def _registrar(
     lo reciba comprueba que no cambió (un archivo no puede imprimir su propia huella).
     """
     bitacora.registrar(
-        db, EVENTO_EXPORTACION_REPORTE, expediente_id=expediente_id, documento_id=documento_id, usuario="OPERADOR",
-        ip_origen=request.client.host if request.client else None,
+        db, EVENTO_EXPORTACION_REPORTE, expediente_id=expediente_id, documento_id=documento_id, usuario=actor.email,
+        ip_origen=actor.ip,
         detalle={**detalle, "sello_contenido": sello, "hash_archivo": hashlib.sha256(contenido).hexdigest()},
     )
     db.commit()
@@ -63,8 +64,8 @@ def _registrar(
 )
 def reporte_expediente(
     expediente_id: str,
-    request: Request,
     formato: Formato = Query("pdf"),
+    actor: Actor = Depends(lectura),
     db: Session = Depends(get_db),
 ):
     exp = db.query(Expediente).filter(Expediente.id == expediente_id).first()
@@ -83,7 +84,7 @@ def reporte_expediente(
     datos = reportes.DatosExpediente(exp, evaluacion, dictamenes, eventos, cadena=bitacora.verificar_cadena(db))
     sello = reportes.sello_contenido(datos)   # PLUS-23
     contenido = reportes.expediente_pdf(datos, sello) if formato == "pdf" else reportes.expediente_xlsx(datos, sello)
-    _registrar(db, request, {"reporte": "DICTAMEN_EXPEDIENTE", "formato": formato,
+    _registrar(db, actor, {"reporte": "DICTAMEN_EXPEDIENTE", "formato": formato,
                              "codigo_expediente": exp.codigo_expediente, "estado": evaluacion.estado},
                contenido, sello, exp.id)
     return _archivo(contenido, formato, f"dictamen_{exp.codigo_expediente}")
@@ -96,9 +97,9 @@ def reporte_expediente(
     responses={200: {"content": {v: {} for v in reportes.FORMATOS.values()}}},
 )
 def reporte_global(
-    request: Request,
     formato: Formato = Query("xlsx"),
     tipo_expediente: Optional[str] = Query(None, description="JURIDICO, CORPORATIVO o REGULATORIO"),
+    actor: Actor = Depends(lectura),
     db: Session = Depends(get_db),
 ):
     evaluados = evaluar_lista(db, consultar_expedientes(db, tipo_expediente=tipo_expediente), causa="REPORTE_GLOBAL")
@@ -106,7 +107,7 @@ def reporte_global(
     sello = reportes.sello_contenido(evaluados, cadena)   # PLUS-23
     contenido = (reportes.global_pdf(evaluados, cadena, sello) if formato == "pdf"
                  else reportes.global_xlsx(evaluados, cadena, sello))
-    _registrar(db, request, {"reporte": "CUMPLIMIENTO_GLOBAL", "formato": formato,
+    _registrar(db, actor, {"reporte": "CUMPLIMIENTO_GLOBAL", "formato": formato,
                              "tipo_expediente": tipo_expediente, "expedientes": len(evaluados)}, contenido, sello)
     return _archivo(contenido, formato, f"reporte_cumplimiento_{datetime.now().strftime('%Y%m%d_%H%M')}")
 
@@ -119,8 +120,8 @@ def reporte_global(
 )
 def ficha_custodia(
     documento_id: str,
-    request: Request,
     formato: Formato = Query("pdf"),
+    actor: Actor = Depends(lectura),
     db: Session = Depends(get_db),
 ):
     """
@@ -132,11 +133,9 @@ def ficha_custodia(
     documento = db.query(Documento).filter(Documento.id == documento_id).first()
     if not documento:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Documento con ID '{documento_id}' no encontrado.")
-    ip = request.client.host if request.client else None
-
     # La ficha recalcula la huella: si el binario cambió, RIE-03 lo bloquea y la ficha lo reporta.
     try:
-        integridad.leer_verificado(db, documento, usuario="OPERADOR", ip_origen=ip)
+        integridad.leer_verificado(db, documento, usuario=actor.email, ip_origen=actor.ip)
         integro, hash_actual = True, documento.hash_sha256
     except integridad.DocumentoAlteradoError:
         db.refresh(documento)
@@ -168,7 +167,7 @@ def ficha_custodia(
     sello = reportes.sello_contenido(datos)   # PLUS-23
     contenido = (reportes.ficha_custodia_pdf(datos, sello) if formato == "pdf"
                  else reportes.ficha_custodia_xlsx(datos, sello))
-    _registrar(db, request, {"reporte": "FICHA_CUSTODIA", "formato": formato,
+    _registrar(db, actor, {"reporte": "FICHA_CUSTODIA", "formato": formato,
                              "nombre_archivo_original": documento.nombre_archivo_original,
                              "hash_sha256": documento.hash_sha256, "integro": integro,
                              "cadena_integra": cadena.get("integra")},

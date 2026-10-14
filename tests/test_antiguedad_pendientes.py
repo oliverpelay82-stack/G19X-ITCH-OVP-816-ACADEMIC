@@ -21,7 +21,6 @@ os.environ["REEVALUACION_INTERVALO_HORAS"] = "0"
 from datetime import date, datetime, timedelta, timezone  # noqa: E402
 from types import SimpleNamespace  # noqa: E402
 
-from fastapi.testclient import TestClient  # noqa: E402
 from main import app  # noqa: E402
 from clients import rules_client  # noqa: E402
 from config.database import SessionLocal, engine, init_db  # noqa: E402
@@ -35,7 +34,8 @@ rules_client.obtener_documentos_obligatorios = lambda *_: rules_client.Inventari
     documentos={"CSF_SAT": {"codigo_regla": "RIE-01", "severidad": "CRITICA"}},
     fuente=rules_client.FUENTE_CATALOGO,
 )
-client = TestClient(app)
+auth = bd_pruebas.Autenticacion()
+client = auth.cliente(app)
 
 
 def _documento(rfc: str) -> dict:

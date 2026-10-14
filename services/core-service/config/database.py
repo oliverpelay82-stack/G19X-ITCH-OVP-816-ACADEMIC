@@ -128,6 +128,11 @@ _MIGRACIONES_POSTGRES = [
     "ALTER TABLE bitacora_auditoria ADD COLUMN IF NOT EXISTS hash_anterior VARCHAR(64)",
     "ALTER TABLE bitacora_auditoria ADD COLUMN IF NOT EXISTS hash_evento VARCHAR(64)",
     "CREATE UNIQUE INDEX IF NOT EXISTS ux_bitacora_secuencia ON bitacora_auditoria (secuencia)",
+    # Módulo 7 (PRD §5.2): el usuario de la bitácora y de la ratificación es el correo
+    # de la cuenta (hasta 150 caracteres, DOC-08). Ampliar un VARCHAR no reescribe
+    # filas: los triggers de inmutabilidad no se disparan y los sellos no cambian.
+    "ALTER TABLE bitacora_auditoria ALTER COLUMN usuario TYPE VARCHAR(150)",
+    "ALTER TABLE dictamenes_auditoria ALTER COLUMN revisado_por TYPE VARCHAR(150)",
     # RF-27: la bitácora solo admite inserciones.
     """
     CREATE OR REPLACE FUNCTION bitacora_inmutable() RETURNS trigger AS $$
@@ -205,6 +210,7 @@ def _restricciones_check() -> dict[tuple[str, str], tuple[str, ...]]:
     """
     from typing import get_args
 
+    from config import seguridad
     from motor import cumplimiento, integridad
     from schemas.dictamen_schema import EstatusDictamen
     from schemas.expediente_schema import TipoExpedienteEnum
@@ -216,6 +222,7 @@ def _restricciones_check() -> dict[tuple[str, str], tuple[str, ...]]:
         ("documentos", "estado_integridad"): (integridad.INTEGRO, integridad.ALTERADO),
         ("dictamenes_auditoria", "estatus"): get_args(EstatusDictamen),
         ("dictamenes_auditoria", "estatus_preliminar"): get_args(EstatusDictamen),
+        ("usuarios", "rol"): seguridad.ROLES_PERSONA,
     }
 
 

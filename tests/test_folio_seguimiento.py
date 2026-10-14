@@ -32,7 +32,8 @@ from config.database import engine, init_db  # noqa: E402
 bd_pruebas.verificar_aislamiento(engine)
 init_db()
 _obtener_real = rules_client.obtener_documentos_obligatorios
-client = TestClient(app)
+auth = bd_pruebas.Autenticacion()
+client = auth.cliente(app)
 ORIGEN = "http://127.0.0.1:5173"
 
 
