@@ -15,10 +15,32 @@ export function formatBytes(bytes) {
   return `${valor.toFixed(i === 0 ? 0 : 1)} ${unidades[i]}`
 }
 
+// Marca de tiempo del backend sin zona («2026-10-14T15:00:00.123456»).
+const SIN_ZONA = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?$/
+
+/**
+ * Date de una marca de tiempo del backend. Las columnas son TIMESTAMP sin zona
+ * en UTC (el core fija la sesión de PostgreSQL en UTC) y la API las devuelve
+ * sin zona: new Date() las tomaría como hora local y, en México, las
+ * adelantaría 6 h. Una fecha con zona o solo de calendario no cambia.
+ */
+export function aFecha(valor) {
+  if (valor instanceof Date) return valor
+  return new Date(typeof valor === 'string' && SIN_ZONA.test(valor) ? `${valor}Z` : valor)
+}
+
+/** Día del calendario local (AAAA-MM-DD) de una marca de tiempo del backend; '' si no es válida. */
+export function diaLocal(valor) {
+  const d = valor ? aFecha(valor) : null
+  if (!d || Number.isNaN(d.getTime())) return ''
+  const dos = (n) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${dos(d.getMonth() + 1)}-${dos(d.getDate())}`
+}
+
 /** Fecha corta local, tolerante a valores ausentes o inválidos. */
 export function formatFecha(valor, opciones) {
   if (!valor) return '—'
-  const d = new Date(valor)
+  const d = aFecha(valor)
   if (Number.isNaN(d.getTime())) return '—'
   return d.toLocaleString('es-MX', opciones || { dateStyle: 'medium', timeStyle: 'short' })
 }
@@ -39,7 +61,7 @@ function diaMes(fecha) {
 
 export function formatFechaCorta(valor) {
   if (!valor) return '—'
-  const d = new Date(valor)
+  const d = aFecha(valor)
   return Number.isNaN(d.getTime()) ? '—' : diaMes(d)
 }
 
@@ -57,7 +79,7 @@ export function formatDia(valor) {
 /** "hace 4 min", "hace 2 h"… para marcas de tiempo recientes. */
 export function formatRelativo(valor) {
   if (!valor) return '—'
-  const d = new Date(valor)
+  const d = aFecha(valor)
   if (Number.isNaN(d.getTime())) return '—'
   const segundos = Math.round((Date.now() - d.getTime()) / 1000)
   if (segundos < 60) return 'hace instantes'

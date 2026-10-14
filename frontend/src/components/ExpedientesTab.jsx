@@ -11,7 +11,7 @@ import { coincideEn, normalizar } from '../utils/busqueda.js'
 import { createExpediente, custodiarArchivo } from '../services/api.js'
 import { avisarCarga } from '../utils/nivel1.js'
 import { getEstadoBadge, TIPO_EXPEDIENTE_LABEL, TIPOS_EXPEDIENTE } from '../constants.js'
-import { formatRelativo, plural } from '../utils/format.js'
+import { diaLocal, formatRelativo, plural } from '../utils/format.js'
 import { formatIndice, indiceDe } from '../utils/indice.js'
 import { RANGO_ESTADO } from '../hooks/useOrden.js'
 import { DetalleExpediente } from './expedientes/DetalleExpediente.jsx'
@@ -27,8 +27,6 @@ const ESTADOS_FILTRO = ['CONFORME', 'EN_REVISION', 'NO_CONFORME']
  * llegan sin zona y en la hora de la base, la misma referencia con la que el
  * resto del panel las muestra, así que basta con su parte de fecha.
  */
-const diaDe = (fecha) => (fecha ? String(fecha).slice(0, 10) : '')
-
 /**
  * Expedientes como tarjetas: cabecera con titular, tipo, folio, semáforo
  * grande y completitud; al desplegarse, la tabla de documentos que exige el
@@ -122,7 +120,7 @@ export default function ExpedientesTab({
     return expedientes.filter((exp) => {
       const coincideEstado = filtroEstado === 'TODOS' || exp.estado_cumplimiento === filtroEstado
       const coincideTipo = filtroTipo === 'TODOS' || exp.tipo_expediente === filtroTipo
-      const dia = diaDe(exp.creado_en)
+      const dia = diaLocal(exp.creado_en)
       const coincideFecha = (!desde || (dia && dia >= desde)) && (!hasta || (dia && dia <= hasta))
       const coincideBusqueda = coincideEn(
         [exp.codigo_expediente, exp.nombre, exp.titular?.razon_social, exp.titular?.rfc],

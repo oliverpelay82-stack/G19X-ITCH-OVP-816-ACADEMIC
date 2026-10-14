@@ -3,7 +3,7 @@ import { ArrowUpRight } from '../iconos.js'
 import { Bar, BarChart, CartesianGrid, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { getBitacora } from '../../services/api.js'
 import { getEstadoBadge } from '../../constants.js'
-import { formatFechaCorta, plural } from '../../utils/format.js'
+import { aFecha, formatFechaCorta, plural } from '../../utils/format.js'
 import { Skeleton } from '../Skeleton.jsx'
 import { agruparCambios, DIAS, diaCorto, esCambioDeTendencia, LIMITE } from './cambios.js'
 import { DatosDeLaGrafica, Leyenda, TarjetaGrafica, TooltipGrafica } from './comun.jsx'
@@ -45,7 +45,7 @@ export default function CambiosSemaforo({ expedientes = [], onAbrirExpediente })
   const deterioros = -dias.reduce((n, d) => n + d.deterioros, 0)
   const truncada = eventos?.length === LIMITE
   const ultimos = (eventos || [])
-    .filter((e) => esCambioDeTendencia(e) && new Date(e.creado_en).getTime() >= desde)
+    .filter((e) => esCambioDeTendencia(e) && aFecha(e.creado_en).getTime() >= desde)
     .slice(0, ULTIMOS)
   const folios = new Map(expedientes.map((e) => [e.id, e.codigo_expediente]))
 

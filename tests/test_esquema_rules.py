@@ -75,6 +75,12 @@ def test_codigo_compuesto_cabe_en_el_esquema_y_en_la_columna():
     assert longitud >= len(CODIGO_COMPUESTO_MAXIMO), longitud
 
 
+def test_la_sesion_de_la_base_esta_en_utc():
+    """Hallazgo 1 (auditoría del 14/10/2026): las fechas se guardan en UTC en cualquier despliegue."""
+    with engine.connect() as c:
+        assert c.execute(text("SHOW timezone")).scalar() == "UTC"
+
+
 if __name__ == "__main__":
     test_api_rechaza_familia_fuera_del_doc05()
     test_codigo_compuesto_cabe_en_el_esquema_y_en_la_columna()

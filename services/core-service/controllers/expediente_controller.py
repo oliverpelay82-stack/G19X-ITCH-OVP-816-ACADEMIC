@@ -16,6 +16,7 @@ from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from config.catalogo import TIPOS_EXPEDIENTE
+from config import zona_horaria
 from config.database import get_db
 from models.bitacora import EVENTO_ACTUALIZACION_EXPEDIENTE, EVENTO_APERTURA_EXPEDIENTE
 from models.titular import TitularExpediente
@@ -50,13 +51,13 @@ def _respuesta(exp: Expediente, evaluacion: cumplimiento.EvaluacionExpediente | 
 
 def _inicio_del_dia(dia: date) -> datetime:
     """
-    Inicio del día del calendario local del servidor, con su zona horaria.
-    creado_en es TIMESTAMP sin zona y PostgreSQL lo guarda en la zona de su
-    sesión (America/Mexico_City en local, UTC en el contenedor); al comparar
-    contra un valor con zona, PostgreSQL convierte con esa misma zona, así que
-    el filtro es correcto en ambos despliegues.
+    Inicio del día del negocio (ZONA_HORARIA), con su zona. creado_en es
+    TIMESTAMP sin zona en UTC (la sesión de PostgreSQL se fija en UTC); al
+    comparar contra un valor con zona, PostgreSQL lo convierte a UTC. Con la
+    zona del sistema operativo, el contenedor (en UTC) cortaba los días a las
+    18:00 de México.
     """
-    return datetime.combine(dia, time.min).astimezone()
+    return datetime.combine(dia, time.min, tzinfo=zona_horaria.ZONA)
 
 
 def consultar_expedientes(

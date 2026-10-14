@@ -5,6 +5,8 @@ P5 — Dictamen reproducible (PRD §21.5; protocolo de auditoría del DOC-05; HU
      instrucciones al modelo, las devuelve y las sella en su evento DICTAMEN_IA.
   2. Un dictamen sin ellas (anterior a P5 o emitido sin la IA) las deja vacías.
   3. El trigger de RN-05 impide cambiarlas, también dentro de una ratificación.
+     Tampoco los datos que extrajo la auditoría (RFC, coincidencia con el titular,
+     fechas, vigencia, tipo detectado, modelo y si requería revisión humana).
   4. El Excel del expediente muestra con qué lectura e instrucciones se dictaminó.
 
 Aislamiento: base de datos de pruebas plurione_compliance_test (tests/bd_pruebas.py).
@@ -100,6 +102,31 @@ def test_la_ratificacion_no_puede_cambiar_las_versiones():
     assert r.status_code == 200, r.text
     guardado = client.get("/api/v1/dictamenes", params={"documento_id": doc["id"]}).json()[0]
     assert guardado["version_lectura"] == LECTURA and guardado["revisado_por_humano"]
+
+
+
+# Hallazgo 5 (auditoría del 14/10/2026): datos de origen que el trigger no comparaba.
+_DATOS_EXTRAIDOS = {
+    "requiere_revision_humana": "true",
+    "vigencia_resultado": "'VENCIDO'",
+    "tipo_documento_detectado": "'OTRO'",
+    "rfc_detectado": "'XAXX010101000'",
+    "match_titular": "true",
+    "fecha_emision_extraida": "DATE '2020-01-01'",
+    "fecha_vencimiento_extraida": "DATE '2020-01-01'",
+    "modelo_utilizado": "'otro-modelo'",
+}
+
+
+@pytest.mark.parametrize("n,columna", list(enumerate(_DATOS_EXTRAIDOS, start=1)))
+def test_la_ratificacion_no_puede_cambiar_los_datos_extraidos(n, columna):
+    dictamen = _dictaminar(_documento(f"RPE01010{n}AAA"))
+    with pytest.raises(DBAPIError, match="RN-05"):
+        with engine.begin() as conn:
+            conn.execute(text(
+                "UPDATE dictamenes_auditoria SET revisado_por_humano = true, estatus = 'CONFORME', "
+                "justificacion_humana = 'Ratificación que intenta reescribir lo extraído.', revisado_por = 'prueba', "
+                f"{columna} = {_DATOS_EXTRAIDOS[columna]} WHERE id = :id"), {"id": dictamen["id"]})
 
 
 def test_el_excel_del_expediente_muestra_las_versiones():

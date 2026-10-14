@@ -27,11 +27,17 @@ DATABASE_URL = os.getenv("DATABASE_URL") or (
     f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 )
 
-# Crear el Engine de conexión
+# Crear el Engine de conexión. Las columnas son TIMESTAMP sin zona y psycopg2
+# convierte cada fecha con zona a la de la sesión antes de guardarla: con la zona
+# del servidor, una instalación local guardaba la hora de México y el contenedor
+# (postgres:17-alpine) la de UTC, y la API las devolvía iguales, sin zona. La
+# sesión se fija en UTC para que toda fecha guardada esté en UTC en cualquier
+# despliegue; el día del negocio lo decide config/zona_horaria.py.
 engine = create_engine(
     DATABASE_URL,
     pool_pre_ping=True,  # Verifica que la conexión siga viva antes de cada consulta
     echo=DB_ECHO,        # DB_ECHO=true imprime el SQL ejecutado
+    connect_args={"options": "-c timezone=UTC"},
 )
 
 # Fábrica de sesiones para interactuar con la BD

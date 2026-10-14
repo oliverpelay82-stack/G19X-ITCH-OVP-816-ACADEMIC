@@ -8,8 +8,8 @@ documento vencía un día antes y las alertas de 30, 15 y 5 días se adelantaban
 
 ``ZONA_HORARIA`` (por omisión America/Mexico_City, sin horario de verano desde
 2022) fija la referencia en todos los servicios. Las fechas de la base se
-guardan en UTC sin zona; ``fecha_local`` las lleva a esta zona antes de
-contarlas por día. Requiere el paquete ``tzdata`` (Windows y las imágenes slim
+guardan en UTC sin zona (config/database.py fija la sesión de PostgreSQL en
+UTC); ``fecha_local`` las lleva a esta zona antes de contarlas por día. Requiere el paquete ``tzdata`` (Windows y las imágenes slim
 no traen la base de zonas del sistema).
 """
 from __future__ import annotations

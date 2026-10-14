@@ -27,11 +27,17 @@ DATABASE_URL = os.getenv("DATABASE_URL") or (
     f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 )
 
-# Crear el Engine de conexión
+# Crear el Engine de conexión. Las columnas son TIMESTAMP sin zona y psycopg2
+# convierte cada fecha con zona a la de la sesión antes de guardarla: con la zona
+# del servidor, una instalación local guardaba la hora de México y el contenedor
+# (postgres:17-alpine) la de UTC, y la API las devolvía iguales, sin zona. La
+# sesión se fija en UTC para que toda fecha guardada esté en UTC en cualquier
+# despliegue; el día del negocio lo decide config/zona_horaria.py.
 engine = create_engine(
     DATABASE_URL,
     pool_pre_ping=True,  # Verifica que la conexión siga viva antes de cada consulta
     echo=DB_ECHO,        # DB_ECHO=true imprime el SQL ejecutado
+    connect_args={"options": "-c timezone=UTC"},
 )
 
 # Fábrica de sesiones para interactuar con la BD
@@ -152,6 +158,14 @@ _MIGRACIONES_POSTGRES = [
            OR NEW.estatus_preliminar IS DISTINCT FROM OLD.estatus_preliminar
            OR NEW.origen IS DISTINCT FROM OLD.origen
            OR NEW.nivel_confianza IS DISTINCT FROM OLD.nivel_confianza
+           OR NEW.requiere_revision_humana IS DISTINCT FROM OLD.requiere_revision_humana
+           OR NEW.vigencia_resultado IS DISTINCT FROM OLD.vigencia_resultado
+           OR NEW.tipo_documento_detectado IS DISTINCT FROM OLD.tipo_documento_detectado
+           OR NEW.rfc_detectado IS DISTINCT FROM OLD.rfc_detectado
+           OR NEW.match_titular IS DISTINCT FROM OLD.match_titular
+           OR NEW.fecha_emision_extraida IS DISTINCT FROM OLD.fecha_emision_extraida
+           OR NEW.fecha_vencimiento_extraida IS DISTINCT FROM OLD.fecha_vencimiento_extraida
+           OR NEW.modelo_utilizado IS DISTINCT FROM OLD.modelo_utilizado
            OR NEW.reglas_aplicadas::text IS DISTINCT FROM OLD.reglas_aplicadas::text
            OR NEW.observaciones::text IS DISTINCT FROM OLD.observaciones::text
            OR NEW.representacion_legal::text IS DISTINCT FROM OLD.representacion_legal::text

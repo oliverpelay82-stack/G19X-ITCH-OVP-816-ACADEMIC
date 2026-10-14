@@ -521,7 +521,7 @@ El diccionario de datos del DOC-08 (Tablas 4 a 8) especifica tipos nativos de Po
 | DOC-08 | Implementación | Por qué | Consecuencia a vigilar |
 |---|---|---|---|
 | `UUID` en llaves primarias y foráneas | `VARCHAR(36)` con un UUID v4 en texto | `String(36)` funciona igual en PostgreSQL y MySQL; el valor sigue siendo un UUID v4 generado por la aplicación. | Ocupa más que el `UUID` nativo (36 frente a 16 bytes); irrelevante al volumen actual. |
-| `TIMESTAMPTZ` | `TIMESTAMP` sin zona | `DateTime` genérico; la aplicación escribe en UTC y los filtros por fecha usan la zona de la sesión de PostgreSQL. | Ver el riesgo «Zona horaria de las marcas de tiempo» (sección 17): migrar a `TIMESTAMPTZ` antes de desplegar en otra zona horaria. |
+| `TIMESTAMPTZ` | `TIMESTAMP` sin zona, en UTC | `DateTime` genérico. La sesión de PostgreSQL se fija en UTC (`config/database.py` del core y del rules, 14/10/2026): antes, psycopg2 convertía cada fecha a la zona de la sesión, y la base local guardaba la hora de México mientras la del contenedor guardaba la de UTC. El frontend lee como UTC una hora sin zona (`utils/format.js`, `aFecha`) y los filtros por día usan `ZONA_HORARIA`. | Ver el riesgo «Zona horaria de las marcas de tiempo» (sección 17). Las filas guardadas antes del 14/10/2026 en una base local quedaron en hora de México y se muestran 6 h antes; la bitácora y los dictámenes son inmutables y la cadena sellada usa esa misma hora, así que no se reescriben. |
 | `JSONB` (observaciones, metadatos) | `JSON` | `JSON` genérico, portable; ninguna consulta filtra ni indexa dentro de esos campos. | Si se llegan a consultar por su contenido, migrar a `JSONB` para poder indexarlos. |
 | `NUMERIC(5,4)` en la confianza del dictamen | `DOUBLE PRECISION` | `Float` genérico. | Precisión de sobra para una confianza en [0, 1]. |
 
@@ -711,7 +711,7 @@ Riesgos adicionales identificados en la implementación [DG §8.7 y §10.7]:
 
 - **Cuota del plan gratuito de Groq** (8,000 tokens por minuto): el tiempo de respuesta sube a 10–18 s si se encadenan consultas. Mitigación: contexto acotado a 6,500 caracteres, caché del texto y de la inferencia; un plan de pago elimina la espera.
 - **Dependencia de conexión a Internet para el Nivel 4:** degradación controlada; los Niveles 1 a 3 siguen operando.
-- **Zona horaria de las marcas de tiempo:** las columnas TIMESTAMP se guardan en la zona de la sesión de PostgreSQL; se recomienda migrar a TIMESTAMPTZ antes de desplegar en otra zona horaria.
+- **Zona horaria de las marcas de tiempo:** las columnas TIMESTAMP se guardan en UTC porque la sesión de PostgreSQL se fija en UTC; migrar a TIMESTAMPTZ haría explícita la zona, pero cambiaría la serialización que sella la bitácora (ANALISIS_BRECHAS).
 
 ---
 

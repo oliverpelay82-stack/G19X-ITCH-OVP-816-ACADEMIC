@@ -14,12 +14,18 @@ import bd_pruebas  # noqa: E402
 bd_pruebas.preparar_entorno()
 
 import uuid  # noqa: E402
+from datetime import date, datetime, timezone  # noqa: E402
+from zoneinfo import ZoneInfo  # noqa: E402
 
 import pytest  # noqa: E402
 from sqlalchemy import inspect, text  # noqa: E402
 from sqlalchemy.exc import IntegrityError  # noqa: E402
 
+from sqlalchemy.orm import Session  # noqa: E402
+
+from config import zona_horaria  # noqa: E402
 from config.database import engine, init_db  # noqa: E402
+from controllers.expediente_controller import consultar_expedientes  # noqa: E402
 
 bd_pruebas.verificar_aislamiento(engine)
 init_db()
@@ -134,6 +140,45 @@ def test_tipo_documento_valida_el_formato_del_codigo():
                 except IntegrityError as exc:
                     assert not admitido and exc.orig.pgcode == "23514", exc
                     c.execute(text("ROLLBACK TO SAVEPOINT prueba"))
+        finally:
+            tx.rollback()
+
+
+def test_la_sesion_guarda_las_fechas_en_utc():
+    """
+    Hallazgo 1 (auditoría del 14/10/2026): psycopg2 convierte una fecha con zona a
+    la de la sesión antes de guardarla en un TIMESTAMP sin zona. Con la zona del
+    servidor, la base local guardaba la hora de México y la del contenedor, la de
+    UTC. La sesión se fija en UTC: lo guardado es UTC en cualquier despliegue.
+    """
+    instante = datetime(2026, 1, 10, 20, 0, tzinfo=timezone.utc)
+    with engine.connect() as c:
+        assert c.execute(text("SHOW timezone")).scalar() == "UTC"
+        c.execute(text("CREATE TEMP TABLE t_zona (v TIMESTAMP)"))
+        c.execute(text("INSERT INTO t_zona VALUES (:v)"), {"v": instante})
+        assert c.execute(text("SELECT v FROM t_zona")).scalar() == datetime(2026, 1, 10, 20, 0)
+
+
+def test_el_filtro_por_dia_usa_la_zona_del_negocio(monkeypatch):
+    """
+    El filtro desde/hasta corta los días en ZONA_HORARIA, no en la del sistema
+    operativo (UTC en el contenedor). Con Tokio como zona del negocio, las 20:00
+    UTC del 10 de enero son el 11 de enero; en México o en UTC serían el 10.
+    """
+    monkeypatch.setattr(zona_horaria, "ZONA", ZoneInfo("Asia/Tokyo"))
+    titular, expediente = str(uuid.uuid4()), str(uuid.uuid4())
+    with engine.connect() as c:
+        tx = c.begin()
+        try:
+            c.execute(text("INSERT INTO titulares_expediente (id, rfc, razon_social, tipo_persona, categoria, creado_en) "
+                           "VALUES (:id, 'ZON010101AAA', 'Zona S.A. de C.V.', 'MORAL', 'PROVEEDOR', now())"), {"id": titular})
+            c.execute(text("INSERT INTO expedientes (id, titular_id, codigo_expediente, estado_cumplimiento, porcentaje_completitud, "
+                           "creado_en, actualizado_en, tipo_expediente) VALUES (:id, :t, 'EXP-TEST-ZONA', 'EN_REVISION', 0, "
+                           "'2026-01-10 20:00:00', now(), 'CORPORATIVO')"), {"id": expediente, "t": titular})
+            db = Session(bind=c)
+            dia = lambda d: [e.id for e in consultar_expedientes(db, q="EXP-TEST-ZONA", desde=d, hasta=d)]  # noqa: E731
+            assert dia(date(2026, 1, 11)) == [expediente]
+            assert dia(date(2026, 1, 10)) == []
         finally:
             tx.rollback()
 

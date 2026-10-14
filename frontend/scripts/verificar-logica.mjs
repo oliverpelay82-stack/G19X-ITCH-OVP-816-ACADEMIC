@@ -11,11 +11,20 @@ import { fileURLToPath } from 'node:url'
 
 const SRC = fileURLToPath(new URL('../src', import.meta.url))
 
+// Las fechas se prueban en la zona de México: en UTC (la de la CI), leer una
+// hora sin zona como local o como UTC da lo mismo y el error no se vería.
+process.env.TZ = 'America/Mexico_City'
+
 // Contexto no seguro (la interfaz abierta por IP, sin HTTPS): el navegador no
 // ofrece crypto.randomUUID. Se simula antes de cargar los módulos.
 Object.defineProperty(globalThis.crypto, 'randomUUID', { value: undefined, configurable: true })
 
 const { idAleatorio } = await import('../src/utils/id.js')
+const { aFecha, diaLocal, formatRelativo } = await import('../src/utils/format.js')
+const { agruparCambios } = await import('../src/components/graficas/cambios.js')
+
+/** Marca de tiempo como la devuelve la API: UTC sin zona, con microsegundos. */
+const comoApi = (fecha) => `${fecha.toISOString().slice(0, -1)}123`
 
 function archivos(dir) {
   return readdirSync(dir).flatMap((nombre) => {
@@ -25,6 +34,34 @@ function archivos(dir) {
 }
 
 const CASOS = [
+  {
+    nombre: 'Una hora del backend sin zona se lee como UTC',
+    probar: () =>
+      aFecha('2026-10-14T15:00:00.123456').toISOString() === '2026-10-14T15:00:00.123Z' &&
+      aFecha('2026-10-14T15:00:00+00:00').toISOString() === '2026-10-14T15:00:00.000Z' &&
+      aFecha('2026-10-01').toISOString() === '2026-10-01T00:00:00.000Z',
+  },
+  {
+    nombre: 'Las 03:30 UTC del 15 de octubre son el 14 en México',
+    probar: () => diaLocal('2026-10-15T03:30:00.000001') === '2026-10-14' && diaLocal('') === '',
+  },
+  {
+    nombre: '«hace 2 h» para un evento de hace dos horas (no «hace instantes»)',
+    probar: () =>
+      formatRelativo(comoApi(new Date(Date.now() - 2 * 3600e3))) === 'hace 2 h' &&
+      formatRelativo(comoApi(new Date())) === 'hace instantes',
+  },
+  {
+    nombre: 'La tendencia del semáforo cuenta un cambio de las 21:30 en su día local',
+    probar: () => {
+      const evento = {
+        creado_en: '2026-10-15T03:30:00.000001',
+        detalle: { estado_anterior: 'EN_REVISION', estado_nuevo: 'CONFORME', causa: 'DICTAMEN_IA' },
+      }
+      const dias = agruparCambios([evento], new Date(2026, 9, 14, 23, 0))
+      return dias.find((d) => d.dia === '2026-10-14')?.mejoras === 1
+    },
+  },
   {
     nombre: 'idAleatorio funciona sin crypto.randomUUID (HTTP sin SSL)',
     probar: () => {

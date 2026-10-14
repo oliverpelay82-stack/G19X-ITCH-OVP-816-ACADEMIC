@@ -1,4 +1,5 @@
 /** Cambios del semáforo por día a partir de la bitácora (V4). Sin React: se prueba aparte. */
+import { diaLocal } from '../../utils/format.js'
 
 export const DIAS = 30
 export const LIMITE = 500 // máximo del API de la bitácora
@@ -39,7 +40,7 @@ export function agruparCambios(eventos, hoy = new Date()) {
   for (const e of eventos) {
     if (!esCambioDeTendencia(e)) continue
     const { estado_anterior: antes, estado_nuevo: despues } = e.detalle
-    const fila = porDia.get(String(e.creado_en).slice(0, 10))
+    const fila = porDia.get(diaLocal(e.creado_en))
     if (!fila) continue
     if (RANGO[despues] > RANGO[antes]) fila.mejoras += 1
     else fila.deterioros -= 1
