@@ -18,7 +18,7 @@
 
 .bubble {
   max-width: 85%;
-  padding: 10px var(--s-3);
+  padding: var(--s-2-5) var(--s-3);
   border-radius: var(--r-md);
   font-size: var(--fs-body);
   line-height: 1.55;
@@ -92,7 +92,7 @@
 .citation {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--s-1-5);
   max-width: 100%;
   height: 24px;
   padding: 0 var(--s-2);
@@ -187,7 +187,7 @@
 .chat-suggestions {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: var(--s-1-5);
 }
 
 .composer {
@@ -200,7 +200,7 @@
   flex: 1;
   min-height: 34px;
   max-height: 120px;
-  padding-top: 6px;
-  padding-bottom: 6px;
+  padding-top: var(--s-1-5);
+  padding-bottom: var(--s-1-5);
   resize: none;
 }

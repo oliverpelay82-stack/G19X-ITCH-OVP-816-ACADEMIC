@@ -3,6 +3,7 @@ import ExportarReporte from './ExportarReporte.jsx'
 import HallazgosCategoria from './HallazgosCategoria.jsx'
 import { Card, EmptyState, Select } from './ui/index.js'
 import { CORE_FUERA_DE_LINEA, sinRespuesta } from './sinRespuesta.js'
+import { SkeletonCards } from './Skeleton.jsx'
 import AnilloSemaforo from './graficas/AnilloSemaforo.jsx'
 import CambiosSemaforo from './graficas/CambiosSemaforo.jsx'
 import HallazgosPorArea from './graficas/HallazgosPorArea.jsx'
@@ -29,7 +30,7 @@ function Seccion({ titulo, accion, children }) {
  * inicio) y el dictamen de cada expediente se exporta desde su detalle (RF-23,
  * RF-24; HU-28). Un sector del anillo abre Expedientes filtrado por ese estado.
  */
-export default function ReportesTab({ expedientes, isOnline = true, onAbrirExpediente, onVerExpedientes }) {
+export default function ReportesTab({ expedientes, loading = false, isOnline = true, onAbrirExpediente, onVerExpedientes }) {
   const [tipoGlobal, setTipoGlobal] = useState('')
   const totalAlertas = useMemo(() => expedientes.reduce((n, e) => n + (e.evaluacion?.alertas?.length || 0), 0), [expedientes])
 
@@ -55,8 +56,11 @@ export default function ReportesTab({ expedientes, isOnline = true, onAbrirExped
         </div>
       </div>
 
-      {/* Sin respuesta del core y sin datos: las gráficas en cero dirían que no hay hallazgos. */}
-      {isOnline === false && expedientes.length === 0 ? (
+      {/* Mientras llegan los datos, o sin respuesta del core y sin datos, las gráficas
+          en cero dirían que no hay hallazgos ni vencimientos. */}
+      {loading ? (
+        <SkeletonCards count={3} height={180} />
+      ) : isOnline === false && expedientes.length === 0 ? (
         <Card>
           <EmptyState
             {...sinRespuesta(

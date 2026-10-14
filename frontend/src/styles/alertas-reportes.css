@@ -135,13 +135,13 @@
 .indice-leyenda-item {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--s-1-5);
 }
 
 .indice-bloqueo-titulo {
   display: flex;
   align-items: baseline;
-  gap: 6px;
+  gap: var(--s-1-5);
   font-weight: 600;
 }
 

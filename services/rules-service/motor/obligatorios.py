@@ -24,7 +24,7 @@ from typing import Iterable, Protocol
 
 # De la más grave a la menos grave: si dos reglas exigen el mismo tipo de
 # documento, prevalece la severidad más alta.
-ORDEN_SEVERIDAD = ["CRITICA", "ALTA", "MEDIA_ALTA", "MEDIA", "BAJA"]
+ORDEN_SEVERIDAD = ["CRITICA", "ALTA", "MEDIA_ALTA", "MEDIA"]
 
 TIPOS_EXPEDIENTE = ("JURIDICO", "CORPORATIVO", "REGULATORIO")
 

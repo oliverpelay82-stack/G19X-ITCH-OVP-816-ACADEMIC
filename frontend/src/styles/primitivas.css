@@ -83,7 +83,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: var(--s-1-5);
   height: var(--control-md);
   padding: 0 var(--s-3);
   border: 1px solid transparent;
@@ -141,7 +141,7 @@
 
 .btn-sm {
   height: var(--control-sm);
-  padding: 0 10px;
+  padding: 0 var(--s-2-5);
   font-size: var(--fs-small);
 }
 
@@ -222,7 +222,7 @@
 .eyebrow--icon {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--s-1-5);
 }
 
 /* Puntos de estado */
@@ -257,7 +257,7 @@
 .badge {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--s-1-5);
   height: 22px;
   padding: 0 var(--s-2);
   border: 1px solid var(--neutral-border);

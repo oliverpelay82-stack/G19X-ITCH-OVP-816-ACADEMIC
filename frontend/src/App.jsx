@@ -10,6 +10,7 @@ import useToast from './hooks/useToast.js'
 import useTheme from './hooks/useTheme.js'
 import useRuta from './hooks/useRuta.js'
 import { registrarTiposDeclarados } from './constants.js'
+import { valorTrasCarga } from './utils/carga.js'
 import {
   getDocumentos,
   getExpedientes,
@@ -134,11 +135,12 @@ export default function App() {
       getDocumentos(),
       getReglas(),
     ])
-    if (t.status === 'fulfilled') setTitulares(t.value || [])
-    if (e.status === 'fulfilled') setExpedientes(e.value || [])
-    if (d.status === 'fulfilled') setDocumentos(d.value || [])
+    // Una lista que no llegó conserva la anterior, también las reglas (antes se vaciaban).
+    setTitulares((previo) => valorTrasCarga(t, previo))
+    setExpedientes((previo) => valorTrasCarga(e, previo))
+    setDocumentos((previo) => valorTrasCarga(d, previo))
     if (r.status === 'fulfilled') registrarTiposDeclarados(r.value || []) // RF-09: antes de pintar
-    setReglas(r.status === 'fulfilled' ? r.value || [] : [])
+    setReglas((previo) => valorTrasCarga(r, previo))
     setLoading(false)
     return [t, e, d].some((x) => x.status === 'fulfilled')
   }, [])
@@ -382,6 +384,7 @@ export default function App() {
             {tabActiva === 'reportes' && (
               <ReportesTab
                 expedientes={expedientes}
+                loading={loading}
                 isOnline={health.core.online}
                 onAbrirExpediente={abrirExpediente}
                 onVerExpedientes={(estado) => irFiltrado('expedientes', estado)}

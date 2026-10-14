@@ -411,7 +411,8 @@ def analizar_documento(peticion: AnalisisSemanticoRequest):
     """
     Ejecuta el Nivel 4 sobre el documento indicado (ver ``auditar``).
 
-    P5 (DOC-05, Tabla 1): si el proveedor de IA no responde tras sus 3 intentos,
+    P5 (DOC-05, Tabla 1): si el proveedor de IA no responde tras sus intentos (el
+    primero más GROQ_MAX_RETRIES),
     la auditoría de un documento de la bóveda queda en la cola de procesamiento
     diferido, el core muestra la alerta y la respuesta es 503 con esa explicación.
     """
@@ -424,7 +425,8 @@ def analizar_documento(peticion: AnalisisSemanticoRequest):
         core_client.marcar_diferido(diferida.documento_id, diferida.aviso())
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=("El servicio de IA no respondió tras 3 intentos. La auditoría quedó programada y se "
+            detail=(f"El servicio de IA no respondió tras {settings.GROQ_MAX_RETRIES + 1} intentos. "
+                    "La auditoría quedó programada y se "
                     "reintentará automáticamente (procesamiento diferido)."),
         ) from exc
 

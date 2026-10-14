@@ -22,6 +22,7 @@ Object.defineProperty(globalThis.crypto, 'randomUUID', { value: undefined, confi
 const { idAleatorio } = await import('../src/utils/id.js')
 const { aFecha, diaLocal, formatRelativo } = await import('../src/utils/format.js')
 const { agruparCambios } = await import('../src/components/graficas/cambios.js')
+const { valorTrasCarga } = await import('../src/utils/carga.js')
 
 /** Marca de tiempo como la devuelve la API: UTC sin zona, con microsegundos. */
 const comoApi = (fecha) => `${fecha.toISOString().slice(0, -1)}123`
@@ -60,6 +61,32 @@ const CASOS = [
       }
       const dias = agruparCambios([evento], new Date(2026, 9, 14, 23, 0))
       return dias.find((d) => d.dia === '2026-10-14')?.mejoras === 1
+    },
+  },
+  {
+    nombre: 'Una lista que no llegó conserva la anterior (también las reglas)',
+    probar: () => {
+      const previo = [{ id: 'r1' }]
+      return (
+        valorTrasCarga({ status: 'rejected', reason: new Error('caído') }, previo) === previo &&
+        valorTrasCarga({ status: 'fulfilled', value: null }, previo).length === 0 &&
+        readFileSync(join(SRC, 'App.jsx'), 'utf8').includes('setReglas((previo) => valorTrasCarga(r, previo))')
+      )
+    },
+  },
+  {
+    nombre: 'Los espaciados de las hojas de estilo usan la escala --s-* (sin 4, 6, 8, 10… px escritos)',
+    probar: () => {
+      const declaracion = /^\s*(?:padding|margin|gap|row-gap|column-gap)[a-z-]*\s*:([^;]*);/gm
+      const enEscala = /(?<![-0-9.])(4|6|8|10|12|16|20|24|32|40)px\b/
+      const hojas = readdirSync(join(SRC, 'styles')).map((h) => join(SRC, 'styles', h))
+      const literales = [join(SRC, 'index.css'), ...hojas].flatMap((ruta) =>
+        [...readFileSync(ruta, 'utf8').matchAll(declaracion)]
+          .filter((m) => enEscala.test(m[1]))
+          .map((m) => `${relative(SRC, ruta)}: ${m[0].trim()}`)
+      )
+      for (const l of literales) console.log(`          ${l}`)
+      return literales.length === 0
     },
   },
   {

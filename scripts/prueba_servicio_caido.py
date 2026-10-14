@@ -11,6 +11,11 @@ La prueba intercepta con Playwright toda petición al core-service y la aborta
 Reportes comprueba que se muestra «Sistema de expedientes fuera de línea» y
 ningún texto de lista vacía ni de cumplimiento.
 
+Segundo escenario, el core lento: sus peticiones no se responden durante la
+primera carga. Reportes no recibía `loading` y afirmaba «Sin hallazgos
+vigentes» y «Ningún documento vence…» antes de tener datos; ahora muestra su
+esqueleto de carga.
+
 Requisitos: `npm run dev` en marcha; los servicios no hacen falta (el core se
 simula caído y nada se escribe). Uso, desde la raíz:
 python scripts/prueba_servicio_caido.py [URL]   (por omisión, http://127.0.0.1:5173/)
@@ -55,11 +60,43 @@ def main() -> int:
                 fallos.append(vista)
         navegador.close()
 
+    if reportes_en_carga():
+        fallos.append("reportes (carga)")
+
     if fallos:
-        print(f"FALLA: {len(fallos)} vistas no distinguen el servicio caído de una lista vacía")
+        print(f"FALLA: {len(fallos)} vistas no distinguen el servicio caído o la carga de una lista vacía")
         return 1
-    print("OK: todas las vistas dicen que el sistema de expedientes no responde")
+    print("OK: todas las vistas dicen que el sistema de expedientes no responde o que está cargando")
     return 0
+
+
+# Afirmaciones de Reportes que no pueden aparecer antes de tener datos.
+PROHIBIDOS_EN_CARGA = ("Sin hallazgos vigentes", "Ningún documento vence")
+
+
+def reportes_en_carga() -> bool:
+    """Devuelve True si Reportes afirma algo mientras el core aún no responde."""
+    with sync_playwright() as p:
+        navegador = p.chromium.launch(channel="chrome")
+        pagina = navegador.new_page(viewport={"width": 1366, "height": 900})
+        retenidas = []
+        pagina.route(CORE, lambda ruta: retenidas.append(ruta))  # nunca se responden durante la prueba
+        pagina.goto(f"{URL}#/reportes")
+        pagina.wait_for_timeout(3000)  # menos que el tiempo límite del sondeo (10 s)
+        texto = pagina.locator(".app-content").inner_text()
+        cargando = pagina.locator(".app-content .skeleton").count() > 0
+        for ruta in retenidas:
+            try:
+                ruta.abort()
+            except Exception:  # noqa: BLE001 - la página pudo cancelarla ya
+                pass
+        pagina.unroute_all(behavior="ignoreErrors")
+        navegador.close()
+    falsos = [t for t in PROHIBIDOS_EN_CARGA if t in texto]
+    falla = bool(falsos) or not cargando
+    print(f"{'FALLA' if falla else 'OK':6} #/reportes en carga: esqueleto {'visible' if cargando else 'ausente'}"
+          f"{'; dice: ' + ', '.join(falsos) if falsos else ''}")
+    return falla
 
 
 if __name__ == "__main__":

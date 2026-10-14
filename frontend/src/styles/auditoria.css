@@ -67,7 +67,7 @@
   position: relative;
   display: flex;
   align-items: flex-start;
-  gap: 10px;
+  gap: var(--s-2-5);
   min-width: 0;
   padding: var(--s-3) var(--s-4);
   transition: background-color var(--dur) var(--ease);
@@ -168,7 +168,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 6px;
+  gap: var(--s-1-5);
   font-size: var(--fs-body);
   font-weight: 500;
   color: var(--text-muted);
@@ -308,7 +308,7 @@
   align-items: center;
   gap: var(--s-2);
   align-self: flex-start;
-  padding: 6px var(--s-3);
+  padding: var(--s-1-5) var(--s-3);
   border: 1px solid var(--neutral-border);
   border-radius: var(--r-sm);
   background: var(--neutral-bg);
@@ -670,7 +670,7 @@
 .registro-reglas li {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--s-1-5);
   font-size: var(--fs-small);
   color: var(--text-primary);
   cursor: default;

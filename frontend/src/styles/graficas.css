@@ -88,7 +88,7 @@
 .grafica-leyenda li {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--s-1-5);
 }
 
 .grafica-muestra {
@@ -124,7 +124,7 @@
 }
 
 .grafica-tooltip-titulo {
-  margin-bottom: 4px;
+  margin-bottom: var(--s-1);
   color: var(--text-primary);
   font-weight: 500;
 }
@@ -139,7 +139,7 @@
 .grafica-tooltip li {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--s-1-5);
 }
 
 .grafica-tooltip strong {
@@ -155,7 +155,7 @@
 }
 
 .grafica-tooltip-nota {
-  margin-top: 4px;
+  margin-top: var(--s-1);
   color: var(--text-muted);
 }
 
@@ -180,7 +180,7 @@
 
 .grafica-tabla th,
 .grafica-tabla td {
-  padding: 4px 0;
+  padding: var(--s-1) 0;
   border-bottom: var(--border-subtle);
   text-align: left;
 }

@@ -42,9 +42,18 @@ def test_api_rechaza_familia_fuera_del_doc05():
     assert any(e["loc"][-1] == "familia_regla" for e in respuesta.json()["detail"])
 
 
-@pytest.mark.parametrize("columna, valor", [("familia_regla", "XYZ"), ("tipo_expediente", "FISCAL")])
+def test_api_rechaza_severidad_fuera_del_doc05():
+    """Hallazgo 8 (auditoría del 14/10/2026): la severidad era texto libre; «baja» se guardaba."""
+    regla = {**REGLA, "familia_regla": "RDS", "codigo_regla": f"SEV-{uuid.uuid4().hex[:6]}"}
+    respuesta = TestClient(app).post("/api/v1/reglas", json={**regla, "severidad": "BAJA"})
+    assert respuesta.status_code == 422, respuesta.text
+    assert any(e["loc"][-1] == "severidad" for e in respuesta.json()["detail"])
+    assert ReglaCreate(**{**regla, "severidad": " media_alta "}).severidad == "MEDIA_ALTA"
+
+
+@pytest.mark.parametrize("columna, valor", [("familia_regla", "XYZ"), ("tipo_expediente", "FISCAL"), ("severidad", "BAJA")])
 def test_base_rechaza_valores_fuera_del_catalogo(columna, valor):
-    campos = {"familia_regla": "RDS", "tipo_expediente": None, columna: valor}
+    campos = {"familia_regla": "RDS", "tipo_expediente": None, "severidad": "MEDIA", columna: valor}
     with engine.connect() as c:
         tx = c.begin()
         try:
@@ -52,7 +61,7 @@ def test_base_rechaza_valores_fuera_del_catalogo(columna, valor):
                 c.execute(text(
                     "INSERT INTO reglas_validacion (id, codigo_regla, nombre_regla, familia_regla, descripcion, severidad, "
                     "accion, documento_obligatorio, activo, creado_en, tipo_expediente) VALUES (:id, :codigo, 'x', "
-                    ":familia_regla, 'descripcion de prueba', 'MEDIA', 'x', false, false, now(), :tipo_expediente)"),
+                    ":familia_regla, 'descripcion de prueba', :severidad, 'x', false, false, now(), :tipo_expediente)"),
                     {"id": str(uuid.uuid4()), "codigo": f"CHK-{uuid.uuid4().hex[:8]}", **campos})
             assert error.value.orig.pgcode == "23514"  # check_violation
         finally:
@@ -84,6 +93,7 @@ def test_la_sesion_de_la_base_esta_en_utc():
 if __name__ == "__main__":
     test_api_rechaza_familia_fuera_del_doc05()
     test_codigo_compuesto_cabe_en_el_esquema_y_en_la_columna()
-    for columna, valor in (("familia_regla", "XYZ"), ("tipo_expediente", "FISCAL")):
+    test_api_rechaza_severidad_fuera_del_doc05()
+    for columna, valor in (("familia_regla", "XYZ"), ("tipo_expediente", "FISCAL"), ("severidad", "BAJA")):
         test_base_rechaza_valores_fuera_del_catalogo(columna, valor)
     print("PASÓ: familia normativa y tipo de expediente del catálogo")

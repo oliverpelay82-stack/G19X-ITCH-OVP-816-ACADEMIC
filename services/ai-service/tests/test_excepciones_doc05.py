@@ -121,12 +121,14 @@ def test_criterio_de_legibilidad():
 # ── Procesamiento diferido ────────────────────────────────────────────
 
 
-def test_si_groq_no_responde_la_auditoria_queda_diferida(entorno):
+def test_si_groq_no_responde_la_auditoria_queda_diferida(entorno, monkeypatch):
     entorno["groq"] = "caido"
+    monkeypatch.setattr(settings, "GROQ_MAX_RETRIES", 4)
 
     r = _auditar()
 
     assert r.status_code == 503 and "procesamiento diferido" in r.json()["detail"]
+    assert "tras 5 intentos" in r.json()["detail"], "El primero más GROQ_MAX_RETRIES, no un 3 fijo"
     diferida = diferidos.obtener(DOC_ID)
     assert diferida.intentos == 1 and diferida.peticion["usuario"] == "analista.p5"
     assert diferida.proximo_intento - datetime.now(timezone.utc) > timedelta(minutes=14)

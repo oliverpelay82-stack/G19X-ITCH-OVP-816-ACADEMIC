@@ -1,8 +1,8 @@
 """
 Excepción «Procesamiento diferido» (DOC-05, Tabla 1; P5).
 
-Si el proveedor de IA no responde tras sus 3 intentos (los del SDK,
-``GROQ_MAX_RETRIES`` más el primero), la auditoría no se pierde: entra en una
+Si el proveedor de IA no responde tras sus intentos (los del SDK: el primero
+más ``GROQ_MAX_RETRIES``), la auditoría no se pierde: entra en una
 cola de la SQLite del ai-service y un ciclo en segundo plano la reintenta sola,
 con espera creciente (de 15 min a 24 h) y hasta ``DIFERIDOS_MAX_INTENTOS``.
 

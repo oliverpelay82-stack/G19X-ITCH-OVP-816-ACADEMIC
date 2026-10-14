@@ -38,7 +38,8 @@ class Expediente(Base):
     # Nombre descriptivo opcional (RF-01), ej. 'Contrato de mantenimiento 2026'
     nombre = Column(String(150), nullable=True)
 
-    # Estado: 'EN_REVISION', 'CONFORME', 'NO_CONFORME', 'BLOQUEADO'
+    # Estado del semáforo: 'CONFORME', 'EN_REVISION' o 'NO_CONFORME' (CHECK en config/database.py;
+    # el BLOQUEADO del DOC-08 es el documento ALTERADO, PRD §19)
     estado_cumplimiento = Column(String(30), default="EN_REVISION", nullable=False)
     
     # Porcentaje de completitud documental (0.00 a 100.00)

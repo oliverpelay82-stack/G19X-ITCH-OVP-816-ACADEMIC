@@ -62,7 +62,7 @@
 .sidebar-brand {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--s-2-5);
   padding: 0 var(--s-1);
   margin-bottom: var(--s-6);
 }
@@ -99,7 +99,7 @@
 }
 
 .sidebar-label {
-  padding: 0 var(--s-2) 6px;
+  padding: 0 var(--s-2) var(--s-1-5);
   font-size: var(--fs-micro);
   font-weight: 500;
   letter-spacing: var(--tracking-caps);
@@ -110,9 +110,9 @@
 .nav-item {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--s-2-5);
   height: 40px;
-  padding: 0 var(--s-2) 0 6px;
+  padding: 0 var(--s-2) 0 var(--s-1-5);
   border: 1px solid transparent;
   border-radius: var(--r-md);
   font-size: var(--fs-body);
@@ -385,7 +385,7 @@
 }
 
 .health-model {
-  padding: 1px 6px;
+  padding: 1px var(--s-1-5);
   border-radius: var(--r-xs);
   background: var(--bg-subtle);
   color: var(--text-secondary);

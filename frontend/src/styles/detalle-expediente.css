@@ -25,7 +25,7 @@
 .enlace-archivo {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--s-1-5);
   min-width: 0;
   max-width: 100%;
   padding: 0;
@@ -172,7 +172,7 @@
 .auditoria-resultado {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--s-1-5);
   width: 100%;
   padding: var(--s-2) var(--s-3);
   border: var(--border-default);
@@ -204,11 +204,11 @@
   grid-template-columns: 8px minmax(0, 1fr);
   gap: var(--s-2);
   align-items: start;
-  padding: 6px 0;
+  padding: var(--s-1-5) 0;
 }
 
 .historial-evento .status-dot {
-  margin-top: 6px;
+  margin-top: var(--s-1-5);
 }
 
 .historial-titulo {

@@ -57,7 +57,7 @@ ESTADO_LEGIBLE = {
     "FALTANTE": "Faltante",
 }
 VIGENCIA_LEGIBLE = {"VIGENTE": "Vigente", "PROXIMO_A_VENCER": "Próximo a vencer", "VENCIDO": "Vencido"}
-SEVERIDAD_LEGIBLE = {"CRITICA": "Crítica", "ALTA": "Alta", "MEDIA_ALTA": "Media-Alta", "MEDIA": "Media", "BAJA": "Baja"}
+SEVERIDAD_LEGIBLE = {"CRITICA": "Crítica", "ALTA": "Alta", "MEDIA_ALTA": "Media-Alta", "MEDIA": "Media"}
 
 # Lenguaje llano en los reportes (RNF-08): los códigos internos se nombran. El
 # código original se conserva donde es evidencia (la hoja de eventos de la

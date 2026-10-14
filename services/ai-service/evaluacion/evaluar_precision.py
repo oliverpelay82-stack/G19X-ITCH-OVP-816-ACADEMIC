@@ -44,6 +44,7 @@ from evaluacion import entorno  # noqa: I001  (instala los parches antes que el 
 from evaluacion import gold_standard as gs
 from evaluacion import metricas as m
 from evaluacion.medir_chat import DIRECTORIO_RESULTADOS, RUTA_CASETE as RUTA_CASETE_CHAT
+from config import settings
 from pipelines import repositorio_texto
 from pipelines.analisis_semantico import normalizar_fecha, normalizar_razon_social, normalizar_rfc
 from pipelines.verificacion_contenido import cita_en_texto
@@ -52,8 +53,14 @@ _AQUI = os.path.dirname(os.path.abspath(__file__))
 RUTA_CASETE = os.path.join(_AQUI, "casetes", "precision.json")
 ESTATUS = ("CONFORME", "EN_REVISION", "NO_CONFORME")
 RENDICIONES = ("VECTORIAL", "ESCANEADO")
-# Bandas de confianza del DOC-08 §6.2.
-BANDAS = (("≥ 0.85", 0.85, 1.01), ("0.70–0.84", 0.70, 0.85), ("< 0.70", -0.01, 0.70))
+# Bandas de confianza del DOC-08 §6.2, con los mismos umbrales que el dictamen
+# (UMBRAL_CONFIANZA_CONFORME y UMBRAL_CONFIANZA_HITL; por omisión 0.85 y 0.70).
+_CONFORME, _HITL = settings.UMBRAL_CONFIANZA_CONFORME, settings.UMBRAL_CONFIANZA_HITL
+BANDAS = (
+    (f"≥ {_CONFORME:.2f}", _CONFORME, 1.01),
+    (f"{_HITL:.2f}–{_CONFORME - 0.01:.2f}", _HITL, _CONFORME),
+    (f"< {_HITL:.2f}", -0.01, _HITL),
+)
 
 
 class CorridaAbortada(RuntimeError):

@@ -323,7 +323,7 @@
 .resumen-valor {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--s-1-5);
   font-size: var(--fs-small);
   font-weight: 500;
   color: var(--text-primary);

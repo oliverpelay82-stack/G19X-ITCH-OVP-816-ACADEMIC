@@ -147,6 +147,15 @@ OCR_WORKERS: int = max(1, int(os.getenv("OCR_WORKERS", str(os.cpu_count() or 2))
 if OCR_WORKERS > 1:
     os.environ.setdefault("OMP_THREAD_LIMIT", "1")
 
+# Topes defensivos del OCR (hallazgo 7 de la auditoría del 14/10/2026). Una página
+# normal tarda unos segundos (≈ 9 s con 8 en paralelo, VALIDACION §5): el tiempo
+# solo corta un Tesseract colgado, que sin él retenía un hilo del pool para siempre.
+# Los megapíxeles acotan la memoria de una página: carta a 300 ppp son 8.4 y A2,
+# 35; una página o imagen mayor se lee a menos resolución en lugar de pedir varios
+# GB (un PDF de 15 MB puede declarar una página de 5 × 5 m).
+OCR_TIMEOUT_PAGINA_SEGUNDOS: float = float(os.getenv("OCR_TIMEOUT_PAGINA_SEGUNDOS", "120"))
+OCR_MAX_MEGAPIXELES_PAGINA: float = float(os.getenv("OCR_MAX_MEGAPIXELES_PAGINA", "40"))
+
 # Documentos cuyo texto extraído se conserva en memoria (caché LRU) para que la
 # auditoría y los turnos del chat no repitan el Nivel 3 sobre el mismo archivo.
 CACHE_MAX_DOCUMENTOS: int = int(os.getenv("CACHE_MAX_DOCUMENTOS", "64"))

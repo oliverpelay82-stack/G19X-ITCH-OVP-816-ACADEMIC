@@ -36,8 +36,13 @@
   --tracking-caps: 0.06em;
 
   /* ── Espaciado (rejilla de 4 px) ─────────────────────────────── */
+  /* Los medios pasos (6 y 10 px) separan iconos de su texto y los controles
+     compactos. Por debajo de --s-1 (1 a 3 px) y los 7 px de las etiquetas son
+     ajustes ópticos fuera de la escala. */
   --s-1: 4px;
+  --s-1-5: 6px;
   --s-2: 8px;
+  --s-2-5: 10px;
   --s-3: 12px;
   --s-4: 16px;
   --s-5: 20px;

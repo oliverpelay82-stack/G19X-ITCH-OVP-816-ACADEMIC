@@ -12,6 +12,10 @@ TipoExpediente = Literal["JURIDICO", "CORPORATIVO", "REGULATORIO"]
 # Cronológicas y de Vigencia, Semánticas y Contractuales, Dinámicas y Sectoriales.
 FamiliaRegla = Literal["RIE", "RCV", "RSC", "RDS"]
 
+# Severidad del catálogo (DOC-05), de la más grave a la menos grave; la misma
+# lista que SEVERIDADES en el frontend (constants.js).
+Severidad = Literal["CRITICA", "ALTA", "MEDIA_ALTA", "MEDIA"]
+
 
 class ReglaCreate(BaseModel):
     """Datos necesarios para dar de alta una regla en el catálogo (RDS-01)."""
@@ -22,7 +26,7 @@ class ReglaCreate(BaseModel):
     nombre_regla: str = Field(..., min_length=3, max_length=150, description="Nombre corto de la regla")
     familia_regla: FamiliaRegla = Field(..., description="RIE, RCV, RSC o RDS")
     descripcion: str = Field(..., min_length=10, description="Descripción funcional de la regla")
-    severidad: str = Field(..., description="CRITICA, ALTA, MEDIA o MEDIA_ALTA")
+    severidad: Severidad = Field(..., description="CRITICA, ALTA, MEDIA_ALTA o MEDIA")
     accion: str = Field(..., max_length=255, description="Acción del sistema ante incumplimiento")
     tipo_documento: Optional[str] = Field(None, max_length=50, description="Tipo de documento al que aplica")
     documento_obligatorio: bool = Field(True, description="Completitud obligatoria del tipo de documento")
@@ -40,6 +44,11 @@ class ReglaCreate(BaseModel):
     @classmethod
     def _tipo_expediente_mayusculas(cls, valor):
         return valor.strip().upper() or None if isinstance(valor, str) else valor
+
+    @field_validator("severidad", mode="before")
+    @classmethod
+    def _severidad_mayusculas(cls, valor):
+        return valor.strip().upper() if isinstance(valor, str) else valor
 
 
 class ReglaResponse(BaseModel):

@@ -89,19 +89,20 @@ _ASIGNAR_INVENTARIO_CORPORATIVO = """
 
 def _sentencias_check() -> list[str]:
     """
-    CHECK de la familia normativa y del tipo de expediente, construidos con los
+    CHECK de la familia normativa, de la severidad y del tipo de expediente, construidos con los
     mismos Literal que valida la API (schemas/regla_schema.py). Se reemplazan en
     cada arranque, así que un valor nuevo en el esquema llega a la base solo.
     """
     from typing import get_args
 
-    from schemas.regla_schema import FamiliaRegla, TipoExpediente
+    from schemas.regla_schema import FamiliaRegla, Severidad, TipoExpediente
 
     def lista(valores) -> str:
         return ", ".join("'" + v.replace("'", "''") + "'" for v in valores)
 
     restricciones = {
         "ck_reglas_validacion_familia_regla": f"familia_regla IN ({lista(get_args(FamiliaRegla))})",
+        "ck_reglas_validacion_severidad": f"severidad IN ({lista(get_args(Severidad))})",
         # Nulo: la regla aplica a todos los tipos de expediente (RF-06).
         "ck_reglas_validacion_tipo_expediente": f"tipo_expediente IS NULL OR tipo_expediente IN ({lista(get_args(TipoExpediente))})",
     }

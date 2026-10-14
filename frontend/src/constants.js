@@ -24,8 +24,8 @@ export function categoriaTitular(categoria) {
 }
 
 /**
- * Catálogo oficial de tipos documentales (espejo de schemas/documento_schema.py
- * → TipoDocumentoEnum; DOC-02, Tablas 2 a 4). `grupo` es el tipo de
+ * Catálogo oficial de tipos documentales (espejo de core-service →
+ * config/catalogo.py; DOC-02, Tablas 2 a 4). `grupo` es el tipo de
  * expediente en cuyo inventario aparece, para ordenar y agrupar los selectores.
  */
 export const TIPOS_DOCUMENTO = [
@@ -193,19 +193,17 @@ export const SERVICIOS = [
 ]
 
 /**
- * Mapa de estados de auditoría. `tono` apunta a los tokens de estado del
- * sistema de diseño; ningún estado se comunica solo con color, siempre
+ * Mapa de estados de auditoría: los del semáforo y de los dictámenes (CHECK de
+ * la base; el vocabulario APROBADO/RECHAZADO del DOC-08 no se usa, PRD §19) y
+ * PENDIENTE del índice de cumplimiento. `tono` apunta a los tokens de estado
+ * del sistema de diseño; ningún estado se comunica solo con color, siempre
  * viaja acompañado de su etiqueta.
  */
 export const ESTADO_BADGE = {
   CONFORME: { tono: 'ok', label: 'Conforme' },
-  APROBADO: { tono: 'ok', label: 'Aprobado' },
   EN_REVISION: { tono: 'warn', label: 'En revisión' },
-  REQUIERE_REVISION_HUMANA: { tono: 'warn', label: 'Revisión humana' },
   PENDIENTE: { tono: 'warn', label: 'Pendiente' },
   NO_CONFORME: { tono: 'bad', label: 'No conforme' },
-  RECHAZADO: { tono: 'bad', label: 'Rechazado' },
-  BLOQUEADO: { tono: 'bad', label: 'Bloqueado' },
 }
 
 /** Estado de un documento dentro del semáforo del expediente (core-service). */

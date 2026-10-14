@@ -416,7 +416,7 @@
 
 .exp-motivo > .status-dot {
   align-self: start;
-  margin-top: 6px;
+  margin-top: var(--s-1-5);
 }
 
 .exp-motivo-cuerpo {

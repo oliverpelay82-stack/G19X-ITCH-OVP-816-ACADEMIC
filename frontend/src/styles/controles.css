@@ -17,7 +17,7 @@
   flex: 1 1 240px;
   max-width: 340px;
   height: var(--control-md);
-  padding: 0 var(--s-2) 0 10px;
+  padding: 0 var(--s-2) 0 var(--s-2-5);
   background: var(--bg-surface);
   border: var(--border-default);
   border-radius: var(--r-sm);
@@ -87,9 +87,9 @@
 .segmented-item {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--s-1-5);
   height: 26px;
-  padding: 0 10px;
+  padding: 0 var(--s-2-5);
   border: 1px solid transparent;
   border-radius: var(--r-xs);
   font-size: var(--fs-small);
@@ -163,7 +163,7 @@
 .field {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--s-1-5);
   min-width: 0;
 }
 
@@ -302,7 +302,7 @@ select option {
 .type-picker {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: var(--s-1-5);
   margin-top: var(--s-2);
 }
 

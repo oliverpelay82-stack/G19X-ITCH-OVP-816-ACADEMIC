@@ -175,6 +175,10 @@ class FormatoNoSoportadoError(ValueError):
     """El binario recibido no es un PDF, JPEG o PNG válido."""
 
 
+class TiempoOcrExcedidoError(FormatoNoSoportadoError):
+    """Una página excedió OCR_TIMEOUT_PAGINA_SEGUNDOS: el archivo no se puede leer (400)."""
+
+
 class MotorOcrNoDisponibleError(RuntimeError):
     """Tesseract no está instalado o no es ejecutable en esta máquina."""
 
@@ -338,7 +342,16 @@ def _tesseract(binaria: np.ndarray, psm: int = 3) -> dict[str, list[Any]]:
             lang=settings.OCR_LANG,
             config=f"--oem 3 --psm {psm}",
             output_type=pytesseract.Output.DICT,
+            timeout=settings.OCR_TIMEOUT_PAGINA_SEGUNDOS,
         )
+    except RuntimeError as exc:
+        # pytesseract mata el proceso al vencer el tiempo y lo informa así.
+        if "timeout" not in str(exc).lower():
+            raise
+        raise TiempoOcrExcedidoError(
+            f"Una página tardó más de {settings.OCR_TIMEOUT_PAGINA_SEGUNDOS:g} s en el reconocimiento de texto: "
+            "el archivo puede estar dañado o ser demasiado complejo para leerlo."
+        ) from exc
     except pytesseract.TesseractNotFoundError as exc:
         raise MotorOcrNoDisponibleError(
             f"Tesseract no es ejecutable en la ruta configurada "
@@ -443,9 +456,16 @@ def _rasterizar(pagina: "fitz.Page") -> np.ndarray:
     """
     Rasteriza una página PDF a ``OCR_DPI`` ppp en escala de grises (8 MB por
     hoja carta a 300 ppp), que al OCR le basta: la diferencia media frente a
-    convertir después con OpenCV es de 0.03 niveles por píxel.
+    convertir después con OpenCV es de 0.03 niveles por píxel. Una página que a
+    esa resolución excedería OCR_MAX_MEGAPIXELES_PAGINA se rasteriza a menos ppp,
+    con su misma proporción; las de tamaño normal no cambian.
     """
-    matriz = fitz.Matrix(settings.OCR_DPI / 72.0, settings.OCR_DPI / 72.0)
+    escala = settings.OCR_DPI / 72.0
+    pixeles = pagina.rect.width * pagina.rect.height * escala * escala
+    tope = settings.OCR_MAX_MEGAPIXELES_PAGINA * 1_000_000
+    if tope > 0 and pixeles > tope:
+        escala *= (tope / pixeles) ** 0.5
+    matriz = fitz.Matrix(escala, escala)
     pixmap = pagina.get_pixmap(matrix=matriz, colorspace=fitz.csGRAY)
     return np.frombuffer(pixmap.samples, dtype=np.uint8).reshape(pixmap.height, pixmap.width)
 
@@ -463,9 +483,9 @@ def _ocr_en_paralelo(imagenes: list[np.ndarray]) -> list[tuple[str, float, list[
 
 
 # Lectura completa en flujo continuo: páginas rasterizadas que pueden esperar su
-# OCR por cada proceso del pool. Con 2, cada proceso tiene siempre la siguiente
+# OCR por cada hilo del pool. Con 2, cada hilo tiene siempre la siguiente
 # página lista al terminar la suya, y la memoria queda acotada (≈ 8 MB por hoja
-# a 300 ppp: 16 páginas en vuelo con 8 procesos).
+# a 300 ppp: 16 páginas en vuelo con 8 hilos).
 _EN_VUELO_POR_TRABAJADOR = 2
 
 
@@ -684,11 +704,21 @@ def abrir_imagen(contenido: bytes) -> Image.Image:
     lo descubre al decodificarla: es un dato del documento, no un fallo del
     motor (400, no un error interno). También se rechaza la que excede el límite
     de píxeles de PIL (bomba de descompresión), que en memoria pesaría varios GB.
-    La usan la extracción y el visor; se cierra con ``with``.
+    La usan la extracción y el visor; se cierra con ``with``. Una imagen de más de
+    OCR_MAX_MEGAPIXELES_PAGINA se reduce con su misma proporción (un JPEG ya se
+    decodifica reducido, con ``draft``).
     """
     try:
         imagen = Image.open(io.BytesIO(contenido))
+        tope = settings.OCR_MAX_MEGAPIXELES_PAGINA * 1_000_000
+        factor = (tope / (imagen.width * imagen.height)) ** 0.5 if tope > 0 and imagen.width * imagen.height > tope else 1
+        if factor < 1:
+            imagen.draft(imagen.mode, (int(imagen.width * factor), int(imagen.height * factor)))
         imagen.load()
+        if factor < 1 and imagen.width * imagen.height > tope:
+            factor = (tope / (imagen.width * imagen.height)) ** 0.5
+            imagen = imagen.resize((max(1, int(imagen.width * factor)), max(1, int(imagen.height * factor))),
+                                   Image.LANCZOS)
         return imagen
     except Image.DecompressionBombError as exc:
         raise FormatoNoSoportadoError(f"La imagen excede el tamaño máximo que admite el OCR: {exc}") from exc
