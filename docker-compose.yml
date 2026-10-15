@@ -13,7 +13,7 @@ services:
     container_name: plurione-db
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: plurione-demo
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-plurione-demo}
       POSTGRES_DB: plurione_compliance
     ports:
       - "5433:5432"
@@ -37,7 +37,7 @@ services:
       DB_HOST: plurione-db
       DB_PORT: 5432
       DB_USER: postgres
-      DB_PASSWORD: plurione-demo
+      DB_PASSWORD: ${DB_PASSWORD:-plurione-demo}
       DB_NAME: plurione_compliance
       STORAGE_VAULT_PATH: /app/storage_vault
       # M1: en producción, RFC_DIGITO_ESTRICTO=true en el .env de la raíz rechaza un RFC
@@ -81,7 +81,7 @@ services:
       DB_HOST: plurione-db
       DB_PORT: 5432
       DB_USER: postgres
-      DB_PASSWORD: plurione-demo
+      DB_PASSWORD: ${DB_PASSWORD:-plurione-demo}
       DB_NAME: plurione_compliance
       # Precarga idempotente del catálogo DOC-05 al arrancar (solo inserta las reglas que falten).
       AUTO_SEED: "true"
