@@ -62,3 +62,6 @@ export function conTransicion(cambio) {
     cambio()
   }
 }
+
+/** Salida exponencial para Motion (pantalla de acceso): llega rápido y se asienta sin rebote. */
+export const SALIDA_EXPONENCIAL = [0.16, 1, 0.3, 1]

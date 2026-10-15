@@ -8,9 +8,11 @@ demostración (scripts/sesion_api.py), y un Vite en el 5174 que apunta a ellos.
 El ai-service va sin clave de IA: nada consume tokens.
 
 Etapas (por omisión, todas):
-  diseno    pantalla de acceso en claro, oscuro y móvil; mostrar contraseña y
-            estado de los servicios.
-  acceso    credenciales vacías o incorrectas, menú por rol, recarga, cierre de
+  diseno    pantalla de acceso en claro, oscuro y móvil; una pregunta a la vez
+            con su secuencia de pasos; mostrar contraseña y estado de los
+            servicios.
+  acceso    pasos vacíos, cambiar de correo, credenciales incorrectas, menú por
+            rol, recarga, cierre de
             sesión, ruta ajena, token rechazado y contraseña temporal.
   permisos  el auditor solo lee; el validador opera sin pausar reglas.
   mfa       alta del segundo factor con QR, código erróneo, inicio de sesión con
@@ -71,8 +73,9 @@ def admin() -> dict[str, str]:
 
 def entrar(page: Page, correo: str, clave: str) -> None:
     page.goto(URL)
-    page.get_by_label("Correo").fill(correo)
-    page.locator("input[autocomplete=current-password]").fill(clave)
+    page.get_by_role("textbox", name="Correo", exact=True).fill(correo)
+    page.get_by_role("button", name="Continuar").click()
+    page.get_by_label("Contraseña", exact=True).fill(clave)
     page.get_by_role("button", name="Iniciar sesión").click()
 
 
@@ -83,7 +86,7 @@ def entrar_rol(page: Page, rol: str) -> None:
 def salir(page: Page) -> None:
     page.locator(".menu-usuario-boton").click()
     page.get_by_role("menuitem", name="Cerrar sesión").click()
-    expect(page.get_by_role("heading", name="Inicia sesión")).to_be_visible()
+    expect(page.get_by_role("heading", name="¿Cuál es tu correo?")).to_be_visible()
 
 
 def menu(page: Page) -> list[str]:
@@ -144,20 +147,31 @@ def etapa_diseno(page: Page) -> None:
         page.goto(URL)
         page.evaluate("t => localStorage.setItem('plurione-theme-v2', t)", tema)
         page.reload()
-        expect(page.get_by_role("heading", name="Inicia sesión")).to_be_visible()
+        expect(page.get_by_role("heading", name="¿Cuál es tu correo?")).to_be_visible()
         expect(page.locator(".acceso-estado")).to_contain_text("Servicios en línea")
+        page.wait_for_timeout(900)  # el paso termina de entrar (Motion) antes de la captura
         captura(page, f"acceso_{tema}")
         page.set_viewport_size({"width": 390, "height": 844})
         page.wait_for_timeout(300)
         captura(page, f"acceso_movil_{tema}")
-        ok(page.locator(".acceso-vitrina").is_hidden(), f"diseño ({tema}): en móvil solo la tarjeta")
+        ok(page.locator(".acceso-paso-nombre:visible").all_inner_texts() == ["Correo"],
+           f"diseño ({tema}): en móvil solo se nombra el paso actual")
+        ok(page.evaluate("document.documentElement.scrollWidth <= window.innerWidth"),
+           f"diseño ({tema}): sin desplazamiento horizontal en móvil")
         page.set_viewport_size({"width": 1366, "height": 768})
+        ok(page.locator(".acceso-paso.is-actual").inner_text().strip().endswith("Correo"),
+           f"diseño ({tema}): el primer paso es el correo")
         # Un correo inexistente: no suma intentos fallidos a ninguna cuenta (el bloqueo es real).
-        page.get_by_label("Correo").fill("diseno-sin-cuenta@example.com")
-        page.locator("input[autocomplete=current-password]").fill("mala-clave-123")
+        page.get_by_role("textbox", name="Correo", exact=True).fill("diseno-sin-cuenta@example.com")
+        page.keyboard.press("Enter")
+        expect(page.get_by_role("heading", name="Escribe tu contraseña")).to_be_visible()
+        expect(page.locator(".acceso-cuenta")).to_contain_text("diseno-sin-cuenta@example.com")
+        ok(page.locator(".acceso-paso.is-hecho").count() == 1, f"diseño ({tema}): Enter avanza y el correo queda hecho")
+        page.get_by_label("Contraseña", exact=True).fill("mala-clave-123")
         page.get_by_role("button", name="Mostrar contraseña").click()
-        ok(page.locator("input[autocomplete=current-password]").get_attribute("type") == "text",
+        ok(page.get_by_label("Contraseña", exact=True).get_attribute("type") == "text",
            f"diseño ({tema}): mostrar contraseña")
+        captura(page, f"acceso_contrasena_{tema}")
         page.get_by_role("button", name="Iniciar sesión").click()
         expect(page.locator(".acceso-alerta--error")).to_be_visible()
         captura(page, f"acceso_error_{tema}")
@@ -167,10 +181,18 @@ def etapa_diseno(page: Page) -> None:
 def etapa_acceso(page: Page) -> None:
     page.set_viewport_size({"width": 1366, "height": 768})
     page.goto(URL)
-    expect(page.get_by_role("heading", name="Inicia sesión")).to_be_visible()
+    expect(page.get_by_role("heading", name="¿Cuál es tu correo?")).to_be_visible()
+    page.get_by_role("button", name="Continuar").click()
+    expect(page.locator(".acceso-alerta--error")).to_have_text("Escribe tu correo.")
+    page.get_by_role("textbox", name="Correo", exact=True).fill("otra-cuenta@example.com")
+    page.get_by_role("button", name="Continuar").click()
     page.get_by_role("button", name="Iniciar sesión").click()
-    expect(page.locator(".acceso-alerta--error")).to_have_text("Escribe tu correo y tu contraseña.")
-    ok(True, "acceso: enviar vacío dice qué falta, sin llamar al servidor")
+    expect(page.locator(".acceso-alerta--error")).to_have_text("Escribe tu contraseña.")
+    ok(True, "acceso: cada paso vacío dice qué falta, sin llamar al servidor")
+    page.get_by_role("button", name="Cambiar de correo").click()
+    expect(page.get_by_role("heading", name="¿Cuál es tu correo?")).to_be_visible()
+    ok(page.get_by_role("textbox", name="Correo", exact=True).input_value() == "otra-cuenta@example.com",
+       "acceso: cambiar de correo vuelve al primer paso con lo escrito")
     entrar(page, CORREO["VALIDADOR"], "mal-contrasena-123")
     expect(page.locator(".acceso-alerta--error")).to_have_text("Correo o contraseña incorrectos.")
     ok(True, "acceso: credenciales malas muestran el mensaje del core")
@@ -206,7 +228,7 @@ def etapa_acceso(page: Page) -> None:
         sessionStorage.setItem('plurione.sesion', JSON.stringify(s))
     }""")
     page.reload()
-    expect(page.get_by_role("heading", name="Inicia sesión")).to_be_visible()
+    expect(page.get_by_role("heading", name="¿Cuál es tu correo?")).to_be_visible()
     expect(page.locator(".acceso-alerta--aviso")).to_contain_text("Tu sesión expiró")
     ok(True, "acceso: un token rechazado cierra la sesión con el aviso")
 

@@ -1,6 +1,7 @@
 import useSesion from '../../hooks/useSesion.js'
 import { Button } from '../ui/index.js'
 import FormularioContrasena from './FormularioContrasena.jsx'
+import { Password } from '../iconos.js'
 import PantallaAcceso from './PantallaAcceso.jsx'
 
 /**
@@ -12,6 +13,7 @@ export default function CambioObligatorio() {
   const { usuario, salir } = useSesion()
   return (
     <PantallaAcceso
+      icono={Password}
       titulo="Cambia tu contraseña"
       descripcion={`${usuario.nombre_completo}, tu contraseña es temporal. Elige una nueva para continuar.`}
     >
