@@ -117,6 +117,8 @@ def init_db():
     """
     Crea las tablas que aún no existen y aplica las migraciones idempotentes.
     """
+    import models  # noqa: F401  (registra todas las entidades en Base.metadata)
+
     Base.metadata.create_all(bind=engine)
     with engine.begin() as conn:
         columna_previa = conn.execute(text(
