@@ -16,23 +16,23 @@ motivo del core, que c sigue marcado aunque b ya salió y que el aviso dice
 un solo archivo sigue el flujo individual. Al final, por la API: cinco
 documentos y un evento INGESTA_DOCUMENTO por cada uno.
 
+Sesión (Módulo 7): la cuenta de demostración del validador, por la API y en el
+navegador (scripts/sesion_api.py).
+
 Requisitos: PostgreSQL y Chrome. Uso, desde la raíz: python scripts/prueba_carga_lote.py
 """
 from __future__ import annotations
 
-import os
-import subprocess
 import sys
 import tempfile
-import time
 from datetime import date, timedelta
 from pathlib import Path
 
-import requests
 from playwright.sync_api import Page, expect, sync_playwright
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from e2e_api import RAIZ, detener, levantar, pdf_constancia  # noqa: E402
+import sesion_api  # noqa: E402
+from e2e_api import detener, detener_vite, levantar, levantar_vite, pdf_constancia  # noqa: E402
 
 CORE = "http://127.0.0.1:8101"
 RULES = "http://127.0.0.1:8102"
@@ -51,39 +51,17 @@ def comprobar(condicion: bool, mensaje: str) -> None:
         fallas.append(mensaje)
 
 
-def levantar_vite(registro: Path) -> subprocess.Popen:
-    entorno = dict(os.environ, VITE_CORE_URL=f"{CORE}/api/v1", VITE_RULES_URL=f"{RULES}/api/v1",
-                   VITE_AI_URL="http://127.0.0.1:8103/api/v1")
-    proceso = subprocess.Popen(
-        f"npm run dev -- --port {PUERTO_VITE} --strictPort --host 127.0.0.1",
-        cwd=RAIZ / "frontend", env=entorno, shell=True,
-        stdout=open(registro, "w", encoding="utf-8"), stderr=subprocess.STDOUT,
-    )
-    limite = time.monotonic() + 60
-    while time.monotonic() < limite:
-        try:
-            if requests.get(URL, timeout=2).ok:
-                return proceso
-        except requests.RequestException:
-            time.sleep(0.5)
-    raise RuntimeError(f"Vite no respondió:\n{registro.read_text(encoding='utf-8')[-2000:]}")
-
-
-def detener_vite(proceso: subprocess.Popen) -> None:
-    # npm deja a Vite como proceso hijo: en Windows se termina el árbol completo.
-    if os.name == "nt":
-        subprocess.run(["taskkill", "/F", "/T", "/PID", str(proceso.pid)], capture_output=True)
-    else:
-        proceso.terminate()
+def api():
+    return sesion_api.sesion(CORE, "VALIDADOR")
 
 
 def preparar_datos(carpeta: Path) -> dict:
     """Titular ficticio, expediente corporativo con «a» ya custodiado y los archivos de los lotes."""
-    titular = requests.post(f"{CORE}/api/v1/titulares", json={
+    titular = api().post(f"{CORE}/api/v1/titulares", json={
         "rfc": "EMP260101AB1", "razon_social": "Empresa Ficticia de Pruebas, S.A. de C.V.", "tipo_persona": "MORAL",
     }, timeout=30)
     titular.raise_for_status()
-    expediente = requests.post(f"{CORE}/api/v1/expedientes", json={
+    expediente = api().post(f"{CORE}/api/v1/expedientes", json={
         "titular_id": titular.json()["id"], "tipo_expediente": "CORPORATIVO", "nombre": "Prueba de carga en lote",
     }, timeout=30)
     expediente.raise_for_status()
@@ -99,7 +77,7 @@ def preparar_datos(carpeta: Path) -> dict:
     archivos["d_falso.pdf"] = carpeta / "d_falso.pdf"
     archivos["d_falso.pdf"].write_bytes(b"Esto no es un PDF.\n")
 
-    previa = requests.post(f"{CORE}/api/v1/documentos/upload", data={
+    previa = api().post(f"{CORE}/api/v1/documentos/upload", data={
         "expediente_id": expediente["id"], "tipo_documento": "CSF_SAT", "usuario": "prueba-lote"},
         files={"file": ("a_constancia.pdf", archivos["a_constancia.pdf"].read_bytes(), "application/pdf")}, timeout=30)
     previa.raise_for_status()
@@ -180,13 +158,13 @@ def lote_en_expediente(pagina: Page, datos: dict) -> None:
 
 def comprobar_api(datos: dict) -> None:
     expediente_id = datos["expediente"]["id"]
-    documentos = [d for d in requests.get(f"{CORE}/api/v1/documentos", timeout=30).json()
+    documentos = [d for d in api().get(f"{CORE}/api/v1/documentos", timeout=30).json()
                   if d["expediente_id"] == expediente_id]
     tipos = sorted(d["tipo_documento"] for d in documentos)
     comprobar(tipos == ["ACTA_CONSTITUTIVA", "COMP_DOMICILIO", "CSF_SAT", "ESTATUTOS_SOCIALES", "PODER_NOTARIAL"],
               f"API: cinco documentos, uno por tipo ({tipos})")
     for d in documentos:
-        eventos = requests.get(f"{CORE}/api/v1/bitacora", params={
+        eventos = api().get(f"{CORE}/api/v1/bitacora", params={
             "documento_id": d["id"], "evento": "INGESTA_DOCUMENTO"}, timeout=30).json()
         comprobar(len(eventos) == 1, f"API: un evento de ingesta para {d['nombre_archivo_original']}")
 
@@ -196,11 +174,11 @@ def main() -> int:
     procesos = levantar({"rules-service": 8102, "core-service": 8101}, registros)
     vite = None
     try:
-        vite = levantar_vite(registros / "vite.log")
+        vite = levantar_vite(registros / "vite.log", PUERTO_VITE, CORE, RULES)
         datos = preparar_datos(registros)
         with sync_playwright() as p:
             navegador = p.chromium.launch(channel="chrome")
-            pagina = navegador.new_page(viewport={"width": 1366, "height": 900})
+            pagina = sesion_api.nueva_pagina(navegador, CORE, "VALIDADOR", viewport={"width": 1366, "height": 900})
             errores: list[str] = []
             pagina.on("pageerror", lambda e: errores.append(str(e)))
             lote_en_boveda(pagina, datos)

@@ -6,7 +6,9 @@ no viaja), lo levanta con ``docker compose up --build`` en un proyecto propio
 (``plurione_entrega``, con su base y sus volúmenes nuevos) y recorre el flujo
 con datos ficticios:
 
-  salud de los tres servicios y del frontend → empresa con RFC ficticio →
+  salud de los tres servicios y del frontend → sin token, 401 → inicio de
+  sesión con las cuatro cuentas de demostración del README (cada una con su
+  rol) → como validador: empresa con RFC ficticio →
   expediente → carga de una constancia → auditoría → chat → semáforo (un
   expediente incompleto nunca se aprueba) → cadena de la bitácora → reportes
   PDF y Excel → ficha de custodia.
@@ -41,6 +43,7 @@ import requests
 from dotenv import dotenv_values
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import sesion_api  # noqa: E402
 from e2e_api import RAIZ, pdf_constancia  # noqa: E402
 
 PROYECTO = "plurione_entrega"
@@ -94,46 +97,65 @@ def esperar_servicios(segundos: int = 180) -> None:
     raise RuntimeError(f"Los servicios no respondieron en {segundos} s")
 
 
+def sesiones() -> requests.Session:
+    """Módulo 7: sin token, 401; las cuentas del README entran con su rol. Devuelve la del validador."""
+    for servicio in ("core", "rules", "ai"):
+        ruta = {"core": "/titulares", "rules": "/reglas", "ai": "/ai/configuracion-ocr"}[servicio]
+        r = requests.get(f"{B[servicio]}{ruta}", timeout=15)
+        comprobar(r.status_code == 401, f"{servicio}-service sin token responde 401 ({r.status_code})")
+    for rol, (correo, _) in sesion_api.CUENTAS_DEMO.items():
+        try:
+            usuario = sesion_api.iniciar_sesion(B["core"], rol)["usuario"]
+            comprobar(usuario["rol"] == rol and usuario["email"] == correo, f"inicio de sesión de {correo} ({rol})")
+        except RuntimeError as exc:
+            comprobar(False, str(exc))
+    consulta = sesion_api.sesion(B["core"], "CONSULTA")
+    comprobar(consulta.get(f"{B['core']}/titulares", timeout=15).status_code == 403,
+              "la cuenta de consulta no ve las empresas (403)")
+    return sesion_api.sesion(B["core"], "VALIDADOR")
+
+
 def recorrer(con_ia: bool) -> None:
     salud_ai = requests.get(f"{B['ai']}/health", timeout=15).json()
     comprobar(salud_ai.get("capacidades_operativas") is con_ia,
               f"ai-service {'operativo con' if con_ia else 'degradado sin'} clave de IA")
-    comprobar(len(requests.get(f"{B['rules']}/reglas", timeout=15).json()) > 0, "catálogo de reglas precargado")
+    api = sesiones()
+    comprobar(len(api.get(f"{B['rules']}/reglas", timeout=15).json()) > 0, "catálogo de reglas precargado")
 
     rfc, razon = "EMP260101AB1", "Empresa Ficticia de Pruebas, S.A. de C.V."
-    titular = requests.post(f"{B['core']}/titulares", timeout=15,
+    titular = api.post(f"{B['core']}/titulares", timeout=15,
                             json={"rfc": rfc, "razon_social": razon, "tipo_persona": "MORAL"})
     comprobar(titular.status_code == 201, f"empresa con RFC ficticio ({titular.status_code})")
-    expediente = requests.post(f"{B['core']}/expedientes", timeout=15,
+    expediente = api.post(f"{B['core']}/expedientes", timeout=15,
                                json={"titular_id": titular.json()["id"], "tipo_expediente": "CORPORATIVO"}).json()
-    carga = requests.post(f"{B['core']}/documentos/upload", timeout=30,
+    carga = api.post(f"{B['core']}/documentos/upload", timeout=30,
                           data={"expediente_id": expediente["id"], "tipo_documento": "CSF_SAT"},
                           files={"file": ("constancia.pdf", pdf_constancia(rfc, razon, date.today() - timedelta(days=5)),
                                           "application/pdf")})
     comprobar(carga.status_code == 201, f"carga de una constancia ficticia ({carga.status_code})")
     documento = carga.json()
 
-    auditoria = requests.post(f"{B['ai']}/ai/analisis-semantico", timeout=180, json={
+    auditoria = api.post(f"{B['ai']}/ai/analisis-semantico", timeout=180, json={
         "documento_id": documento["id"], "rfc_titular": rfc, "razon_social_titular": razon, "usuario": "prueba-entrega"})
     if con_ia:
         cuerpo = auditoria.json()
         comprobar(auditoria.status_code == 200 and (cuerpo.get("persistencia") or {}).get("guardado") is True,
                   f"auditoría real guardada ({auditoria.status_code}: {cuerpo.get('estatus_preliminar')})")
-        chat = requests.post(f"{B['ai']}/ai/chat-documento", timeout=120,
+        chat = api.post(f"{B['ai']}/ai/chat-documento", timeout=120,
                              json={"documento_id": documento["id"], "pregunta": "¿Cuál es el RFC del documento?"})
         comprobar(chat.status_code == 200 and rfc in chat.json().get("respuesta", ""), "el chat responde con el RFC")
     else:
         comprobar(auditoria.status_code == 503 and "no está configurado" in auditoria.json().get("detail", ""),
                   "sin clave, la auditoría responde 503 con la instrucción para configurarla")
 
-    evaluacion = requests.get(f"{B['core']}/expedientes/{expediente['id']}", timeout=15).json()["evaluacion"]
+    evaluacion = api.get(f"{B['core']}/expedientes/{expediente['id']}", timeout=15).json()["evaluacion"]
     comprobar(evaluacion["estado"] != "CONFORME", f"un expediente incompleto no se aprueba ({evaluacion['estado']})")
-    cadena = requests.get(f"{B['core']}/bitacora/verificar-cadena", timeout=15).json()
+    cadena = api.get(f"{B['core']}/bitacora/verificar-cadena", timeout=15).json()
     comprobar(cadena["integra"], f"cadena de la bitácora íntegra ({cadena['eventos_sellados']} eventos)")
     for formato, firma in (("pdf", b"%PDF"), ("xlsx", b"PK")):
-        r = requests.get(f"{B['core']}/reportes/expedientes/{expediente['id']}", params={"formato": formato}, timeout=60)
+        r = api.get(f"{B['core']}/reportes/expedientes/{expediente['id']}", params={"formato": formato}, timeout=60)
         comprobar(r.ok and r.content.startswith(firma), f"reporte del expediente en {formato}")
-    r = requests.get(f"{B['core']}/reportes/documentos/{documento['id']}/custodia", params={"formato": "pdf"}, timeout=60)
+    r = api.get(f"{B['core']}/reportes/documentos/{documento['id']}/custodia", params={"formato": "pdf"}, timeout=60)
     comprobar(r.ok and r.content.startswith(b"%PDF"), "ficha de custodia en pdf")
 
 

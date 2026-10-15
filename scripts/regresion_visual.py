@@ -14,7 +14,9 @@ Sirve para demostrar que una refactorización del sistema de diseño no altera
 la interfaz, o para acotar exactamente dónde la altera.
 
 Requisitos: los tres microservicios y el frontend (`npm run dev`) en marcha,
-y Playwright para Python con el canal de Chrome instalado.
+y Playwright para Python con el canal de Chrome instalado. Sesión (Módulo 7):
+la cuenta de demostración del administrador, o la de ``PRUEBAS_EMAIL`` y
+``PRUEBAS_CONTRASENA`` si la base local no la tiene (scripts/sesion_api.py).
 
 Uso (desde la raíz del proyecto):
     python scripts/regresion_visual.py capturar base      # referencia
@@ -32,6 +34,7 @@ from PIL import Image, ImageChops
 from playwright.sync_api import Page, sync_playwright
 
 import regresion_visual_escenarios as escenarios
+import sesion_api
 
 RAIZ = Path(__file__).resolve().parent.parent
 SALIDA = RAIZ / "frontend" / ".regresion-visual"
@@ -156,7 +159,8 @@ def capturar(destino: str) -> None:
         navegador = p.chromium.launch(channel="chrome")
         for ancho, alto in TAMANOS:
             for tema in TEMAS:
-                pagina = navegador.new_page(viewport={"width": ancho, "height": alto}, reduced_motion="reduce")
+                pagina = sesion_api.nueva_pagina(navegador, viewport={"width": ancho, "height": alto},
+                                                 reduced_motion="reduce")
                 _preparar(pagina, tema)
                 prefijo = f"{ancho}x{alto}_{tema}"
                 for vista in VISTAS:
@@ -177,7 +181,7 @@ def capturar(destino: str) -> None:
 
                 # Detalle del expediente: la vista con más densidad de la pestaña.
                 _ir_a(pagina, "Expedientes")
-                pagina.locator("[aria-expanded]").first.click()
+                pagina.locator(".app-content [aria-expanded]").first.click()  # no el menú de usuario
                 _esperar(pagina, 1200)
                 _capturar(pagina, carpeta / f"{prefijo}_expediente_detalle.png")
                 pagina.locator("button", has_text="Aperturar expediente").first.click()

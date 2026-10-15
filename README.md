@@ -40,9 +40,24 @@ El rules-service carga el catálogo de reglas al arrancar (`AUTO_SEED=true`). La
 
 > **Producción: activar `RFC_DIGITO_ESTRICTO=true`.** Al dar de alta un titular, el core valida el formato, la longitud y la fecha del RFC, y calcula su dígito verificador con el algoritmo del SAT (módulo 11). Por defecto (`false`), un RFC cuyo dígito no coincide se acepta con la etiqueta «Dígito verificador no coincide (permitido en pruebas)», para poder trabajar con RFC ficticios. En producción, agregar `RFC_DIGITO_ESTRICTO=true` al `.env` de la raíz (en local, al `.env` del core-service) para rechazar esos RFC con un 422. La existencia del RFC no se consulta al SAT: se acredita con la Constancia de Situación Fiscal y la Opinión 32-D, cuyo RFC el motor coteja con el del titular durante la auditoría.
 
+### Acceso y roles
+
+Toda la interfaz y las API exigen iniciar sesión (JWT con `Authorization: Bearer`; solo `GET /api/v1/health` y `POST /api/v1/auth/login` son públicos). El `docker-compose.yml` arranca con `USUARIOS_DEMO=true`, que crea una cuenta ficticia por rol del DOC-04, con correos del dominio reservado `example.com`:
+
+| Rol | Correo | Contraseña | Puede |
+|---|---|---|---|
+| Administrador | `admin@example.com` | `Admin-Demo-2026` | Todo, más cuentas de usuario, asignación de expedientes y alta o pausa de reglas |
+| Validador | `validador@example.com` | `Validador-Demo-2026` | Empresas, expedientes, carga, auditoría, chat, ratificación y tipos de documento nuevos |
+| Auditor | `auditor@example.com` | `Auditor-Demo-2026` | Consulta de expedientes, dictámenes, bitácora y reportes, sin modificar nada |
+| Consulta | `consulta@example.com` | `Consulta-Demo-2026` | Solo el semáforo de los expedientes que el administrador le asigna |
+
+> **Producción: `USUARIOS_DEMO=false`.** Estas contraseñas son públicas. En producción se define `USUARIOS_DEMO=false` en el `.env` de la raíz, junto con un `JWT_SECRET` propio de al menos 32 caracteres (el del compose es de demostración y `/health` del core lo advierte) y `ADMIN_INICIAL_EMAIL` y `ADMIN_INICIAL_CONTRASENA`: si no hay ninguna cuenta, el core crea ese administrador, que debe cambiar la contraseña en su primer acceso y desde la vista Usuarios da de alta al resto. Las cuentas de demostración que ya existan se desactivan desde esa vista (nunca se borran: la bitácora las referencia). Cada cuenta puede activar la verificación en dos pasos con una app autenticadora.
+
+Los avisos por correo (RF-20) a los validadores asignados se encienden con `SMTP_HOST` y las demás variables `SMTP_*`; sin ellas, cada aviso queda en la bitácora como no enviado.
+
 ### En local
 
-Se necesitan Python 3.12, Node 20.19 o superior, PostgreSQL 17 y Tesseract (con los idiomas `spa` y `eng`). Cada servicio lee su propio `.env` (`DB_*` en core y rules; `GROQ_API_KEY`, `TESSERACT_CMD`, `CORE_BASE_URL` y `RULES_BASE_URL` en el ai-service; ver [`services/ai-service/README.md`](services/ai-service/README.md)).
+Se necesitan Python 3.12, Node 20.19 o superior, PostgreSQL 17 y Tesseract (con los idiomas `spa` y `eng`). Cada servicio lee su propio `.env` (`DB_*` en core y rules; `GROQ_API_KEY`, `TESSERACT_CMD`, `CORE_BASE_URL` y `RULES_BASE_URL` en el ai-service; ver [`services/ai-service/README.md`](services/ai-service/README.md)). Los tres llevan el mismo `JWT_SECRET`, y el del core, `ADMIN_INICIAL_EMAIL` y `ADMIN_INICIAL_CONTRASENA` o `USUARIOS_DEMO=true`.
 
 Un entorno virtual del proyecto (`.venv`) instala las mismas versiones que Docker, más las herramientas de prueba (`requirements-dev.txt`):
 
@@ -69,6 +84,8 @@ pytest tests/ -v                                # core y rules (usa la base plur
 cd services/ai-service && pytest tests/ -v      # ai-service, sin red (Groq, core y rules simulados)
 cd frontend && npm run lint && npm run build
 ```
+
+Los scripts de `scripts/` que levantan sus propios servicios (`e2e_api.py`, `prueba_sesion_roles.py`, `prueba_carga_lote.py`, `prueba_respaldo.py`, `prueba_lectura_anticipada.py`, `zap_api.py`) inician sesión con las cuentas de demostración sobre bases aisladas. Los que usan los servicios en marcha (`regresion_visual.py`, `prueba_error_422.py`, `prueba_sondeo_colgado.py`, `prueba_carga_fallida.py`) usan esas cuentas o, si la base local no las tiene, la de `PRUEBAS_EMAIL` y `PRUEBAS_CONTRASENA`.
 
 Las pruebas del core-service recrean `plurione_compliance_test` y una bóveda temporal: nunca escriben en la base de trabajo, porque ahí la bitácora y los dictámenes son inmutables. La suite `test_niveles_3_4.py` del ai-service se omite si el servicio no está corriendo en :8003 con una `GROQ_API_KEY` válida. El workflow [`.github/workflows/ci.yml`](.github/workflows/ci.yml) ejecuta todo lo anterior en cada push.
 

@@ -6,13 +6,22 @@ FastAPI responde un 422 con `detail` como lista de errores
 respuesta (nada llega al rules-service) y verifica que el aviso y el error
 del formulario muestran el mensaje con su campo, y no «[object Object]».
 
+Sesión (Módulo 7): entra con la cuenta de demostración del administrador o con
+la de ``PRUEBAS_EMAIL`` y ``PRUEBAS_CONTRASENA`` si la base local no tiene cuentas
+de demostración (scripts/sesion_api.py).
+
 Requisitos: `npm run dev` y los servicios en marcha. Uso, desde la raíz:
 python scripts/prueba_error_422.py
 """
 import json
 import sys
 
+from pathlib import Path
+
 from playwright.sync_api import sync_playwright
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import sesion_api  # noqa: E402
 
 URL = "http://127.0.0.1:5173/"
 DETALLE = [{"type": "string_too_long", "loc": ["body", "codigo_regla"], "msg": "String should have at most 20 characters", "input": "RDS-04-COMP_DOMICILIO"}]
@@ -21,7 +30,7 @@ DETALLE = [{"type": "string_too_long", "loc": ["body", "codigo_regla"], "msg": "
 def main() -> int:
     with sync_playwright() as p:
         navegador = p.chromium.launch(channel="chrome")
-        pagina = navegador.new_page(viewport={"width": 1366, "height": 900})
+        pagina = sesion_api.nueva_pagina(navegador, viewport={"width": 1366, "height": 900})
         pagina.route(
             "**/api/v1/reglas",
             lambda r: r.fulfill(status=422, content_type="application/json", body=json.dumps({"detail": DETALLE}))

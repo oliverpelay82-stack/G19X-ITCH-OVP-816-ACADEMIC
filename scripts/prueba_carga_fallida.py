@@ -6,6 +6,10 @@ se escribe en la base) y verifica en los dos contextos que:
 - no queda una promesa rechazada sin capturar en la consola, y
 - el archivo elegido se conserva para poder reintentar.
 
+Sesión (Módulo 7): entra con la cuenta de demostración del administrador o con
+la de ``PRUEBAS_EMAIL`` y ``PRUEBAS_CONTRASENA`` si la base local no tiene cuentas
+de demostración (scripts/sesion_api.py).
+
 Requisitos: `npm run dev` y los servicios en marcha, con al menos un
 expediente. Uso, desde la raíz: python scripts/prueba_carga_fallida.py
 """
@@ -15,6 +19,9 @@ import tempfile
 from pathlib import Path
 
 from playwright.sync_api import sync_playwright
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import sesion_api  # noqa: E402
 
 URL = "http://127.0.0.1:5173/"
 
@@ -27,7 +34,7 @@ def main() -> int:
     with sync_playwright() as p:
         navegador = p.chromium.launch(channel="chrome")
         for contexto in ("Bóveda", "Expediente"):
-            pagina = navegador.new_page(viewport={"width": 1366, "height": 900})
+            pagina = sesion_api.nueva_pagina(navegador, viewport={"width": 1366, "height": 900})
             errores = []
             pagina.on("pageerror", lambda e: errores.append(str(e)))
             pagina.on("console", lambda m: errores.append(m.text) if m.type == "error" and "Uncaught" in m.text else None)
@@ -46,7 +53,8 @@ def main() -> int:
             else:
                 pagina.locator("button.nav-item", has_text="Expedientes").first.click()
                 pagina.wait_for_timeout(500)
-                pagina.locator("[aria-expanded]").first.click()
+                # Dentro del contenido: el menú de usuario de la cabecera también tiene aria-expanded.
+                pagina.locator(".app-content [aria-expanded]").first.click()
                 pagina.wait_for_timeout(1000)
                 raiz = pagina.locator(".exp-detail-side")
             raiz.locator("input[type=file]").set_input_files(str(pdf))

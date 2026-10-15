@@ -17,15 +17,25 @@ vigentes» y «Ningún documento vence…» antes de tener datos; ahora muestra 
 esqueleto de carga.
 
 Requisitos: `npm run dev` en marcha; los servicios no hacen falta (el core se
-simula caído y nada se escribe). Uso, desde la raíz:
+simula caído y nada se escribe). Módulo 7: la interfaz entra con una sesión
+ficticia del administrador (scripts/sesion_api.py), porque con el core caído no
+hay con quién iniciarla. Ningún servicio aceptaría ese token (un 401 cierra la
+sesión), así que el rules y el ai-service, si están en marcha, también se
+simulan caídos: las vistas probadas dependen del core. Uso, desde la raíz:
 python scripts/prueba_servicio_caido.py [URL]   (por omisión, http://127.0.0.1:5173/)
 """
 import sys
 
+from pathlib import Path
+
 from playwright.sync_api import sync_playwright
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import sesion_api  # noqa: E402
 
 URL = sys.argv[1] if len(sys.argv) > 1 else "http://127.0.0.1:5173/"
 CORE = "**/127.0.0.1:8001/**"
+OTROS = ("**/127.0.0.1:8002/**", "**/127.0.0.1:8003/**")
 FUERA_DE_LINEA = "Sistema de expedientes fuera de línea"
 # Textos que con el core caído afirmarían algo falso.
 PROHIBIDOS = (
@@ -43,6 +53,9 @@ def main() -> int:
     with sync_playwright() as p:
         navegador = p.chromium.launch(channel="chrome")
         pagina = navegador.new_page(viewport={"width": 1366, "height": 900})
+        pagina.add_init_script(sesion_api.guion_sesion(sesion_api.sesion_ficticia()))
+        for otro in OTROS:
+            pagina.route(otro, lambda ruta: ruta.abort("connectionrefused"))
         pagina.route(CORE, lambda ruta: ruta.abort("connectionrefused"))
         for vista in VISTAS:
             pagina.goto(f"{URL}#/{vista}")
@@ -79,6 +92,9 @@ def reportes_en_carga() -> bool:
     with sync_playwright() as p:
         navegador = p.chromium.launch(channel="chrome")
         pagina = navegador.new_page(viewport={"width": 1366, "height": 900})
+        pagina.add_init_script(sesion_api.guion_sesion(sesion_api.sesion_ficticia()))
+        for otro in OTROS:
+            pagina.route(otro, lambda ruta: ruta.abort("connectionrefused"))
         retenidas = []
         pagina.route(CORE, lambda ruta: retenidas.append(ruta))  # nunca se responden durante la prueba
         pagina.goto(f"{URL}#/reportes")

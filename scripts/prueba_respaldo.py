@@ -29,10 +29,10 @@ import tempfile
 import zipfile
 from pathlib import Path
 
-import requests
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import respaldo  # noqa: E402
+import sesion_api  # noqa: E402
 from e2e_api import BD_E2E, detener, levantar, pdf_constancia  # noqa: E402
 
 CORE = "http://127.0.0.1:8101/api/v1"
@@ -53,20 +53,22 @@ def poblar() -> int:
     """Titular ficticio, expediente, tres documentos y un dictamen. Devuelve cuántos documentos hay."""
     from datetime import date, timedelta
 
-    titular = requests.post(f"{CORE}/titulares", json={
+    api = sesion_api.sesion(CORE, "VALIDADOR")  # Módulo 7: la cuenta de demostración del validador
+    titular = api.post(f"{CORE}/titulares", json={
         "rfc": "EMP260101AB1", "razon_social": "Empresa Ficticia de Pruebas, S.A. de C.V.", "tipo_persona": "MORAL"},
         timeout=30).json()
-    expediente = requests.post(f"{CORE}/expedientes", json={
+    expediente = api.post(f"{CORE}/expedientes", json={
         "titular_id": titular["id"], "tipo_expediente": "CORPORATIVO", "nombre": "Prueba de respaldo"}, timeout=30).json()
     emision = date.today() - timedelta(days=5)
     ids = []
     for tipo in ("CSF_SAT", "COMP_DOMICILIO", "ACTA_CONSTITUTIVA"):
-        r = requests.post(f"{CORE}/documentos/upload", data={"expediente_id": expediente["id"], "tipo_documento": tipo},
+        r = api.post(f"{CORE}/documentos/upload", data={"expediente_id": expediente["id"], "tipo_documento": tipo},
                           files={"file": (f"{tipo.lower()}.pdf", pdf_constancia("EMP260101AB1", tipo, emision),
                                           "application/pdf")}, timeout=30)
         r.raise_for_status()
         ids.append(r.json()["id"])
-    requests.post(f"{CORE}/dictamenes", json={
+    # Solo el ai-service registra dictámenes: token SISTEMA firmado con la clave de los servicios aislados.
+    api.post(f"{CORE}/dictamenes", headers=sesion_api.cabeceras_sistema(secreto=sesion_api.SECRETO_AISLADO), json={
         "documento_id": ids[0], "estatus": "EN_REVISION", "nivel_confianza": 0.8, "requiere_revision_humana": True,
         "tipo_documento_detectado": "CSF_SAT", "rfc_detectado": "EMP260101AB1", "match_titular": True,
         "observaciones": ["Dictamen simulado para la prueba de respaldo."], "modelo_utilizado": "simulado",

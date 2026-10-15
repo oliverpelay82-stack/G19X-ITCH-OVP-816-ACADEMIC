@@ -12,6 +12,11 @@ inmutable). El script levanta los tres servicios sobre la base
 ``plurione_compliance_zap`` (recreada), una bóveda temporal y una SQLite
 temporal del ai-service, **sin clave de Groq** (no se consume ni un token).
 
+Sesión (Módulo 7). Sin token, cada operación respondería 401 y el escaneo activo
+no llegaría a la lógica. ZAP envía en cada petición el token del administrador de
+demostración (``ZAP_AUTH_HEADER_VALUE``), el rol que alcanza todas las rutas. Las
+cuentas de los servicios aislados se crean con ``USUARIOS_DEMO`` (scripts/sesion_api.py).
+
 Criterio: un hallazgo alto (riesgo 3) sin justificación en ``JUSTIFICADOS``
 hace fallar la corrida. Los medios y bajos se informan; cada uno se corrige o
 se justifica en ``docs/resultados_validacion/seguridad_zap.md``.
@@ -32,6 +37,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import e2e_api  # noqa: E402
+import sesion_api  # noqa: E402
 
 RAIZ = Path(__file__).resolve().parent.parent
 IMAGEN = "zaproxy/zap-stable"
@@ -50,11 +56,12 @@ def _anfitrion() -> tuple[str, list[str]]:
     return "host.docker.internal", []
 
 
-def escanear(servicio: str, puerto: int, salida: Path, minutos: int) -> dict:
+def escanear(servicio: str, puerto: int, salida: Path, minutos: int, token: str) -> dict:
     anfitrion, red = _anfitrion()
     nombre = f"zap_{servicio}"
     comando = [
-        "docker", "run", "--rm", *red, "-v", f"{salida}:/zap/wrk:rw", "-u", "root", IMAGEN,
+        "docker", "run", "--rm", *red, "-v", f"{salida}:/zap/wrk:rw", "-u", "root",
+        "-e", f"ZAP_AUTH_HEADER_VALUE=Bearer {token}", IMAGEN,
         "zap-api-scan.py", "-t", f"http://{anfitrion}:{puerto}/openapi.json", "-f", "openapi",
         "-J", f"{nombre}.json", "-r", f"{nombre}.html", "-I",
         "-z", f"-config scanner.maxScanDurationInMins={minutos}",
@@ -99,9 +106,10 @@ def main() -> int:
     print(f"[*] Levantando los tres servicios sobre {BD_ZAP} (registros en {registros})")
     procesos = e2e_api.levantar(PUERTOS, registros, bd=BD_ZAP, entorno_extra=entorno_ai)
     try:
+        token = sesion_api.iniciar_sesion(f"http://127.0.0.1:{PUERTOS['core-service']}", "ADMIN")["access_token"]
         hallazgos = []
         for servicio in args.servicios:
-            hallazgos += resumir(servicio, escanear(servicio, PUERTOS[servicio], salida, args.minutos))
+            hallazgos += resumir(servicio, escanear(servicio, PUERTOS[servicio], salida, args.minutos, token))
     finally:
         e2e_api.detener(procesos)
 

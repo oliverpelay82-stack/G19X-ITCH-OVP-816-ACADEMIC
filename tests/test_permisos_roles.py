@@ -348,6 +348,22 @@ def test_usuarios_de_demostracion_y_administrador_inicial(monkeypatch):
         usuarios_iniciales.crear(db)
 
 
+def test_las_credenciales_de_demostracion_coinciden_en_scripts_y_readme():
+    """Los scripts (scripts/sesion_api.py) y el README publican las cuentas que crea el core."""
+    import importlib.util
+
+    raiz = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    spec = importlib.util.spec_from_file_location("sesion_api_prueba", os.path.join(raiz, "scripts", "sesion_api.py"))
+    sesion_api = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(sesion_api)
+    with open(os.path.join(raiz, "README.md"), encoding="utf-8") as f:
+        readme = f.read()
+    for rol, correo, _, contrasena in usuarios_iniciales.USUARIOS_DEMO:
+        assert sesion_api.CUENTAS_DEMO[rol] == (correo, contrasena), rol
+        assert f"| `{correo}` | `{contrasena}` |" in readme, f"El README no publica la cuenta de {rol}"
+    assert len(sesion_api.CUENTAS_DEMO) == len(usuarios_iniciales.USUARIOS_DEMO)
+
+
 def _existentes(correos: list[str]) -> set[str]:
     with SessionLocal() as db:
         return {e for (e,) in db.query(Usuario.email).filter(Usuario.email.in_(correos)).all()}

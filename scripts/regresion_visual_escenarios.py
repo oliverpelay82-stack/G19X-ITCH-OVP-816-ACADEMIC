@@ -28,10 +28,12 @@ Nada de lo que se hace aquí escribe en la base ni consume Groq:
 """
 import json
 from pathlib import Path
-from urllib.request import urlopen
+from urllib.request import Request, urlopen
 
 from PIL import Image
 from playwright.sync_api import Browser, Page
+
+import sesion_api
 
 CORE_URL = "http://127.0.0.1:8001"
 
@@ -244,7 +246,9 @@ def _auditoria_guardada(ruta) -> None:
     datos = dict(DICTAMEN)
     documento_id = (ruta.request.post_data_json or {}).get("documento_id")
     try:
-        with urlopen(f"{CORE_URL}/api/v1/dictamenes?documento_id={documento_id}", timeout=5) as respuesta:
+        peticion = Request(f"{CORE_URL}/api/v1/dictamenes?documento_id={documento_id}",
+                           headers=sesion_api.cabeceras(CORE_URL))
+        with urlopen(peticion, timeout=5) as respuesta:
             dictamenes = json.load(respuesta)
         if dictamenes:
             datos["persistencia"] = {"guardado": True, "dictamen": {"id": dictamenes[0]["id"]}}
@@ -269,7 +273,8 @@ def capturar_escenarios(navegador: Browser, carpeta: Path, ancho: int, alto: int
     y captura), para no duplicar la lógica de determinismo.
     """
     prefijo = f"{ancho}x{alto}_{tema}_int"
-    pagina: Page = navegador.new_page(viewport={"width": ancho, "height": alto}, reduced_motion="reduce")
+    pagina: Page = sesion_api.nueva_pagina(navegador, CORE_URL, viewport={"width": ancho, "height": alto},
+                                          reduced_motion="reduce")
     pagina.add_init_script("performance.now = () => 1000")
     pagina.route("**/api/v1/ai/documentos/*/preparar", _responder(PREPARAR))
     pagina.route("**/api/v1/ai/analisis-semantico", _auditoria_guardada)
@@ -363,7 +368,7 @@ def capturar_escenarios(navegador: Browser, carpeta: Path, ancho: int, alto: int
     pagina.locator("body").click(position={"x": 5, "y": 5})
     h._capturar(pagina, carpeta / f"{prefijo}_expedientes_filtros.png")
     pagina.locator("button", has_text="Limpiar filtros").click()
-    pagina.locator("[aria-expanded]").first.click()
+    pagina.locator(".app-content [aria-expanded]").first.click()  # no el menú de usuario
     h._esperar(pagina, 800)
     pagina.locator("summary", has_text="Historial del expediente").click()
     h._esperar(pagina, 1200)
@@ -458,7 +463,8 @@ def _escenarios_representacion(navegador: Browser, carpeta: Path, ancho: int, al
     capturas.
     """
     prefijo = f"{ancho}x{alto}_{tema}_int"
-    pagina: Page = navegador.new_page(viewport={"width": ancho, "height": alto}, reduced_motion="reduce")
+    pagina: Page = sesion_api.nueva_pagina(navegador, CORE_URL, viewport={"width": ancho, "height": alto},
+                                          reduced_motion="reduce")
     pagina.add_init_script("performance.now = () => 1000")
     estado = {"cotejo": "ACREDITADO", "documento_id": None}
 

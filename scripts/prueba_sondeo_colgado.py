@@ -11,13 +11,21 @@ La prueba intercepta con Playwright GET /titulares del core-service y nunca
 responde; durante 40 s (casi tres ciclos) registra cuántas peticiones a esa
 ruta quedan pendientes a la vez. Criterio: nunca más de una.
 
+Sesión (Módulo 7): entra con la cuenta de demostración del administrador o con
+la de ``PRUEBAS_EMAIL`` y ``PRUEBAS_CONTRASENA`` si la base local no tiene cuentas
+de demostración (scripts/sesion_api.py).
+
 Requisitos: `npm run dev` y los servicios en marcha (solo se intercepta una
 ruta; nada se escribe). Uso, desde la raíz: python scripts/prueba_sondeo_colgado.py
 """
 import sys
 import time
+from pathlib import Path
 
 from playwright.sync_api import sync_playwright
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import sesion_api  # noqa: E402
 
 URL = "http://127.0.0.1:5173/"
 DURACION_S = 40
@@ -29,7 +37,7 @@ def main() -> int:
     total = 0
     with sync_playwright() as p:
         navegador = p.chromium.launch(channel="chrome")
-        pagina = navegador.new_page()
+        pagina = sesion_api.nueva_pagina(navegador)
         colgadas = []
 
         def colgar(ruta):

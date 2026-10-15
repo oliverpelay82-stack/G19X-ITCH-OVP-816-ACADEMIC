@@ -18,10 +18,9 @@ import tempfile
 import time
 from pathlib import Path
 
-import requests
-
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import e2e_api as e2e  # noqa: E402
+import sesion_api  # noqa: E402
 
 RAIZ = Path(__file__).resolve().parent.parent
 DOCUMENTOS = RAIZ / "services" / "ai-service" / "evaluacion" / "gold_standard" / "documentos"
@@ -37,6 +36,7 @@ def main() -> int:
         entorno_extra={"EXTRACCIONES_DB_PATH": str(registros / "extracciones.sqlite3"), "PYTHONUNBUFFERED": "1"},
     )
     registro_ai = registros / "ai-service.log"
+    api = sesion_api.sesion(CORE, "VALIDADOR")  # Módulo 7: la cuenta de demostración del validador
     fallas: list[str] = []
 
     def comprobar(condicion: bool, mensaje: str) -> None:
@@ -45,13 +45,13 @@ def main() -> int:
             fallas.append(mensaje)
 
     try:
-        titular = requests.post(f"{CORE}/titulares", json={
+        titular = api.post(f"{CORE}/titulares", json={
             "rfc": "ANT010101AB1", "razon_social": "LECTURA ANTICIPADA PRUEBA S.A. DE C.V.", "tipo_persona": "MORAL",
         }, timeout=30).json()
-        expediente = requests.post(f"{CORE}/expedientes", json={"titular_id": titular["id"]}, timeout=30).json()
+        expediente = api.post(f"{CORE}/expedientes", json={"titular_id": titular["id"]}, timeout=30).json()
 
         def custodiar(nombre: str, tipo: str) -> str:
-            r = requests.post(f"{CORE}/documentos/upload", data={"expediente_id": expediente["id"], "tipo_documento": tipo},
+            r = api.post(f"{CORE}/documentos/upload", data={"expediente_id": expediente["id"], "tipo_documento": tipo},
                               files={"file": (nombre, (DOCUMENTOS / nombre).read_bytes(), "application/pdf")}, timeout=60)
             assert r.status_code == 201, r.text
             return r.json()["id"]
@@ -62,17 +62,17 @@ def main() -> int:
         # 1. Custodiar → anticipar → la auditoría encuentra el texto listo.
         contrato = custodiar("gs-cont-ext-esc.pdf", "CONTRATO_SERVICIOS")
         inicio = time.perf_counter()
-        r = requests.post(f"{AI}/ai/documentos/{contrato}/anticipar", timeout=30)
+        r = api.post(f"{AI}/ai/documentos/{contrato}/anticipar", timeout=30)
         comprobar(r.status_code == 202 and r.json().get("programada") is True,
                   f"/anticipar responde 202 en {(time.perf_counter() - inicio) * 1000:.0f} ms")
-        comprobar(requests.post(f"{AI}/ai/documentos/{contrato}/anticipar", timeout=30).json().get("programada") is False,
+        comprobar(api.post(f"{AI}/ai/documentos/{contrato}/anticipar", timeout=30).json().get("programada") is False,
                   "una segunda petición del mismo documento no programa otra lectura")
         limite = time.monotonic() + 300
         while lecturas_listas() < 1 and time.monotonic() < limite:
             time.sleep(0.5)
         comprobar(lecturas_listas() >= 1, f"la lectura de fondo termina ({time.perf_counter() - inicio:.1f} s)")
         inicio = time.perf_counter()
-        p = requests.post(f"{AI}/ai/documentos/{contrato}/preparar", timeout=300).json()
+        p = api.post(f"{AI}/ai/documentos/{contrato}/preparar", timeout=300).json()
         ms = (time.perf_counter() - inicio) * 1000
         comprobar(ms < MAXIMO_TRAS_ANTICIPAR_MS and p["fuente_texto"] in ("memoria", "persistencia"),
                   f"la auditoría encuentra el texto listo ({ms:.0f} ms, {p['fuente_texto']}, "
@@ -80,9 +80,9 @@ def main() -> int:
 
         # 2. Auditar en cuanto se custodia: promueve la lectura de fondo y la espera.
         acta = custodiar("gs-acta-03-esc.pdf", "ACTA_CONSTITUTIVA")
-        requests.post(f"{AI}/ai/documentos/{acta}/anticipar", timeout=30)
+        api.post(f"{AI}/ai/documentos/{acta}/anticipar", timeout=30)
         inicio = time.perf_counter()
-        p = requests.post(f"{AI}/ai/documentos/{acta}/preparar", timeout=300).json()
+        p = api.post(f"{AI}/ai/documentos/{acta}/preparar", timeout=300).json()
         comprobar(p["extraccion_nivel_3"].get("total_paginas", 0) > 0,
                   f"la auditoría inmediata espera la lectura de fondo ({time.perf_counter() - inicio:.1f} s, {p['fuente_texto']})")
         time.sleep(1)

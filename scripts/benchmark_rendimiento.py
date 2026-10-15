@@ -22,7 +22,10 @@ RNF-03 (≥ 50 peticiones simultáneas sin degradación ni pérdida):
 
 Aislamiento: levanta su propio core y rules (puertos 8111 y 8112) sobre
 ``plurione_compliance_bench``, recreada en cada corrida, como scripts/e2e_api.py.
-No llama a Groq: los dictámenes se registran como lo hace el ai-service.
+No llama a Groq: los dictámenes se registran como lo hace el ai-service, con su
+token SISTEMA. Sesión (Módulo 7): las peticiones llevan el token del validador de
+demostración y el core confirma la cuenta en la base en cada una; las cifras
+anteriores al Módulo 7 (VALIDACION_CUANTITATIVA §7) no incluían esa consulta.
 
 Uso, desde la raíz:  python scripts/benchmark_rendimiento.py
 """
@@ -47,6 +50,7 @@ from pathlib import Path
 import requests
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import sesion_api  # noqa: E402
 from e2e_api import SERVICIOS, detener, levantar  # noqa: E402
 
 RAIZ = Path(__file__).resolve().parent.parent
@@ -106,7 +110,9 @@ def pdf(titulo: str) -> bytes:
 class Banco:
     def __init__(self, core: str, rules: str):
         self.core, self.rules = core, rules
-        self.sesion = requests.Session()
+        # Módulo 7: la cuenta de demostración del validador; cada sesión concurrente lleva el mismo token.
+        self.sesion = sesion_api.sesion(core, "VALIDADOR")
+        self.cabeceras = sesion_api.cabeceras(core, "VALIDADOR")
 
     def _ok(self, r: requests.Response, esperado: int) -> dict:
         if r.status_code != esperado:
@@ -139,7 +145,8 @@ class Banco:
             representacion = {"rol": "APODERADOS", "personas": [
                 {"nombre": APODERADA, "cargo": "Apoderada", "cita": f"poder general a favor de {APODERADA}",
                  "cita_verificada": True, "facultades": "pleitos y cobranzas, actos de administración"}]}
-        self._ok(self.sesion.post(f"{self.core}/api/v1/dictamenes", timeout=TIMEOUT, json={
+        sistema = sesion_api.cabeceras_sistema(secreto=sesion_api.SECRETO_AISLADO)  # solo el ai-service dictamina
+        self._ok(self.sesion.post(f"{self.core}/api/v1/dictamenes", timeout=TIMEOUT, headers=sistema, json={
             "documento_id": documento_id, "estatus": "CONFORME", "nivel_confianza": 0.92,
             "requiere_revision_humana": False, "tipo_documento_detectado": tipo, "rfc_detectado": TITULAR["rfc"],
             "match_titular": True, "fecha_emision": emision.isoformat(), "vigencia": vigencia,
@@ -255,12 +262,13 @@ def rnf01(b: Banco, titular_id: str, hoy: date, entorno: dict[str, str]) -> dict
 
 # ═══════════════════ RNF-03 ═══════════════════
 
-def _simultaneas(funciones: list) -> tuple[list[float], list[int]]:
+def _simultaneas(funciones: list, cabeceras: dict[str, str]) -> tuple[list[float], list[int]]:
     """Ejecuta las funciones a la vez, liberadas por una barrera; devuelve latencias y códigos."""
     barrera = threading.Barrier(len(funciones))
 
     def correr(funcion):
         sesion = requests.Session()
+        sesion.headers.update(cabeceras)
         barrera.wait()
         inicio = time.perf_counter()
         try:
@@ -274,8 +282,9 @@ def _simultaneas(funciones: list) -> tuple[list[float], list[int]]:
     return [r[0] for r in resultados], [r[1] for r in resultados]
 
 
-def _secuenciales(funciones: list) -> tuple[list[float], list[int]]:
+def _secuenciales(funciones: list, cabeceras: dict[str, str]) -> tuple[list[float], list[int]]:
     sesion = requests.Session()
+    sesion.headers.update(cabeceras)
     latencias, codigos = [], []
     for funcion in funciones:
         inicio = time.perf_counter()
@@ -301,13 +310,13 @@ def _escenario(nombre: str, secuencial: tuple[list[float], list[int]], simultane
 def rnf03(b: Banco, titular_id: str, hoy: date) -> dict:
     core = b.core
     salud = [lambda s: s.get(f"{core}/api/v1/health", timeout=TIMEOUT)] * SIMULTANEAS
-    resultado = {"health": _escenario("50 × GET /health", _secuenciales(salud), _simultaneas(salud), 200)}
+    resultado = {"health": _escenario("50 × GET /health", _secuenciales(salud, b.cabeceras), _simultaneas(salud, b.cabeceras), 200)}
 
     consultados = [b.poblar(titular_id, 3, f"Benchmark concurrencia {i + 1}", hoy) for i in range(10)]
     consultas = [lambda s, e=consultados[i % 10]: s.get(f"{core}/api/v1/expedientes/{e}", timeout=TIMEOUT)
                  for i in range(SIMULTANEAS)]
-    resultado["consulta"] = _escenario("50 × GET /expedientes/{id}", _secuenciales(consultas),
-                                       _simultaneas(consultas), 200)
+    resultado["consulta"] = _escenario("50 × GET /expedientes/{id}", _secuenciales(consultas, b.cabeceras),
+                                       _simultaneas(consultas, b.cabeceras), 200)
 
     # Cargas: 50 secuenciales en 10 expedientes y 50 simultáneas en otros 10.
     destinos_sec = [b.expediente(titular_id, f"Benchmark cargas secuenciales {i + 1}") for i in range(10)]
@@ -315,8 +324,8 @@ def rnf03(b: Banco, titular_id: str, hoy: date) -> dict:
     eventos_antes = _eventos_ingesta(b)
     cargas_sec = [lambda s, e=destinos_sec[i % 10]: b.cargar(e, "CONTRATO_SERVICIOS", s) for i in range(SIMULTANEAS)]
     cargas_sim = [lambda s, e=destinos_sim[i % 10]: b.cargar(e, "CONTRATO_SERVICIOS", s) for i in range(SIMULTANEAS)]
-    secuencial = _secuenciales(cargas_sec)
-    simultaneo = _simultaneas(cargas_sim)
+    secuencial = _secuenciales(cargas_sec, b.cabeceras)
+    simultaneo = _simultaneas(cargas_sim, b.cabeceras)
     resultado["cargas"] = _escenario("50 cargas", secuencial, simultaneo, 201)
 
     aceptadas = sum(1 for c in secuencial[1] + simultaneo[1] if c == 201)

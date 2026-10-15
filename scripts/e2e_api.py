@@ -11,13 +11,20 @@ con un RFC ficticio, como los que usarán los agentes de PluriOne:
   alertas → reportes PDF y Excel → ficha de custodia → cadena de la bitácora
   → el folio en la bitácora y en el registro de los dos servicios.
 
+Sesión (Módulo 7). Las peticiones van con el token de la cuenta de
+demostración del validador, obtenido con ``POST /auth/login``; el dictamen del
+Nivel 4 simulado, con el token SISTEMA del ai-service (scripts/sesion_api.py).
+Además comprueba que sin token el core responde 401.
+
 Aislamiento. Por omisión el script levanta su propio core-service y
 rules-service (puertos 8101 y 8102) sobre la base ``plurione_compliance_e2e``,
 que recrea en cada corrida, y una bóveda temporal: la bitácora y los
 dictámenes son inmutables, así que lo que escribiera en ``plurione_compliance``
 se quedaría para siempre junto a los expedientes reales. Con ``--core-url`` y
 ``--rules-url`` corre contra servicios ya levantados (por ejemplo, un entorno
-de aceptación) y lo advierte.
+de aceptación) y lo advierte; entonces el ``JWT_SECRET`` del entorno debe ser
+el de esos servicios (para el token SISTEMA) y la cuenta, la de demostración o
+la de ``PRUEBAS_EMAIL`` y ``PRUEBAS_CONTRASENA``.
 
 Uso, desde la raíz:  python scripts/e2e_api.py   (termina con código 0 si todo pasa)
 """
@@ -38,6 +45,9 @@ import psycopg2
 import requests
 from dotenv import load_dotenv
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import sesion_api  # noqa: E402
 
 RAIZ = Path(__file__).resolve().parent.parent
 SERVICIOS = RAIZ / "services"
@@ -68,9 +78,15 @@ def comprobar(condicion: bool, mensaje: str) -> None:
 class Cliente:
     """Peticiones con folio propio: cada paso puede seguirse en la bitácora y en el registro."""
 
-    def __init__(self, core: str, rules: str):
+    def __init__(self, core: str, rules: str, secreto: str | None = None, rol: str = "VALIDADOR"):
         self.core, self.rules = core.rstrip("/"), rules.rstrip("/")
-        self.sesion = requests.Session()
+        self.sesion = sesion_api.sesion(self.core, rol)
+        self.correo = sesion_api.credenciales(rol)[0]
+        self.secreto = secreto
+
+    def sistema(self) -> dict[str, str]:
+        """Token SISTEMA, como el ai-service al registrar un dictamen en nombre de la persona."""
+        return sesion_api.cabeceras_sistema(self.correo, self.secreto)
 
     def llamar(self, metodo: str, url: str, esperado: int, *, folio: str | None = None, **kwargs) -> requests.Response:
         cabeceras = kwargs.pop("headers", {})
@@ -110,7 +126,7 @@ def levantar(puertos: dict[str, int], registros: Path, bd: str = BD_E2E,
     load_dotenv(SERVICIOS / "core-service" / ".env")
     _recrear_bd(bd)
     entorno = dict(os.environ, DB_NAME=bd, STORAGE_VAULT_PATH=tempfile.mkdtemp(prefix="plurione_boveda_aislada_"),
-                   REEVALUACION_INTERVALO_HORAS="0", PYTHONIOENCODING="utf-8")
+                   REEVALUACION_INTERVALO_HORAS="0", PYTHONIOENCODING="utf-8", **sesion_api.ENTORNO_AISLADO)
     if "rules-service" in puertos:
         entorno["RULES_BASE_URL"] = f"http://127.0.0.1:{puertos['rules-service']}"
     if "core-service" in puertos:
@@ -152,6 +168,35 @@ def detener(procesos: list[tuple[subprocess.Popen, Path]]) -> None:
             proceso.wait(timeout=15)
         except subprocess.TimeoutExpired:
             proceso.kill()
+
+
+def levantar_vite(registro: Path, puerto: int, core: str, rules: str, ai: str = "http://127.0.0.1:8103") -> subprocess.Popen:
+    """Servidor de Vite en ``puerto`` que apunta a los servicios aislados (prueba_carga_lote, prueba_sesion_roles)."""
+    entorno = dict(os.environ, VITE_CORE_URL=f"{core}/api/v1", VITE_RULES_URL=f"{rules}/api/v1",
+                   VITE_AI_URL=f"{ai}/api/v1")
+    proceso = subprocess.Popen(
+        f"npm run dev -- --port {puerto} --strictPort --host 127.0.0.1",
+        cwd=RAIZ / "frontend", env=entorno, shell=True,
+        stdout=open(registro, "w", encoding="utf-8"), stderr=subprocess.STDOUT,
+    )
+    url = f"http://127.0.0.1:{puerto}/"
+    limite = time.monotonic() + 60
+    while time.monotonic() < limite:
+        try:
+            if requests.get(url, timeout=2).ok:
+                return proceso
+        except requests.RequestException:
+            time.sleep(0.5)
+    detener_vite(proceso)
+    raise FallaE2E(f"Vite no respondió:\n{registro.read_text(encoding='utf-8')[-2000:]}")
+
+
+def detener_vite(proceso: subprocess.Popen) -> None:
+    # npm deja a Vite como proceso hijo: en Windows se termina el árbol completo.
+    if os.name == "nt":
+        subprocess.run(["taskkill", "/F", "/T", "/PID", str(proceso.pid)], capture_output=True)
+    else:
+        proceso.terminate()
 
 
 # ═══════════════════ Datos de prueba ═══════════════════
@@ -205,7 +250,7 @@ def flujo_titular(c: Cliente, datos: dict, hoy: date) -> dict:
     vigencia = c.llamar("POST", f"{c.rules}/api/v1/reglas/evaluar-vigencia", 200,
                         json={"tipo_documento": "CSF_SAT", "fecha_emision": emision.isoformat()}).json()
     comprobar(c.sesion.get(f"{c.core}/api/v1/health", timeout=TIMEOUT).ok, "core sin salud tras la carga")
-    dictamen = c.llamar("POST", f"{c.core}/api/v1/dictamenes", 201, json={
+    dictamen = c.llamar("POST", f"{c.core}/api/v1/dictamenes", 201, headers=c.sistema(), json={
         "documento_id": documento["id"], "estatus": "EN_REVISION", "nivel_confianza": 0.78,
         "requiere_revision_humana": True, "tipo_documento_detectado": "CSF_SAT", "rfc_detectado": rfc,
         "match_titular": True, "fecha_emision": emision.isoformat(), "vigencia": vigencia,
@@ -220,6 +265,8 @@ def flujo_titular(c: Cliente, datos: dict, hoy: date) -> dict:
     }).json()
     comprobar(ratificado["estatus"] == "CONFORME" and ratificado["estatus_preliminar"] == "EN_REVISION",
               "La ratificación debe conservar el estatus preliminar (RN-05)")
+    comprobar(ratificado.get("revisado_por") == c.correo,
+              f"La ratificación debe llevar la cuenta en sesión, no el campo usuario ({ratificado.get('revisado_por')})")
     c.llamar("POST", f"{c.core}/api/v1/dictamenes/{dictamen['id']}/ratificar", 409, json={
         "nuevo_estatus": "NO_CONFORME", "usuario": "analista.e2e", "justificacion": "Segundo intento, debe fallar."})
 
@@ -256,6 +303,9 @@ def ejecutar(c: Cliente, registros: Path | None) -> list[dict]:
     for base, servicio in ((c.core, "core-service"), (c.rules, "rules-service")):
         salud = c.llamar("GET", f"{base}/api/v1/health", 200).json()
         comprobar(salud.get("status") == "online", f"{servicio} no está en línea: {salud}")
+        sin_token = requests.get(f"{base}/api/v1/reglas" if servicio == "rules-service" else f"{base}/api/v1/titulares",
+                                 timeout=TIMEOUT)
+        comprobar(sin_token.status_code == 401, f"{servicio} sin token respondió {sin_token.status_code}, no 401")
 
     hoy = date.today()
     resultados = []
@@ -294,12 +344,13 @@ def main() -> int:
         if args.core_url or args.rules_url:
             comprobar(bool(args.core_url and args.rules_url), "Indique --core-url y --rules-url juntos")
             print("[!] Contra servicios ya levantados: los titulares, expedientes y eventos quedan en su base.")
-            cliente = Cliente(args.core_url, args.rules_url)
+            cliente = Cliente(args.core_url, args.rules_url, secreto=os.getenv("JWT_SECRET"))
         else:
             registros = Path(tempfile.mkdtemp(prefix="plurione_e2e_"))
             print(f"[*] Levantando core y rules sobre {BD_E2E} (registros en {registros})")
             procesos = levantar({"core-service": args.puerto_core, "rules-service": args.puerto_rules}, registros)
-            cliente = Cliente(f"http://127.0.0.1:{args.puerto_core}", f"http://127.0.0.1:{args.puerto_rules}")
+            cliente = Cliente(f"http://127.0.0.1:{args.puerto_core}", f"http://127.0.0.1:{args.puerto_rules}",
+                              secreto=sesion_api.SECRETO_AISLADO)
         inicio = time.monotonic()
         ejecutar(cliente, registros)
         print(f"[EXITO] Flujo de extremo a extremo completo en {time.monotonic() - inicio:.1f} s.")
