@@ -5,7 +5,8 @@ PLUS-20 — Antigüedad de lo pendiente (ESTADO_DEL_DESARROLLO §6.6; HU-56).
      lleva esperando, y la alerta «Pendiente de ratificación» los dice.
   2. Un dictamen ratificado, conforme o recién emitido no acumula espera.
   3. La bandeja ordena por antigüedad dentro de la misma severidad.
-  4. La fecha del dictamen (UTC sin zona) se cuenta en la zona del servidor.
+  4. La fecha del dictamen (UTC sin zona) se cuenta en la zona del negocio (ZONA_HORARIA),
+     no en la del equipo donde corre la prueba (GitHub Actions corre en UTC).
 
 Aislamiento: base de datos de pruebas plurione_compliance_test (tests/bd_pruebas.py).
 """
@@ -23,6 +24,7 @@ from types import SimpleNamespace  # noqa: E402
 
 from main import app  # noqa: E402
 from clients import rules_client  # noqa: E402
+from config import zona_horaria  # noqa: E402
 from config.database import SessionLocal, engine, init_db  # noqa: E402
 from models.dictamen import DictamenAuditoria  # noqa: E402
 from models.titular import TitularExpediente  # noqa: E402
@@ -116,10 +118,13 @@ def test_la_bandeja_ordena_por_antiguedad_dentro_de_la_severidad():
     assert dias == sorted(dias, reverse=True)
 
 
-def test_la_fecha_utc_se_cuenta_en_la_zona_del_servidor():
+def test_la_fecha_utc_se_cuenta_en_la_zona_del_negocio():
     # 02:00 UTC del día 2 es todavía el día 1 en México (UTC-6): no es un día de espera más.
+    # «Hoy» sale de la zona del negocio, como en el motor; con la del equipo, en un servidor
+    # en UTC la prueba contaba un día de más.
     creado = datetime(2026, 10, 2, 2, 0)
-    local = creado.replace(tzinfo=timezone.utc).astimezone().date()
+    local = zona_horaria.fecha_local(creado)
+    assert local == date(2026, 10, 1)
     dictamen = SimpleNamespace(revisado_por_humano=False, creado_en=creado)
     assert cumplimiento._dias_en_espera(dictamen, local) == 0
     assert cumplimiento._dias_en_espera(dictamen, local + timedelta(days=3)) == 3
