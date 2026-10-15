@@ -7,8 +7,9 @@
 ' es responsable); RNF-08 (lenguaje llano, motor/redaccion.py); MRD MR-14.
 ' Diseño: PRD §5.2. Proveedor: SMTP genérico configurable (SMTP_HOST…); sin SMTP_HOST el
 ' envío está apagado y el aviso se registra como no enviado.
-' Implementación prevista: core-service motor/notificaciones.py, enganchada a
-' cumplimiento.reevaluar (cambio de semáforo) y a la reevaluación programada (vencimientos).
+' Implementación (F5, 15/10/2026): core-service motor/notificaciones.py, enganchada a
+' cumplimiento.sincronizar (cambio de semáforo) y a la reevaluación programada (vencimientos).
+' Pruebas: tests/test_notificaciones_correo.py con un servidor SMTP en memoria.
 
 title RF-20 — Aviso por correo a los responsables asignados
 
@@ -18,7 +19,8 @@ split
   :Reevaluación de un expediente
   (carga, dictamen, ratificación…);
   if (¿El semáforo pasó de otro estado
-a NO CONFORME (rojo)?) then (sí)
+a NO CONFORME (rojo) y no es
+la apertura del expediente?) then (sí)
     :Aviso «estatus crítico»
     con los motivos del semáforo;
   else (no)
@@ -29,11 +31,11 @@ split again
   (REEVALUACION_INTERVALO_HORAS);
   :Por cada documento vigente con
   vencimiento: días restantes;
-  if (¿Cruzó un umbral de 30, 15 o 5 días
-y ese umbral no tiene aviso en la
-bitácora para el documento?) then (sí)
+  if (¿Alcanzó un umbral de 30, 15 o 5 días
+y el más cercano no tiene aviso en la
+bitácora para el documento y su fecha?) then (sí)
     :Aviso «documento por vencer»
-    (documento, fecha y días);
+    (documento, fecha, días y umbral);
   else (no)
     stop
   endif
@@ -53,14 +55,15 @@ if (¿SMTP_HOST configurado?) then (no)
   stop
 else (sí)
 endif
-:Encola el envío: la petición
-o la reevaluación no esperan al
-servidor de correo;
+:Al confirmarse la transacción, encola
+el envío (un rollback lo descarta): la
+petición o la reevaluación no esperan
+al servidor de correo;
 |Hilo de envío|
 :Arma el mensaje en lenguaje llano:
 asunto con el folio, motivos o fecha
 de vencimiento y el enlace
-FRONTEND_URL/#/expedientes/<id>;
+FRONTEND_URL/#/expedientes/<folio>;
 :Envía por SMTP (STARTTLS,
 usuario y contraseña del .env);
 if (¿El servidor aceptó el mensaje?) then (sí)

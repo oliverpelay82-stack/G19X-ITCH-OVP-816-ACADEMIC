@@ -11,8 +11,8 @@
 | Desarrollo (Scrum Master / Desarrollador) | Oliver Villanueva Pelay, residente (No. de control 21520500) |
 | Stakeholder evaluador | Edgar Loheffelmman (PluriOne) |
 | Asesor interno | Dr. Wilfrido Campos Francisco |
-| Versión del documento | 4.1 — 14 de octubre de 2026 (4.1: Módulo 7, fase F4, interfaz por rol; 4.0: Módulo 7, fase F3, MFA con TOTP; 3.9: Módulo 7, fase F2 en rules y ai; 3.8: Módulo 7, fase F1 en el core; 3.7: diseño del Módulo 7 y del correo RF-20, matriz de permisos, §5.1 y §5.2; 3.6: rubro que nombra lo preguntado en el chat, §21.9; 3.5: lectura anticipada y prioridad del OCR, RNF-02, §21.9; 3.4: frontend sin redundancias, §13.1; 3.3: PLUS-23, elementos expresos y cargo del apoderado, §21.9; 3.2: auditoría técnica y OCR en flujo continuo, §21.9; 3.1: depuración del alcance, §21.8; 3.0: RNF-10, respaldos; 2.9: RF-09, corrección de datos y RF-02; 2.8: Fase B del plan visual; 2.7: gráficas, Fase A; 2.6: P7 implementado; 2.5: P7 documentado; 2.4: P6; 2.3: P5 implementado; 2.2: P5 documentado; 2.1: revisión de requerimientos; 2.0: correcciones de la documentación; 1.9: revisión visual del frontend; 1.8: chat documental eficiente; 1.7: revisión del frontend; 1.6: índice de cumplimiento; 1.5: P3; 1.4: P2; 1.3: P1; 1.2: 28 de septiembre; 1.0: 27 de septiembre de 2026) |
-| Estado del producto | En desarrollo: Sprints 1 y 2 implementados, Sprint 3 implementado parcialmente, Sprint 4 implementado; Módulo 7 implementado salvo el correo (RF-20, fase F5) y la puesta a punto de pruebas y entrega (F6) |
+| Versión del documento | 4.2 — 15 de octubre de 2026 (4.2: Módulo 7, fase F5, correo RF-20; 4.1: Módulo 7, fase F4, interfaz por rol; 4.0: Módulo 7, fase F3, MFA con TOTP; 3.9: Módulo 7, fase F2 en rules y ai; 3.8: Módulo 7, fase F1 en el core; 3.7: diseño del Módulo 7 y del correo RF-20, matriz de permisos, §5.1 y §5.2; 3.6: rubro que nombra lo preguntado en el chat, §21.9; 3.5: lectura anticipada y prioridad del OCR, RNF-02, §21.9; 3.4: frontend sin redundancias, §13.1; 3.3: PLUS-23, elementos expresos y cargo del apoderado, §21.9; 3.2: auditoría técnica y OCR en flujo continuo, §21.9; 3.1: depuración del alcance, §21.8; 3.0: RNF-10, respaldos; 2.9: RF-09, corrección de datos y RF-02; 2.8: Fase B del plan visual; 2.7: gráficas, Fase A; 2.6: P7 implementado; 2.5: P7 documentado; 2.4: P6; 2.3: P5 implementado; 2.2: P5 documentado; 2.1: revisión de requerimientos; 2.0: correcciones de la documentación; 1.9: revisión visual del frontend; 1.8: chat documental eficiente; 1.7: revisión del frontend; 1.6: índice de cumplimiento; 1.5: P3; 1.4: P2; 1.3: P1; 1.2: 28 de septiembre; 1.0: 27 de septiembre de 2026) |
+| Estado del producto | En desarrollo: Sprints 1 y 2 implementados, Sprint 3 implementado parcialmente, Sprint 4 implementado; Módulo 7 implementado, con el correo (RF-20, fase F5), salvo la puesta a punto de pruebas y entrega (F6) |
 | Documento hermano | [MRD.md](MRD.md) — requerimientos de mercado |
 
 > **Fuentes.** Salvo las extensiones PLUS de la [sección 21](#21-extensiones-plus), que se marcan como tales y citan la norma que las respalda, este PRD no introduce requisitos nuevos: consolida los documentos oficiales del proyecto —el anteproyecto de residencia, los entregables DOC-01 a DOC-08 ([ESPECIFICACIONES_DOC01_A_DOC08.txt](ESPECIFICACIONES_DOC01_A_DOC08.txt)) y el DOCUMENTO GENERAL que los integra— y el estado verificado del sistema en el repositorio. Cada sección indica su fuente entre corchetes; «DG» es el DOCUMENTO GENERAL.
@@ -229,6 +229,12 @@ Sin token, con un token inválido o vencido, o con la cuenta desactivada: 401. C
 - **A quién:** a los usuarios activos con rol VALIDADOR asignados al expediente.
 - **Cómo:** SMTP genérico (`SMTP_HOST`, `SMTP_PORT`, `SMTP_USUARIO`, `SMTP_CONTRASENA`, `SMTP_REMITENTE`, `SMTP_STARTTLS`), en un hilo que no retrasa la petición. El mensaje va en lenguaje llano, con un enlace a `FRONTEND_URL`.
 - Cada aviso queda en la bitácora (`NOTIFICACION_CORREO`: ENVIADO, FALLIDO, SIN_DESTINATARIOS o ENVIO_DESACTIVADO), y el aviso de un umbral no se repite. Sin `SMTP_HOST`, el envío está apagado.
+- **Implementación (F5, 15/10/2026):** `motor/notificaciones.py` del core.
+  - El aviso de estatus crítico lo dispara `cumplimiento.sincronizar`, el único punto donde cambia el semáforo, con cualquier causa salvo la apertura: un expediente nuevo nace sin documentos y, por eso, en rojo. Seguir en rojo no es un cambio y no vuelve a avisar.
+  - Vencimientos: se avisa solo el umbral más cercano que alcanzó el documento (con 12 días, el de 15), así un servicio detenido varios días no manda tres correos atrasados; un documento ya vencido lo cubre el aviso de estatus crítico. El aviso se identifica por documento, umbral y fecha de caducidad: si una ratificación corrige la fecha, el nuevo plazo vuelve a avisar.
+  - SIN_DESTINATARIOS y ENVIO_DESACTIVADO se registran en la misma transacción que los origina. Con envío encendido, el mensaje se encola solo si la transacción se confirma (un rollback lo descarta) y el hilo de envío registra ENVIADO o FALLIDO con el error. Un aviso de vencimiento FALLIDO se reintenta en la siguiente reevaluación programada.
+  - El enlace usa la ruta del folio (`FRONTEND_URL/#/expedientes/<folio>`). El remitente por omisión es `SMTP_USUARIO`; `SMTP_TIMEOUT_SEGUNDOS` (15) acota la espera del servidor.
+  - Pruebas: `tests/test_notificaciones_correo.py`, contra un servidor SMTP en memoria (`tests/servidor_smtp.py`, sin dependencias nuevas). `bd_pruebas` apaga el envío aunque el `.env` local defina `SMTP_HOST`.
 
 **Arranque y entrega.**
 - Si no hay ningún usuario, el core crea el administrador inicial de `ADMIN_INICIAL_EMAIL` y `ADMIN_INICIAL_CONTRASENA`, que debe cambiar la contraseña en su primer acceso.
@@ -310,7 +316,7 @@ Prioridad tomada de las historias de usuario asociadas (Cap. VII); «—» cuand
 |---|---|---|---|---|
 | RF-18 | Alertas inmediatas ante documento ausente, vencido, anexo faltante o cláusula incumplida. | Alta | Implementado | Once categorías de alerta (sección 10.3; P5 suma DOCUMENTO_ILEGIBLE y PROCESAMIENTO_DIFERIDO); la cláusula incumplida es CONTENIDO_NO_LOCALIZADO. |
 | RF-19 | Semáforo Verde / Amarillo / Rojo por expediente. | Alta | Implementado | Reglas del semáforo en la sección 10.2. |
-| RF-20 | Notificaciones por correo electrónico ante estatus crítico o vencimiento próximo. | Media | **Pendiente** | Diseñado el 14/10/2026 con el Módulo 7 (§5.2, fase F5): SMTP genérico a los validadores asignados al expediente. |
+| RF-20 | Notificaciones por correo electrónico ante estatus crítico o vencimiento próximo. | Media | Implementado | Fase F5 del Módulo 7 (§5.2, 15/10/2026): SMTP genérico a los validadores asignados al expediente al pasar a no conforme y a 30, 15 y 5 días del vencimiento, con cada aviso en la bitácora (`NOTIFICACION_CORREO`). |
 | RF-21 | Recomendación estructurada junto a cada alerta. | Media | Implementado | Campo `recomendacion` de cada alerta. |
 
 ### M6 — Reportes y Panel de Control
@@ -329,7 +335,7 @@ Prioridad tomada de las historias de usuario asociadas (Cap. VII); «—» cuand
 | RF-26 | Autorización por rol (RBAC). | Alta | Implementado | Matriz de permisos por endpoint (§5.1) en los tres servicios, con una prueba de matriz en cada uno (F1 y F2); la interfaz muestra a cada rol solo sus secciones y acciones (F4). Implementado el 14/10/2026. |
 | RF-27 | Bitácora inmutable protegida por el motor de base de datos. | Alta | Implementado | Disparador `trg_bitacora_inmutable` y, desde P3, cada evento sellado en cadena y verificable (`/bitacora/verificar-cadena`); el usuario autenticado se registrará con RF-25. |
 
-**Resumen:** 24 implementados, 1 parcial, 1 pendiente (RF-20) y 1 fuera del alcance de 27 (versión 2.1: RF-10 pasa a parcial y RF-12 sale del alcance; versión 2.9: RF-09 y RF-02 pasan a implementados; versión 4.1: RF-25 y RF-26, con el Módulo 7). La Tabla 33 del DG (§10.7, corte al 03/10/2026) reporta las cifras anteriores al Módulo 7: 22, 1, 3 y 1.
+**Resumen:** 25 implementados, 1 parcial y 1 fuera del alcance de 27 (versión 2.1: RF-10 pasa a parcial y RF-12 sale del alcance; versión 2.9: RF-09 y RF-02 pasan a implementados; versión 4.1: RF-25 y RF-26, con el Módulo 7; versión 4.2: RF-20). La Tabla 33 del DG (§10.7, corte al 03/10/2026) reporta las cifras anteriores al Módulo 7: 22, 1, 3 y 1.
 
 ---
 
@@ -355,7 +361,7 @@ Prioridad tomada de las historias de usuario asociadas (Cap. VII); «—» cuand
 | HU-14 | Configurar los umbrales de anticipación (30, 15 y 5 días). | M4 | 2 | Media | 4 | Parcial (por variable de entorno, no desde la interfaz) |
 | HU-15 | Recibir alertas por documentos faltantes, vencidos o anexos ausentes. | M5 | 2 | Alta | 8 | Implementado |
 | HU-16 | Que cada alerta incluya una recomendación. | M5 | 2 | Media | 5 | Implementado |
-| HU-17 | Notificaciones por correo ante estatus crítico. | M5 | 2 | Media | 6 | Pendiente (diseñada con RF-20, §5.2) |
+| HU-17 | Notificaciones por correo ante estatus crítico. | M5 | 2 | Media | 6 | Implementado (con RF-20, fase F5, §5.2) |
 | HU-18 | Extraer el texto por OCR y almacenarlo segmentado por páginas. | M3 | 3 | Alta | 12 | Implementado |
 | HU-19 | Verificar semánticamente las cláusulas obligatorias de un contrato. | M3 | 3 | Alta | 14 | Implementado (reglas RSC-01 del contrato: objeto, vigencia y terminación, penalización, confidencialidad y firmas de las partes, cada una con su cita literal o su recomendación si falta) |
 | HU-20 | Cita textual y porcentaje de confianza en cada resultado de la IA. | M3 | 3 | Alta | 6 | Implementado |
@@ -373,7 +379,7 @@ Prioridad tomada de las historias de usuario asociadas (Cap. VII); «—» cuand
 | HU-32 | Validación completa de un expediente (reglas + IA) con un solo botón. | Integración | 4 | Alta | 14 | Implementado («Auditar pendientes» en el detalle del expediente: audita en secuencia, con reglas e IA, los documentos vigentes sin dictamen y muestra el avance por documento y el semáforo y las alertas antes y después) |
 | HU-33 | Manejo controlado de errores (documento ilegible, IA no disponible). | Integración | 4 | Alta | 9 | Implementado: una falla no detiene el resto del expediente (DG §8.7), y las dos excepciones del DOC-05, «Documento ilegible, se requiere recarga» y «Procesamiento diferido», se implementan en P5 (§21.5) |
 
-**Resumen:** 31 implementadas, 1 parcial (HU-14) y 1 pendiente (HU-17) de 33 (HU-33 pasó a parcial en la versión 2.1 y se completó con P5; HU-05, HU-06, HU-07 y HU-31 se completaron con el Módulo 7, versiones 3.9 y 4.1). Respecto de la versión 1.0 pasan a implementadas HU-30 y HU-32 (versión 1.1), HU-19 (versión 1.2), HU-23 (versión 1.4) y HU-24 (versión 2.9). Las historias PLUS (HU-34 en adelante) se cuentan en la sección 21.
+**Resumen:** 32 implementadas y 1 parcial (HU-14) de 33 (HU-33 pasó a parcial en la versión 2.1 y se completó con P5; HU-05, HU-06, HU-07 y HU-31 se completaron con el Módulo 7, versiones 3.9 y 4.1, y HU-17 con el correo, versión 4.2). Respecto de la versión 1.0 pasan a implementadas HU-30 y HU-32 (versión 1.1), HU-19 (versión 1.2), HU-23 (versión 1.4) y HU-24 (versión 2.9). Las historias PLUS (HU-34 en adelante) se cuentan en la sección 21.
 
 ---
 
@@ -793,7 +799,7 @@ Revisión completa de la interfaz después de P1 a P3, en lotes aprobados por el
 | Sprint | Semanas | Objetivo | HU | Estado |
 |---|---|---|---|---|
 | 1 — Cimientos del sistema | 5–6 | Base de datos, API REST, autenticación con roles y gestión de expedientes con carga. | HU-01 a HU-08 | Implementado (autenticación y roles, HU-05 y HU-06, con el Módulo 7 el 14/10/2026) |
-| 2 — Motor de reglas y vigencias | 7–8 | Reglas configurables, vigencia y alertas; dictamen determinista sin IA. | HU-09 a HU-17 | Implementado, salvo correo (HU-17) y umbrales desde la interfaz (HU-14) |
+| 2 — Motor de reglas y vigencias | 7–8 | Reglas configurables, vigencia y alertas; dictamen determinista sin IA. | HU-09 a HU-17 | Implementado, salvo los umbrales desde la interfaz (HU-14); el correo (HU-17), con el Módulo 7 el 15/10/2026 |
 | 3 — Análisis inteligente con IA | 9–10 | OCR, análisis semántico, cita y confianza, Human-in-the-Loop. | HU-18 a HU-25 | Implementado parcialmente (HU-24) |
 | 4 — Reportes, dashboard e integración | 11–12 | Panel, reportes exportables e integración completa. | HU-26 a HU-33 | Implementado (el usuario de consulta, HU-31, con el Módulo 7 el 14/10/2026) |
 
@@ -866,18 +872,17 @@ Riesgos adicionales identificados en la implementación [DG §8.7 y §10.7]:
 
 **Pendientes de implementación** (orden acordado el 29/09/2026: P1 a P3 y la revisión completa del frontend terminados; en la fase final, el Módulo 7)
 
-1. Autenticación, usuarios y roles: RF-25, RF-26, HU-05, HU-06 y HU-31; registrar el usuario autenticado en la bitácora (HU-07). Diseño aprobado el 14/10/2026 (§5.1 y §5.2); F1 (core), F2 (rules y ai), F3 (MFA) y F4 (interfaz) terminadas el 14/10/2026. Siguen F5 (correo) y F6 (pruebas, scripts y entrega).
-2. Notificaciones por correo electrónico: RF-20, HU-17 (fase F5 del Módulo 7, §5.2).
-3. Requerimientos no funcionales: cifrado AES-256 en reposo (RNF-04), TLS 1.3 en el borde y red interna aislada (RNF-05); pruebas de concurrencia y disponibilidad (RNF-03, RNF-09).
-4. Después de P5 (revisión de requerimientos, versión 2.1): ciclo de vida del expediente activo, cerrado y archivado, sin eliminar nada, para que un expediente concluido deje de evaluarse y de alertar (complementa la conservación de §12.6). La corrección de los datos de una empresa o un expediente con registro en la bitácora, que este punto también pedía, se implementó en la versión 2.9 (`PATCH /titulares/{id}` y `PATCH /expedientes/{id}`).
-5. Iteración posterior: revocación de poderes y vigencias ligadas entre documentos (fianza y convenio modificatorio atados a la vigencia del contrato), que exige el DOC-02.
+1. Autenticación, usuarios y roles: RF-25, RF-26, HU-05, HU-06 y HU-31; registrar el usuario autenticado en la bitácora (HU-07). Diseño aprobado el 14/10/2026 (§5.1 y §5.2); F1 (core), F2 (rules y ai), F3 (MFA) y F4 (interfaz) terminadas el 14/10/2026, y F5 (correo: RF-20, HU-17) el 15/10/2026. Sigue F6 (pruebas, scripts y entrega).
+2. Requerimientos no funcionales: cifrado AES-256 en reposo (RNF-04), TLS 1.3 en el borde y red interna aislada (RNF-05); pruebas de concurrencia y disponibilidad (RNF-03, RNF-09).
+3. Después de P5 (revisión de requerimientos, versión 2.1): ciclo de vida del expediente activo, cerrado y archivado, sin eliminar nada, para que un expediente concluido deje de evaluarse y de alertar (complementa la conservación de §12.6). La corrección de los datos de una empresa o un expediente con registro en la bitácora, que este punto también pedía, se implementó en la versión 2.9 (`PATCH /titulares/{id}` y `PATCH /expedientes/{id}`).
+4. Iteración posterior: revocación de poderes y vigencias ligadas entre documentos (fianza y convenio modificatorio atados a la vigencia del contrato), que exige el DOC-02.
 
-**Completados desde la versión 1.0 de este documento:** vista de la bitácora en la interfaz (HU-30), validación del expediente completo con un botón (HU-32) e integración continua con GitHub Actions (RNF-12) en la versión 1.1; verificación automática de cláusulas (RSC-01: RF-11 y HU-19) y la categoría de alerta CONTENIDO_NO_LOCALIZADO (RF-18) en la versión 1.2; la ingesta blindada (P1) en la versión 1.3, los datos del firmante con su cotejo contra el poder o el acta (RSC-02, RN-03, HU-23) en la versión 1.4, y la cadena de custodia sellada con su ficha de trazabilidad (P3) en la versión 1.5; tipos de documento nuevos con su criterio para la IA (RF-09, HU-24), corrección de datos de captura y carga en lote (RF-02) en la versión 2.9; respaldo diario conjunto con prueba de restauración (RNF-10) en la versión 3.0.
+**Completados desde la versión 1.0 de este documento:** vista de la bitácora en la interfaz (HU-30), validación del expediente completo con un botón (HU-32) e integración continua con GitHub Actions (RNF-12) en la versión 1.1; verificación automática de cláusulas (RSC-01: RF-11 y HU-19) y la categoría de alerta CONTENIDO_NO_LOCALIZADO (RF-18) en la versión 1.2; la ingesta blindada (P1) en la versión 1.3, los datos del firmante con su cotejo contra el poder o el acta (RSC-02, RN-03, HU-23) en la versión 1.4, y la cadena de custodia sellada con su ficha de trazabilidad (P3) en la versión 1.5; tipos de documento nuevos con su criterio para la IA (RF-09, HU-24), corrección de datos de captura y carga en lote (RF-02) en la versión 2.9; respaldo diario conjunto con prueba de restauración (RNF-10) en la versión 3.0; notificaciones por correo (RF-20, HU-17) en la versión 4.2.
 
 **Preguntas abiertas para el Product Owner**
 
 - ¿Qué documentos adicionales de los inventarios del DOC-02 deben declararse obligatorios por defecto en cada tipo de expediente?
-- ¿Qué servidor de correo usará PluriOne para las notificaciones (RF-20)? El diseño (§5.2) funciona con cualquier servidor SMTP configurado en el `.env`; los destinatarios son los validadores asignados al expediente (decisión del 14/10/2026).
+- ¿Qué servidor de correo usará PluriOne para las notificaciones (RF-20)? Implementado el 15/10/2026 (§5.2) para cualquier servidor SMTP configurado en el `.env` (`SMTP_HOST` y siguientes); los destinatarios son los validadores asignados al expediente. Falta que PluriOne indique el servidor y el remitente.
 - MFA (RF-25): resuelta el 14/10/2026 con TOTP opcional por usuario (§5.2). Falta que PluriOne indique si lo quiere obligatorio para algún rol.
 - ¿Dónde se guarda la segunda copia de los respaldos (RNF-10)? El DOC-04 pide almacenamiento redundante en la nube, pero el paquete contiene los originales y MR-16 exige que no salgan de la infraestructura: ¿un recurso de red de PluriOne, o una nube aprobada una vez que el respaldo vaya cifrado (RNF-04)?
 - ¿Se mantiene el límite de 15 MB por archivo (§19) o se adopta el de 50 MB del DOC-08? Un acta escaneada de muchas páginas puede rebasar 15 MB.

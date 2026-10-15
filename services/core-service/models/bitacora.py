@@ -46,6 +46,9 @@ EVENTO_ASIGNACION_EXPEDIENTE = "ASIGNACION_EXPEDIENTE"
 # Fase F3: el usuario activa o desactiva su segundo factor (el restablecimiento del
 # administrador va en ACTUALIZACION_USUARIO).
 EVENTO_CAMBIO_MFA = "CAMBIO_MFA"
+# Fase F5 (RF-20, HU-17): aviso por correo con su estado (ENVIADO, FALLIDO, SIN_DESTINATARIOS
+# o ENVIO_DESACTIVADO).
+EVENTO_NOTIFICACION_CORREO = "NOTIFICACION_CORREO"
 
 
 class BitacoraAuditoria(Base):

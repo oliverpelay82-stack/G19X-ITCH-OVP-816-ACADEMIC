@@ -9,7 +9,7 @@
 | Línea de negocio | Portafolio de soluciones LegalTech de PluriOne |
 | Patrocinador de negocio | Lic. Juan Méndez Herrera, Director Comercial (asesor empresarial y Product Owner) |
 | Elaborado por | Oliver Villanueva Pelay, residente — Instituto Tecnológico de Chilpancingo |
-| Versión del documento | 2.5 — 14 de octubre de 2026 (2.5: Módulo 7 implementado, MR-15; 2.4: diseño del Módulo 7 y del correo, MR-14 y MR-15; 2.3: 1 de octubre; 2.2: P7 documentado; 2.1: P6; 2.0: P5; 1.9: revisión de requerimientos; 1.8: correcciones de la documentación; 1.7: 30 de septiembre; 1.6: 29 de septiembre; 1.5: índice de cumplimiento; 1.4: P3; 1.3: P2; 1.2: P1; 1.1: 28 de septiembre; 1.0: 27 de septiembre de 2026) |
+| Versión del documento | 2.6 — 15 de octubre de 2026 (2.6: correo implementado, MR-14; 2.5: Módulo 7 implementado, MR-15; 2.4: diseño del Módulo 7 y del correo, MR-14 y MR-15; 2.3: 1 de octubre; 2.2: P7 documentado; 2.1: P6; 2.0: P5; 1.9: revisión de requerimientos; 1.8: correcciones de la documentación; 1.7: 30 de septiembre; 1.6: 29 de septiembre; 1.5: índice de cumplimiento; 1.4: P3; 1.3: P2; 1.2: P1; 1.1: 28 de septiembre; 1.0: 27 de septiembre de 2026) |
 | Documento hermano | [PRD.md](PRD.md) — requerimientos del producto |
 
 > **Fuentes.** Este MRD se construye exclusivamente con el anteproyecto de residencia, los entregables DOC-01 a DOC-08 ([ESPECIFICACIONES_DOC01_A_DOC08.txt](ESPECIFICACIONES_DOC01_A_DOC08.txt)) y el DOCUMENTO GENERAL («DG»). La información de mercado que esas fuentes no contienen —tamaño de mercado, precio o modelo comercial— no se estima: se declara en la [sección 13](#13-información-de-mercado-no-documentada) como pendiente de definir con PluriOne.
@@ -370,7 +370,7 @@ Derivados de los objetivos y umbrales documentados [Anteproyecto; DG Caps. IV, V
 | MR-11 Detección de alteraciones | RF-03, RIE-03, HU-08 | Implementado |
 | MR-12 Semáforo y alertas con acción correctiva | RF-18, RF-19, RF-21, HU-15, HU-16, HU-27; índice de cumplimiento del DOC-05 (PRD §10.5) | Implementado, con el índice de cumplimiento del DOC-05 (C6 del análisis de brechas) |
 | MR-13 Reportes PDF y Excel | RF-22, RF-24, HU-26, HU-29 | Implementado (el tablero propio sustituye a Power BI: PRD §19) |
-| MR-14 Notificación por correo | RF-20, HU-17; RF-17 (umbrales), HU-31 (asignaciones) | Pendiente (diseñado el 14/10/2026: PRD §5.2; [diagrama](uml/rf20-actividad-notificacion-correo.puml)) |
+| MR-14 Notificación por correo | RF-20, HU-17; RF-17 (umbrales), HU-31 (asignaciones) | Implementado el 15/10/2026 (fase F5 del Módulo 7: PRD §5.2; [diagrama](uml/rf20-actividad-notificacion-correo.puml)) |
 | MR-15 Acceso por rol | RF-25, RF-26, RF-27, HU-05, HU-06, HU-07, HU-31 | Implementado el 14/10/2026: cuatro roles del DOC-04, matriz de permisos en los tres servicios y en la interfaz, MFA TOTP opcional y la persona real en la bitácora (PRD §5.1 y §5.2; diagramas `m7-*` en `docs/uml/`) |
 | MR-16 Confidencialidad de los expedientes | RNF-04, RNF-05, RNF-06; PRD §12.5 | Parcial (minimización implementada; cifrado en reposo, TLS en el borde y red interna aislada pendientes) |
 | MR-17 Despliegue en la infraestructura de PluriOne | RNF-11 | Implementado |

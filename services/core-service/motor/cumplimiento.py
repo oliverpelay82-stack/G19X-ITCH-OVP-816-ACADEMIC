@@ -54,7 +54,7 @@ from models.bitacora import EVENTO_EVALUACION_REGLAS
 from models.dictamen import ORIGEN_NIVEL_1, ORIGEN_NIVEL_3_ILEGIBLE, ORIGEN_NIVEL_4, DictamenAuditoria
 from models.documento import Documento
 from models.expediente import Expediente
-from motor import bitacora, senales_pdf, tipos_documento
+from motor import bitacora, notificaciones, senales_pdf, tipos_documento
 from motor import representacion as cotejo_legal
 from motor.redaccion import dias, fecha_legible, texto_llano
 
@@ -1032,6 +1032,11 @@ def sincronizar(
             "advertencia": evaluacion.advertencia,
         },
     )
+    # RF-20: aviso por correo a los validadores asignados al pasar a estatus crítico.
+    if evaluacion.estado == NO_CONFORME:
+        notificaciones.avisar_estatus_critico(
+            db, expediente, estado_anterior=anterior, motivos=evaluacion.motivos, causa=causa
+        )
     return True
 
 

@@ -54,6 +54,15 @@ services:
       ADMIN_INICIAL_EMAIL: ${ADMIN_INICIAL_EMAIL:-}
       ADMIN_INICIAL_CONTRASENA: ${ADMIN_INICIAL_CONTRASENA:-}
       CORS_ORIGENES: ${CORS_ORIGENES:-http://localhost:5173,http://127.0.0.1:5173}
+      # RF-20: avisos por correo a los validadores asignados. Sin SMTP_HOST el envío está
+      # apagado y cada aviso queda en la bitácora como ENVIO_DESACTIVADO.
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USUARIO: ${SMTP_USUARIO:-}
+      SMTP_CONTRASENA: ${SMTP_CONTRASENA:-}
+      SMTP_REMITENTE: ${SMTP_REMITENTE:-}
+      SMTP_STARTTLS: ${SMTP_STARTTLS:-true}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5173}
     volumes:
       - ./storage_vault:/app/storage_vault
     depends_on:

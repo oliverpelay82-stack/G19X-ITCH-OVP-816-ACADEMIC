@@ -8,7 +8,8 @@ quedaría para siempre junto a los expedientes reales. Este módulo:
 
   1. Recrea desde cero la base ``plurione_compliance_test`` en el mismo servidor.
   2. Apunta la bóveda (STORAGE_VAULT_PATH) a un directorio temporal.
-  3. Fija un JWT_SECRET de pruebas y apaga las cuentas de demostración (Módulo 7).
+  3. Fija un JWT_SECRET de pruebas y apaga las cuentas de demostración (Módulo 7)
+     y el envío de correo (RF-20).
 
 Debe invocarse ANTES de importar cualquier módulo del core-service, porque
 ``config.database`` y ``config.boveda`` leen el entorno al importarse. Si varias
@@ -46,7 +47,8 @@ def preparar_entorno() -> str:
     os.environ["STORAGE_VAULT_PATH"] = boveda
     os.environ["JWT_SECRET"] = SECRETO_PRUEBAS
     os.environ["USUARIOS_DEMO"] = "false"
-    for variable in ("ADMIN_INICIAL_EMAIL", "ADMIN_INICIAL_CONTRASENA", "CORS_ORIGENES"):
+    # RF-20: un SMTP_HOST del .env local mandaría correos reales desde las pruebas.
+    for variable in ("ADMIN_INICIAL_EMAIL", "ADMIN_INICIAL_CONTRASENA", "CORS_ORIGENES", "SMTP_HOST"):
         os.environ.pop(variable, None)
 
     global _bd_recreada
