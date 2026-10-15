@@ -99,7 +99,7 @@ def _cuenta(rol: str, activo: bool = True) -> tuple[str, str]:
 
 def _expediente(*usuario_ids: str) -> dict:
     with SessionLocal() as db:
-        t = TitularExpediente(rfc="NOT" + "010101" + uuid.uuid4().hex[:3].upper(),
+        t = TitularExpediente(rfc=bd_pruebas.rfc_ficticio("NOT"),
                               razon_social="Avisos de Prueba S.A. de C.V.", tipo_persona="MORAL")
         db.add(t)
         db.commit()

@@ -134,7 +134,7 @@ def test_toda_ruta_esta_en_la_matriz_o_es_publica():
 
 def _expediente() -> dict:
     with SessionLocal() as db:
-        titular = TitularExpediente(rfc="ASG" + "010101" + uuid.uuid4().hex[:3].upper(),
+        titular = TitularExpediente(rfc=bd_pruebas.rfc_ficticio("ASG"),
                                     razon_social="Asignaciones de Prueba S.A.", tipo_persona="MORAL")
         db.add(titular)
         db.commit()

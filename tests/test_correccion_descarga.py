@@ -14,7 +14,6 @@ Aislamiento: base de datos de pruebas plurione_compliance_test (tests/bd_pruebas
 """
 import os
 import sys
-import uuid
 from urllib.parse import quote
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -40,7 +39,7 @@ client = auth.cliente(app)
 
 
 def _rfc() -> str:
-    return "DES" + "010101" + uuid.uuid4().hex[:3].upper()
+    return bd_pruebas.rfc_ficticio("DES")
 
 
 def _titular(razon_social: str = "Descargas de Prueba S.A. de C.V.") -> str:

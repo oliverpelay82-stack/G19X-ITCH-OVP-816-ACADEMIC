@@ -19,9 +19,11 @@ Cada llamada, en cambio, recibe su propia bóveda y una copia limpia de los
 módulos del core-service (``servicios.activar``).
 """
 import os
+import random
 import shutil
 import sys
 import tempfile
+import uuid
 
 import psycopg2
 from dotenv import load_dotenv
@@ -65,6 +67,18 @@ def verificar_aislamiento(engine) -> None:
             f"Las pruebas del core-service apuntan a '{engine.url.database}' y no a '{NOMBRE_BD_PRUEBAS}': "
             "se detienen para no escribir en la bitácora inmutable de la base real."
         )
+
+
+def rfc_ficticio(prefijo: str) -> str:
+    """
+    RFC de persona moral ficticio y único en la corrida: el prefijo de 3 letras de la suite,
+    una fecha AAMMDD al azar (día 01 a 28: siempre existe) y una homoclave de 3 posiciones.
+    Con la fecha fija 010101 solo variaba la homoclave (4,096 combinaciones) y, con decenas de
+    titulares por suite, dos podían coincidir y chocar con el RFC único (fallas intermitentes).
+    """
+    azar = random.SystemRandom()
+    fecha = f"{azar.randrange(100):02d}{azar.randrange(1, 13):02d}{azar.randrange(1, 29):02d}"
+    return f"{prefijo}{fecha}{uuid.uuid4().hex[:3].upper()}"
 
 
 def _recrear_bd() -> None:

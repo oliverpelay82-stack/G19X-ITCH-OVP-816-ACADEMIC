@@ -15,7 +15,6 @@ Aislamiento: base de datos de pruebas plurione_compliance_test (tests/bd_pruebas
 """
 import os
 import sys
-import uuid
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import bd_pruebas  # noqa: E402
@@ -63,7 +62,7 @@ def rules_simulado(monkeypatch):
 def _expediente() -> str:
     db = SessionLocal()
     try:
-        titular = TitularExpediente(rfc="TDN" + "010101" + uuid.uuid4().hex[:3].upper(),
+        titular = TitularExpediente(rfc=bd_pruebas.rfc_ficticio("TDN"),
                                     razon_social="Tipos Nuevos S.A. de C.V.", tipo_persona="MORAL")
         db.add(titular)
         db.commit()
