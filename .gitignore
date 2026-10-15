@@ -1,6 +1,8 @@
 # Entorno y secretos
 .env
 *.sql
+# Excepción: la base de la entrega, solo con datos ficticios (scripts/exportar_base_sql.py).
+!db/base-de-datos.sql
 
 # Python
 __pycache__/

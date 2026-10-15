@@ -1,5 +1,8 @@
 # Motor de Validación de Cumplimiento Documental
 
+**Alumno:** Oliver Villanueva Pelay · **Matrícula:** G19X-ITCH-OVP-816
+**Institución:** Instituto Tecnológico de Chilpancingo (TecNM) · Residencia profesional en PluriOne S.A. de C.V.
+
 Sistema de validación documental automatizada para **PluriOne S.A. de C.V.**, desarrollado como proyecto de residencia profesional. Recibe los expedientes de una empresa, custodia cada documento con su huella SHA-256, lo lee (capa vectorial u OCR), extrae sus datos con un modelo de lenguaje y emite un **dictamen determinista y auditable** con semáforo, alertas y recomendaciones. Un analista ratifica los casos dudosos (Human-in-the-Loop).
 
 La especificación oficial está en [`docs/ESPECIFICACIONES_DOC01_A_DOC08.txt`](docs/ESPECIFICACIONES_DOC01_A_DOC08.txt) (DOC-01 a DOC-08).
@@ -29,12 +32,11 @@ El motor se ejecuta de dos formas, **manual o programada** (DOC-02): por documen
 ### Con Docker Compose
 
 ```bash
-# .env en la raíz con la clave de Groq Cloud (https://console.groq.com/keys)
-echo "GROQ_API_KEY=gsk_..." > .env
+cp .env.example .env      # y llena GROQ_API_KEY (https://console.groq.com/keys); lo demás es opcional
 docker compose up -d --build
 ```
 
-Sin la clave, el sistema funciona completo salvo la auditoría y el chat con IA, que responden con la instrucción para configurarla. `python scripts/prueba_entrega_docker.py [--con-ia]` comprueba la instalación desde un clon limpio del último commit.
+La interfaz queda en http://localhost:5173 (ver «Acceso y roles» para entrar). La base se crea sola al arrancar, con el catálogo de reglas y las cuentas de demostración. Sin la clave, el sistema funciona completo salvo la auditoría y el chat con IA, que responden con la instrucción para configurarla. `python scripts/prueba_entrega_docker.py [--con-ia]` comprueba la instalación desde un clon limpio del último commit.
 
 El rules-service carga el catálogo de reglas al arrancar (`AUTO_SEED=true`). La precarga es idempotente: solo inserta las reglas que faltan y no toca las editadas.
 
@@ -55,9 +57,20 @@ Toda la interfaz y las API exigen iniciar sesión (JWT con `Authorization: Beare
 
 Los avisos por correo (RF-20) a los validadores asignados se encienden con `SMTP_HOST` y las demás variables `SMTP_*`; sin ellas, cada aviso queda en la bitácora como no enviado.
 
+### Base de datos
+
+[`db/base-de-datos.sql`](db/base-de-datos.sql) trae la estructura completa (tablas, índices y los triggers que hacen inmutables la bitácora y los dictámenes) con datos de prueba ficticios: el catálogo de 37 reglas del DOC-05, las cuatro cuentas de demostración, un titular con su expediente y la bitácora de esas altas. Se importa en una base vacía:
+
+```bash
+createdb -U postgres plurione_compliance
+psql -U postgres -d plurione_compliance -f db/base-de-datos.sql
+```
+
+También se puede crear con `python scripts/setup_postgres.py` (sin las cuentas, que el core crea al arrancar con `USUARIOS_DEMO=true`). El archivo se regenera con `python scripts/exportar_base_sql.py`, que lo prueba importándolo en otra base vacía.
+
 ### En local
 
-Se necesitan Python 3.12, Node 20.19 o superior, PostgreSQL 17 y Tesseract (con los idiomas `spa` y `eng`). Cada servicio lee su propio `.env` (`DB_*` en core y rules; `GROQ_API_KEY`, `TESSERACT_CMD`, `CORE_BASE_URL` y `RULES_BASE_URL` en el ai-service; ver [`services/ai-service/README.md`](services/ai-service/README.md)). Los tres llevan el mismo `JWT_SECRET`, y el del core, `ADMIN_INICIAL_EMAIL` y `ADMIN_INICIAL_CONTRASENA` o `USUARIOS_DEMO=true`.
+Se necesitan Python 3.12, Node 20.19 o superior, PostgreSQL 17 y Tesseract (con los idiomas `spa` y `eng`). Cada servicio lee su propio `.env`, que se copia de su `.env.example` (`DB_*` en core y rules; `GROQ_API_KEY`, `TESSERACT_CMD`, `CORE_BASE_URL` y `RULES_BASE_URL` en el ai-service; ver [`services/ai-service/README.md`](services/ai-service/README.md)). Los tres llevan el mismo `JWT_SECRET`, y el del core, `ADMIN_INICIAL_EMAIL` y `ADMIN_INICIAL_CONTRASENA` o `USUARIOS_DEMO=true`.
 
 Un entorno virtual del proyecto (`.venv`) instala las mismas versiones que Docker, más las herramientas de prueba (`requirements-dev.txt`):
 
@@ -89,14 +102,26 @@ Los scripts de `scripts/` que levantan sus propios servicios (`e2e_api.py`, `pru
 
 Las pruebas del core-service recrean `plurione_compliance_test` y una bóveda temporal: nunca escriben en la base de trabajo, porque ahí la bitácora y los dictámenes son inmutables. La suite `test_niveles_3_4.py` del ai-service se omite si el servicio no está corriendo en :8003 con una `GROQ_API_KEY` válida. El workflow [`.github/workflows/ci.yml`](.github/workflows/ci.yml) ejecuta todo lo anterior en cada push.
 
+## Lo que todavía no funciona
+
+- **Cifrado de la bóveda en reposo (RNF-04):** los documentos se custodian con su huella SHA-256 y se verifican en cada lectura, pero el archivo no se cifra.
+- **TLS y aislamiento de red (RNF-05, parcial):** solo va cifrada la conexión con el proveedor de IA. El proxy inverso con TLS es del despliegue de PluriOne, y el docker-compose de demostración publica los puertos de cada servicio.
+- **Tablas y pares clave-valor (RF-10, parcial):** se extrae el texto de cada página; los datos que dictamina el motor salen de ese texto, no de una estructura tabular.
+- **Disponibilidad (RNF-09):** hay comprobaciones de salud y reinicio automático en Docker, pero no una medición documentada.
+- **Búsqueda semántica en todo el corpus (RF-12):** fuera del alcance acordado; la búsqueda dentro de cada documento sí existe (chat documental).
+- **IA con el plan gratuito de Groq:** 8,000 tokens por minuto y 200,000 por día. Sin `GROQ_API_KEY`, todo funciona salvo la auditoría con IA y el chat.
+
+El estado de cada requerimiento está en [`docs/PRD.md`](docs/PRD.md).
+
 ## Estructura
 
 ```
 services/            core-service, rules-service y ai-service (FastAPI)
 frontend/            interfaz React 19 (Vite)
-scripts/             setup_postgres.py, crear_tablas.py, seed_reglas_validacion.py
+db/                  base-de-datos.sql: estructura y datos de prueba
+scripts/             instalación, respaldo, exportación de la base y pruebas extremo a extremo
 tests/               pruebas de core y rules
 storage_vault/       bóveda física de binarios (no versionada)
-docs/                especificación oficial (DOC-01 a DOC-08) y auditoría técnica
+docs/                especificación oficial (DOC-01 a DOC-08), PRD, MRD, UML y validación
 docker-compose.yml   plurione-db, plurione-core, plurione-rules, plurione-ai, plurione-frontend
 ```
