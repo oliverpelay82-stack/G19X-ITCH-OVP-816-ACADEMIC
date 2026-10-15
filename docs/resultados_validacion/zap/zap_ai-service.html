@@ -218,7 +218,7 @@ td {
 	</h2>
 
 	<h3>
-		Generated on Thu, 1 Oct 2026 15:53:03
+		Generated on Thu, 15 Oct 2026 15:40:55
 	</h3>
 
 	<h3>
@@ -299,34 +299,16 @@ td {
 					<div>Low</div>
 				</td>
 				<td>
-					<div>Warning</div>
+					<div>Exceeded High</div>
 				</td>
 				<td>
-					<div></div>
+					<div>http://host.docker.internal:8203</div>
 				</td>
 				<td>
-					<div>ZAP errors logged - see the zap.log file for details</div>
+					<div>Percentage of responses with status code 5xx</div>
 				</td>
 				<td align="center">
-					<div>4   </div>
-				</td>
-				</tr>
-			
-				<tr>
-				<td class="risk-1">
-					<div>Low</div>
-				</td>
-				<td>
-					<div>Warning</div>
-				</td>
-				<td>
-					<div></div>
-				</td>
-				<td>
-					<div>ZAP warnings logged - see the zap.log file for details</div>
-				</td>
-				<td align="center">
-					<div>4   </div>
+					<div>52 %</div>
 				</td>
 				</tr>
 			
@@ -353,7 +335,7 @@ td {
 					<div>Info</div>
 				</td>
 				<td>
-					<div>Informational</div>
+					<div>Exceeded Low</div>
 				</td>
 				<td>
 					<div>http://host.docker.internal:8203</div>
@@ -362,25 +344,7 @@ td {
 					<div>Percentage of responses with status code 4xx</div>
 				</td>
 				<td align="center">
-					<div>54 %</div>
-				</td>
-				</tr>
-			
-				<tr>
-				<td class="risk-0">
-					<div>Info</div>
-				</td>
-				<td>
-					<div>Informational</div>
-				</td>
-				<td>
-					<div>http://host.docker.internal:8203</div>
-				</td>
-				<td>
-					<div>Percentage of responses with status code 5xx</div>
-				</td>
-				<td align="center">
-					<div>44 %</div>
+					<div>46 %</div>
 				</td>
 				</tr>
 			
@@ -416,7 +380,7 @@ td {
 					<div>Percentage of endpoints with method GET</div>
 				</td>
 				<td align="center">
-					<div>78 %</div>
+					<div>61 %</div>
 				</td>
 				</tr>
 			
@@ -434,7 +398,7 @@ td {
 					<div>Percentage of endpoints with method POST</div>
 				</td>
 				<td align="center">
-					<div>21 %</div>
+					<div>38 %</div>
 				</td>
 				</tr>
 			
@@ -452,7 +416,7 @@ td {
 					<div>Count of total endpoints</div>
 				</td>
 				<td align="center">
-					<div>23   </div>
+					<div>47   </div>
 				</td>
 				</tr>
 			
@@ -470,7 +434,7 @@ td {
 					<div>Percentage of slow responses</div>
 				</td>
 				<td align="center">
-					<div>45 %</div>
+					<div>1 %</div>
 				</td>
 				</tr>
 			
@@ -506,7 +470,7 @@ td {
 				<td align="center" class="risk-1">Low</td>
 				
 				
-				<td align="center">2</td>
+				<td align="center">4</td>
 				
 			</tr>
 			<tr>
@@ -514,7 +478,7 @@ td {
 				<td align="center" class="risk-0">Informational</td>
 				
 				
-				<td align="center">21</td>
+				<td align="center">44</td>
 				
 			</tr>
 			<tr>
@@ -595,6 +559,42 @@ td {
 					<tr>
 						<td width="20%"
 							class="indent1">URL</td>
+						<td width="80%"><a href="http://host.docker.internal:8203/api/v1/ai/analisis-semantico/">http://host.docker.internal:8203/api/v1/ai/analisis-semantico/</a></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Node Name</td>
+						<td width="80%">http://host.docker.internal:8203/api/v1/ai/analisis-semantico/ ()({documento_id,texto,rfc_titular,razon_social_titular,forzar_ocr,usuario})</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Method</td>
+						<td width="80%">POST</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Parameter</td>
+						<td width="80%"></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Attack</td>
+						<td width="80%"></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Evidence</td>
+						<td width="80%">503</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Other Info</td>
+						<td width="80%"></td>
+					</tr>
+				
+					<tr>
+						<td width="20%"
+							class="indent1">URL</td>
 						<td width="80%"><a href="http://host.docker.internal:8203/api/v1/ai/chat-documento">http://host.docker.internal:8203/api/v1/ai/chat-documento</a></td>
 					</tr>
 					<tr>
@@ -628,11 +628,47 @@ td {
 						<td width="80%"></td>
 					</tr>
 				
+					<tr>
+						<td width="20%"
+							class="indent1">URL</td>
+						<td width="80%"><a href="http://host.docker.internal:8203/api/v1/ai/chat-documento/">http://host.docker.internal:8203/api/v1/ai/chat-documento/</a></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Node Name</td>
+						<td width="80%">http://host.docker.internal:8203/api/v1/ai/chat-documento/ ()({documento_id,texto,pregunta,historial:[{rol,contenido}],forzar_modelo})</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Method</td>
+						<td width="80%">POST</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Parameter</td>
+						<td width="80%"></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Attack</td>
+						<td width="80%"></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Evidence</td>
+						<td width="80%">503</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Other Info</td>
+						<td width="80%"></td>
+					</tr>
+				
 				<tr>
 					<td width="20%">Instances</td>
 					
 					
-					<td width="80%">2</td>
+					<td width="80%">4</td>
 					
 				</tr>
 				<tr>
@@ -670,7 +706,7 @@ td {
 				<tr>
 					<td width="20%">Description</td>
 					<td width="80%">
-							<div>A response code of 400 was returned by the server.</div>
+							<div>A response code of 422 was returned by the server.</div>
 							<br />
 						
 							<div>This may indicate that the application is failing to handle unexpected input correctly.</div>
@@ -723,12 +759,48 @@ td {
 					<tr>
 						<td width="20%"
 							class="indent1">URL</td>
-						<td width="80%"><a href="http://host.docker.internal:8203/6343555473205158457">http://host.docker.internal:8203/6343555473205158457</a></td>
+						<td width="80%"><a href="http://host.docker.internal:8203/">http://host.docker.internal:8203/</a></td>
 					</tr>
 					<tr>
 						<td width="20%"
 							class="indent2">Node Name</td>
-						<td width="80%">http://host.docker.internal:8203/6343555473205158457</td>
+						<td width="80%">http://host.docker.internal:8203/</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Method</td>
+						<td width="80%">GET</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Parameter</td>
+						<td width="80%"></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Attack</td>
+						<td width="80%"></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Evidence</td>
+						<td width="80%">404</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Other Info</td>
+						<td width="80%"></td>
+					</tr>
+				
+					<tr>
+						<td width="20%"
+							class="indent1">URL</td>
+						<td width="80%"><a href="http://host.docker.internal:8203/4995118815647245910">http://host.docker.internal:8203/4995118815647245910</a></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Node Name</td>
+						<td width="80%">http://host.docker.internal:8203/4995118815647245910</td>
 					</tr>
 					<tr>
 						<td width="20%"
@@ -795,12 +867,48 @@ td {
 					<tr>
 						<td width="20%"
 							class="indent1">URL</td>
-						<td width="80%"><a href="http://host.docker.internal:8203/api/1828338506913087256">http://host.docker.internal:8203/api/1828338506913087256</a></td>
+						<td width="80%"><a href="http://host.docker.internal:8203/api/">http://host.docker.internal:8203/api/</a></td>
 					</tr>
 					<tr>
 						<td width="20%"
 							class="indent2">Node Name</td>
-						<td width="80%">http://host.docker.internal:8203/api/1828338506913087256</td>
+						<td width="80%">http://host.docker.internal:8203/api/</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Method</td>
+						<td width="80%">GET</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Parameter</td>
+						<td width="80%"></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Attack</td>
+						<td width="80%"></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Evidence</td>
+						<td width="80%">404</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Other Info</td>
+						<td width="80%"></td>
+					</tr>
+				
+					<tr>
+						<td width="20%"
+							class="indent1">URL</td>
+						<td width="80%"><a href="http://host.docker.internal:8203/api/5351162384588806729">http://host.docker.internal:8203/api/5351162384588806729</a></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Node Name</td>
+						<td width="80%">http://host.docker.internal:8203/api/5351162384588806729</td>
 					</tr>
 					<tr>
 						<td width="20%"
@@ -867,12 +975,48 @@ td {
 					<tr>
 						<td width="20%"
 							class="indent1">URL</td>
-						<td width="80%"><a href="http://host.docker.internal:8203/api/v1/7045960944904261964">http://host.docker.internal:8203/api/v1/7045960944904261964</a></td>
+						<td width="80%"><a href="http://host.docker.internal:8203/api/v1/">http://host.docker.internal:8203/api/v1/</a></td>
 					</tr>
 					<tr>
 						<td width="20%"
 							class="indent2">Node Name</td>
-						<td width="80%">http://host.docker.internal:8203/api/v1/7045960944904261964</td>
+						<td width="80%">http://host.docker.internal:8203/api/v1/</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Method</td>
+						<td width="80%">GET</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Parameter</td>
+						<td width="80%"></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Attack</td>
+						<td width="80%"></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Evidence</td>
+						<td width="80%">404</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Other Info</td>
+						<td width="80%"></td>
+					</tr>
+				
+					<tr>
+						<td width="20%"
+							class="indent1">URL</td>
+						<td width="80%"><a href="http://host.docker.internal:8203/api/v1/4555992245074301486">http://host.docker.internal:8203/api/v1/4555992245074301486</a></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Node Name</td>
+						<td width="80%">http://host.docker.internal:8203/api/v1/4555992245074301486</td>
 					</tr>
 					<tr>
 						<td width="20%"
@@ -939,12 +1083,84 @@ td {
 					<tr>
 						<td width="20%"
 							class="indent1">URL</td>
-						<td width="80%"><a href="http://host.docker.internal:8203/api/v1/ai/660057943506630527">http://host.docker.internal:8203/api/v1/ai/660057943506630527</a></td>
+						<td width="80%"><a href="http://host.docker.internal:8203/api/v1/ai/">http://host.docker.internal:8203/api/v1/ai/</a></td>
 					</tr>
 					<tr>
 						<td width="20%"
 							class="indent2">Node Name</td>
-						<td width="80%">http://host.docker.internal:8203/api/v1/ai/660057943506630527</td>
+						<td width="80%">http://host.docker.internal:8203/api/v1/ai/</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Method</td>
+						<td width="80%">GET</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Parameter</td>
+						<td width="80%"></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Attack</td>
+						<td width="80%"></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Evidence</td>
+						<td width="80%">404</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Other Info</td>
+						<td width="80%"></td>
+					</tr>
+				
+					<tr>
+						<td width="20%"
+							class="indent1">URL</td>
+						<td width="80%"><a href="http://host.docker.internal:8203/api/v1/ai/8442338866488098415">http://host.docker.internal:8203/api/v1/ai/8442338866488098415</a></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Node Name</td>
+						<td width="80%">http://host.docker.internal:8203/api/v1/ai/8442338866488098415</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Method</td>
+						<td width="80%">GET</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Parameter</td>
+						<td width="80%"></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Attack</td>
+						<td width="80%"></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Evidence</td>
+						<td width="80%">404</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Other Info</td>
+						<td width="80%"></td>
+					</tr>
+				
+					<tr>
+						<td width="20%"
+							class="indent1">URL</td>
+						<td width="80%"><a href="http://host.docker.internal:8203/api/v1/ai/actuator/health">http://host.docker.internal:8203/api/v1/ai/actuator/health</a></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Node Name</td>
+						<td width="80%">http://host.docker.internal:8203/api/v1/ai/actuator/health</td>
 					</tr>
 					<tr>
 						<td width="20%"
@@ -1011,12 +1227,48 @@ td {
 					<tr>
 						<td width="20%"
 							class="indent1">URL</td>
-						<td width="80%"><a href="http://host.docker.internal:8203/api/v1/ai/documentos/9078148181457831174">http://host.docker.internal:8203/api/v1/ai/documentos/9078148181457831174</a></td>
+						<td width="80%"><a href="http://host.docker.internal:8203/api/v1/ai/documentos/">http://host.docker.internal:8203/api/v1/ai/documentos/</a></td>
 					</tr>
 					<tr>
 						<td width="20%"
 							class="indent2">Node Name</td>
-						<td width="80%">http://host.docker.internal:8203/api/v1/ai/documentos/9078148181457831174</td>
+						<td width="80%">http://host.docker.internal:8203/api/v1/ai/documentos/</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Method</td>
+						<td width="80%">GET</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Parameter</td>
+						<td width="80%"></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Attack</td>
+						<td width="80%"></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Evidence</td>
+						<td width="80%">404</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Other Info</td>
+						<td width="80%"></td>
+					</tr>
+				
+					<tr>
+						<td width="20%"
+							class="indent1">URL</td>
+						<td width="80%"><a href="http://host.docker.internal:8203/api/v1/ai/documentos/7152034232233197507">http://host.docker.internal:8203/api/v1/ai/documentos/7152034232233197507</a></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Node Name</td>
+						<td width="80%">http://host.docker.internal:8203/api/v1/ai/documentos/7152034232233197507</td>
 					</tr>
 					<tr>
 						<td width="20%"
@@ -1083,12 +1335,48 @@ td {
 					<tr>
 						<td width="20%"
 							class="indent1">URL</td>
-						<td width="80%"><a href="http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/2115050525927049528">http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/2115050525927049528</a></td>
+						<td width="80%"><a href="http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/">http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/</a></td>
 					</tr>
 					<tr>
 						<td width="20%"
 							class="indent2">Node Name</td>
-						<td width="80%">http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/2115050525927049528</td>
+						<td width="80%">http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Method</td>
+						<td width="80%">GET</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Parameter</td>
+						<td width="80%"></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Attack</td>
+						<td width="80%"></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Evidence</td>
+						<td width="80%">404</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Other Info</td>
+						<td width="80%"></td>
+					</tr>
+				
+					<tr>
+						<td width="20%"
+							class="indent1">URL</td>
+						<td width="80%"><a href="http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/2230663808373665353">http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/2230663808373665353</a></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Node Name</td>
+						<td width="80%">http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/2230663808373665353</td>
 					</tr>
 					<tr>
 						<td width="20%"
@@ -1125,6 +1413,78 @@ td {
 						<td width="20%"
 							class="indent2">Node Name</td>
 						<td width="80%">http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/paginas</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Method</td>
+						<td width="80%">GET</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Parameter</td>
+						<td width="80%"></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Attack</td>
+						<td width="80%"></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Evidence</td>
+						<td width="80%">404</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Other Info</td>
+						<td width="80%"></td>
+					</tr>
+				
+					<tr>
+						<td width="20%"
+							class="indent1">URL</td>
+						<td width="80%"><a href="http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/paginas/">http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/paginas/</a></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Node Name</td>
+						<td width="80%">http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/paginas/</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Method</td>
+						<td width="80%">GET</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Parameter</td>
+						<td width="80%"></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Attack</td>
+						<td width="80%"></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Evidence</td>
+						<td width="80%">404</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Other Info</td>
+						<td width="80%"></td>
+					</tr>
+				
+					<tr>
+						<td width="20%"
+							class="indent1">URL</td>
+						<td width="80%"><a href="http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/paginas/10">http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/paginas/10</a></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Node Name</td>
+						<td width="80%">http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/paginas/10</td>
 					</tr>
 					<tr>
 						<td width="20%"
@@ -1227,12 +1587,48 @@ td {
 					<tr>
 						<td width="20%"
 							class="indent1">URL</td>
-						<td width="80%"><a href="http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/paginas/6996381986662818207">http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/paginas/6996381986662818207</a></td>
+						<td width="80%"><a href="http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/paginas/10/">http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/paginas/10/</a></td>
 					</tr>
 					<tr>
 						<td width="20%"
 							class="indent2">Node Name</td>
-						<td width="80%">http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/paginas/6996381986662818207</td>
+						<td width="80%">http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/paginas/10/</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Method</td>
+						<td width="80%">GET</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Parameter</td>
+						<td width="80%"></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Attack</td>
+						<td width="80%"></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Evidence</td>
+						<td width="80%">404</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Other Info</td>
+						<td width="80%"></td>
+					</tr>
+				
+					<tr>
+						<td width="20%"
+							class="indent1">URL</td>
+						<td width="80%"><a href="http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/paginas/4946186337782271264">http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/paginas/4946186337782271264</a></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Node Name</td>
+						<td width="80%">http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/paginas/4946186337782271264</td>
 					</tr>
 					<tr>
 						<td width="20%"
@@ -1299,12 +1695,192 @@ td {
 					<tr>
 						<td width="20%"
 							class="indent1">URL</td>
+						<td width="80%"><a href="http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/visor/">http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/visor/</a></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Node Name</td>
+						<td width="80%">http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/visor/</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Method</td>
+						<td width="80%">GET</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Parameter</td>
+						<td width="80%"></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Attack</td>
+						<td width="80%"></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Evidence</td>
+						<td width="80%">404</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Other Info</td>
+						<td width="80%"></td>
+					</tr>
+				
+					<tr>
+						<td width="20%"
+							class="indent1">URL</td>
+						<td width="80%"><a href="http://host.docker.internal:8203/api/v1/ai/analisis-semantico">http://host.docker.internal:8203/api/v1/ai/analisis-semantico</a></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Node Name</td>
+						<td width="80%">http://host.docker.internal:8203/api/v1/ai/analisis-semantico ()({documento_id,texto,rfc_titular,razon_social_titular,forzar_ocr,usuario})</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Method</td>
+						<td width="80%">POST</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Parameter</td>
+						<td width="80%"></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Attack</td>
+						<td width="80%"></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Evidence</td>
+						<td width="80%">422</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Other Info</td>
+						<td width="80%"></td>
+					</tr>
+				
+					<tr>
+						<td width="20%"
+							class="indent1">URL</td>
+						<td width="80%"><a href="http://host.docker.internal:8203/api/v1/ai/chat-documento">http://host.docker.internal:8203/api/v1/ai/chat-documento</a></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Node Name</td>
+						<td width="80%">http://host.docker.internal:8203/api/v1/ai/chat-documento ()({documento_id,texto,pregunta,historial:[{rol,contenido}],forzar_modelo})</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Method</td>
+						<td width="80%">POST</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Parameter</td>
+						<td width="80%"></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Attack</td>
+						<td width="80%"></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Evidence</td>
+						<td width="80%">422</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Other Info</td>
+						<td width="80%"></td>
+					</tr>
+				
+					<tr>
+						<td width="20%"
+							class="indent1">URL</td>
 						<td width="80%"><a href="http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/localizar">http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/localizar</a></td>
 					</tr>
 					<tr>
 						<td width="20%"
 							class="indent2">Node Name</td>
 						<td width="80%">http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/localizar ()({cita})</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Method</td>
+						<td width="80%">POST</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Parameter</td>
+						<td width="80%"></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Attack</td>
+						<td width="80%"></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Evidence</td>
+						<td width="80%">404</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Other Info</td>
+						<td width="80%"></td>
+					</tr>
+				
+					<tr>
+						<td width="20%"
+							class="indent1">URL</td>
+						<td width="80%"><a href="http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/localizar">http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/localizar</a></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Node Name</td>
+						<td width="80%">http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/localizar ()({cita})</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Method</td>
+						<td width="80%">POST</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Parameter</td>
+						<td width="80%"></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Attack</td>
+						<td width="80%"></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Evidence</td>
+						<td width="80%">422</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Other Info</td>
+						<td width="80%"></td>
+					</tr>
+				
+					<tr>
+						<td width="20%"
+							class="indent1">URL</td>
+						<td width="80%"><a href="http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/localizar/">http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/localizar/</a></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Node Name</td>
+						<td width="80%">http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/localizar/ ()({cita})</td>
 					</tr>
 					<tr>
 						<td width="20%"
@@ -1371,12 +1947,12 @@ td {
 					<tr>
 						<td width="20%"
 							class="indent1">URL</td>
-						<td width="80%"><a href="http://host.docker.internal:8203/api/v1/ai/extraer-texto">http://host.docker.internal:8203/api/v1/ai/extraer-texto</a></td>
+						<td width="80%"><a href="http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/preparar/">http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/preparar/</a></td>
 					</tr>
 					<tr>
 						<td width="20%"
 							class="indent2">Node Name</td>
-						<td width="80%">http://host.docker.internal:8203/api/v1/ai/extraer-texto ()(multipart:file,forzar_ocr,incluir_texto,texto_completo,usar_cache)</td>
+						<td width="80%">http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/preparar/</td>
 					</tr>
 					<tr>
 						<td width="20%"
@@ -1396,7 +1972,7 @@ td {
 					<tr>
 						<td width="20%"
 							class="indent2">Evidence</td>
-						<td width="80%">400</td>
+						<td width="80%">404</td>
 					</tr>
 					<tr>
 						<td width="20%"
@@ -1440,11 +2016,299 @@ td {
 						<td width="80%"></td>
 					</tr>
 				
+					<tr>
+						<td width="20%"
+							class="indent1">URL</td>
+						<td width="80%"><a href="http://host.docker.internal:8203/api/v1/ai/extraer-texto/">http://host.docker.internal:8203/api/v1/ai/extraer-texto/</a></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Node Name</td>
+						<td width="80%">http://host.docker.internal:8203/api/v1/ai/extraer-texto/ ()(multipart:file,forzar_ocr,incluir_texto,texto_completo,usar_cache)</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Method</td>
+						<td width="80%">POST</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Parameter</td>
+						<td width="80%"></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Attack</td>
+						<td width="80%"></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Evidence</td>
+						<td width="80%">422</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Other Info</td>
+						<td width="80%"></td>
+					</tr>
+				
+					<tr>
+						<td width="20%"
+							class="indent1">URL</td>
+						<td width="80%"><a href="http://host.docker.internal:8203/computeMetadata/v1/">http://host.docker.internal:8203/computeMetadata/v1/</a></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Node Name</td>
+						<td width="80%">http://host.docker.internal:8203/computeMetadata/v1/ ()({documento_id,texto,rfc_titular,razon_social_titular,forzar_ocr,usuario})</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Method</td>
+						<td width="80%">POST</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Parameter</td>
+						<td width="80%"></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Attack</td>
+						<td width="80%"></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Evidence</td>
+						<td width="80%">404</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Other Info</td>
+						<td width="80%"></td>
+					</tr>
+				
+					<tr>
+						<td width="20%"
+							class="indent1">URL</td>
+						<td width="80%"><a href="http://host.docker.internal:8203/latest/meta-data/">http://host.docker.internal:8203/latest/meta-data/</a></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Node Name</td>
+						<td width="80%">http://host.docker.internal:8203/latest/meta-data/ ()({documento_id,texto,rfc_titular,razon_social_titular,forzar_ocr,usuario})</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Method</td>
+						<td width="80%">POST</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Parameter</td>
+						<td width="80%"></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Attack</td>
+						<td width="80%"></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Evidence</td>
+						<td width="80%">404</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Other Info</td>
+						<td width="80%"></td>
+					</tr>
+				
+					<tr>
+						<td width="20%"
+							class="indent1">URL</td>
+						<td width="80%"><a href="http://host.docker.internal:8203/metadata/instance">http://host.docker.internal:8203/metadata/instance</a></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Node Name</td>
+						<td width="80%">http://host.docker.internal:8203/metadata/instance ()({documento_id,texto,rfc_titular,razon_social_titular,forzar_ocr,usuario})</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Method</td>
+						<td width="80%">POST</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Parameter</td>
+						<td width="80%"></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Attack</td>
+						<td width="80%"></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Evidence</td>
+						<td width="80%">404</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Other Info</td>
+						<td width="80%"></td>
+					</tr>
+				
+					<tr>
+						<td width="20%"
+							class="indent1">URL</td>
+						<td width="80%"><a href="http://host.docker.internal:8203/metadata/v1">http://host.docker.internal:8203/metadata/v1</a></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Node Name</td>
+						<td width="80%">http://host.docker.internal:8203/metadata/v1 ()({documento_id,texto,rfc_titular,razon_social_titular,forzar_ocr,usuario})</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Method</td>
+						<td width="80%">POST</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Parameter</td>
+						<td width="80%"></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Attack</td>
+						<td width="80%"></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Evidence</td>
+						<td width="80%">404</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Other Info</td>
+						<td width="80%"></td>
+					</tr>
+				
+					<tr>
+						<td width="20%"
+							class="indent1">URL</td>
+						<td width="80%"><a href="http://host.docker.internal:8203/opc/v1/instance/">http://host.docker.internal:8203/opc/v1/instance/</a></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Node Name</td>
+						<td width="80%">http://host.docker.internal:8203/opc/v1/instance/ ()({documento_id,texto,rfc_titular,razon_social_titular,forzar_ocr,usuario})</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Method</td>
+						<td width="80%">POST</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Parameter</td>
+						<td width="80%"></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Attack</td>
+						<td width="80%"></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Evidence</td>
+						<td width="80%">404</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Other Info</td>
+						<td width="80%"></td>
+					</tr>
+				
+					<tr>
+						<td width="20%"
+							class="indent1">URL</td>
+						<td width="80%"><a href="http://host.docker.internal:8203/opc/v2/instance/">http://host.docker.internal:8203/opc/v2/instance/</a></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Node Name</td>
+						<td width="80%">http://host.docker.internal:8203/opc/v2/instance/ ()({documento_id,texto,rfc_titular,razon_social_titular,forzar_ocr,usuario})</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Method</td>
+						<td width="80%">POST</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Parameter</td>
+						<td width="80%"></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Attack</td>
+						<td width="80%"></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Evidence</td>
+						<td width="80%">404</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Other Info</td>
+						<td width="80%"></td>
+					</tr>
+				
+					<tr>
+						<td width="20%"
+							class="indent1">URL</td>
+						<td width="80%"><a href="http://host.docker.internal:8203/openstack/latest/meta_data.json">http://host.docker.internal:8203/openstack/latest/meta_data.json</a></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Node Name</td>
+						<td width="80%">http://host.docker.internal:8203/openstack/latest/meta_data.json ()({documento_id,texto,rfc_titular,razon_social_titular,forzar_ocr,usuario})</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Method</td>
+						<td width="80%">POST</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Parameter</td>
+						<td width="80%"></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Attack</td>
+						<td width="80%"></td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Evidence</td>
+						<td width="80%">404</td>
+					</tr>
+					<tr>
+						<td width="20%"
+							class="indent2">Other Info</td>
+						<td width="80%"></td>
+					</tr>
+				
 				<tr>
 					<td width="20%">Instances</td>
 					
 					
-					<td width="80%">21</td>
+					<td width="80%">44</td>
 					
 				</tr>
 				<tr>
@@ -1493,12 +2357,12 @@ td {
 					<tr>
 						<td width="20%"
 							class="indent1">URL</td>
-						<td width="80%"><a href="http://host.docker.internal:8203/api/v1/ai/configuracion-ocr">http://host.docker.internal:8203/api/v1/ai/configuracion-ocr</a></td>
+						<td width="80%"><a href="http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/visor">http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/visor</a></td>
 					</tr>
 					<tr>
 						<td width="20%"
 							class="indent2">Node Name</td>
-						<td width="80%">http://host.docker.internal:8203/api/v1/ai/configuracion-ocr</td>
+						<td width="80%">http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/visor</td>
 					</tr>
 					<tr>
 						<td width="20%"
@@ -1601,12 +2465,12 @@ td {
 					<tr>
 						<td width="20%"
 							class="indent1">URL</td>
-						<td width="80%"><a href="http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/preparar">http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/preparar</a></td>
+						<td width="80%"><a href="http://host.docker.internal:8203/api/v1/ai/analisis-semantico">http://host.docker.internal:8203/api/v1/ai/analisis-semantico</a></td>
 					</tr>
 					<tr>
 						<td width="20%"
 							class="indent2">Node Name</td>
-						<td width="80%">http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/preparar</td>
+						<td width="80%">http://host.docker.internal:8203/api/v1/ai/analisis-semantico ()({documento_id,texto,rfc_titular,razon_social_titular,forzar_ocr,usuario})</td>
 					</tr>
 					<tr>
 						<td width="20%"
@@ -1637,12 +2501,12 @@ td {
 					<tr>
 						<td width="20%"
 							class="indent1">URL</td>
-						<td width="80%"><a href="http://host.docker.internal:8203/api/v1/ai/extraer-texto">http://host.docker.internal:8203/api/v1/ai/extraer-texto</a></td>
+						<td width="80%"><a href="http://host.docker.internal:8203/api/v1/ai/chat-documento">http://host.docker.internal:8203/api/v1/ai/chat-documento</a></td>
 					</tr>
 					<tr>
 						<td width="20%"
 							class="indent2">Node Name</td>
-						<td width="80%">http://host.docker.internal:8203/api/v1/ai/extraer-texto ()(multipart:file,forzar_ocr,incluir_texto,texto_completo,usar_cache)</td>
+						<td width="80%">http://host.docker.internal:8203/api/v1/ai/chat-documento ()({documento_id,texto,pregunta,historial:[{rol,contenido}],forzar_modelo})</td>
 					</tr>
 					<tr>
 						<td width="20%"

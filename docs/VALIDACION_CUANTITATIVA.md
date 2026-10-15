@@ -591,18 +591,21 @@ El OCR cuesta 2 puntos de F1 en las entidades (el RFC de GS-CSF-03-ESC) y nada e
 
 #### RNF-01 · Evaluación determinista (≤ 2 s) — **Cumple**
 
+**Medición vigente: 15/10/2026, con el Módulo 7.** Cada petición lleva el token del validador de demostración y el core confirma la cuenta en la base antes de responder; los dictámenes se registran con el token SISTEMA, como lo hace el ai-service. La medición del 01/10/2026, sin autenticación, queda como referencia.
+
 `python scripts/benchmark_rendimiento.py`, sobre `plurione_compliance_bench`. Expedientes jurídicos con tipos de documento distintos, cada uno con su dictamen, el anexo del contrato (RIE-02) y el cotejo RN-03 acreditado. 5 peticiones de calentamiento y 100 medidas, secuenciales. Detalle en [`rendimiento.json`](resultados_validacion/rendimiento.json).
 
-| Expediente | `GET /expedientes/{id}` p50 / p95 / p99 | Con OCR de 20 páginas en curso, p95 | `reevaluar()` en proceso, p95 |
-|---|---|---|---|
-| 3 documentos | 47.5 / 65.6 / 73.1 ms | 54.6 ms | 47.8 ms |
-| 8 documentos | 30.0 / 54.2 / 62.0 ms | 56.4 ms | 53.8 ms |
-| 15 documentos | 51.2 / **72.5** / 80.4 ms | 58.5 ms | 55.6 ms |
-| Listado de 30 expedientes (estrés) | 201.9 / 245.1 / 280.1 ms | — | — |
+| Expediente | `GET /expedientes/{id}` p50 / p95 / p99 | Con OCR de 20 páginas en curso, p95 | `reevaluar()` en proceso, p95 | p95 del 01/10 (sin autenticación) |
+|---|---|---|---|---|
+| 3 documentos | 35.3 / 48.6 / 51.1 ms | 49.9 ms | 33.6 ms | 65.6 ms |
+| 8 documentos | 36.2 / 48.5 / 57.8 ms | 52.1 ms | 34.8 ms | 54.2 ms |
+| 15 documentos | 36.9 / **48.8** / 53.2 ms | **55.7 ms** | 33.0 ms | 72.5 ms |
+| Listado de 30 expedientes (estrés) | 202.0 / 228.0 / 275.2 ms | — | — | 245.1 ms |
 
-- El peor p95 es de 72.5 ms: **27 veces por debajo de la meta**.
-- La lectura OCR en curso con 8 procesos no la degrada. El core es otro proceso y su trabajo es de base de datos, no de CPU.
-- La evaluación en proceso cuesta de 30 a 55 ms; el resto del tiempo es red local y serialización.
+- El peor p95 es de 55.7 ms (15 documentos con OCR en curso): **36 veces por debajo de la meta**.
+- **La autenticación no se nota en la serie secuencial.** Confirmar la cuenta es una consulta por clave primaria. Las cifras bajaron frente al 01/10, pero esa diferencia es variación del equipo entre días (§9), no una mejora del código: también bajó la evaluación en proceso, que no pasa por la autenticación.
+- La lectura OCR en curso con 8 procesos no degrada la consulta. El core es otro proceso y su trabajo es de base de datos, no de CPU.
+- La evaluación en proceso cuesta de 12 a 35 ms; el resto del tiempo es red local, autenticación y serialización.
 
 #### RNF-02 · Extracción y análisis (≤ 25 s por documento de hasta 20 páginas) — **Cumple con documentos sintéticos; no con el acta real**
 
@@ -647,24 +650,25 @@ El OCR cuesta 2 puntos de F1 en las entidades (el RFC de GS-CSF-03-ESC) y nada e
 
 #### RNF-03 · Concurrencia (≥ 50 peticiones simultáneas) — **Cumple el criterio de §7.4, con degradación de latencia**
 
-50 peticiones liberadas por una barrera, contra la misma serie en secuencia:
+50 peticiones liberadas por una barrera, contra la misma serie en secuencia. Medición vigente del 15/10/2026, con el Módulo 7: cada una de las 50 sesiones concurrentes lleva el token del validador. Entre paréntesis, la del 01/10/2026, sin autenticación.
 
 | Escenario | Secuencial p95 | Simultáneo p50 / p95 | Degradación del p95 | 5xx | Respuestas correctas |
 |---|---|---|---|---|---|
-| `GET /health` | 5.0 ms | 269 / 316 ms | ×63 | 0 | 50/50 |
-| `GET /expedientes/{id}` (10 expedientes) | 64.2 ms | 831 / **1,070 ms** | ×17 | 0 | 50/50 |
-| Cargas de documentos distintos (10 expedientes) | 98.2 ms | 1,542 / 2,200 ms | ×22 | 0 | 50/50 (201) |
+| `GET /health` (pública) | 4.6 ms (5.0) | 286 / 333 ms (269 / 316) | ×72 (×63) | 0 | 50/50 |
+| `GET /expedientes/{id}` (10 expedientes) | 47.9 ms (64.2) | 981 / **1,289 ms** (831 / 1,070) | ×27 (×17) | 0 | 50/50 |
+| Cargas de documentos distintos (10 expedientes) | 66.4 ms (98.2) | 1,371 / 2,050 ms (1,542 / 2,200) | ×31 (×22) | 0 | 50/50 (201) |
 
 | Pérdida de transacciones | Resultado |
 |---|---|
 | Cargas aceptadas (secuenciales + simultáneas) | 100 |
 | Documentos en la base (versiones incluidas) | 100 |
 | Eventos INGESTA_DOCUMENTO | 100 |
-| Cadena de la bitácora | Íntegra y sellada (499 eventos) |
+| Cadena de la bitácora | Íntegra y sellada (504 eventos; 499 el 01/10, sin las altas de las cuentas de demostración) |
 
-- **Sin errores ni pérdidas:** 0 respuestas 5xx, 0 transacciones perdidas, la cadena íntegra y un p95 de consulta simultánea de 1.07 s, por debajo de 2 s.
+- **Sin errores ni pérdidas:** 0 respuestas 5xx, 0 transacciones perdidas, la cadena íntegra y un p95 de consulta simultánea de 1.29 s, por debajo de 2 s.
+- **Con autenticación, la consulta simultánea sube de 1.07 a 1.29 s de p95.** Cada petición confirma la cuenta en la base: una consulta más que compite por el mismo proceso y las mismas conexiones. Con una corrida por fecha, la diferencia no puede separarse por completo de la variación del equipo. Las cargas simultáneas no empeoraron (2.05 s): las limita el candado de la bitácora, no la autenticación.
 - **Sí hay degradación de latencia:** las 50 peticiones se atienden con un solo proceso de uvicorn, así que esperan turno.
-- **Las cargas simultáneas suben a 2.2 s de p95.** El candado de la bitácora las serializa, como advierte el PRD §21.3. Es el precio de la cadena sellada: sin el candado, dos eventos podrían encadenarse al mismo eslabón.
+- **Las cargas simultáneas suben a unos 2 s de p95** (2.05 s; 2.2 s el 01/10). El candado de la bitácora las serializa, como advierte el PRD §21.3. Es el precio de la cadena sellada: sin el candado, dos eventos podrían encadenarse al mismo eslabón.
 - **«Sin degradación» se lee como «sin errores ni pérdidas y dentro de la meta de RNF-01»,** el criterio que fija §7.4. Un despliegue con varios procesos (`uvicorn --workers`) reduciría la espera de las consultas; las cargas seguirían serializadas por diseño.
 - **Primera corrida descartada.** Cargaba tipos repetidos, que el core guarda como versiones, y contaba los documentos desde la evaluación, que solo lista los vigentes. El script ahora exige el tamaño evaluado y cuenta las filas en la base.
 
@@ -672,9 +676,9 @@ El OCR cuesta 2 puntos de F1 en las entidades (el RFC de GS-CSF-03-ESC) y nada e
 
 | Requisito | Resultado |
 |---|---|
-| RNF-01 (≤ 2 s) | **Cumple:** p95 ≤ 73 ms, incluso con OCR en curso |
+| RNF-01 (≤ 2 s) | **Cumple:** p95 ≤ 56 ms con autenticación (15/10/2026), incluso con OCR en curso; ≤ 73 ms el 01/10/2026, sin autenticación |
 | RNF-02 (≤ 25 s, 20 páginas) | **Cumple con el contrato escaneado sintético** (≈ 11.4 s, reconstrucción pendiente de la medición formal sin el presupuesto del grabador); **no cumple con el acta real densa** (≈ 30 s normalizado a 20 páginas). **Actualización del 04/10/2026:** con la lectura anticipada la auditoría solo espera al Nivel 4 (≈ 3 s), también con el acta real (ver «Lectura anticipada y prioridad del OCR») |
-| RNF-03 (≥ 50 simultáneas) | **Cumple el criterio de §7.4** (0 errores, 0 pérdidas, p95 de consulta 1.07 s), con degradación de latencia por un solo proceso |
+| RNF-03 (≥ 50 simultáneas) | **Cumple el criterio de §7.4** (0 errores, 0 pérdidas, p95 de consulta 1.29 s con autenticación el 15/10/2026; 1.07 s el 01/10/2026, sin ella), con degradación de latencia por un solo proceso |
 
 
 #### Experimento: OCR a 250 dpi (04/10/2026)

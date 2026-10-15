@@ -1,24 +1,16 @@
 {
 	"@programName": "ZAP",
 	"@version": "2.17.0",
-	"@generated": "Thu, 1 Oct 2026 15:53:03",
-	"created": "2026-10-01T15:53:03.486210696Z",
+	"@generated": "Thu, 15 Oct 2026 15:40:56",
+	"created": "2026-10-15T15:40:56.327321069Z",
 	"insights":[
 		{
 			"level": "Low",
-			"reason": "Warning",
-			"site": "",
-			"key": "insight.log.error",
-			"description": "ZAP errors logged - see the zap.log file for details",
-			"statistic": "4"
-		},
-		{
-			"level": "Low",
-			"reason": "Warning",
-			"site": "",
-			"key": "insight.log.warn",
-			"description": "ZAP warnings logged - see the zap.log file for details",
-			"statistic": "4"
+			"reason": "Exceeded High",
+			"site": "http://host.docker.internal:8203",
+			"key": "insight.code.5xx",
+			"description": "Percentage of responses with status code 5xx",
+			"statistic": "52"
 		},
 		{
 			"level": "Info",
@@ -30,19 +22,11 @@
 		},
 		{
 			"level": "Info",
-			"reason": "Informational",
+			"reason": "Exceeded Low",
 			"site": "http://host.docker.internal:8203",
 			"key": "insight.code.4xx",
 			"description": "Percentage of responses with status code 4xx",
-			"statistic": "54"
-		},
-		{
-			"level": "Info",
-			"reason": "Informational",
-			"site": "http://host.docker.internal:8203",
-			"key": "insight.code.5xx",
-			"description": "Percentage of responses with status code 5xx",
-			"statistic": "44"
+			"statistic": "46"
 		},
 		{
 			"level": "Info",
@@ -58,7 +42,7 @@
 			"site": "http://host.docker.internal:8203",
 			"key": "insight.endpoint.method.GET",
 			"description": "Percentage of endpoints with method GET",
-			"statistic": "78"
+			"statistic": "61"
 		},
 		{
 			"level": "Info",
@@ -66,7 +50,7 @@
 			"site": "http://host.docker.internal:8203",
 			"key": "insight.endpoint.method.POST",
 			"description": "Percentage of endpoints with method POST",
-			"statistic": "21"
+			"statistic": "38"
 		},
 		{
 			"level": "Info",
@@ -74,7 +58,7 @@
 			"site": "http://host.docker.internal:8203",
 			"key": "insight.endpoint.total",
 			"description": "Count of total endpoints",
-			"statistic": "23"
+			"statistic": "47"
 		},
 		{
 			"level": "Info",
@@ -82,7 +66,7 @@
 			"site": "http://host.docker.internal:8203",
 			"key": "insight.response.slow",
 			"description": "Percentage of slow responses",
-			"statistic": "45"
+			"statistic": "1"
 		}
 	],
 	"site":[ 
@@ -103,7 +87,7 @@
 					"desc": "<p>A response code of 503 was returned by the server.</p><p>This may indicate that the application is failing to handle unexpected input correctly.</p><p>Raised by the 'Alert on HTTP Response Code Error' script</p>",
 					"instances":[ 
 						{
-							"id": "7",
+							"id": "4",
 							"uri": "http://host.docker.internal:8203/api/v1/ai/analisis-semantico",
 							"nodeName": "http:\/\/host.docker.internal:8203\/api\/v1\/ai\/analisis-semantico ()({documento_id,texto,rfc_titular,razon_social_titular,forzar_ocr,usuario})",
 							"method": "POST",
@@ -113,7 +97,17 @@
 							"otherinfo": ""
 						},
 						{
-							"id": "9",
+							"id": "1837",
+							"uri": "http://host.docker.internal:8203/api/v1/ai/analisis-semantico/",
+							"nodeName": "http:\/\/host.docker.internal:8203\/api\/v1\/ai\/analisis-semantico\/ ()({documento_id,texto,rfc_titular,razon_social_titular,forzar_ocr,usuario})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "503",
+							"otherinfo": ""
+						},
+						{
+							"id": "5",
 							"uri": "http://host.docker.internal:8203/api/v1/ai/chat-documento",
 							"nodeName": "http:\/\/host.docker.internal:8203\/api\/v1\/ai\/chat-documento ()({documento_id,texto,pregunta,historial:[{rol,contenido}],forzar_modelo})",
 							"method": "POST",
@@ -121,16 +115,26 @@
 							"attack": "",
 							"evidence": "503",
 							"otherinfo": ""
+						},
+						{
+							"id": "1833",
+							"uri": "http://host.docker.internal:8203/api/v1/ai/chat-documento/",
+							"nodeName": "http:\/\/host.docker.internal:8203\/api\/v1\/ai\/chat-documento\/ ()({documento_id,texto,pregunta,historial:[{rol,contenido}],forzar_modelo})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "503",
+							"otherinfo": ""
 						}
 					],
-					"count": "2",
+					"count": "4",
 					"systemic": false,
 					"solution": "",
 					"otherinfo": "",
 					"reference": "",
 					"cweid": "388",
 					"wascid": "20",
-					"sourceid": "12"
+					"sourceid": "13"
 				},
 				{
 					"pluginid": "100000",
@@ -143,7 +147,7 @@
 					"desc": "<p>A response code of 404 was returned by the server.</p><p>This may indicate that the application is failing to handle unexpected input correctly.</p><p>Raised by the 'Alert on HTTP Response Code Error' script</p>",
 					"instances":[ 
 						{
-							"id": "20",
+							"id": "16",
 							"uri": "http://host.docker.internal:8203",
 							"nodeName": "http:\/\/host.docker.internal:8203",
 							"method": "GET",
@@ -153,9 +157,9 @@
 							"otherinfo": ""
 						},
 						{
-							"id": "13",
-							"uri": "http://host.docker.internal:8203/6343555473205158457",
-							"nodeName": "http:\/\/host.docker.internal:8203\/6343555473205158457",
+							"id": "1829",
+							"uri": "http://host.docker.internal:8203/",
+							"nodeName": "http:\/\/host.docker.internal:8203\/",
 							"method": "GET",
 							"param": "",
 							"attack": "",
@@ -163,7 +167,17 @@
 							"otherinfo": ""
 						},
 						{
-							"id": "21",
+							"id": "9",
+							"uri": "http://host.docker.internal:8203/4995118815647245910",
+							"nodeName": "http:\/\/host.docker.internal:8203\/4995118815647245910",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "17",
 							"uri": "http://host.docker.internal:8203/api",
 							"nodeName": "http:\/\/host.docker.internal:8203\/api",
 							"method": "GET",
@@ -173,9 +187,9 @@
 							"otherinfo": ""
 						},
 						{
-							"id": "14",
-							"uri": "http://host.docker.internal:8203/api/1828338506913087256",
-							"nodeName": "http:\/\/host.docker.internal:8203\/api\/1828338506913087256",
+							"id": "1835",
+							"uri": "http://host.docker.internal:8203/api/",
+							"nodeName": "http:\/\/host.docker.internal:8203\/api\/",
 							"method": "GET",
 							"param": "",
 							"attack": "",
@@ -183,7 +197,17 @@
 							"otherinfo": ""
 						},
 						{
-							"id": "23",
+							"id": "10",
+							"uri": "http://host.docker.internal:8203/api/5351162384588806729",
+							"nodeName": "http:\/\/host.docker.internal:8203\/api\/5351162384588806729",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "22",
 							"uri": "http://host.docker.internal:8203/api/v1",
 							"nodeName": "http:\/\/host.docker.internal:8203\/api\/v1",
 							"method": "GET",
@@ -193,9 +217,9 @@
 							"otherinfo": ""
 						},
 						{
-							"id": "15",
-							"uri": "http://host.docker.internal:8203/api/v1/7045960944904261964",
-							"nodeName": "http:\/\/host.docker.internal:8203\/api\/v1\/7045960944904261964",
+							"id": "1839",
+							"uri": "http://host.docker.internal:8203/api/v1/",
+							"nodeName": "http:\/\/host.docker.internal:8203\/api\/v1\/",
 							"method": "GET",
 							"param": "",
 							"attack": "",
@@ -203,7 +227,17 @@
 							"otherinfo": ""
 						},
 						{
-							"id": "26",
+							"id": "11",
+							"uri": "http://host.docker.internal:8203/api/v1/4555992245074301486",
+							"nodeName": "http:\/\/host.docker.internal:8203\/api\/v1\/4555992245074301486",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "27",
 							"uri": "http://host.docker.internal:8203/api/v1/ai",
 							"nodeName": "http:\/\/host.docker.internal:8203\/api\/v1\/ai",
 							"method": "GET",
@@ -213,9 +247,9 @@
 							"otherinfo": ""
 						},
 						{
-							"id": "16",
-							"uri": "http://host.docker.internal:8203/api/v1/ai/660057943506630527",
-							"nodeName": "http:\/\/host.docker.internal:8203\/api\/v1\/ai\/660057943506630527",
+							"id": "1845",
+							"uri": "http://host.docker.internal:8203/api/v1/ai/",
+							"nodeName": "http:\/\/host.docker.internal:8203\/api\/v1\/ai\/",
 							"method": "GET",
 							"param": "",
 							"attack": "",
@@ -223,7 +257,27 @@
 							"otherinfo": ""
 						},
 						{
-							"id": "28",
+							"id": "12",
+							"uri": "http://host.docker.internal:8203/api/v1/ai/8442338866488098415",
+							"nodeName": "http:\/\/host.docker.internal:8203\/api\/v1\/ai\/8442338866488098415",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "2087",
+							"uri": "http://host.docker.internal:8203/api/v1/ai/actuator/health",
+							"nodeName": "http:\/\/host.docker.internal:8203\/api\/v1\/ai\/actuator\/health",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "31",
 							"uri": "http://host.docker.internal:8203/api/v1/ai/documentos",
 							"nodeName": "http:\/\/host.docker.internal:8203\/api\/v1\/ai\/documentos",
 							"method": "GET",
@@ -233,9 +287,9 @@
 							"otherinfo": ""
 						},
 						{
-							"id": "17",
-							"uri": "http://host.docker.internal:8203/api/v1/ai/documentos/9078148181457831174",
-							"nodeName": "http:\/\/host.docker.internal:8203\/api\/v1\/ai\/documentos\/9078148181457831174",
+							"id": "1847",
+							"uri": "http://host.docker.internal:8203/api/v1/ai/documentos/",
+							"nodeName": "http:\/\/host.docker.internal:8203\/api\/v1\/ai\/documentos\/",
 							"method": "GET",
 							"param": "",
 							"attack": "",
@@ -243,7 +297,17 @@
 							"otherinfo": ""
 						},
 						{
-							"id": "30",
+							"id": "13",
+							"uri": "http://host.docker.internal:8203/api/v1/ai/documentos/7152034232233197507",
+							"nodeName": "http:\/\/host.docker.internal:8203\/api\/v1\/ai\/documentos\/7152034232233197507",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "35",
 							"uri": "http://host.docker.internal:8203/api/v1/ai/documentos/documento_id",
 							"nodeName": "http:\/\/host.docker.internal:8203\/api\/v1\/ai\/documentos\/documento_id",
 							"method": "GET",
@@ -253,9 +317,9 @@
 							"otherinfo": ""
 						},
 						{
-							"id": "18",
-							"uri": "http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/2115050525927049528",
-							"nodeName": "http:\/\/host.docker.internal:8203\/api\/v1\/ai\/documentos\/documento_id\/2115050525927049528",
+							"id": "1849",
+							"uri": "http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/",
+							"nodeName": "http:\/\/host.docker.internal:8203\/api\/v1\/ai\/documentos\/documento_id\/",
 							"method": "GET",
 							"param": "",
 							"attack": "",
@@ -263,7 +327,17 @@
 							"otherinfo": ""
 						},
 						{
-							"id": "33",
+							"id": "14",
+							"uri": "http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/2230663808373665353",
+							"nodeName": "http:\/\/host.docker.internal:8203\/api\/v1\/ai\/documentos\/documento_id\/2230663808373665353",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "37",
 							"uri": "http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/paginas",
 							"nodeName": "http:\/\/host.docker.internal:8203\/api\/v1\/ai\/documentos\/documento_id\/paginas",
 							"method": "GET",
@@ -273,7 +347,27 @@
 							"otherinfo": ""
 						},
 						{
-							"id": "11",
+							"id": "1850",
+							"uri": "http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/paginas/",
+							"nodeName": "http:\/\/host.docker.internal:8203\/api\/v1\/ai\/documentos\/documento_id\/paginas\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "1852",
+							"uri": "http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/paginas/10",
+							"nodeName": "http:\/\/host.docker.internal:8203\/api\/v1\/ai\/documentos\/documento_id\/paginas\/10",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "7",
 							"uri": "http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/paginas/10?ancho=1000",
 							"nodeName": "http:\/\/host.docker.internal:8203\/api\/v1\/ai\/documentos\/documento_id\/paginas\/10 (ancho)",
 							"method": "GET",
@@ -283,7 +377,7 @@
 							"otherinfo": ""
 						},
 						{
-							"id": "35",
+							"id": "42",
 							"uri": "http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/paginas/10?ancho=http%3A%2F%2Fwww.google.com%2F",
 							"nodeName": "http:\/\/host.docker.internal:8203\/api\/v1\/ai\/documentos\/documento_id\/paginas\/10 (ancho)",
 							"method": "GET",
@@ -293,9 +387,9 @@
 							"otherinfo": ""
 						},
 						{
-							"id": "19",
-							"uri": "http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/paginas/6996381986662818207",
-							"nodeName": "http:\/\/host.docker.internal:8203\/api\/v1\/ai\/documentos\/documento_id\/paginas\/6996381986662818207",
+							"id": "1854",
+							"uri": "http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/paginas/10/",
+							"nodeName": "http:\/\/host.docker.internal:8203\/api\/v1\/ai\/documentos\/documento_id\/paginas\/10\/",
 							"method": "GET",
 							"param": "",
 							"attack": "",
@@ -303,7 +397,17 @@
 							"otherinfo": ""
 						},
 						{
-							"id": "10",
+							"id": "15",
+							"uri": "http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/paginas/4946186337782271264",
+							"nodeName": "http:\/\/host.docker.internal:8203\/api\/v1\/ai\/documentos\/documento_id\/paginas\/4946186337782271264",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "6",
 							"uri": "http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/visor",
 							"nodeName": "http:\/\/host.docker.internal:8203\/api\/v1\/ai\/documentos\/documento_id\/visor",
 							"method": "GET",
@@ -313,7 +417,37 @@
 							"otherinfo": ""
 						},
 						{
-							"id": "12",
+							"id": "1853",
+							"uri": "http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/visor/",
+							"nodeName": "http:\/\/host.docker.internal:8203\/api\/v1\/ai\/documentos\/documento_id\/visor\/",
+							"method": "GET",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "1804",
+							"uri": "http://host.docker.internal:8203/api/v1/ai/analisis-semantico",
+							"nodeName": "http:\/\/host.docker.internal:8203\/api\/v1\/ai\/analisis-semantico ()({documento_id,texto,rfc_titular,razon_social_titular,forzar_ocr,usuario})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "422",
+							"otherinfo": ""
+						},
+						{
+							"id": "638",
+							"uri": "http://host.docker.internal:8203/api/v1/ai/chat-documento",
+							"nodeName": "http:\/\/host.docker.internal:8203\/api\/v1\/ai\/chat-documento ()({documento_id,texto,pregunta,historial:[{rol,contenido}],forzar_modelo})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "422",
+							"otherinfo": ""
+						},
+						{
+							"id": "8",
 							"uri": "http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/localizar",
 							"nodeName": "http:\/\/host.docker.internal:8203\/api\/v1\/ai\/documentos\/documento_id\/localizar ()({cita})",
 							"method": "POST",
@@ -323,7 +457,27 @@
 							"otherinfo": ""
 						},
 						{
-							"id": "2",
+							"id": "439",
+							"uri": "http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/localizar",
+							"nodeName": "http:\/\/host.docker.internal:8203\/api\/v1\/ai\/documentos\/documento_id\/localizar ()({cita})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "422",
+							"otherinfo": ""
+						},
+						{
+							"id": "1843",
+							"uri": "http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/localizar/",
+							"nodeName": "http:\/\/host.docker.internal:8203\/api\/v1\/ai\/documentos\/documento_id\/localizar\/ ()({cita})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "3",
 							"uri": "http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/preparar",
 							"nodeName": "http:\/\/host.docker.internal:8203\/api\/v1\/ai\/documentos\/documento_id\/preparar",
 							"method": "POST",
@@ -333,17 +487,17 @@
 							"otherinfo": ""
 						},
 						{
-							"id": "0",
-							"uri": "http://host.docker.internal:8203/api/v1/ai/extraer-texto",
-							"nodeName": "http:\/\/host.docker.internal:8203\/api\/v1\/ai\/extraer-texto ()(multipart:file,forzar_ocr,incluir_texto,texto_completo,usar_cache)",
+							"id": "1842",
+							"uri": "http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/preparar/",
+							"nodeName": "http:\/\/host.docker.internal:8203\/api\/v1\/ai\/documentos\/documento_id\/preparar\/",
 							"method": "POST",
 							"param": "",
 							"attack": "",
-							"evidence": "400",
+							"evidence": "404",
 							"otherinfo": ""
 						},
 						{
-							"id": "87",
+							"id": "2",
 							"uri": "http://host.docker.internal:8203/api/v1/ai/extraer-texto",
 							"nodeName": "http:\/\/host.docker.internal:8203\/api\/v1\/ai\/extraer-texto ()(multipart:file,forzar_ocr,incluir_texto,texto_completo,usar_cache)",
 							"method": "POST",
@@ -351,16 +505,96 @@
 							"attack": "",
 							"evidence": "422",
 							"otherinfo": ""
+						},
+						{
+							"id": "1836",
+							"uri": "http://host.docker.internal:8203/api/v1/ai/extraer-texto/",
+							"nodeName": "http:\/\/host.docker.internal:8203\/api\/v1\/ai\/extraer-texto\/ ()(multipart:file,forzar_ocr,incluir_texto,texto_completo,usar_cache)",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "422",
+							"otherinfo": ""
+						},
+						{
+							"id": "1362",
+							"uri": "http://host.docker.internal:8203/computeMetadata/v1/",
+							"nodeName": "http:\/\/host.docker.internal:8203\/computeMetadata\/v1\/ ()({documento_id,texto,rfc_titular,razon_social_titular,forzar_ocr,usuario})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "1358",
+							"uri": "http://host.docker.internal:8203/latest/meta-data/",
+							"nodeName": "http:\/\/host.docker.internal:8203\/latest\/meta-data\/ ()({documento_id,texto,rfc_titular,razon_social_titular,forzar_ocr,usuario})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "1392",
+							"uri": "http://host.docker.internal:8203/metadata/instance",
+							"nodeName": "http:\/\/host.docker.internal:8203\/metadata\/instance ()({documento_id,texto,rfc_titular,razon_social_titular,forzar_ocr,usuario})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "1394",
+							"uri": "http://host.docker.internal:8203/metadata/v1",
+							"nodeName": "http:\/\/host.docker.internal:8203\/metadata\/v1 ()({documento_id,texto,rfc_titular,razon_social_titular,forzar_ocr,usuario})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "1370",
+							"uri": "http://host.docker.internal:8203/opc/v1/instance/",
+							"nodeName": "http:\/\/host.docker.internal:8203\/opc\/v1\/instance\/ ()({documento_id,texto,rfc_titular,razon_social_titular,forzar_ocr,usuario})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "1379",
+							"uri": "http://host.docker.internal:8203/opc/v2/instance/",
+							"nodeName": "http:\/\/host.docker.internal:8203\/opc\/v2\/instance\/ ()({documento_id,texto,rfc_titular,razon_social_titular,forzar_ocr,usuario})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
+						},
+						{
+							"id": "1399",
+							"uri": "http://host.docker.internal:8203/openstack/latest/meta_data.json",
+							"nodeName": "http:\/\/host.docker.internal:8203\/openstack\/latest\/meta_data.json ()({documento_id,texto,rfc_titular,razon_social_titular,forzar_ocr,usuario})",
+							"method": "POST",
+							"param": "",
+							"attack": "",
+							"evidence": "404",
+							"otherinfo": ""
 						}
 					],
-					"count": "21",
+					"count": "44",
 					"systemic": false,
 					"solution": "",
 					"otherinfo": "",
 					"reference": "",
 					"cweid": "388",
 					"wascid": "20",
-					"sourceid": "32"
+					"sourceid": "33"
 				},
 				{
 					"pluginid": "10049",
@@ -373,9 +607,9 @@
 					"desc": "<p>The response contents are not storable by caching components such as proxy servers. If the response does not contain sensitive, personal or user-specific information, it may benefit from being stored and cached, to improve performance.</p>",
 					"instances":[ 
 						{
-							"id": "6",
-							"uri": "http://host.docker.internal:8203/api/v1/ai/configuracion-ocr",
-							"nodeName": "http:\/\/host.docker.internal:8203\/api\/v1\/ai\/configuracion-ocr",
+							"id": "131",
+							"uri": "http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/visor",
+							"nodeName": "http:\/\/host.docker.internal:8203\/api\/v1\/ai\/documentos\/documento_id\/visor",
 							"method": "GET",
 							"param": "",
 							"attack": "",
@@ -383,7 +617,7 @@
 							"otherinfo": ""
 						},
 						{
-							"id": "5",
+							"id": "1",
 							"uri": "http://host.docker.internal:8203/api/v1/health",
 							"nodeName": "http:\/\/host.docker.internal:8203\/api\/v1\/health",
 							"method": "GET",
@@ -393,7 +627,7 @@
 							"otherinfo": ""
 						},
 						{
-							"id": "1",
+							"id": "0",
 							"uri": "http://host.docker.internal:8203/openapi.json",
 							"nodeName": "http:\/\/host.docker.internal:8203\/openapi.json",
 							"method": "GET",
@@ -403,9 +637,9 @@
 							"otherinfo": ""
 						},
 						{
-							"id": "3",
-							"uri": "http://host.docker.internal:8203/api/v1/ai/documentos/documento_id/preparar",
-							"nodeName": "http:\/\/host.docker.internal:8203\/api\/v1\/ai\/documentos\/documento_id\/preparar",
+							"id": "128",
+							"uri": "http://host.docker.internal:8203/api/v1/ai/analisis-semantico",
+							"nodeName": "http:\/\/host.docker.internal:8203\/api\/v1\/ai\/analisis-semantico ()({documento_id,texto,rfc_titular,razon_social_titular,forzar_ocr,usuario})",
 							"method": "POST",
 							"param": "",
 							"attack": "",
@@ -413,9 +647,9 @@
 							"otherinfo": ""
 						},
 						{
-							"id": "4",
-							"uri": "http://host.docker.internal:8203/api/v1/ai/extraer-texto",
-							"nodeName": "http:\/\/host.docker.internal:8203\/api\/v1\/ai\/extraer-texto ()(multipart:file,forzar_ocr,incluir_texto,texto_completo,usar_cache)",
+							"id": "129",
+							"uri": "http://host.docker.internal:8203/api/v1/ai/chat-documento",
+							"nodeName": "http:\/\/host.docker.internal:8203\/api\/v1\/ai\/chat-documento ()({documento_id,texto,pregunta,historial:[{rol,contenido}],forzar_modelo})",
 							"method": "POST",
 							"param": "",
 							"attack": "",
@@ -430,7 +664,7 @@
 					"reference": "<p>https://datatracker.ietf.org/doc/html/rfc7234</p><p>https://datatracker.ietf.org/doc/html/rfc7231</p><p>https://www.w3.org/Protocols/rfc2616/rfc2616-sec13.html</p>",
 					"cweid": "524",
 					"wascid": "13",
-					"sourceid": "8"
+					"sourceid": "15"
 				}
 			]
 		}
