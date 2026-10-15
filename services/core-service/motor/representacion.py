@@ -1,5 +1,5 @@
 """
-Cotejo de representación legal — RN-03 con los datos de RSC-02 (P2, PRD §21.2).
+Cotejo de representación legal — RN-03 con los datos de RSC-02 (P2, ESTADO_DEL_DESARROLLO §6.2).
 
 «Al evaluar expedientes jurídicos que incluyan contratos mercantiles, el
 sistema debe comprobar que el apoderado legal que suscribe el contrato cuente

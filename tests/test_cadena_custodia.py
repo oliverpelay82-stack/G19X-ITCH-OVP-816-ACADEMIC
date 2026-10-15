@@ -1,5 +1,5 @@
 """
-P3 — Cadena de custodia sellada de la bitácora (PRD §21.3: PLUS-04, PLUS-05,
+P3 — Cadena de custodia sellada de la bitácora (ESTADO_DEL_DESARROLLO §6.3: PLUS-04, PLUS-05,
 HU-39, HU-40).
 
   1. Cada evento queda sellado y enlazado con el anterior; la API expone el

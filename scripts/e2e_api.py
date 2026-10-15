@@ -1,5 +1,5 @@
 """
-Pruebas de extremo a extremo del API (P7, Q-b, PRD §21.7; HU-60).
+Pruebas de extremo a extremo del API (P7, Q-b, ESTADO_DEL_DESARROLLO §6.7; HU-60).
 
 Recorre por HTTP real, como lo hace la interfaz, el flujo completo con dos
 titulares: uno con un RFC real (dígito verificador del SAT correcto) y otro

@@ -92,7 +92,7 @@ def criterios_contenido(tipo_documento: str | None) -> list[dict[str, Any]]:
     ]
 
 
-# M6 (PRD §21.6): versión del catálogo de reglas, en memoria unos segundos para
+# M6 (ESTADO_DEL_DESARROLLO §6.6): versión del catálogo de reglas, en memoria unos segundos para
 # no consultarla en cada auditoría de un lote.
 # Una falla también se recuerda (menos tiempo): sin rules-service, cada auditoría
 # de un lote no espera de nuevo la conexión rechazada.
@@ -103,7 +103,7 @@ _version_en_memoria: tuple[float, str | None] = (float("-inf"), None)
 
 def version_reglas_tipo(tipo_documento: str | None) -> str | None:
     """
-    M7 (PRD §21.7): versión de las reglas que deciden el dictamen de este tipo.
+    M7 (ESTADO_DEL_DESARROLLO §6.7): versión de las reglas que deciden el dictamen de este tipo.
     Se pide con cada auditoría (cambia al editar una regla); sin rules-service,
     None: el dictamen queda sin ella y simplemente no generará el aviso.
     """

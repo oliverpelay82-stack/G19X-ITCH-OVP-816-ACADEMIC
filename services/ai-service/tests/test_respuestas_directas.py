@@ -1,5 +1,5 @@
 """
-Pruebas de T0, PLUS-07 (PRD §21.4): respuestas del chat desde los datos del
+Pruebas de T0, PLUS-07 (ESTADO_DEL_DESARROLLO §6.4): respuestas del chat desde los datos del
 dictamen, sin modelo. Sin red.
 
   1. Ruta de cada pregunta: factuales y sugeridas → datos del dictamen;

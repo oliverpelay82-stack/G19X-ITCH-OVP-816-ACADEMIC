@@ -1,5 +1,5 @@
 """
-P1 — Ingesta blindada del core-service (extensión PLUS, PRD §21.1):
+P1 — Ingesta blindada del core-service (extensión PLUS, ESTADO_DEL_DESARROLLO §6.1):
 
 PLUS-01 · Unicidad de la huella en el expediente
   1. Recargar el mismo archivo en el expediente responde 409, identifica el

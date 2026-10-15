@@ -1,5 +1,5 @@
 """
-PLUS-21 — Folio de seguimiento entre servicios (PRD §21.7; HU-57). Core-service.
+PLUS-21 — Folio de seguimiento entre servicios (ESTADO_DEL_DESARROLLO §6.7; HU-57). Core-service.
 
   1. Una petición con X-Request-ID lo recibe de vuelta; sin él, o con uno
      inválido, la respuesta trae uno nuevo, expuesto por CORS al navegador.

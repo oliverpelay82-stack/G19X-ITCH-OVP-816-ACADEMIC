@@ -1,8 +1,8 @@
 @startuml p3-casos-de-uso-custodia
-' P3 — Cadena de custodia sellada y ficha de trazabilidad (extensión PLUS, PRD §21.3).
+' P3 — Cadena de custodia sellada y ficha de trazabilidad (extensión PLUS, ESTADO_DEL_DESARROLLO §6.3).
 ' Trazabilidad: RF-03, RF-23, RF-24, RF-27; HU-07, HU-30; PLUS-04 (HU-39),
 ' PLUS-05 (HU-40), PLUS-06 (HU-41); DOC-03 (ISO 30301, NOM-151-SCFI-2016);
-' DOC-05 protocolo de auditoría y trazabilidad; MRD MR-10, MR-11 y MR-21.
+' DOC-05 protocolo de auditoría y trazabilidad.
 ' Actualiza los casos de uso de F6 (reportes) y de la bitácora del PRD §6.
 
 title P3 — Cadena de custodia sellada: casos de uso

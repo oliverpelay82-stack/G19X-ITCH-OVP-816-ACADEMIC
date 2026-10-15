@@ -1,5 +1,5 @@
 """
-Contenido activo del archivo PDF (PRD §21.6, PLUS-18; ISO/IEC 27001 A.8.7):
+Contenido activo del archivo PDF (ESTADO_DEL_DESARROLLO §6.6, PLUS-18; ISO/IEC 27001 A.8.7):
 JavaScript, acciones automáticas o de ejecución, archivos incrustados, medios
 enriquecidos y formularios XFA, en cualquier tipo de documento.
 

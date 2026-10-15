@@ -2,7 +2,7 @@
 ' P2 — Actividad del cotejo de representación legal (RN-03, RSC-02, HU-23).
 ' Actualiza F3 (auditoría) y F4 (ratificación) del PRD §6.
 ' Trazabilidad: RSC-02-CONT, RSC-02-NDA; HU-23, HU-37, HU-38; RF-11, RF-13,
-' RF-14, RF-18, RF-21; RCV-01; RN-02, RN-03, RN-05; MRD MR-08.
+' RF-14, RF-18, RF-21; RCV-01; RN-02, RN-03, RN-05.
 ' Implementación: services/ai-service/pipelines/representacion.py,
 ' services/core-service/motor/representacion.py y motor/cumplimiento.py
 

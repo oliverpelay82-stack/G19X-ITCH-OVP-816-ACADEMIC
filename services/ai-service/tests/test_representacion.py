@@ -1,6 +1,5 @@
 """
-Pruebas offline de los datos de representación legal del Nivel 4 (P2, PRD
-§21.2: RSC-02, HU-23, HU-37). Groq, el rules-service y el core se simulan.
+Pruebas offline de los datos de representación legal del Nivel 4 (P2, ESTADO_DEL_DESARROLLO §6.2: RSC-02, HU-23, HU-37). Groq, el rules-service y el core se simulan.
 
   1. Cada persona trae su cita anclada en el texto y la cita debe contener el
      nombre; si no, queda «no verificada». Sin duplicados.

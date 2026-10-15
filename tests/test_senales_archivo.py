@@ -1,5 +1,5 @@
 """
-P6 — Contenido activo del PDF (PRD §21.6: PLUS-18, HU-52).
+P6 — Contenido activo del PDF (ESTADO_DEL_DESARROLLO §6.6: PLUS-18, HU-52).
 
   1. Un PDF sin contenido activo no genera señales.
   2. Una constancia fiscal hecha con un procesador de texto y guardada de

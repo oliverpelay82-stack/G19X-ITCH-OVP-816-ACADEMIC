@@ -194,7 +194,7 @@ export const SERVICIOS = [
 
 /**
  * Mapa de estados de auditoría: los del semáforo y de los dictámenes (CHECK de
- * la base; el vocabulario APROBADO/RECHAZADO del DOC-08 no se usa, PRD §19) y
+ * la base; el vocabulario APROBADO/RECHAZADO del DOC-08 no se usa, ESTADO_DEL_DESARROLLO §4) y
  * PENDIENTE del índice de cumplimiento. `tono` apunta a los tokens de estado
  * del sistema de diseño; ningún estado se comunica solo con color, siempre
  * viaja acompañado de su etiqueta.

@@ -1,5 +1,5 @@
 """
-M1 (PRD §21.6) — RFC validado en el servidor.
+M1 (ESTADO_DEL_DESARROLLO §6.6) — RFC validado en el servidor.
 
 El titular se identifica por su RFC (DOC-02). Hasta P6 el backend solo exigía
 12 o 13 caracteres: un RFC con un dígito equivocado se aceptaba y después la

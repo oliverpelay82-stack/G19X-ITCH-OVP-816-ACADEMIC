@@ -8,7 +8,7 @@ import { categoriaTitular } from '../constants.js'
 const CATEGORIAS = ['PROVEEDOR', 'CLIENTE']
 
 /**
- * Corrección de datos de captura (PRD §13.1, ui-actividad-correccion-datos.puml).
+ * Corrección de datos de captura (ESTADO_DEL_DESARROLLO §3, ui-actividad-correccion-datos.puml).
  * Cada cambio queda en la bitácora con su valor anterior y el nuevo; el RFC, el
  * tipo de persona y el tipo de expediente no se editan.
  */

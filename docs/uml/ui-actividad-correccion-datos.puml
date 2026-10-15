@@ -1,7 +1,7 @@
 @startuml ui-actividad-correccion-datos
 ' Corrección de los datos de captura de una empresa y del nombre de un expediente.
 ' Trazabilidad: RF-01, RF-27 (bitácora), RN-04 (nada se borra; el cambio queda con su valor anterior);
-' HU-02, HU-07; MR-10.
+' HU-02, HU-07.
 ' Implementación prevista: services/core-service/controllers/titular_controller.py,
 ' controllers/expediente_controller.py, schemas/titular_schema.py, schemas/expediente_schema.py,
 ' models/bitacora.py; frontend/src/components/DetalleEmpresa.jsx y expedientes/DetalleExpediente.jsx.

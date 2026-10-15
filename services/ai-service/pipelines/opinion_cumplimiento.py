@@ -1,6 +1,6 @@
 """
 Sentido de la opinión de cumplimiento de obligaciones fiscales (Art. 32-D del
-CFF) — regla RSC-OPIN-SENT, extensión PLUS-03 (PRD §21.1).
+CFF) — regla RSC-OPIN-SENT, extensión PLUS-03 (ESTADO_DEL_DESARROLLO §6.1).
 
 El SAT declara el sentido en un formato fijo («Sentido: Positivo», «se emite
 opinión en sentido negativo»), así que se lee del texto con reglas

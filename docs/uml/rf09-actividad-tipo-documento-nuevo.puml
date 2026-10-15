@@ -2,7 +2,7 @@
 ' RF-09 — Alta de un tipo de documento nuevo con su criterio para la IA.
 ' Trazabilidad: RF-09, HU-24; RDS-01 (el alta crea una entrada en la tabla de reglas),
 ' RDS-02 (criterio en lenguaje natural guardado en la base), RDS-03 (revisión humana
-' obligatoria); RF-06 y RIE-01 si el tipo es obligatorio en un tipo de expediente; MR-06.
+' obligatoria); RF-06 y RIE-01 si el tipo es obligatorio en un tipo de expediente.
 ' Implementación prevista: services/rules-service/controllers/regla_controller.py
 ' (GET /reglas/tipos-documento); services/core-service/config/catalogo.py,
 ' controllers/documento_controller.py, clients/rules_client.py y config/database.py;

@@ -1,5 +1,5 @@
 """
-Pasaje literal del documento, sin modelo — T1, PLUS-08 (PRD §21.4).
+Pasaje literal del documento, sin modelo — T1, PLUS-08 (ESTADO_DEL_DESARROLLO §6.4).
 
 Para una pregunta que pide el texto de una cláusula («¿qué dice la cláusula de
 confidencialidad?») o un monto («¿cuál es el monto de la contraprestación?»), el

@@ -1,5 +1,5 @@
 """
-Caché de respuestas del chat documental — T3, PLUS-10 (PRD §21.4).
+Caché de respuestas del chat documental — T3, PLUS-10 (ESTADO_DEL_DESARROLLO §6.4).
 
 A temperatura 0.0 el modelo responde lo mismo ante la misma petición, así que
 una respuesta ya obtenida se reutiliza sin consumir tokens. Dos claves:

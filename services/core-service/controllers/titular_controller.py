@@ -70,7 +70,7 @@ def listar_titulares(_: Actor = Depends(lectura), db: Session = Depends(get_db))
 def corregir_titular(titular_id: str, dto: TitularUpdate, actor: Actor = Depends(operacion),
                      db: Session = Depends(get_db)):
     """
-    Corrección de datos de captura (PRD §13.1). Solo los campos que cambian
+    Corrección de datos de captura (ESTADO_DEL_DESARROLLO §3). Solo los campos que cambian
     quedan en la bitácora sellada, con su valor anterior y el nuevo (RF-27,
     RN-04); si nada cambia no hay evento. Los dictámenes emitidos no cambian
     (RN-05): el cotejo RN-03 y las auditorías nuevas usan la razón social corregida.

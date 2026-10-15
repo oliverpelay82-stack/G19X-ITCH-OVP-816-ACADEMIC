@@ -1,5 +1,5 @@
 """
-M6 — Versión del catálogo de reglas en el core (PRD §21.6; protocolo de
+M6 — Versión del catálogo de reglas en el core (ESTADO_DEL_DESARROLLO §6.6; protocolo de
 auditoría del DOC-05; HU-54).
 
   1. El cliente del rules-service toma la versión de la cabecera
@@ -101,7 +101,7 @@ def test_el_dictamen_guarda_y_protege_la_version():
 
 
 def test_el_dictamen_guarda_y_protege_el_nombre_del_documento_real():
-    """PRD §21.9: el nombre que dio la IA a un archivo de otro tipo se guarda, se sella y no se modifica."""
+    """ESTADO_DEL_DESARROLLO §6.9: el nombre que dio la IA a un archivo de otro tipo se guarda, se sella y no se modifica."""
     doc = _documento("VCT080808AAA")
     dictamen = _dictaminar(doc, tipo_documento_detectado="IDENTIFICACION_OFICIAL",
                            nombre_documento_real="Credencial para Votar INE")

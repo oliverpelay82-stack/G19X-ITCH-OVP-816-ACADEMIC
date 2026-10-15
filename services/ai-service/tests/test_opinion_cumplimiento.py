@@ -1,5 +1,5 @@
 """
-Pruebas offline de la opinión de cumplimiento 32-D (PLUS-03, PRD §21.1): la
+Pruebas offline de la opinión de cumplimiento 32-D (PLUS-03, ESTADO_DEL_DESARROLLO §6.1): la
 regla RSC-OPIN-SENT se lee del texto sin el modelo y un sentido negativo deja
 el dictamen NO_CONFORME. Groq y el rules-service se simulan.
 

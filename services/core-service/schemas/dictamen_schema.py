@@ -51,7 +51,7 @@ class DictamenCreate(BaseModel):
     )
     nombre_documento_real: Optional[str] = Field(
         None, max_length=200,
-        description="PRD §21.9: nombre del documento que identificó la IA cuando no es del tipo registrado",
+        description="ESTADO_DEL_DESARROLLO §6.9: nombre del documento que identificó la IA cuando no es del tipo registrado",
     )
     # Sin uso desde el Módulo 7: la persona llega en X-Usuario-Actor con el token SISTEMA.
     usuario: str = Field("SISTEMA", min_length=1, max_length=100)

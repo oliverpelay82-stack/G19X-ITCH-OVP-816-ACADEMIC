@@ -1,5 +1,5 @@
 """
-Q-a — Fechas límite de las reglas RCV en el rules-service (PRD §21.6; DOC-05).
+Q-a — Fechas límite de las reglas RCV en el rules-service (ESTADO_DEL_DESARROLLO §6.6; DOC-05).
 
 Unitario, sin base de datos: mismos límites que el core (test_fechas_limite),
 para que el dictamen del Nivel 4 y la evaluación diaria coincidan.

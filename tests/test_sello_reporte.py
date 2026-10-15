@@ -1,5 +1,5 @@
 """
-PLUS-23 — Sello de integridad de cada reporte (PRD §21.9).
+PLUS-23 — Sello de integridad de cada reporte (ESTADO_DEL_DESARROLLO §6.9).
 
   1. El sello es el SHA-256 de los datos del reporte en forma canónica: los
      mismos datos dan el mismo sello, sin importar el orden de las claves, y

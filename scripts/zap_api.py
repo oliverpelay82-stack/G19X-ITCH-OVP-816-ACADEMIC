@@ -1,5 +1,5 @@
 """
-Prueba de seguridad del API con OWASP ZAP (P7, Q-c, PRD §21.7; HU-61).
+Prueba de seguridad del API con OWASP ZAP (P7, Q-c, ESTADO_DEL_DESARROLLO §6.7; HU-61).
 
 Corre ``zap-api-scan.py`` (imagen oficial ``zaproxy/zap-stable``) contra el
 OpenAPI del core-service, del rules-service y del ai-service: explora cada

@@ -1,5 +1,5 @@
 """
-M6 (PRD §21.6) — Versión del catálogo de reglas.
+M6 (ESTADO_DEL_DESARROLLO §6.6) — Versión del catálogo de reglas.
 
 Huella SHA-256 abreviada (``cat-`` y 12 caracteres hexadecimales) de todo lo
 que decide un dictamen: código, nombre, familia, descripción, severidad,
@@ -32,7 +32,7 @@ def calcular(reglas: Iterable[Any]) -> str:
     return "cat-" + hashlib.sha256(canonico.encode("utf-8")).hexdigest()[:12]
 
 
-# M7 (PRD §21.7): versión de las reglas que deciden el dictamen de un tipo de
+# M7 (ESTADO_DEL_DESARROLLO §6.7): versión de las reglas que deciden el dictamen de un tipo de
 # documento: las de contenido (RSC, RDS) y de vigencia (RCV) de ese tipo, más
 # las de vigencia generales (fecha de vencimiento declarada, RCV-01). Una regla
 # de otro tipo no la cambia. La clave «*» es la de un tipo sin reglas propias.

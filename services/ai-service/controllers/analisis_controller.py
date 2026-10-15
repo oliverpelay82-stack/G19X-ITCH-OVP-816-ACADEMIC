@@ -115,7 +115,7 @@ def _estado_en_sistema(
             f"vencimiento {dictamen.get('fecha_vencimiento_extraida') or 'no extraído por el motor'}; "
             f"vigencia según las reglas: {dictamen.get('vigencia_resultado') or 'no evaluada'}",
         ]
-        # PRD §21.9: solo con discrepancia de tipo (los demás estados, y sus claves de caché, no cambian).
+        # ESTADO_DEL_DESARROLLO §6.9: solo con discrepancia de tipo (los demás estados, y sus claves de caché, no cambian).
         if dictamen.get("nombre_documento_real"):
             real = dictamen["nombre_documento_real"]
             esperado = meta.get("nombre_tipo_documento") or meta.get("tipo_documento")
@@ -347,7 +347,7 @@ def _persistir_dictamen(
         "observaciones": resultado.observaciones,
         "verificaciones": resultado.verificaciones,
         "representacion": None if otro_tipo else resultado.representacion,
-        # PRD §21.9: qué documento es en realidad (solo con discrepancia; campo opcional del core).
+        # ESTADO_DEL_DESARROLLO §6.9: qué documento es en realidad (solo con discrepancia; campo opcional del core).
         **({"nombre_documento_real": resultado.nombre_documento_real} if otro_tipo else {}),
         "modelo_utilizado": resultado.modelo_utilizado,
         # P5: con qué lectura e instrucciones se emitió, para reproducirlo.

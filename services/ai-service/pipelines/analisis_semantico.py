@@ -151,7 +151,7 @@ def descripcion_discrepancia(nombre_esperado: str, tipo_detectado: str, nombre_r
 
 
 # Nombre del documento real: una consulta breve que se hace SOLO cuando hay discrepancia
-# de tipo (PRD §21.9). Va aparte de la extracción para no cambiar sus instrucciones: la
+# de tipo (ESTADO_DEL_DESARROLLO §6.9). Va aparte de la extracción para no cambiar sus instrucciones: la
 # caché de inferencias y las casetes del Gold Standard de las demás auditorías siguen válidas.
 SYSTEM_PROMPT_NOMBRE = (
     "Eres un auditor documental de expedientes corporativos mexicanos. Lees el inicio de un documento y "

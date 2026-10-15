@@ -2,7 +2,7 @@
 ' P1 — Actividad de carga de un documento con la ingesta blindada.
 ' Actualiza el flujo F1 del PRD §6 (Nivel 1 del DOC-05).
 ' Trazabilidad: RF-02, RF-03, RF-04; PLUS-01 (HU-34), PLUS-02 (HU-35);
-' DOC-05 Tabla 1 («Archivo protegido con contraseña»); MRD MR-11 y MR-20.
+' DOC-05 Tabla 1 («Archivo protegido con contraseña»).
 ' Implementación: services/core-service/controllers/documento_controller.py
 
 title P1 — Carga de un documento (Nivel 1 blindado)

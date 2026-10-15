@@ -7,7 +7,7 @@
 ' motor/cumplimiento.py; services/rules-service (versión del catálogo);
 ' services/ai-service/pipelines/cuota_diaria.py y clients/groq_client.py.
 ' PLUS-16 (señales de edición, HU-50) y PLUS-17 (QR del SAT, HU-51) se retiraron
-' el 02/10/2026 (PRD §21.8); este diagrama refleja el código vigente.
+' el 02/10/2026 (ESTADO_DEL_DESARROLLO §6.8); este diagrama refleja el código vigente.
 
 title P6 — Autenticidad del archivo, catálogo y operación
 

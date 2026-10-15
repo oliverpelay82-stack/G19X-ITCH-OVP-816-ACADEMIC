@@ -1,5 +1,5 @@
 """
-Pruebas del contexto enfocado del chat — T2, PLUS-09 (PRD §21.4). Offline, con
+Pruebas del contexto enfocado del chat — T2, PLUS-09 (ESTADO_DEL_DESARROLLO §6.4). Offline, con
 el texto vectorial del contrato de 20 páginas del Gold Standard.
 
   1. Para cada pregunta puntual de la batería extensa, el contexto enfocado

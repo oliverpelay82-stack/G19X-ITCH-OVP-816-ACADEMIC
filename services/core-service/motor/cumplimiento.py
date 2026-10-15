@@ -103,7 +103,7 @@ ALERTA_SIN_AUDITAR = "PENDIENTE_AUDITORIA"
 # P5 (DOC-05, Tabla 1): excepciones del procesamiento.
 ALERTA_ILEGIBLE = "DOCUMENTO_ILEGIBLE"
 ALERTA_DIFERIDO = "PROCESAMIENTO_DIFERIDO"
-# P6 (PRD §21.6): señales del archivo.
+# P6 (ESTADO_DEL_DESARROLLO §6.6): señales del archivo.
 ALERTA_CONTENIDO_ACTIVO = "CONTENIDO_ACTIVO"
 ALERTA_OTRO_TITULAR = "ARCHIVO_DE_OTRO_TITULAR"
 ALERTA_NUEVA_AUDITORIA = "REQUIERE_NUEVA_AUDITORIA"
@@ -762,7 +762,7 @@ def _alertas(
             bilateral = e.tipo_documento in TIPOS_BILATERALES
             alertas.append(Alerta(
                 codigo=ALERTA_OTRO_TITULAR,
-                # Solo las cuatro severidades del DOC-05 (PRD §19).
+                # Solo las cuatro severidades del DOC-05 (ESTADO_DEL_DESARROLLO §4).
                 severidad="MEDIA" if bilateral else "MEDIA_ALTA",
                 titulo=f"Archivo en el expediente de otro titular: {nombre}",
                 detalle=(f"El mismo archivo («{e.nombre_archivo_original}») está custodiado en "

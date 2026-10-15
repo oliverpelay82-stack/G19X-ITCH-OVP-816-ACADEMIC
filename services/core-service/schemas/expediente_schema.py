@@ -28,7 +28,7 @@ class ExpedienteCreate(BaseModel):
 
 class ExpedienteUpdate(BaseModel):
     """
-    Renombrar un expediente (PRD §13.1). El tipo no se edita: decide qué
+    Renombrar un expediente (ESTADO_DEL_DESARROLLO §3). El tipo no se edita: decide qué
     documentos exige el catálogo (RF-06). Un nombre vacío lo quita.
     """
     nombre: Optional[str] = Field(..., max_length=150, description="Nombre descriptivo (RF-01); vacío o nulo lo quita")

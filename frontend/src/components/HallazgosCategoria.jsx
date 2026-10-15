@@ -12,7 +12,7 @@ const documentosTexto = (n) => plural(n, 'documento', 'documentos')
  * espera ratificación (PLUS-20). Los folios no se repiten aquí: cada hallazgo,
  * con su expediente, está en Alertas y en la tabla de esta misma vista.
  * Reúne la lista «Por categoría» y la tarjeta «Pendientes del analista», que
- * desglosaban las mismas alertas (PRD §13.1, depuración de redundancias).
+ * desglosaban las mismas alertas (ESTADO_DEL_DESARROLLO §3, depuración de redundancias).
  */
 export default function HallazgosCategoria({ expedientes }) {
   const { categorias, total } = useMemo(() => {

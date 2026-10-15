@@ -230,7 +230,7 @@ def obtener_expediente_por_id(expediente_id: str, _: Actor = Depends(lectura), d
 def renombrar_expediente(expediente_id: str, dto: ExpedienteUpdate, actor: Actor = Depends(operacion),
                          db: Session = Depends(get_db)):
     """
-    Corrección del nombre descriptivo (RF-01, PRD §13.1). El cambio queda en la
+    Corrección del nombre descriptivo (RF-01, ESTADO_DEL_DESARROLLO §3). El cambio queda en la
     bitácora sellada con el nombre anterior y el nuevo (RF-27, RN-04) y aparece
     en el historial del expediente; si el nombre no cambia no hay evento.
     """

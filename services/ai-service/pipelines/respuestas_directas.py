@@ -1,5 +1,5 @@
 """
-Respuestas del chat desde los datos del dictamen, sin modelo — T0, PLUS-07 (PRD §21.4).
+Respuestas del chat desde los datos del dictamen, sin modelo — T0, PLUS-07 (ESTADO_DEL_DESARROLLO §6.4).
 
 Al terminar una auditoría, ``ficha_de`` resume lo que el Nivel 4 extrajo y
 verificó (tipo, RFC, razón social, fechas, firmantes o apoderados con su cita
@@ -119,7 +119,7 @@ def ficha_de(resultado: Any, tipo_registrado: str | None, sello_digital_sat: boo
             ],
         },
         "sello_digital_sat": sello_digital_sat,
-        # PRD §21.9: con discrepancia de tipo, el documento real frente al esperado.
+        # ESTADO_DEL_DESARROLLO §6.9: con discrepancia de tipo, el documento real frente al esperado.
         "nombre_documento_real": getattr(resultado, "nombre_documento_real", None),
         "tipo_esperado_nombre": getattr(resultado, "tipo_esperado_nombre", None),
     }
@@ -277,7 +277,7 @@ def _resumen(ficha: dict, dictamen: dict, texto: str) -> str | None:
 
 def discrepancia_de_tipo(ficha: dict[str, Any], dictamen: dict[str, Any]) -> str | None:
     """
-    PRD §21.9: con discrepancia de tipo, el reconocimiento con que empieza toda respuesta
+    ESTADO_DEL_DESARROLLO §6.9: con discrepancia de tipo, el reconocimiento con que empieza toda respuesta
     sobre lo que falta o lo que es el documento. None si el documento es del tipo registrado.
     """
     real = dictamen.get("nombre_documento_real") or ficha.get("nombre_documento_real")

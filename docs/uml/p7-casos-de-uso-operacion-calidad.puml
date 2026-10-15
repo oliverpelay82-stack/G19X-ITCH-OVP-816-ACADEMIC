@@ -5,7 +5,7 @@
 ' Implementación: config/observabilidad.py (middleware id_peticion) en los tres
 ' servicios; rules-service (versión por tipo); scripts/e2e_api.py y
 ' scripts/zap_api.py; .github/workflows/ci.yml (e2e y OWASP ZAP).
-' PLUS-22 (sello de tiempo RFC 3161, HU-58) se retiró el 02/10/2026 (PRD §21.8);
+' PLUS-22 (sello de tiempo RFC 3161, HU-58) se retiró el 02/10/2026 (ESTADO_DEL_DESARROLLO §6.8);
 ' este diagrama refleja el código vigente.
 
 title P7 — Operación trazable y calidad

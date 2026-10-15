@@ -1,5 +1,5 @@
 """
-P5 — Dictamen reproducible (PRD §21.5; protocolo de auditoría del DOC-05; HU-46).
+P5 — Dictamen reproducible (ESTADO_DEL_DESARROLLO §6.5; protocolo de auditoría del DOC-05; HU-46).
 
   1. El dictamen guarda la versión de la lectura del Nivel 3 y la huella de las
      instrucciones al modelo, las devuelve y las sella en su evento DICTAMEN_IA.

@@ -1,5 +1,5 @@
 """
-Pruebas de T4, PLUS-11 (PRD §21.4): presupuesto local de tokens por minuto,
+Pruebas de T4, PLUS-11 (ESTADO_DEL_DESARROLLO §6.4): presupuesto local de tokens por minuto,
 criterios del catálogo en memoria y dictamen en vivo en el chat. Sin red.
 
   1. La ventana de 60 s suma los tokens del último minuto y olvida los viejos;

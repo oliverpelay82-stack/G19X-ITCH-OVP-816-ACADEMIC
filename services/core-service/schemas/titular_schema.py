@@ -26,7 +26,7 @@ class TitularCreate(BaseModel):
 
 class TitularUpdate(BaseModel):
     """
-    Corrección de datos de captura (PRD §13.1). El RFC y el tipo de persona no
+    Corrección de datos de captura (ESTADO_DEL_DESARROLLO §3). El RFC y el tipo de persona no
     se editan: identifican al titular, y un error ahí se resuelve con un
     registro nuevo. Un campo desconocido (rfc incluido) responde 422.
     """

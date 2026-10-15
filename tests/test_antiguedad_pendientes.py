@@ -1,5 +1,5 @@
 """
-PLUS-20 — Antigüedad de lo pendiente (PRD §21.6; HU-56).
+PLUS-20 — Antigüedad de lo pendiente (ESTADO_DEL_DESARROLLO §6.6; HU-56).
 
   1. Un documento En revisión sin ratificar informa los días que su dictamen
      lleva esperando, y la alerta «Pendiente de ratificación» los dice.

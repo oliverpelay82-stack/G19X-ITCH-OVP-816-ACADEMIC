@@ -196,7 +196,7 @@ class ResultadoPagina:
     palabras: list[list[Any]] = field(default_factory=list)
     inicio: int = 0        # posición de la página dentro del texto consolidado
     # Siempre vacío desde que se retiró la lectura de sellos en tinta de color
-    # (PRD §21.8); se conserva por el contrato de la API y la columna de SQLite.
+    # (ESTADO_DEL_DESARROLLO §6.8); se conserva por el contrato de la API y la columna de SQLite.
     sellos: list[dict[str, Any]] = field(default_factory=list)
 
 

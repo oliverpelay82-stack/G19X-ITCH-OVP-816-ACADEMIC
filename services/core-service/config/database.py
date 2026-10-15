@@ -115,7 +115,7 @@ _MIGRACIONES_POSTGRES = [
     "ALTER TABLE dictamenes_auditoria ADD COLUMN IF NOT EXISTS version_catalogo VARCHAR(20)",
     # P7 (M7): versión de las reglas del tipo de documento.
     "ALTER TABLE dictamenes_auditoria ADD COLUMN IF NOT EXISTS version_reglas_tipo VARCHAR(20)",
-    # PRD §21.9: nombre del documento identificado cuando no es del tipo registrado.
+    # ESTADO_DEL_DESARROLLO §6.9: nombre del documento identificado cuando no es del tipo registrado.
     "ALTER TABLE dictamenes_auditoria ADD COLUMN IF NOT EXISTS nombre_documento_real VARCHAR(200)",
     # P5 (DOC-05, Tabla 1): marca de procesamiento diferido del documento.
     "ALTER TABLE documentos ADD COLUMN IF NOT EXISTS procesamiento_diferido JSON",

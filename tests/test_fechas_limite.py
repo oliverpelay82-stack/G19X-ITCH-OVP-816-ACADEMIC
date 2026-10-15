@@ -1,5 +1,5 @@
 """
-Q-a — Fechas límite de la vigencia en el core (PRD §21.6; RN-02; DOC-05, RCV).
+Q-a — Fechas límite de la vigencia en el core (ESTADO_DEL_DESARROLLO §6.6; RN-02; DOC-05, RCV).
 
 Sin base de datos ni red: la vigencia se calcula con las fechas del dictamen.
 

@@ -1,6 +1,6 @@
 """
 Registro de eventos en la bitácora inmutable (RF-27, protocolo DOC-05 §5.6),
-sellados en cadena (P3, PLUS-04 y PLUS-05, PRD §21.3).
+sellados en cadena (P3, PLUS-04 y PLUS-05, ESTADO_DEL_DESARROLLO §6.3).
 
 La función solo agrega la entrada a la sesión: la confirma la misma transacción
 que produjo el evento, de modo que no puede quedar un evento registrado sin su

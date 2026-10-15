@@ -21,7 +21,7 @@ import { formatFechaCorta, plural } from '../utils/format.js'
 const MAX_ALERTAS = 5
 
 /**
- * Detalle de la empresa (#/empresas/<RFC>, PRD §13.1): sus datos, un resumen
+ * Detalle de la empresa (#/empresas/<RFC>, ESTADO_DEL_DESARROLLO §3): sus datos, un resumen
  * en una línea, todos sus expedientes de lo más grave a lo conforme y un
  * resumen de sus alertas más graves, una por línea, con el enlace a la bandeja
  * de Alertas filtrada por la empresa, donde está cada recomendación (RF-18,

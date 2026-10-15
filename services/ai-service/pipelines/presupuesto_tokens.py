@@ -1,5 +1,5 @@
 """
-Presupuesto local de tokens por minuto — T4, PLUS-11 (PRD §21.4).
+Presupuesto local de tokens por minuto — T4, PLUS-11 (ESTADO_DEL_DESARROLLO §6.4).
 
 Groq limita el plan gratuito a ``GROQ_TOKENS_POR_MINUTO`` (8,000). La auditoría
 de un documento largo consume hasta ≈ 7,000 tokens en segundos; un turno de chat

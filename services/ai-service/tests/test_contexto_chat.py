@@ -1,5 +1,5 @@
 """
-Pruebas de T2, PLUS-09 (PRD §21.4), por el endpoint del chat. Sin red.
+Pruebas de T2, PLUS-09 (ESTADO_DEL_DESARROLLO §6.4), por el endpoint del chat. Sin red.
 
   1. Una pregunta puntual recibe el contexto enfocado (≤ CHAT_PRESUPUESTO_PUNTUAL)
      y el estado breve (sin reglas evaluadas ni elementos exigidos).

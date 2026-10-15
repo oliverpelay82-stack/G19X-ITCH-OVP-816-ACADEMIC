@@ -1,5 +1,5 @@
 @startuml rnf02-actividad-lectura-anticipada
-' RNF-02 — Lectura anticipada del Nivel 3 y prioridad del OCR (PRD §21.9, 04/10/2026).
+' RNF-02 — Lectura anticipada del Nivel 3 y prioridad del OCR (ESTADO_DEL_DESARROLLO §6.9, 04/10/2026).
 ' Trazabilidad: RNF-02 (≤ 25 s por documento de hasta 20 páginas), RF-10 y RF-11
 ' (auditoría con IA), HU-20 (visor). No lee menos páginas: cambia cuándo se leen.
 ' Implementación: ai-service pipelines/extraccion_pipeline.py (pool de OCR con

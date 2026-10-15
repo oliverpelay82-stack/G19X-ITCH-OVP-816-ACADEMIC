@@ -1,5 +1,5 @@
 """
-M1 — RFC validado en el servidor (PRD §21.6; DOC-02; HU-49).
+M1 — RFC validado en el servidor (ESTADO_DEL_DESARROLLO §6.6; DOC-02; HU-49).
 
   1. Formato, longitud por tipo de persona y fecha AAMMDD imposible → 422 con
      el motivo en lenguaje llano.

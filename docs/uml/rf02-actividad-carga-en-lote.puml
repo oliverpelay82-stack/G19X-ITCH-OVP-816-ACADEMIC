@@ -3,7 +3,7 @@
 ' Trazabilidad: RF-02 («carga de documentos individuales o en lote»), HU-03; RF-03 y
 ' Nivel 1 del DOC-05 (firma, tamaño y SHA-256 por archivo); RF-04 (un archivo del mismo
 ' tipo sustituye al vigente); PLUS-01 (huella repetida → 409), PLUS-02 y PLUS-18
-' (advertencias de la carga); RN-01 (subir archivos nunca aprueba); MR-11, MR-20.
+' (advertencias de la carga); RN-01 (subir archivos nunca aprueba).
 ' Implementación: frontend/src/components/DropZone.jsx (varios archivos),
 ' frontend/src/utils/lote.js (revisión previa del lote, sin React), services/api.js
 ' (custodiarArchivo), utils/nivel1.js (avisos por archivo), BovedaTab.jsx, ExpedientesTab.jsx

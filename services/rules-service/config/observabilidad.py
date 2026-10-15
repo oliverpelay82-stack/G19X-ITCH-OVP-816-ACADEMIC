@@ -1,5 +1,5 @@
 """
-PLUS-21 (PRD §21.7) — Identificador de petición entre servicios y registro estructurado.
+PLUS-21 (ESTADO_DEL_DESARROLLO §6.7) — Identificador de petición entre servicios y registro estructurado.
 
 Cada petición lleva la cabecera ``X-Request-ID`` (``id_peticion``): se acepta
 la recibida (hasta 64 caracteres alfanuméricos y guiones) o se crea una, se

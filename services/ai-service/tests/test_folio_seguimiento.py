@@ -1,5 +1,5 @@
 """
-PLUS-21 — Folio de seguimiento en el ai-service (PRD §21.7; HU-57). Sin red.
+PLUS-21 — Folio de seguimiento en el ai-service (ESTADO_DEL_DESARROLLO §6.7; HU-57). Sin red.
 
   1. El folio recibido vuelve en la respuesta; sin él se crea uno.
   2. Los clientes del core y del rules-service lo propagan, dentro de una

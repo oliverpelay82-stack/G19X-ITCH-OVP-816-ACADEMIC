@@ -5,9 +5,9 @@
 ' HU-17, HU-31; DOC-08 (POST /auth/login, GET /auth/me, JWT HMAC-SHA256, tabla usuarios,
 ' perfil SISTEMA); RDS-01 del DOC-05 («el administrador o validador» da de alta un tipo de
 ' documento); RN-04 (sin borrado físico); ISO/IEC 27001 A.5.15, A.5.17, A.8.5 (DOC-03);
-' MRD MR-14 y MR-15. Matriz de permisos completa: PRD §5.1; diseño: PRD §5.2.
+' Matriz de permisos completa: PRD §5.1; diseño: PRD §5.2.
 ' Roles: los cuatro del DOC-04 (el OPERADOR del DOC-08 es el VALIDADOR; decisión del
-' 14/10/2026, PRD §19).
+' 14/10/2026, ESTADO_DEL_DESARROLLO §4).
 ' Implementación prevista: core-service (models/usuario.py, controllers/auth_controller.py,
 ' controllers/usuario_controller.py, config/seguridad.py), rules-service y ai-service
 ' (config/seguridad.py) y frontend (sesión, menú por rol, vistas Usuarios y Consulta).

@@ -3,8 +3,8 @@
 ' Trazabilidad: RNF-10 (respaldos automatizados diarios, RPO < 24 h; ampliado en el PRD 2.1:
 ' base, bóveda y SQLite del ai-service en un mismo punto, con prueba de restauración);
 ' RIE-03 y RF-03 (cada documento restaurado conserva su huella); PLUS-04/05 (la cadena de la
-' bitácora restaurada se verifica completa); MR-10, MR-16 (el respaldo no sale de la
-' infraestructura de PluriOne), MR-17.
+' bitácora restaurada se verifica completa); PRD §12.5 (el respaldo no sale de la
+' infraestructura de PluriOne).
 ' Implementación: scripts/respaldo.py (crear, verificar, programar); prueba: scripts/prueba_respaldo.py. Sin tablas nuevas
 ' ni cambios en los servicios: el respaldo corre en línea, con los servicios en marcha.
 
@@ -42,7 +42,7 @@ if (¿Todo coincide?) then (sí)
   :VERIFICACION.json «verificado»;
   :Copia el paquete al destino secundario,
   si está configurado (dentro de la infraestructura
-  de PluriOne: disco o recurso de red, MR-16);
+  de PluriOne: disco o recurso de red, PRD §12.5);
   :Retención: conserva los últimos N paquetes verificados;
 else (no)
   :VERIFICACION.json con los hallazgos;

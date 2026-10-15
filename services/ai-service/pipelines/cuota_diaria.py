@@ -1,5 +1,5 @@
 """
-PLUS-19 (PRD §21.6) — Cuota diaria del proveedor de IA visible.
+PLUS-19 (ESTADO_DEL_DESARROLLO §6.6) — Cuota diaria del proveedor de IA visible.
 
 El plan gratuito de Groq limita el modelo a ``GROQ_TOKENS_POR_DIA`` (200,000)
 tokens por día; el 30/09/2026 se agotó sin aviso. Aquí se suman los tokens

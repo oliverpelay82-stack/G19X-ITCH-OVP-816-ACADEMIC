@@ -1,5 +1,5 @@
 """
-Pruebas de T1, PLUS-08 (PRD §21.4): pasaje literal del documento, sin modelo,
+Pruebas de T1, PLUS-08 (ESTADO_DEL_DESARROLLO §6.4): pasaje literal del documento, sin modelo,
 para cláusulas nombradas y montos. Offline, con textos vectoriales del Gold
 Standard.
 

@@ -1,5 +1,5 @@
 """
-Datos de representación legal del Nivel 4 — P2 (PRD §21.2): RSC-02, HU-23, HU-37.
+Datos de representación legal del Nivel 4 — P2 (ESTADO_DEL_DESARROLLO §6.2): RSC-02, HU-23, HU-37.
 
 En la MISMA llamada de extracción del Nivel 4, el modelo devuelve además:
 

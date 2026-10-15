@@ -1,5 +1,5 @@
 """
-P2 — Representación legal en el core-service (PRD §21.2: RSC-02, RN-03, HU-23,
+P2 — Representación legal en el core-service (ESTADO_DEL_DESARROLLO §6.2: RSC-02, RN-03, HU-23,
 HU-37, HU-38).
 
 Persistencia

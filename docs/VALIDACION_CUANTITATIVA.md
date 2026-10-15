@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| Propósito | Demostrar con métricas reproducibles la exactitud de la IA (ISO/IEC 25010, Adecuación funcional › Exactitud) y el rendimiento del sistema (ISO/IEC 25010, Eficiencia de desempeño) frente a RNF-01, RNF-02 y RNF-03, y medir la eficiencia del chat documental antes y después de su optimización (PRD §21.4, P4) |
+| Propósito | Demostrar con métricas reproducibles la exactitud de la IA (ISO/IEC 25010, Adecuación funcional › Exactitud) y el rendimiento del sistema (ISO/IEC 25010, Eficiencia de desempeño) frente a RNF-01, RNF-02 y RNF-03, y medir la eficiencia del chat documental antes y después de su optimización (ESTADO_DEL_DESARROLLO §6.4, P4) |
 | Fase del cronograma | Fase 5 · QA (DOC-07, semanas 13 y 14: «pruebas de precisión de IA»; riesgo «baja precisión en la detección de cláusulas», 13 h de pruebas de precisión) |
-| Fuentes | DOC-01 H12 y H15; DOC-03 (ISO/IEC 25010: «Gold Standard con precisión, exhaustividad y F1»); DOC-04 RNF-01 a RNF-03; DOC-05 (RSC-01, RSC-02, bandas del Nivel 5); DOC-08 §6.2; [PRD.md](PRD.md) §11, §15 y §21.4 |
+| Fuentes | DOC-01 H12 y H15; DOC-03 (ISO/IEC 25010: «Gold Standard con precisión, exhaustividad y F1»); DOC-04 RNF-01 a RNF-03; DOC-05 (RSC-01, RSC-02, bandas del Nivel 5); DOC-08 §6.2; [PRD.md](PRD.md) §11 y §15; [ESTADO_DEL_DESARROLLO.md](ESTADO_DEL_DESARROLLO.md) §6.4 |
 | Estado | Diseño aprobado el 30/09/2026, junto con la configuración del OCR (§5) y la optimización del chat (§6). Chat (§10.1), precisión del Gold Standard (§10.2) y rendimiento (§10.3) medidos el 01/10/2026; pendiente la medición formal del RNF-02 completo sin el presupuesto del grabador |
 | Restricciones | Sin cambios de arquitectura ni de contratos de API; sin tocar el Módulo 7; ningún dato real de terceros en el repositorio; la suite de precisión corre sin consumir tokens una vez grabada |
 
@@ -21,7 +21,7 @@
 | PE-5 | ¿Cuánto tarda la evaluación determinista de un expediente completo? | Rendimiento | RNF-01 (≤ 2 s) |
 | PE-6 | ¿Cuánto tardan la extracción (Nivel 3) y el análisis (Nivel 4) de un documento de hasta 20 páginas, y cuánto aportaba la detección de sellos (Nivel 3, versión 3.2)? | Rendimiento | RNF-02 (≤ 25 s) |
 | PE-7 | ¿Soporta la API 50 peticiones simultáneas sin degradación ni pérdida de transacciones? | Rendimiento | RNF-03 (≥ 50) |
-| PE-8 | ¿Cuántos tokens y cuánto tiempo cuesta cada turno del chat documental, con qué exactitud responde y cuánto mejora con T0 a T4? | Eficiencia y exactitud | RF-13, HU-20, RNF-02; PRD §21.4 |
+| PE-8 | ¿Cuántos tokens y cuánto tiempo cuesta cada turno del chat documental, con qué exactitud responde y cuánto mejora con T0 a T4? | Eficiencia y exactitud | RF-13, HU-20, RNF-02; ESTADO_DEL_DESARROLLO §6.4 |
 
 **Alcance del RNF-02.** El DOC-04 define el RNF-02 como «extracción OCR **y** análisis semántico» de un documento de hasta 20 páginas. Se reportan por separado el Nivel 3 (OCR) y el Nivel 4 (inferencia), y la meta se contrasta contra la suma.
 
@@ -177,7 +177,7 @@ La hipótesis inicial («la detección de sellos a color triplicó el tiempo del
 | Reparto del tiempo por página | Tesseract ≈ 95 %; preprocesamiento OpenCV ≈ 0.1 s |
 | Rasterizar a 200 ppp en vez de 300 | Ahorro marginal y similitud del texto de 0.45 a 0.94 contra 300 ppp: **descartado** |
 
-La causa real del salto de ≈ 13 s (PRD §15.2, 26 páginas) a 24.3 s (14 páginas) es que **la auditoría pasó a leer el documento completo** en lugar de las primeras 6 páginas escaneadas (`MAX_PAGINAS_OCR`): 6 páginas × ≈ 1.9 s ≈ 11.5 s, la cifra que reportaba el PRD. Leer todo el documento es correcto para el cumplimiento (la inscripción en el RPC y las firmas suelen ir al final) y se conserva.
+La causa real del salto de ≈ 13 s (ESTADO_DEL_DESARROLLO §2, 26 páginas) a 24.3 s (14 páginas) es que **la auditoría pasó a leer el documento completo** en lugar de las primeras 6 páginas escaneadas (`MAX_PAGINAS_OCR`): 6 páginas × ≈ 1.9 s ≈ 11.5 s, la cifra que reportaba el PRD. Leer todo el documento es correcto para el cumplimiento (la inscripción en el RPC y las firmas suelen ir al final) y se conserva.
 
 ### 5.2 Palancas medidas (mismas 14 páginas, OCR en paralelo)
 
@@ -198,7 +198,7 @@ La causa real del salto de ≈ 13 s (PRD §15.2, 26 páginas) a 24.3 s (14 pági
 | `OCR_LANG` | `spa+eng` | **`spa`** | Palabras en inglés (nombres comerciales) pueden leerse con más errores; se vigila con el CER |
 | `OCR_RELEER_SELLOS` | `true` | **`false`** | Raster en grises (un tercio de memoria por página con 8 procesos). La presencia de sellos en tinta de color deja de registrarse; ningún DOC la exige (el DOC-08 pide la del **Sello Digital SAT**, que se sigue detectando en el texto) |
 
-La lectura de sellos en tinta de color se retiró del código el 02/10/2026 (PRD §21.8); la tabla registra la configuración medida.
+La lectura de sellos en tinta de color se retiró del código el 02/10/2026 (ESTADO_DEL_DESARROLLO §6.8); la tabla registra la configuración medida.
 
 Las tres cambian `version_lectura()`: los textos persistidos con la configuración anterior se ignoran y se releen una vez. Los dictámenes guardados no se tocan (son inmutables). El código de sellos queda inactivo, no se borra: su retiro (Nivel B) se decide con el Gold Standard escaneado.
 
@@ -210,7 +210,7 @@ Las tres cambian `version_lectura()`: los textos persistidos con la configuraci�
 
 ### 6.1 Objetivo y estrategia medida
 
-El chat es la herramienta con la que el auditor consulta el documento; su optimización (PRD §21.4, P4) sigue este orden, y cada paso se compara contra la **medición base** de la implementación actual:
+El chat es la herramienta con la que el auditor consulta el documento; su optimización (ESTADO_DEL_DESARROLLO §6.4, P4) sigue este orden, y cada paso se compara contra la **medición base** de la implementación actual:
 
 | Paso | Estrategia | Qué debe mejorar |
 |---|---|---|
@@ -290,7 +290,7 @@ Se registra en cada corrida: CPU, RAM, sistema operativo, versiones de Python, T
 - `concurrent.futures` con `requests`, 50 peticiones liberadas a la vez por una barrera, en tres escenarios: 50 `GET /health`; 50 `GET /expedientes/{id}` sobre 10 expedientes; 50 cargas de documento distintas en 10 expedientes.
 - **Degradación** = p95 concurrente / p95 secuencial.
 - **Pérdida de transacciones:** documentos creados = cargas con respuesta 201; eventos `INGESTA_DOCUMENTO` = cargas aceptadas; `GET /api/v1/bitacora/verificar-cadena` íntegra.
-- **Criterio:** 0 respuestas 5xx, 0 transacciones perdidas, cadena íntegra y p95 de consulta ≤ 2 s. El PRD §21.3 advierte que el candado de la bitácora serializa las cargas; esta prueba lo cuantifica.
+- **Criterio:** 0 respuestas 5xx, 0 transacciones perdidas, cadena íntegra y p95 de consulta ≤ 2 s. El ESTADO_DEL_DESARROLLO §6.3 advierte que el candado de la bitácora serializa las cargas; esta prueba lo cuantifica.
 
 ---
 
@@ -518,7 +518,7 @@ Corrida oficial de `python -m evaluacion.evaluar_precision` sobre los 42 casos (
 
 101 pares (caso, regla anotada): 14 omisiones reales y 87 elementos presentes.
 
-> **Corrida del 03/10/2026 (PRD §21.9, discrepancia de tipo).** GS-ACTA-04 es un poder notarial registrado como acta. Desde ese cambio, al archivo ya no se le evalúan los elementos ni la representación del acta, y su anotación se ajustó en un commit propio. Quedan 98 pares (12 omisiones y 86 presentes): omisión P y R 100 %, presente F1 100 %, 0 falsas conformidades y citas ancladas 86/86. Personas: F1 100 %, cargo 40/45. El estatus de los 42 casos no cambia (100 %, κ 1.000), y la corrida en modo reproducir no consultó al modelo. Las tablas de esta sección conservan la corrida oficial del 01/10/2026.
+> **Corrida del 03/10/2026 (ESTADO_DEL_DESARROLLO §6.9, discrepancia de tipo).** GS-ACTA-04 es un poder notarial registrado como acta. Desde ese cambio, al archivo ya no se le evalúan los elementos ni la representación del acta, y su anotación se ajustó en un commit propio. Quedan 98 pares (12 omisiones y 86 presentes): omisión P y R 100 %, presente F1 100 %, 0 falsas conformidades y citas ancladas 86/86. Personas: F1 100 %, cargo 40/45. El estatus de los 42 casos no cambia (100 %, κ 1.000), y la corrida en modo reproducir no consultó al modelo. Las tablas de esta sección conservan la corrida oficial del 01/10/2026.
 
 | Clase | VP | FP | FN | Precisión | Exhaustividad | F1 (IC 95 %) |
 |---|---|---|---|---|---|---|
@@ -637,7 +637,7 @@ El OCR cuesta 2 puntos de F1 en las entidades (el RFC de GS-CSF-03-ESC) y nada e
   - Para los escaneos reales densos, el RNF-02 **no se cumple en este equipo**. Las palancas de §5.2 ya están en su mejor valor.
   - Lo que queda fuera del alcance documentado: un equipo con más núcleos, OCR en la nube o reducir los ppp, que §5.1 descartó por pérdida de texto.
 
-**Lectura completa en flujo continuo (03/10/2026, PRD §21.9).** La auditoría ya no reconoce las páginas por tandas: cada una entra al pool en cuanto se rasteriza. Se midió antes y después en las mismas condiciones del equipo (5 corridas, configuración definitiva; [`rendimiento_ocr_continuo.json`](resultados_validacion/rendimiento_ocr_continuo.json)). Las cifras de la tabla anterior son del 01/10/2026: hoy el mismo código tardó más, por otra carga del equipo.
+**Lectura completa en flujo continuo (03/10/2026, ESTADO_DEL_DESARROLLO §6.9).** La auditoría ya no reconoce las páginas por tandas: cada una entra al pool en cuanto se rasteriza. Se midió antes y después en las mismas condiciones del equipo (5 corridas, configuración definitiva; [`rendimiento_ocr_continuo.json`](resultados_validacion/rendimiento_ocr_continuo.json)). Las cifras de la tabla anterior son del 01/10/2026: hoy el mismo código tardó más, por otra carga del equipo.
 
 | Documento | Páginas | Por tandas | Flujo continuo | Cambio |
 |---|---|---|---|---|
@@ -668,7 +668,7 @@ El OCR cuesta 2 puntos de F1 en las entidades (el RFC de GS-CSF-03-ESC) y nada e
 - **Sin errores ni pérdidas:** 0 respuestas 5xx, 0 transacciones perdidas, la cadena íntegra y un p95 de consulta simultánea de 1.29 s, por debajo de 2 s.
 - **Con autenticación, la consulta simultánea sube de 1.07 a 1.29 s de p95.** Cada petición confirma la cuenta en la base: una consulta más que compite por el mismo proceso y las mismas conexiones. Con una corrida por fecha, la diferencia no puede separarse por completo de la variación del equipo. Las cargas simultáneas no empeoraron (2.05 s): las limita el candado de la bitácora, no la autenticación.
 - **Sí hay degradación de latencia:** las 50 peticiones se atienden con un solo proceso de uvicorn, así que esperan turno.
-- **Las cargas simultáneas suben a unos 2 s de p95** (2.05 s; 2.2 s el 01/10). El candado de la bitácora las serializa, como advierte el PRD §21.3. Es el precio de la cadena sellada: sin el candado, dos eventos podrían encadenarse al mismo eslabón.
+- **Las cargas simultáneas suben a unos 2 s de p95** (2.05 s; 2.2 s el 01/10). El candado de la bitácora las serializa, como advierte el ESTADO_DEL_DESARROLLO §6.3. Es el precio de la cadena sellada: sin el candado, dos eventos podrían encadenarse al mismo eslabón.
 - **«Sin degradación» se lee como «sin errores ni pérdidas y dentro de la meta de RNF-01»,** el criterio que fija §7.4. Un despliegue con varios procesos (`uvicorn --workers`) reduciría la espera de las consultas; las cargas seguirían serializadas por diseño.
 - **Primera corrida descartada.** Cargaba tipos repetidos, que el core guarda como versiones, y contaba los documentos desde la evaluación, que solo lista los vigentes. El script ahora exige el tamaño evaluado y cuenta las filas en la base.
 
@@ -699,7 +699,7 @@ Para acercar el RNF-02 con actas reales densas se probó bajar `OCR_DPI` de 300 
 
 **Dónde se va el tiempo.** Perfil de una página del acta real, en serie: rasterizado 83 ms, preprocesamiento 57 ms, codificación PNG 78 ms y **Tesseract 3,855 ms (95 %)**. Desactivar el reintento de texto invertido, pasar la imagen en BMP o en 1 bit no cambian ni el tiempo ni el texto. Con 4, 6, 8 y 10 workers el acta tarda 37.8, 33.5, 31.7 y 33.2 s: 8 es el óptimo del equipo. `OMP_THREAD_LIMIT=1` ya estaba fijado. El límite es el procesador (y su temperatura: la misma lectura pasa de ≈ 30 s en frío a ≈ 35 s tras varias seguidas).
 
-**Qué se cambió (PRD §21.9).** La lectura se anticipa al custodiar; el pool de OCR prioriza la auditoría, el chat y el visor; y la auditoría de un documento sin leer va directo a la lectura completa. Resultados sin el modelo ([`lectura_anticipada.json`](resultados_validacion/lectura_anticipada.json)):
+**Qué se cambió (ESTADO_DEL_DESARROLLO §6.9).** La lectura se anticipa al custodiar; el pool de OCR prioriza la auditoría, el chat y el visor; y la auditoría de un documento sin leer va directo a la lectura completa. Resultados sin el modelo ([`lectura_anticipada.json`](resultados_validacion/lectura_anticipada.json)):
 
 | Escenario (acta real de 26 páginas) | Antes | Ahora |
 |---|---|---|

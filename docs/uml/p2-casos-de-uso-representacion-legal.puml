@@ -1,7 +1,7 @@
 @startuml p2-casos-de-uso-representacion-legal
 ' P2 — Cotejo del firmante con el apoderado (extensión PLUS del PRD, sección 21.2).
 ' Trazabilidad: RSC-02 (DOC-05), RN-03, HU-23, RF-11, RF-13, RF-14, RF-18;
-' HU-37 y HU-38 (PLUS); MRD MR-08.
+' HU-37 y HU-38 (PLUS).
 ' Actualiza los casos de uso de F3 (auditoría) y F4 (ratificación) del PRD §6.
 
 title P2 — Cotejo de representación legal: casos de uso

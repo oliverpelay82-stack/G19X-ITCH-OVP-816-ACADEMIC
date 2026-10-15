@@ -3,7 +3,7 @@
 ' Actualiza el flujo F3 del PRD §6 para el tipo OPINION_CUMPLIMIENTO.
 ' Trazabilidad: PLUS-03 (HU-36); RF-15, RF-16, RF-18; RCV-04 (caducidad
 ' estricta del DOC-05: «opiniones de cumplimiento fiscal con vigencia de
-' 30 días naturales a partir de su emisión»); RSC-OPIN-SENT; MRD MR-04 y MR-20.
+' 30 días naturales a partir de su emisión»); RSC-OPIN-SENT.
 ' Implementación: services/ai-service/pipelines/analisis_semantico.py,
 ' services/ai-service/pipelines/opinion_cumplimiento.py y
 ' services/rules-service/seed_reglas_validacion.py

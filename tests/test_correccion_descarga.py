@@ -1,5 +1,5 @@
 """
-Descarga del archivo original y corrección de datos de captura (PRD §13.1;
+Descarga del archivo original y corrección de datos de captura (ESTADO_DEL_DESARROLLO §3;
 docs/uml/ui-actividad-correccion-datos.puml).
 
   1. Descarga del original: llega con su nombre de carga (acentos incluidos,

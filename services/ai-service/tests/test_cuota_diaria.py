@@ -1,5 +1,5 @@
 """
-PLUS-19 — Cuota diaria del proveedor de IA visible (PRD §21.6; HU-55). Sin red.
+PLUS-19 — Cuota diaria del proveedor de IA visible (ESTADO_DEL_DESARROLLO §6.6; HU-55). Sin red.
 
   1. Los tokens de las llamadas reales se suman por día (UTC); las del caché
      no cuentan y un día nuevo empieza en cero.

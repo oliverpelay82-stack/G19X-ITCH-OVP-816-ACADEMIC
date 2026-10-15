@@ -1,5 +1,5 @@
 """
-Prueba de la lectura anticipada (RNF-02, PRD §21.9) por HTTP, sin el modelo ni tokens.
+Prueba de la lectura anticipada (RNF-02, ESTADO_DEL_DESARROLLO §6.9) por HTTP, sin el modelo ni tokens.
 
 Levanta core, rules y ai-service aislados (puertos 8101 a 8103, base
 ``plurione_compliance_e2e`` recreada, bóveda y SQLite temporales) y recorre:

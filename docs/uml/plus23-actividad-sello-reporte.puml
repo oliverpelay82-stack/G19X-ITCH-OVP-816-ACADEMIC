@@ -1,5 +1,5 @@
 @startuml plus23-actividad-sello-reporte
-' PLUS-23 — Sello de integridad de cada reporte exportado (PRD §21.9).
+' PLUS-23 — Sello de integridad de cada reporte exportado (ESTADO_DEL_DESARROLLO §6.9).
 ' Trazabilidad: RF-23, RF-24, RF-27; NOM-151 (huella del mensaje de datos),
 ' ISO/IEC 27001 A.8.15 (registros); complementa PLUS-15 (último sello de la cadena).
 ' Implementación: services/core-service/motor/reportes.py (sello_contenido,

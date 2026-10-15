@@ -185,8 +185,8 @@ def version_del_catalogo(
     db: Session = Depends(get_db),
 ):
     """
-    M6 (PRD §21.6): cada dictamen guarda esta versión para saber con qué
-    catálogo se emitió aunque después se pause o cambie una regla. M7 (§21.7):
+    M6 (ESTADO_DEL_DESARROLLO §6.6): cada dictamen guarda esta versión para saber con qué
+    catálogo se emitió aunque después se pause o cambie una regla. M7 (ESTADO_DEL_DESARROLLO §6.7):
     con ``tipo_documento``, también la de las reglas que deciden su dictamen.
     """
     reglas = db.query(Regla).all()

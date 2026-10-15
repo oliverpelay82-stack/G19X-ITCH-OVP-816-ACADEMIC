@@ -111,7 +111,7 @@ Las pruebas del core-service recrean `plurione_compliance_test` y una bóveda te
 - **Búsqueda semántica en todo el corpus (RF-12):** fuera del alcance acordado; la búsqueda dentro de cada documento sí existe (chat documental).
 - **IA con el plan gratuito de Groq:** 8,000 tokens por minuto y 200,000 por día. Sin `GROQ_API_KEY`, todo funciona salvo la auditoría con IA y el chat.
 
-El estado de cada requerimiento está en [`docs/PRD.md`](docs/PRD.md).
+El estado de cada requerimiento está en [`docs/ESTADO_DEL_DESARROLLO.md`](docs/ESTADO_DEL_DESARROLLO.md); los requerimientos, en [`docs/PRD.md`](docs/PRD.md), y el producto mínimo viable, en [`docs/MVP.md`](docs/MVP.md).
 
 ## Estructura
 
@@ -122,6 +122,6 @@ db/                  base-de-datos.sql: estructura y datos de prueba
 scripts/             instalación, respaldo, exportación de la base y pruebas extremo a extremo
 tests/               pruebas de core y rules
 storage_vault/       bóveda física de binarios (no versionada)
-docs/                especificación oficial (DOC-01 a DOC-08), PRD, MRD, UML y validación
+docs/                especificación oficial (DOC-01 a DOC-08), PRD, MVP, estado del desarrollo, UML y validación
 docker-compose.yml   plurione-db, plurione-core, plurione-rules, plurione-ai, plurione-frontend
 ```

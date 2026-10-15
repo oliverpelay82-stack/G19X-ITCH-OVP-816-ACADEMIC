@@ -1,5 +1,5 @@
 """
-Zona horaria del negocio (Q-a, PRD §21.6).
+Zona horaria del negocio (Q-a, ESTADO_DEL_DESARROLLO §6.6).
 
 Las vigencias se deciden por día: un documento vence «el 15 de octubre» en la
 hora de México, no en la del servidor. ``date.today()`` usa la zona del sistema

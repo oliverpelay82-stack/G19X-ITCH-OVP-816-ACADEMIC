@@ -5,7 +5,7 @@
 ' clientes entre servicios (observabilidad.cabeceras), motor/bitacora.registrar;
 ' frontend/src/services/api.js.
 ' El sello de tiempo RFC 3161 (PLUS-22) que también mostraba este diagrama se
-' retiró el 02/10/2026 (PRD §21.8); se conserva la cadena sellada (PLUS-04/05).
+' retiró el 02/10/2026 (ESTADO_DEL_DESARROLLO §6.8); se conserva la cadena sellada (PLUS-04/05).
 
 title P7 — Folio de seguimiento
 

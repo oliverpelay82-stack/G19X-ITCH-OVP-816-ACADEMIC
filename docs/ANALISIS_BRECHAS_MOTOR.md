@@ -6,7 +6,7 @@
 | Fecha | 29 de septiembre de 2026 (tras cerrar P1, P2 y P3; PRD versión 1.5). Actualizado el 30 de septiembre de 2026 (PRD 2.0): ver la sección 5. |
 | Fuentes | Ficha Técnica 045 (PDF de PluriOne); texto íntegro de DOC-01 a DOC-08 ([ESPECIFICACIONES_DOC01_A_DOC08.txt](ESPECIFICACIONES_DOC01_A_DOC08.txt)); [PRD.md](PRD.md) v1.5; código del repositorio, contra el que se verificó cada afirmación |
 | Criterio | Solo es brecha lo que exige alguno de esos documentos. Donde un requisito bancario va más allá de lo documentado, se indica. |
-| Documentos hermanos | [PRD.md](PRD.md), [MRD.md](MRD.md) |
+| Documentos relacionados | [PRD.md](PRD.md), [MVP.md](MVP.md), [ESTADO_DEL_DESARROLLO.md](ESTADO_DEL_DESARROLLO.md) |
 
 ---
 
@@ -40,7 +40,7 @@ La brecha de mayor peso es RDS-02: es lo que el DOC-01 y el DOC-03 describen com
 | Archivo protegido con contraseña | Rojo: «Archivo protegido, no procesable» | Cumple (PLUS-02). |
 | Poder revocado | DOC-02: los poderes «pueden tener vigencia limitada o ser revocados» | Pendiente: no hay forma de registrar una revocación; lo decide el analista. |
 | Vigencia ligada a otro documento | DOC-02: fianza y convenio modificatorio ligados a la vigencia del contrato | Pendiente: no hay dependencias de fechas entre documentos. |
-| Acta de asamblea que sustituye representantes | DOC-02: orden cronológico de las actas | Lo decide el analista (declarado en P2, PRD §21.2). |
+| Acta de asamblea que sustituye representantes | DOC-02: orden cronológico de las actas | Lo decide el analista (declarado en P2, ESTADO_DEL_DESARROLLO §6.2). |
 | Documentos de identificación personal | DOC-01: excluidos del alcance | Cumple: el catálogo no incluye INE, CURP ni pasaporte (el DOC-08, Tabla 7, cita «INE» como ejemplo de tipo documental). |
 
 ### 1.3 Inconsistencias entre documentos
@@ -49,14 +49,14 @@ Ninguna es un defecto del sistema, pero un auditor que lea los documentos en ord
 
 | # | Contradicción | Implementación | Acción |
 |---|---|---|---|
-| C1 | El DOC-08 describe un monolito modular de dos contenedores, puerto 8000, inferencia local con Ollama (Qwen2.5:7b) y PostgreSQL 16. | Tres microservicios (DG Cap. VIII), Groq Cloud y PostgreSQL 17. | Completar la sección 19 del PRD (monolito → microservicios, Ollama → Groq, PostgreSQL 16 → 17, puertos). **Declarado en PRD §19 (30/09/2026).** |
-| C2 | Límite de carga: 50 MB en el DOC-08. | 15 MB (`documento_controller.py`, `MAX_FILE_SIZE_BYTES`). | Documentar el origen del límite de 15 MB. **Declarado en PRD §19; el origen sigue sin documentarse y queda como pregunta abierta (PRD §20).** |
-| C3 | Umbral de revisión humana: el DOC-04 (RF-14) dice menor a 80 %; el DOC-05 y el DOC-08 dicen 85 % con la banda 0.70–0.84. | 85 % (DOC-05 y DOC-08). | El PRD reescribió RF-14 como 85 % sin nota: declarar la decisión. **Declarado en PRD §19 (30/09/2026).** |
-| C4 | Severidades: Alta/Media/Baja (DOC-04, RF-08); Crítica/Alta/Media (HU-11); cuatro niveles (DOC-05). | Cuatro niveles del DOC-05. | Declarar la decisión. **Declarado en PRD §19 (30/09/2026).** |
-| C5 | Amarillo del semáforo: «Próximo a vencer» (DOC-03), «próximos a vencer o pendientes de ratificación» (DOC-04), «Advertencia» (DOC-06). | Más amplio: también documentos sin auditar y obligatorios no críticos faltantes. | Declarar la decisión. **Declarado en PRD §19 (30/09/2026).** |
+| C1 | El DOC-08 describe un monolito modular de dos contenedores, puerto 8000, inferencia local con Ollama (Qwen2.5:7b) y PostgreSQL 16. | Tres microservicios (DG Cap. VIII), Groq Cloud y PostgreSQL 17. | Completar la sección 19 del PRD (monolito → microservicios, Ollama → Groq, PostgreSQL 16 → 17, puertos). **Declarado en ESTADO_DEL_DESARROLLO §4 (30/09/2026).** |
+| C2 | Límite de carga: 50 MB en el DOC-08. | 15 MB (`documento_controller.py`, `MAX_FILE_SIZE_BYTES`). | Documentar el origen del límite de 15 MB. **Declarado en ESTADO_DEL_DESARROLLO §4; el origen sigue sin documentarse y queda como pregunta abierta (ESTADO_DEL_DESARROLLO §5).** |
+| C3 | Umbral de revisión humana: el DOC-04 (RF-14) dice menor a 80 %; el DOC-05 y el DOC-08 dicen 85 % con la banda 0.70–0.84. | 85 % (DOC-05 y DOC-08). | El PRD reescribió RF-14 como 85 % sin nota: declarar la decisión. **Declarado en ESTADO_DEL_DESARROLLO §4 (30/09/2026).** |
+| C4 | Severidades: Alta/Media/Baja (DOC-04, RF-08); Crítica/Alta/Media (HU-11); cuatro niveles (DOC-05). | Cuatro niveles del DOC-05. | Declarar la decisión. **Declarado en ESTADO_DEL_DESARROLLO §4 (30/09/2026).** |
+| C5 | Amarillo del semáforo: «Próximo a vencer» (DOC-03), «próximos a vencer o pendientes de ratificación» (DOC-04), «Advertencia» (DOC-06). | Más amplio: también documentos sin auditar y obligatorios no críticos faltantes. | Declarar la decisión. **Declarado en ESTADO_DEL_DESARROLLO §4 (30/09/2026).** |
 | **C6** | Modelo de puntuación del DOC-05: porcentaje = reglas cumplidas ÷ reglas evaluadas × 100, con bloqueo por criticidad. | No existe: se calcula el porcentaje de documentos obligatorios presentes (`motor/cumplimiento.py`). | **Brecha real.** Es la causa de que la interfaz muestre «Completitud 100 %» junto a «Cumplimiento global 0 %» en un expediente No conforme. **Resuelta el 29/09/2026 (PRD §10.5).** |
-| C7 | Estado `BLOQUEADO` del expediente (DOC-08). | Documento ALTERADO con respuesta 409 (RIE-03). | Equivalente funcional; declararlo. **Declarado en PRD §19 (30/09/2026).** |
-| C9 | El DOC-02 (Tabla 2) marca 8 obligatorios corporativos: acta constitutiva, poderes, estatutos, actas de asamblea, RFC, constancia de situación fiscal, aviso de privacidad y comprobante de domicilio. | El catálogo base exige 3. | Decisión del Product Owner (pregunta abierta del PRD §20). Consecuencia: activarlos como Críticos lleva a No conforme a todos los expedientes corporativos existentes. |
+| C7 | Estado `BLOQUEADO` del expediente (DOC-08). | Documento ALTERADO con respuesta 409 (RIE-03). | Equivalente funcional; declararlo. **Declarado en ESTADO_DEL_DESARROLLO §4 (30/09/2026).** |
+| C9 | El DOC-02 (Tabla 2) marca 8 obligatorios corporativos: acta constitutiva, poderes, estatutos, actas de asamblea, RFC, constancia de situación fiscal, aviso de privacidad y comprobante de domicilio. | El catálogo base exige 3. | Decisión del Product Owner (pregunta abierta del ESTADO_DEL_DESARROLLO §5). Consecuencia: activarlos como Críticos lleva a No conforme a todos los expedientes corporativos existentes. |
 | C10 | ISO 30301 (DOC-03): metadatos obligatorios, entre ellos el emisor oficial. | El emisor no se guarda. | Agregarlo a la extracción del Nivel 4. |
 
 Además, el PRD marcaba RF-10 como implementado, pero el DOC-04 pide «texto plano, estructura tabular y pares clave-valor» y el sistema extrae texto plano: RF-10 es **parcial** (corregido en el PRD 2.0).
@@ -164,9 +164,9 @@ Revisión cruzada de los DOC-01 a DOC-08, el PRD, el MRD y el código, a petici�
 
 | # | Error | Corrección |
 |---|---|---|
-| A1 | El PRD §19 decía que Power BI no estaba documentado, pero el DOC-04 pide «visualización de métricas ejecutivas en dashboard con integración a Power BI». | Decisión del residente: el tablero propio, con gráficas de una librería de código abierto (MIT), sustituye a Power BI, que requiere licencia de pago para compartir tableros y exigiría exponer los datos a un servicio externo. Declarado en PRD §19 y §12.2. |
+| A1 | El ESTADO_DEL_DESARROLLO §4 decía que Power BI no estaba documentado, pero el DOC-04 pide «visualización de métricas ejecutivas en dashboard con integración a Power BI». | Decisión del residente: el tablero propio, con gráficas de una librería de código abierto (MIT), sustituye a Power BI, que requiere licencia de pago para compartir tableros y exigiría exponer los datos a un servicio externo. Declarado en ESTADO_DEL_DESARROLLO §4 y §12.2. |
 | A2 | RF-10 figuraba como implementado. | Parcial en PRD y MRD (MR-07). |
-| A3 | C1 a C5 y C7 no estaban declarados. | Declarados en PRD §19. |
+| A3 | C1 a C5 y C7 no estaban declarados. | Declarados en ESTADO_DEL_DESARROLLO §4. |
 | A4 | Este análisis y el MRD (MR-22 «Planeado») estaban desactualizados. | Actualizados. |
 
 ### 5.2 Huecos de la documentación definidos
@@ -175,22 +175,22 @@ Revisión cruzada de los DOC-01 a DOC-08, el PRD, el MRD y el código, a petici�
 |---|---|---|
 | B1 | Ningún documento fijaba la conservación de la evidencia (ISO 30301; CFF, art. 30). | PRD §12.6: mínimo 5 años y mientras exista el expediente; el sistema no elimina registros; la disposición la decide PluriOne con un rol autorizado (Módulo 7). |
 | B2 | El texto extraído con datos personales se guardaba en la SQLite del ai-service sin finalidad ni plazo declarados (LFPDPPP). | PRD §12.5: finalidad, plazo igual al del documento, respaldo conjunto y cifrado dentro de RNF-04. |
-| B3 | La excepción «Documento ilegible, se requiere recarga» del DOC-05 no se distinguía de la revisión humana. | PRD §10.4 la redacta como la define el DOC-05; se implementa en P5 (PRD §21.5). |
+| B3 | La excepción «Documento ilegible, se requiere recarga» del DOC-05 no se distinguía de la revisión humana. | PRD §10.4 la redacta como la define el DOC-05; se implementa en P5 (ESTADO_DEL_DESARROLLO §6.5). |
 
 ### 5.3 Estado de los huecos de la sección 3.2
 
 | Hueco | Estado al 30/09/2026 |
 |---|---|
 | 3 · Índice de cumplimiento (C6) | Resuelto (PRD §10.5). |
-| 5 · Excepciones del DOC-05 (ilegible y procesamiento diferido) | Resuelto en P5 (PRD §21.5). |
+| 5 · Excepciones del DOC-05 (ilegible y procesamiento diferido) | Resuelto en P5 (ESTADO_DEL_DESARROLLO §6.5). |
 | 7 · Barrido programado de integridad y último sello en los reportes | Resuelto en P5 (PLUS-14 y PLUS-15). |
 | Reproducibilidad del dictamen (2.3) | Resuelta en P5: versión de la lectura y de las instrucciones en cada dictamen. |
 | 8 · Conjunto de referencia | Construido; falta la corrida con cuota de Groq. |
-| 10 · Decisiones C1 a C5 y C7 | Declaradas (PRD §19). |
+| 10 · Decisiones C1 a C5 y C7 | Declaradas (ESTADO_DEL_DESARROLLO §4). |
 | Emisor como metadato (C10), RF-10 completo, UTC en la bitácora, cifrado en reposo y respaldos conjuntos | Después de P5, por decisión del residente. |
 | 1 · Módulo 7 | Sin cambios: fase final. |
 
 ### 5.4 Autenticidad del archivo (P6)
 
-El análisis más profundo encontró que el motor verifica lo que dice un documento, pero no si el archivo es auténtico: el backend solo exigía 12 o 13 caracteres en el RFC, no se leían los metadatos ni el QR de los documentos del SAT, un PDF con JavaScript se custodiaba sin advertencia y el mismo archivo en el expediente de otro titular solo se informaba. Tampoco se registraba la versión del catálogo con que se dictaminó, la cuota diaria del proveedor se agotaba sin aviso y no se medía la antigüedad de lo pendiente. Se resolvieron en P6 (PRD §21.6); las pruebas de fechas límite encontraron además que «hoy» salía de la zona del servidor (UTC en un contenedor) y se corrigió con `ZONA_HORARIA`. S1, S2, M7, Q-b y Q-c se resolvieron en P7 (PRD §21.7): folio de seguimiento entre servicios, sello de tiempo RFC 3161 (opcional y apagado por omisión, comprobado contra DigiCert y Sectigo con `openssl ts -verify`), aviso de nueva auditoría, flujo completo por HTTP con RFC real y ficticio sobre una base aislada, y OWASP ZAP, que encontró dos errores 500 reales, ya corregidos. La diferencia que quedaba entre el PRD y el código (§19 afirmaba gráficas con una librería MIT y en los reportes PDF y Excel, que eran barras en CSS y tablas) se resolvió con la Fase A del plan visual: Recharts en Reportes y gráficas nativas en el PDF y el Excel (PRD §13.1). Después siguen los entregables de la residencia.
+El análisis más profundo encontró que el motor verifica lo que dice un documento, pero no si el archivo es auténtico: el backend solo exigía 12 o 13 caracteres en el RFC, no se leían los metadatos ni el QR de los documentos del SAT, un PDF con JavaScript se custodiaba sin advertencia y el mismo archivo en el expediente de otro titular solo se informaba. Tampoco se registraba la versión del catálogo con que se dictaminó, la cuota diaria del proveedor se agotaba sin aviso y no se medía la antigüedad de lo pendiente. Se resolvieron en P6 (ESTADO_DEL_DESARROLLO §6.6); las pruebas de fechas límite encontraron además que «hoy» salía de la zona del servidor (UTC en un contenedor) y se corrigió con `ZONA_HORARIA`. S1, S2, M7, Q-b y Q-c se resolvieron en P7 (ESTADO_DEL_DESARROLLO §6.7): folio de seguimiento entre servicios, sello de tiempo RFC 3161 (opcional y apagado por omisión, comprobado contra DigiCert y Sectigo con `openssl ts -verify`), aviso de nueva auditoría, flujo completo por HTTP con RFC real y ficticio sobre una base aislada, y OWASP ZAP, que encontró dos errores 500 reales, ya corregidos. La diferencia que quedaba entre el PRD y el código (§19 afirmaba gráficas con una librería MIT y en los reportes PDF y Excel, que eran barras en CSS y tablas) se resolvió con la Fase A del plan visual: Recharts en Reportes y gráficas nativas en el PDF y el Excel (ESTADO_DEL_DESARROLLO §3). Después siguen los entregables de la residencia.
 

@@ -1,5 +1,5 @@
 """
-P5 — Excepciones del DOC-05, Tabla 1, en el ai-service (PRD §21.5; HU-33,
+P5 — Excepciones del DOC-05, Tabla 1, en el ai-service (ESTADO_DEL_DESARROLLO §6.5; HU-33,
 HU-47, HU-48). Sin red: Groq, el rules-service y el core se simulan.
 
   1. Documento ilegible: sin texto útil, o con muy pocos caracteres por página

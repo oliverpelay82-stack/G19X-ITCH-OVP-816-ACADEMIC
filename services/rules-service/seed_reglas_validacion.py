@@ -15,12 +15,12 @@ Por último, RIE-02-CONT-ANX vincula los anexos legales al contrato de
 prestación de servicios (RIE-02, RF-07). Las reglas RSC declaran los elementos
 de contenido que el Nivel 4 localiza en cada tipo de documento (DOC-05, RSC-01).
 
-Extensión PLUS-03 (PRD §21.1): RCV-04 aplica la misma caducidad estricta a la
+Extensión PLUS-03 (ESTADO_DEL_DESARROLLO §6.1): RCV-04 aplica la misma caducidad estricta a la
 opinión de cumplimiento del artículo 32-D (30 días, el ejemplo literal del
 DOC-05) y RSC-OPIN-SENT declara el sentido de la opinión, que el ai-service
 lee con reglas deterministas y no con el modelo.
 
-P2 (PRD §21.2): RSC-02-CONT y RSC-02-NDA activan la extracción de los datos del
+P2 (ESTADO_DEL_DESARROLLO §6.2): RSC-02-CONT y RSC-02-NDA activan la extracción de los datos del
 firmante (DOC-05, RSC-02) en contratos de prestación de servicios y NDA.
 
 La precarga es idempotente: solo inserta las reglas que no existen y nunca

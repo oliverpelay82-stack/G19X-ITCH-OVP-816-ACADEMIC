@@ -4,7 +4,7 @@
 ' crítico o un documento esté a punto de expirar»), HU-17 (el validador recibe el aviso),
 ' RF-17 (umbrales de anticipación de 30, 15 y 5 días), RF-19 (semáforo), RF-27 y HU-07
 ' (cada aviso queda en la bitácora), HU-31 (las asignaciones expediente–usuario dicen quién
-' es responsable); RNF-08 (lenguaje llano, motor/redaccion.py); MRD MR-14.
+' es responsable); RNF-08 (lenguaje llano, motor/redaccion.py).
 ' Diseño: PRD §5.2. Proveedor: SMTP genérico configurable (SMTP_HOST…); sin SMTP_HOST el
 ' envío está apagado y el aviso se registra como no enviado.
 ' Implementación (F5, 15/10/2026): core-service motor/notificaciones.py, enganchada a

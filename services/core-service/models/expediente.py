@@ -39,7 +39,7 @@ class Expediente(Base):
     nombre = Column(String(150), nullable=True)
 
     # Estado del semáforo: 'CONFORME', 'EN_REVISION' o 'NO_CONFORME' (CHECK en config/database.py;
-    # el BLOQUEADO del DOC-08 es el documento ALTERADO, PRD §19)
+    # el BLOQUEADO del DOC-08 es el documento ALTERADO, ESTADO_DEL_DESARROLLO §4)
     estado_cumplimiento = Column(String(30), default="EN_REVISION", nullable=False)
     
     # Porcentaje de completitud documental (0.00 a 100.00)

@@ -7,7 +7,7 @@
 ' services/ai-service/controllers/analisis_controller.py (_tope_revision).
 ' Actualiza F1 (carga) y F3 (auditoría).
 ' Las señales de edición (PLUS-16) y el QR del SAT (PLUS-17) se retiraron el
-' 02/10/2026 (PRD §21.8); este diagrama refleja el código vigente.
+' 02/10/2026 (ESTADO_DEL_DESARROLLO §6.8); este diagrama refleja el código vigente.
 
 title P6 — Señales del archivo: carga y auditoría
 

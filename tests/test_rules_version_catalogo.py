@@ -1,5 +1,5 @@
 """
-M6 — Versión del catálogo en el rules-service (PRD §21.6; HU-54).
+M6 — Versión del catálogo en el rules-service (ESTADO_DEL_DESARROLLO §6.6; HU-54).
 
   1. La versión no depende del orden de las reglas ni de su identificador o
      fecha de alta, y cambia al pausar una regla o editar su descripción.

@@ -32,7 +32,7 @@ Variables (las de conexión salen de services/core-service/.env):
   RESPALDO_DIR          destino (por omisión, la carpeta «respaldos» junto al
                         repositorio: los paquetes contienen los originales y no
                         deben quedar dentro del proyecto).
-  RESPALDO_SECUNDARIO   segunda copia, dentro de la infraestructura (MR-16).
+  RESPALDO_SECUNDARIO   segunda copia, dentro de la infraestructura (PRD §12.5).
   RESPALDO_RETENCION    paquetes verificados que se conservan (14).
   PG_BIN                carpeta de pg_dump y pg_restore, si no están en el PATH.
 Código de salida 0 solo si el paquete quedó verificado.

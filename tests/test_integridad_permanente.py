@@ -1,5 +1,5 @@
 """
-P5 — Integridad permanente (PRD §21.5: PLUS-14, HU-44; PLUS-15, HU-45).
+P5 — Integridad permanente (ESTADO_DEL_DESARROLLO §6.5: PLUS-14, HU-44; PLUS-15, HU-45).
 
   1. El barrido programado detecta un binario alterado que nadie leyó: el
      documento queda ALTERADO con el mismo dictamen RIE-03 y el mismo evento

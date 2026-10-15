@@ -1,5 +1,5 @@
 """
-Pruebas del caché de respuestas del chat documental — T3, PLUS-10 (PRD §21.4).
+Pruebas del caché de respuestas del chat documental — T3, PLUS-10 (ESTADO_DEL_DESARROLLO §6.4).
 Sin red: Groq, el core y el rules-service se simulan; la SQLite es temporal.
 
   1. La misma pregunta sobre el mismo documento no vuelve a llamar al modelo:

@@ -1,5 +1,5 @@
 """
-P5 — Excepciones del DOC-05, Tabla 1, en el core (PRD §10.4 y §21.5; HU-33,
+P5 — Excepciones del DOC-05, Tabla 1, en el core (PRD §10.4 y ESTADO_DEL_DESARROLLO §6.5; HU-33,
 HU-47, HU-48).
 
   1. Documento ilegible: un dictamen de origen NIVEL_3_ILEGIBLE deja el

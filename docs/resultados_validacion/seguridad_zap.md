@@ -1,6 +1,6 @@
 # Prueba de seguridad del API con OWASP ZAP (P7, Q-c)
 
-**Fecha:** 01/10/2026; pasada con autenticación del Módulo 7, 15/10/2026 · **Herramienta:** OWASP ZAP, imagen oficial `zaproxy/zap-stable`, `zap-api-scan.py` · **Requerimiento:** PRD §21.7 (Q-c), HU-61 · **Fundamento:** Ficha 045, actividad 6 (pruebas de seguridad); ISO/IEC 27001.
+**Fecha:** 01/10/2026; pasada con autenticación del Módulo 7, 15/10/2026 · **Herramienta:** OWASP ZAP, imagen oficial `zaproxy/zap-stable`, `zap-api-scan.py` · **Requerimiento:** ESTADO_DEL_DESARROLLO §6.7 (Q-c), HU-61 · **Fundamento:** Ficha 045, actividad 6 (pruebas de seguridad); ISO/IEC 27001.
 
 ## Método
 

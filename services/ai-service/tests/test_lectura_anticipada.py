@@ -1,5 +1,5 @@
 """
-RNF-02 — Lectura anticipada y prioridad del OCR (PRD §21.9), sin red ni OCR real.
+RNF-02 — Lectura anticipada y prioridad del OCR (ESTADO_DEL_DESARROLLO §6.9), sin red ni OCR real.
 
   1. El pool de OCR atiende primero las páginas de primer plano (auditoría,
      chat, visor) y después las de fondo; entre iguales, en orden de llegada.
