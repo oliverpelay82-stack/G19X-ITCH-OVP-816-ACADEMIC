@@ -49,6 +49,9 @@ EVENTO_CAMBIO_MFA = "CAMBIO_MFA"
 # Fase F5 (RF-20, HU-17): aviso por correo con su estado (ENVIADO, FALLIDO, SIN_DESTINATARIOS
 # o ENVIO_DESACTIVADO).
 EVENTO_NOTIFICACION_CORREO = "NOTIFICACION_CORREO"
+# HU-14: el administrador cambia un parámetro de operación (los umbrales de las alertas de
+# vencimiento), con el valor anterior y el nuevo.
+EVENTO_ACTUALIZACION_PARAMETRO = "ACTUALIZACION_PARAMETRO"
 
 
 class BitacoraAuditoria(Base):

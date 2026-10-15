@@ -89,6 +89,8 @@ MATRIZ = [
     ("GET", "/api/v1/dictamenes", (A, V, AU, S)),
     ("GET", f"/api/v1/dictamenes/{X}", (A, V, AU, S)),
     ("GET", f"/api/v1/documentos/{X}/contenido?descarga=true", (A, V, AU)),
+    ("GET", "/api/v1/configuracion/umbrales-vencimiento", (A, V, AU)),
+    ("PUT", "/api/v1/configuracion/umbrales-vencimiento", (A,)),
     ("GET", f"/api/v1/documentos/{X}/contenido", (S,)),
     ("POST", "/api/v1/dictamenes", (S,)),
     ("POST", f"/api/v1/documentos/{X}/procesamiento-diferido", (S,)),

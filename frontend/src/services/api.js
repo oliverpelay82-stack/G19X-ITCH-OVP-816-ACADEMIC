@@ -262,6 +262,11 @@ export const descargarOriginal = (documentoId) =>
   descargarReporte(`/documentos/${documentoId}/contenido`, { descarga: true })
 
 /* ── M2: Reglas de Validación (Rules Service :8002) ─────────────── */
+// HU-14 (RF-17): días de anticipación de las alertas de vencimiento; solo el administrador los cambia.
+export const getUmbralesVencimiento = () => request(CORE_BASE_URL, '/configuracion/umbrales-vencimiento')
+export const cambiarUmbralesVencimiento = (umbrales) =>
+  request(CORE_BASE_URL, '/configuracion/umbrales-vencimiento', { method: 'PUT', body: { umbrales } })
+
 export const getReglas = (params) => request(RULES_BASE_URL, '/reglas', { params, tiempoLimite: LIMITE_SONDEO_MS })
 export const createRegla = (data) => request(RULES_BASE_URL, '/reglas', { method: 'POST', body: data })
 export const toggleRegla = (id, activo) =>

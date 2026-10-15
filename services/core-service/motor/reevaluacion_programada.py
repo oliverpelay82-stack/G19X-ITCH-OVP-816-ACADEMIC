@@ -26,7 +26,7 @@ from dataclasses import dataclass
 
 from config.database import SessionLocal
 from models.expediente import Expediente
-from motor import cumplimiento, integridad, notificaciones
+from motor import cumplimiento, integridad, notificaciones, umbrales
 
 CAUSA = "REEVALUACION_PROGRAMADA"
 
@@ -76,7 +76,7 @@ def reevaluar_todos() -> ResultadoReevaluacion:
             if cumplimiento.sincronizar(db, expediente, evaluacion, causa=CAUSA):
                 cambios += 1
             avisos += notificaciones.avisar_vencimientos(
-                db, expediente, evaluacion.documentos, cumplimiento.UMBRALES_ALERTA
+                db, expediente, evaluacion.documentos, umbrales.vigentes(db)
             )
             evaluados += 1
         db.commit()

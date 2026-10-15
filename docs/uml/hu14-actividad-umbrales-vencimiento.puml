@@ -1,0 +1,65 @@
+@startuml hu14-actividad-umbrales-vencimiento
+' HU-14 — Configurar desde la interfaz los umbrales de anticipación de las alertas de vencimiento.
+' Trazabilidad: HU-14, RF-17 (días de anticipación configurables, por defecto 30, 15 y 5);
+' RF-18 (alerta «Próximo a vencer»), RF-20 (aviso por correo del umbral alcanzado); RCV-01;
+' RF-27 y RN-04 (el cambio queda en la bitácora sellada con el valor anterior y el nuevo);
+' matriz de permisos del PRD §5.1 (lectura: ADMIN, VALIDADOR y AUDITOR; cambio: ADMIN).
+' Implementación prevista: services/core-service/models/parametro.py (tabla nueva
+' parametros_sistema, sin alterar las existentes), motor/umbrales.py,
+' controllers/configuracion_controller.py, motor/cumplimiento.py y
+' motor/reevaluacion_programada.py; frontend/src/components/AvisosVencimiento.jsx (en el
+' detalle de la regla RCV-01, en Reglas) y graficas/Vencimientos.jsx.
+' Sin configuración guardada rige UMBRALES_ALERTA_VENCIMIENTO (30, 15 y 5).
+
+title HU-14 — Umbrales de anticipación de las alertas de vencimiento
+
+|Administrador|
+start
+:En Reglas, abre el detalle de RCV-01
+y pulsa «Cambiar» en «Avisos de vencimiento»;
+:Escribe los tres umbrales en días
+(p. ej. 45, 20 y 7);
+|Interfaz|
+:PUT /configuracion/umbrales-vencimiento;
+|core-service|
+if (¿Rol ADMIN?) then (no)
+  :403;
+  stop
+endif
+if (¿Tres enteros de 1 a 365,\nde mayor a menor y distintos?) then (no)
+  :422 con el motivo;
+  |Interfaz|
+  :Muestra el motivo junto a los campos;
+  stop
+endif
+|core-service|
+if (¿Cambian los valores vigentes?) then (no)
+  :200 sin evento;
+  stop
+endif
+:Guarda en parametros_sistema
+(clave «umbrales_vencimiento»,
+quién y cuándo);
+:Bitácora sellada:
+ACTUALIZACION_PARAMETRO
+{anterior, nuevo};
+:200 con los umbrales vigentes;
+|Interfaz|
+:Aviso «Umbrales actualizados»;
+fork
+  |core-service|
+  :Cada evaluación de un expediente
+  lee los umbrales vigentes:
+  severidad de «Próximo a vencer»
+  (≤ 1.º Media, ≤ 2.º Media-alta, ≤ 3.º Alta);
+fork again
+  :La reevaluación programada avisa por correo
+  el umbral más cercano alcanzado (RF-20);
+fork again
+  |Interfaz|
+  :La gráfica de vencimientos de Reportes
+  dibuja sus franjas con el 1.º y el 3.º;
+end fork
+stop
+
+@enduml

@@ -148,6 +148,7 @@ Por acción (lo que ve cada rol en la interfaz):
 | Gestionar usuarios: alta, rol, desactivar o reactivar, restablecer contraseña o MFA (HU-05) | ✔ | | | |
 | Asignar usuarios a un expediente (HU-31, RF-20) | ✔ | | | |
 | Pausar o reactivar reglas; dar de alta reglas de cualquier familia | ✔ | | | |
+| Cambiar los días de anticipación de las alertas de vencimiento (HU-14, RF-17) | ✔ | | | |
 | Dar de alta un tipo de documento nuevo con su criterio para la IA (RF-09, RDS-01) | ✔ | ✔ | | |
 | Registrar empresas y expedientes, cargar documentos y corregir datos de captura | ✔ | ✔ | | |
 | Auditar documentos, usar el chat documental y ratificar dictámenes | ✔ | ✔ | | |
@@ -169,6 +170,8 @@ Por endpoint (lo que aplica cada servicio; «Lectura» = ADMIN, VALIDADOR y AUDI
 | core | `GET /titulares`, `GET /expedientes`, `GET /expedientes/{id}`, `GET /alertas`, `GET /bitacora`, `GET /bitacora/verificar-cadena`, `GET /reportes/*` | Lectura |
 | core | `GET /documentos`, `GET /documentos/{id}`, `GET /documentos/expediente/{id}`, `GET /documentos/{id}/integridad`, `GET /dictamenes`, `GET /dictamenes/{id}` | Lectura y SISTEMA |
 | core | `GET /documentos/{id}/contenido?descarga=true` (descarga del original) | Lectura |
+| core | `GET /configuracion/umbrales-vencimiento` (días de anticipación de las alertas de vencimiento, HU-14) | Lectura |
+| core | `PUT /configuracion/umbrales-vencimiento` | ADMIN |
 | core | `GET /documentos/{id}/contenido` (lectura de máquina), `POST /dictamenes`, `POST /documentos/{id}/procesamiento-diferido` | Solo SISTEMA |
 | rules | `GET /reglas`, `GET /reglas/{id}`, `GET /reglas/version`, `GET /reglas/tipos-documento`, `GET /reglas/documentos-obligatorios`, `POST /reglas/evaluar-vigencia` | Lectura y SISTEMA |
 | rules | `POST /reglas` | ADMIN (cualquier familia); VALIDADOR solo con `familia_regla` RDS |
@@ -571,7 +574,7 @@ Microservicios desacoplados orquestados con Docker Compose en la red `plurione-n
 
 | Servicio | Endpoints principales |
 |---|---|
-| core-service | `/health`; `/titulares`; `/expedientes` (alta y búsqueda); `/expedientes/{id}`; `/documentos/upload`; `/documentos/{id}/integridad`; `/documentos/{id}/contenido`; `/dictamenes`; `/dictamenes/{id}/ratificar`; `PATCH /titulares/{id}` y `PATCH /expedientes/{id}` (corrección de datos de captura); `/documentos/{id}/contenido?descarga=true` (descarga del original); `/bitacora`; `/bitacora/verificar-cadena` (P3); `/alertas`; `/reportes/expedientes/{id}`; `/reportes/cumplimiento`; `/reportes/documentos/{id}/custodia` (P3) |
+| core-service | `/health`; `/titulares`; `/expedientes` (alta y búsqueda); `/expedientes/{id}`; `/documentos/upload`; `/documentos/{id}/integridad`; `/documentos/{id}/contenido`; `/dictamenes`; `/dictamenes/{id}/ratificar`; `PATCH /titulares/{id}` y `PATCH /expedientes/{id}` (corrección de datos de captura); `/documentos/{id}/contenido?descarga=true` (descarga del original); `/bitacora`; `/bitacora/verificar-cadena` (P3); `/alertas`; `/reportes/expedientes/{id}`; `/reportes/cumplimiento`; `/reportes/documentos/{id}/custodia` (P3); `/configuracion/umbrales-vencimiento` (HU-14) |
 | rules-service | `/health`; `/reglas` (catálogo, alta y pausa); `/reglas/documentos-obligatorios?tipo_expediente=`; `/reglas/tipos-documento` (tipos declarados por reglas RDS, RF-09); `/reglas/evaluar-vigencia` |
 | ai-service | `/health`; `/ai/extraer-texto`; `/ai/documentos/{id}/preparar`; `/ai/analisis-semantico`; `/ai/chat-documento`; `/ai/configuracion-ocr` |
 

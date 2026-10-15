@@ -30,6 +30,7 @@ from controllers.dictamen_controller import router as dictamen_router
 from controllers.bitacora_controller import router as bitacora_router
 from controllers.alerta_controller import router as alerta_router
 from controllers.reporte_controller import router as reporte_router
+from controllers.configuracion_controller import router as configuracion_router
 from motor import reevaluacion_programada, usuarios_iniciales
 
 
@@ -165,6 +166,7 @@ app.include_router(dictamen_router)
 app.include_router(bitacora_router)
 app.include_router(alerta_router)
 app.include_router(reporte_router)
+app.include_router(configuracion_router)
 
 
 if __name__ == "__main__":

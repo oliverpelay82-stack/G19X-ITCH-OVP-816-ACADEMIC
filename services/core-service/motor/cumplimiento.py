@@ -40,7 +40,6 @@ cambio de semáforo, con sus alertas, queda en la bitácora (EVALUACION_REGLAS).
 """
 from __future__ import annotations
 
-import os
 from dataclasses import dataclass, field
 from datetime import date, timedelta
 from typing import Any
@@ -54,7 +53,7 @@ from models.bitacora import EVENTO_EVALUACION_REGLAS
 from models.dictamen import ORIGEN_NIVEL_1, ORIGEN_NIVEL_3_ILEGIBLE, ORIGEN_NIVEL_4, DictamenAuditoria
 from models.documento import Documento
 from models.expediente import Expediente
-from motor import bitacora, notificaciones, senales_pdf, tipos_documento
+from motor import bitacora, notificaciones, senales_pdf, tipos_documento, umbrales
 from motor import representacion as cotejo_legal
 from motor.redaccion import dias, fecha_legible, texto_llano
 
@@ -74,22 +73,6 @@ CRITERIO_ANTIGUEDAD = "ANTIGUEDAD_DESDE_EMISION"
 # Ventana de «próximo a vencer» si el dictamen no registró la de RCV-01 (DOC-05: 30 días).
 DIAS_PROXIMO_A_VENCER = 30
 
-
-def _umbrales_alerta() -> tuple[int, ...]:
-    """
-    Días de anticipación de las alertas de vencimiento (RF-17, HU-14; por
-    defecto 30, 15 y 5), configurables con UMBRALES_ALERTA_VENCIMIENTO.
-    """
-    valores = []
-    for parte in os.getenv("UMBRALES_ALERTA_VENCIMIENTO", "30,15,5").split(","):
-        try:
-            valores.append(int(parte))
-        except ValueError:
-            continue
-    return tuple(sorted({v for v in valores if v >= 0}, reverse=True)) or (30, 15, 5)
-
-
-UMBRALES_ALERTA = _umbrales_alerta()
 
 # Códigos de alerta (RF-18). Las severidades son las del catálogo de reglas.
 ALERTA_DOCUMENTO_FALTANTE = "DOCUMENTO_FALTANTE"
@@ -289,11 +272,14 @@ def rango_severidad(severidad: str | None) -> int:
     return ORDEN_SEVERIDAD.index(valor) if valor in ORDEN_SEVERIDAD else len(ORDEN_SEVERIDAD)
 
 
-def _severidad_por_anticipacion(dias: int) -> str | None:
-    """Severidad de la alerta de vencimiento según los umbrales (30, 15, 5 días)."""
+def _severidad_por_anticipacion(dias: int, vigentes: tuple[int, ...] | None = None) -> str | None:
+    """
+    Severidad de la alerta de vencimiento según los umbrales vigentes (HU-14; por
+    omisión 30, 15 y 5 días): hasta el primero, Media; el segundo, Media-alta; el tercero, Alta.
+    """
     niveles = ["MEDIA", "MEDIA_ALTA", "ALTA"]
     severidad = None
-    for i, umbral in enumerate(UMBRALES_ALERTA):
+    for i, umbral in enumerate(vigentes or umbrales.predeterminados()):
         if dias <= umbral:
             severidad = niveles[min(i, len(niveles) - 1)]
     return severidad
@@ -506,7 +492,8 @@ def evaluar(
             motivos.append(f"{etiqueta_documento(c.tipo_documento)} ({c.nombre_archivo_original}): "
                            f"representación no acreditada. {c.motivo}")
 
-    alertas = _alertas(obligatorios, anexos_faltantes, estados, dictamenes, vigencias, vigentes, cotejos)
+    alertas = _alertas(obligatorios, anexos_faltantes, estados, dictamenes, vigencias, vigentes, cotejos,
+                       umbrales.vigentes(db))
 
     return EvaluacionExpediente(
         estado=estado_expediente,
@@ -678,6 +665,7 @@ def _alertas(
     vigencias: dict[str, _Vigencia],
     vigentes: dict[str, Documento],
     cotejos: list[cotejo_legal.CotejoRepresentacion] | None = None,
+    umbrales_vigentes: tuple[int, ...] | None = None,
 ) -> list[Alerta]:
     """
     Traduce los hallazgos de la evaluación en alertas accionables: qué pasa,
@@ -882,7 +870,7 @@ def _alertas(
                 ))
 
         if vigencia and vigencia.dias >= 0:
-            severidad = _severidad_por_anticipacion(vigencia.dias)
+            severidad = _severidad_por_anticipacion(vigencia.dias, umbrales_vigentes)
             if severidad:
                 alertas.append(Alerta(
                     codigo=ALERTA_PROXIMO_A_VENCER,

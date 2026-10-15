@@ -24,6 +24,7 @@ import useDebounce from '../hooks/useDebounce.js'
 import { coincideEn, normalizar } from '../utils/busqueda.js'
 import { createRegla, toggleRegla } from '../services/api.js'
 import TipoDocumentoNuevo from './TipoDocumentoNuevo.jsx'
+import AvisosVencimiento from './AvisosVencimiento.jsx'
 import { formatFecha, plural } from '../utils/format.js'
 import {
   FAMILIA_META,
@@ -100,6 +101,12 @@ function DetalleRegla({ regla }) {
       <KeyValue etiqueta="Alcance">{alcance}</KeyValue>
       <KeyValue etiqueta="Obligatoriedad y vigencia">{obligatoriedad}</KeyValue>
       <KeyValue etiqueta="Alta en el catálogo">{regla.creado_en ? formatFecha(regla.creado_en) : '—'}</KeyValue>
+      {/* HU-14: los días de anticipación de las alertas de vencimiento son parte de la vigencia. */}
+      {regla.codigo_regla === 'RCV-01' && (
+        <KeyValue etiqueta="Avisos de vencimiento">
+          <AvisosVencimiento />
+        </KeyValue>
+      )}
     </KeyValueList>
   )
 }

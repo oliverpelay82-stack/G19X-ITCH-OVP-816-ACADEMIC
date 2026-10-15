@@ -372,6 +372,35 @@
   grid-column: span 3;
 }
 
+/* RCV-01 suma «Avisos de vencimiento» (HU-14): sexto dato, a todo el ancho. */
+.regla-detalle-grid > div:nth-child(6) {
+  grid-column: 1 / -1;
+}
+
+.avisos-vencimiento {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--s-2) var(--s-3);
+}
+
+.avisos-vencimiento-campos {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 140px));
+  gap: var(--s-3);
+}
+
+.avisos-vencimiento-acciones {
+  display: flex;
+  gap: var(--s-2);
+}
+
+.avisos-vencimiento-error {
+  flex-basis: 100%;
+  color: var(--bad);
+  font-size: var(--fs-small);
+}
+
 /* Etiqueta de dato: mayúscula inicial y gris, sin versalitas. */
 .regla-detalle-grid dt {
   font-size: var(--fs-small);

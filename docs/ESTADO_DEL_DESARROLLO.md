@@ -46,7 +46,7 @@ Estados: **Implementado**, **Parcial**, **Pendiente** o **Fuera del alcance**.
 | RF-14 | Implementado | `POST /api/v1/dictamenes/{id}/ratificar`. |
 | RF-15 | Implementado | Persistidas en el dictamen. |
 | RF-16 | Implementado | RCV-01, RCV-02 y RCV-03, recalculadas en cada consulta. |
-| RF-17 | Implementado | Variable de entorno `UMBRALES_ALERTA_VENCIMIENTO`. |
+| RF-17 | Implementado | El administrador los cambia en Reglas, en el detalle de RCV-01 (HU-14, 15/10/2026; [hu14-actividad-umbrales-vencimiento.puml](uml/hu14-actividad-umbrales-vencimiento.puml)): `PUT /configuracion/umbrales-vencimiento`, tabla `parametros_sistema` y evento ACTUALIZACION_PARAMETRO con el valor anterior y el nuevo. Sin valor guardado rige `UMBRALES_ALERTA_VENCIMIENTO`. Se leen en cada evaluación: rigen la alerta «Próximo a vencer», el aviso por correo y las franjas de la gráfica de vencimientos. Prueba: `tests/test_umbrales_vencimiento.py`. |
 | RF-18 | Implementado | Once categorías de alerta (PRD §10.3; P5 suma DOCUMENTO_ILEGIBLE y PROCESAMIENTO_DIFERIDO); la cláusula incumplida es CONTENIDO_NO_LOCALIZADO. |
 | RF-19 | Implementado | Reglas del semáforo en PRD §10.2. |
 | RF-20 | Implementado | Fase F5 del Módulo 7 (PRD §5.2, 15/10/2026): SMTP genérico a los validadores asignados al expediente al pasar a no conforme y a 30, 15 y 5 días del vencimiento, con cada aviso en la bitácora (`NOTIFICACION_CORREO`). |
@@ -77,7 +77,7 @@ Estados: **Implementado**, **Parcial**, **Pendiente** o **Fuera del alcance**.
 | HU-11 | Implementado |
 | HU-12 | Implementado |
 | HU-13 | Implementado |
-| HU-14 | Parcial (por variable de entorno, no desde la interfaz) |
+| HU-14 | Implementado (15/10/2026: desde la interfaz, en el detalle de RCV-01; antes solo por variable de entorno) |
 | HU-15 | Implementado |
 | HU-16 | Implementado |
 | HU-17 | Implementado (con RF-20, fase F5, PRD §5.2) |
@@ -98,7 +98,7 @@ Estados: **Implementado**, **Parcial**, **Pendiente** o **Fuera del alcance**.
 | HU-32 | Implementado («Auditar pendientes» en el detalle del expediente: audita en secuencia, con reglas e IA, los documentos vigentes sin dictamen y muestra el avance por documento y el semáforo y las alertas antes y después) |
 | HU-33 | Implementado: una falla no detiene el resto del expediente (DG §8.7), y las dos excepciones del DOC-05, «Documento ilegible, se requiere recarga» y «Procesamiento diferido», se implementan en P5 (§6.5) |
 
-**Resumen:** 32 implementadas y 1 parcial (HU-14) de 33 (HU-33 pasó a parcial en la versión 2.1 y se completó con P5; HU-05, HU-06, HU-07 y HU-31 se completaron con el Módulo 7, versiones 3.9 y 4.1, y HU-17 con el correo, versión 4.2). Respecto de la versión 1.0 pasan a implementadas HU-30 y HU-32 (versión 1.1), HU-19 (versión 1.2), HU-23 (versión 1.4) y HU-24 (versión 2.9). Las historias PLUS (HU-34 en adelante) se cuentan en el §6.
+**Resumen:** 33 implementadas de 33 (HU-14 se completó el 15/10/2026 con la configuración desde la interfaz; HU-33 pasó a parcial en la versión 2.1 y se completó con P5; HU-05, HU-06, HU-07 y HU-31 se completaron con el Módulo 7, versiones 3.9 y 4.1, y HU-17 con el correo, versión 4.2). Respecto de la versión 1.0 pasan a implementadas HU-30 y HU-32 (versión 1.1), HU-19 (versión 1.2), HU-23 (versión 1.4) y HU-24 (versión 2.9). Las historias PLUS (HU-34 en adelante) se cuentan en el §6.
 
 ### 1.3 Requerimientos no funcionales
 
@@ -158,7 +158,7 @@ Estados: **Implementado**, **Parcial**, **Pendiente** o **Fuera del alcance**.
 | Sprint | Estado |
 |---|---|
 | 1 — Cimientos del sistema | Implementado (autenticación y roles, HU-05 y HU-06, con el Módulo 7 el 14/10/2026) |
-| 2 — Motor de reglas y vigencias | Implementado, salvo los umbrales desde la interfaz (HU-14); el correo (HU-17), con el Módulo 7 el 15/10/2026 |
+| 2 — Motor de reglas y vigencias | Implementado: el correo (HU-17) con el Módulo 7 y los umbrales desde la interfaz (HU-14), el 15/10/2026 |
 | 3 — Análisis inteligente con IA | Implementado parcialmente (HU-24) |
 | 4 — Reportes, dashboard e integración | Implementado (el usuario de consulta, HU-31, con el Módulo 7 el 14/10/2026) |
 

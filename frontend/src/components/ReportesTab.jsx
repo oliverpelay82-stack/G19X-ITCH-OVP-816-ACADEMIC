@@ -8,6 +8,7 @@ import AnilloSemaforo from './graficas/AnilloSemaforo.jsx'
 import CambiosSemaforo from './graficas/CambiosSemaforo.jsx'
 import HallazgosPorArea from './graficas/HallazgosPorArea.jsx'
 import Vencimientos from './graficas/Vencimientos.jsx'
+import useUmbralesVencimiento from '../hooks/useUmbralesVencimiento.js'
 import { TIPOS_EXPEDIENTE } from '../constants.js'
 
 /** Sección de la página con su título y, opcionalmente, una acción a la derecha. */
@@ -32,6 +33,7 @@ function Seccion({ titulo, accion, children }) {
  */
 export default function ReportesTab({ expedientes, loading = false, isOnline = true, onAbrirExpediente, onVerExpedientes }) {
   const [tipoGlobal, setTipoGlobal] = useState('')
+  const { umbrales } = useUmbralesVencimiento()
   const totalAlertas = useMemo(() => expedientes.reduce((n, e) => n + (e.evaluacion?.alertas?.length || 0), 0), [expedientes])
 
   return (
@@ -84,7 +86,7 @@ export default function ReportesTab({ expedientes, loading = false, isOnline = t
 
           <Seccion titulo="Vencimientos y tendencia">
             <div className="report-grid report-grid--dos">
-              <Vencimientos expedientes={expedientes} onAbrirExpediente={onAbrirExpediente} />
+              <Vencimientos expedientes={expedientes} onAbrirExpediente={onAbrirExpediente} umbrales={umbrales} />
               <CambiosSemaforo expedientes={expedientes} onAbrirExpediente={onAbrirExpediente} />
             </div>
           </Seccion>

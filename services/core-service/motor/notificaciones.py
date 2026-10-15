@@ -7,8 +7,8 @@ Dos avisos, a los usuarios activos con rol VALIDADOR asignados al expediente
   * **Estatus crítico:** el semáforo pasa de otro estado a NO_CONFORME
     (``cumplimiento.sincronizar``). La apertura no avisa: todo expediente nuevo
     nace sin documentos y, por eso, en rojo.
-  * **Documento por vencer:** en la reevaluación programada, un documento cruza el
-    umbral de 30, 15 o 5 días antes de vencer (RF-17, ``UMBRALES_ALERTA_VENCIMIENTO``).
+  * **Documento por vencer:** en la reevaluación programada, un documento alcanza un
+    umbral de anticipación (RF-17, HU-14; por omisión 30, 15 o 5 días, motor/umbrales.py).
     Se avisa solo el umbral más cercano que alcanzó: un servicio detenido varios días
     no manda tres correos atrasados.
 
