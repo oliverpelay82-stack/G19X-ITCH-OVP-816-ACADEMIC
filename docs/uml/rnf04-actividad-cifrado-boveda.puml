@@ -1,0 +1,73 @@
+@startuml rnf04-actividad-cifrado-boveda
+' RNF-04 — Cifrado AES-256 de la bóveda en reposo (versión mínima de la entrega).
+' Trazabilidad: RNF-04 (DOC-04: documentos almacenados cifrados con AES-256); DOC-01, criterio
+' de aceptación «documentos almacenados protegidos mediante cifrado y control de acceso»
+' (el control de acceso es RF-26); RIE-03 y RF-03 (la huella se calcula sobre el original y se
+' verifica en cada lectura); RNF-10 (el respaldo guarda la bóveda cifrada y su prueba de
+' restauración la descifra); ISO/IEC 27001 A.8.24.
+' Implementación: services/core-service/config/cifrado_boveda.py (AES-256-GCM, cryptography),
+' motor/integridad.py (lectura), controllers/documento_controller.py (escritura),
+' scripts/cifrar_boveda.py (cifra los archivos que ya estaban en claro) y scripts/respaldo.py.
+' Sin tablas nuevas ni cambios en la base: la huella registrada sigue siendo la del original.
+' Fuera de esta versión: la SQLite del ai-service y el secreto TOTP (PRD §12.5).
+
+title RNF-04 — Cifrado AES-256 de la bóveda en reposo
+
+partition "Carga (POST /documentos)" {
+  start
+  :Magic bytes, tamaño y huella SHA-256 **del original** (RF-03);
+  if (¿BOVEDA_LLAVE definida?) then (sí)
+    :AES-256-GCM con un nonce aleatorio por archivo.
+    Archivo = cabecera PLVC1 + id de la llave (8 bytes)
+    + nonce (12) + cifrado con su etiqueta (16);
+  else (no)
+    :Se guarda en claro
+    (/health lo advierte);
+  endif
+  :Escritura en storage_vault con el nombre de siempre
+  (12 caracteres de la huella + nombre original);
+  stop
+}
+
+partition "Lectura (descarga, auditoría, ficha, barrido)" {
+  start
+  :Lee el archivo de la bóveda;
+  if (¿Empieza con la cabecera PLVC1?) then (no)
+    :Archivo en claro (anterior al cifrado
+    o sin llave): se usa tal cual;
+  else (sí)
+    if (¿El id de la llave coincide con BOVEDA_LLAVE?) then (no)
+      #pink:Error de configuración (HTTP 503).
+      **No** es una alteración: el documento
+      no se marca ni recibe dictamen;
+      stop
+    else (sí)
+      if (¿GCM verifica la etiqueta?) then (no)
+        :El archivo cifrado fue modificado;
+        #pink:RIE-03: ALTERADO, dictamen NO_CONFORME,
+        ALERTA_INTEGRIDAD y reevaluación;
+        stop
+      else (sí)
+        :Original descifrado;
+      endif
+    endif
+  endif
+  if (¿SHA-256 del original = huella registrada?) then (sí)
+    :Se sirve o se analiza;
+  else (no)
+    #pink:RIE-03 (igual que antes del cifrado);
+  endif
+  stop
+}
+
+partition "Operación" {
+  start
+  :scripts/cifrar_boveda.py: cifra cada archivo en claro
+  si su SHA-256 coincide con el prefijo de su nombre,
+  comprueba el descifrado y lo reemplaza;
+  :scripts/respaldo.py: boveda.zip guarda los archivos cifrados;
+  la prueba de restauración los descifra para recalcular la huella.
+  La llave **no** va en el paquete: sin ella no se recuperan;
+  stop
+}
+@enduml
