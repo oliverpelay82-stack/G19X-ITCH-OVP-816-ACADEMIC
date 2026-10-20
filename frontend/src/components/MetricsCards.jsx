@@ -5,7 +5,7 @@ import { Card } from './ui/index.js'
 import { TIPOS_EXPEDIENTE } from '../constants.js'
 import { formatIndice, promedioIndice } from '../utils/indice.js'
 import { reducirMovimiento } from '../utils/movimiento.js'
-import { plural } from '../utils/format.js'
+import { formatBytes, plural } from '../utils/format.js'
 
 /** Duración del conteo: el doble de la transición lenta del sistema de diseño. */
 const DURACION_CONTEO = 480
@@ -43,9 +43,6 @@ function Cifra({ valor, formato = String }) {
 }
 
 const contar = (lista, prueba) => lista.reduce((n, x) => n + (prueba(x) ? 1 : 0), 0)
-
-/** Tamaño agregado de la bóveda siempre en MB, para que la cifra sea comparable. */
-const enMB = (bytes) => `${(bytes / (1024 * 1024)).toLocaleString('es-MX', { maximumFractionDigits: 1 })} MB`
 
 /**
  * Fila de KPIs compacta: cuatro tarjetas de igual ancho con icono en
@@ -105,7 +102,7 @@ export default function MetricsCards({ titulares, expedientes, documentos, loadi
       icon: Vault,
       label: 'Bóveda',
       valor: <Cifra valor={documentos.length} />,
-      pie: <span className="metric-foot">{`${enMB(datos.bytes)} bajo custodia`}</span>,
+      pie: <span className="metric-foot">{`${formatBytes(datos.bytes)} bajo custodia`}</span>,
     },
     {
       // Índice de cumplimiento del DOC-05 (C6). La completitud (documentos
