@@ -169,7 +169,9 @@ def main() -> int:
     if ocupados:
         print(f"Puertos ocupados {ocupados}: detenga los servicios locales antes de la prueba.")
         return 2
-    pendientes = subprocess.run(["git", "status", "--porcelain"], cwd=RAIZ, capture_output=True, text=True).stdout
+    # git escribe en UTF-8; sin encoding, Windows lo leería con su página de códigos («bÃ³veda»).
+    pendientes = subprocess.run(["git", "status", "--porcelain"], cwd=RAIZ, capture_output=True, text=True,
+                                encoding="utf-8").stdout
     if pendientes.strip():
         print("Aviso: hay cambios sin comprometer; la prueba usa el último commit.\n")
 
@@ -178,7 +180,8 @@ def main() -> int:
     registro = trabajo / "docker.log"
     try:
         subprocess.run(["git", "clone", "-q", str(RAIZ), str(clon)], check=True)
-        commit = subprocess.run(["git", "log", "--oneline", "-1"], cwd=clon, capture_output=True, text=True).stdout.strip()
+        commit = subprocess.run(["git", "log", "--oneline", "-1"], cwd=clon, capture_output=True, text=True,
+                                encoding="utf-8").stdout.strip()
         print(f"Clon limpio de {commit}")
         if args.con_ia:
             (clon / ".env").write_text(f"GROQ_API_KEY={clave_ia()}\n", encoding="utf-8")
