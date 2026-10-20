@@ -212,6 +212,8 @@ def test_cifrar_boveda_cifra_los_archivos_en_claro(tmp_path):
     alterado.write_bytes(b"%PDF-1.4 contenido manipulado")
     ya_cifrado = tmp_path / "000000000000_previo.pdf"
     ya_cifrado.write_bytes(cifrado_boveda.cifrar(b"previo"))
+    (tmp_path / ".gitkeep").write_bytes(b"")   # mantiene la carpeta en git: no es un documento
+    (tmp_path / "abc_interrumpido.pdf.cifrando").write_bytes(b"temporal de una corrida interrumpida")
     script = _script_cifrar_boveda()
 
     simulado = script.cifrar_boveda(tmp_path, simular=True)
@@ -224,4 +226,4 @@ def test_cifrar_boveda_cifra_los_archivos_en_claro(tmp_path):
     assert cifrado_boveda.descifrar(en_claro.read_bytes()) == original
     assert alterado.read_bytes() == b"%PDF-1.4 contenido manipulado", "Lo alterado se deja para RIE-03"
     assert script.cifrar_boveda(tmp_path)["cifrados"] == [], "Repetirlo no cambia nada"
-    assert not list(tmp_path.glob("*.cifrando"))
+    assert (tmp_path / ".gitkeep").read_bytes() == b""

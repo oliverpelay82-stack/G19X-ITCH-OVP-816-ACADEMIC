@@ -11,6 +11,8 @@ llave. Por cada archivo en claro:
   2. lo cifra, comprueba que el descifrado devuelva exactamente el original y
      lo reemplaza de forma atómica (os.replace).
 
+Omite los archivos ocultos (.gitkeep) y los temporales .cifrando.
+
 Puede correr con los servicios en marcha. Los archivos ya cifrados se omiten,
 así que repetirlo no cambia nada. Antes de correrlo, respalde la bóveda y
 guarde BOVEDA_LLAVE fuera del equipo: sin ella los documentos no se recuperan.
@@ -51,7 +53,11 @@ def cifrar_boveda(boveda: Path, simular: bool = False) -> dict[str, list[str]]:
     if not cifrado_boveda.activo():
         raise SystemExit("Falta BOVEDA_LLAVE: defina la llave en services/core-service/.env antes de cifrar.")
     resultado: dict[str, list[str]] = {"cifrados": [], "ya_cifrados": [], "huella_distinta": []}
-    for ruta in sorted(p for p in boveda.iterdir() if p.is_file()):
+    # Los archivos ocultos (.gitkeep, que mantiene la carpeta en git) no son documentos, y un
+    # .cifrando es el temporal de una corrida interrumpida: el original sigue intacto junto a él.
+    documentos = (p for p in boveda.iterdir()
+                  if p.is_file() and not p.name.startswith(".") and not p.name.endswith(".cifrando"))
+    for ruta in sorted(documentos):
         datos = ruta.read_bytes()
         if cifrado_boveda.esta_cifrado(datos):
             resultado["ya_cifrados"].append(ruta.name)
