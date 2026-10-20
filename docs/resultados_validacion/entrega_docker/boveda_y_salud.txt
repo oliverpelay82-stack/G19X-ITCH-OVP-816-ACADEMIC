@@ -1,0 +1,21 @@
+Evidencia tomada en los contenedores de la corrida (proyecto plurione_entrega), 2026-10-20 15:37 -0600
+
+## Contenedores
+plurione-frontend  plurione_entrega-plurione-frontend  Up 46 seconds
+plurione-ai  plurione_entrega-plurione-ai  Up 47 seconds
+plurione-core  plurione_entrega-plurione-core  Up 47 seconds
+plurione-rules  plurione_entrega-plurione-rules  Up 47 seconds
+plurione-db  postgres:17-alpine  Up 53 seconds (healthy)
+
+## Versiones
+Docker Engine 29.9.1
+Docker Compose version v5.6.0
+
+## Bóveda del core (RNF-04)
+bfc2ac4f35e6_constancia.pdf  1704 bytes  cabecera=PLVC1  contiene %PDF: 0
+
+## GET /api/v1/health del core
+{"status":"online","servicio":"core-service","puerto":8001,"conexion_bd":true,"version":"1.0.0","advertencias":["Las sesiones se firman con el secreto de demostración: defina JWT_SECRET en el .env.","La bóveda se cifra con la llave de demostración: defina BOVEDA_LLAVE en el .env."]}
+
+## Frontend
+GET http://127.0.0.1:5173/ -> 200
