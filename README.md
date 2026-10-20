@@ -113,6 +113,15 @@ Las pruebas del core-service recrean `plurione_compliance_test` y una bóveda te
 
 El estado de cada requerimiento está en [`docs/ESTADO_DEL_DESARROLLO.md`](docs/ESTADO_DEL_DESARROLLO.md); los requerimientos, en [`docs/PRD.md`](docs/PRD.md), y el producto mínimo viable, en [`docs/MVP.md`](docs/MVP.md).
 
+## Uso de IA
+
+En el desarrollo se usó **Claude Code** (Anthropic, modelo Claude Opus) como asistente de programación. Las instrucciones que sigue están en [`CLAUDE.md`](CLAUDE.md), y cada commit en el que participó lo declara con la línea `Co-Authored-By`.
+
+- **Para qué:** analizar los DOC y redactar requerimientos (PRD, MVP), diseñar los cambios con diagramas UML, escribir código y pruebas, y documentar el estado del desarrollo.
+- **Cómo se revisó lo que generó:** cada propuesta de cambio se aprueba antes de tocar el código, con su análisis de impacto. Cada corrección lleva una prueba de regresión que falla sin ella. Las suites de pytest y el lint y build del frontend corren en el CI en cada push. Los resultados se midieron aparte: el Gold Standard de 42 casos ([`services/ai-service/evaluacion/`](services/ai-service/evaluacion/)), OWASP ZAP y los benchmarks ([`docs/resultados_validacion/`](docs/resultados_validacion/)). Las decisiones de alcance y de diseño son del autor.
+
+Esto es distinto de la IA *del producto*: el motor usa un modelo de lenguaje en Groq Cloud solo para extraer datos con evidencia citada; el dictamen lo emiten reglas deterministas y lo ratifica una persona.
+
 ## Estructura
 
 ```
