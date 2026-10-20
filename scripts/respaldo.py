@@ -4,7 +4,9 @@ Respaldo diario conjunto de la evidencia, con prueba de restauración (RNF-10).
 Un paquete ``respaldo_AAAAMMDD_HHMMSS/`` reúne, en un mismo punto:
 
   base.dump           pg_dump (formato custom) de plurione_compliance: core y rules.
-  boveda.zip          los binarios custodiados (storage_vault).
+  boveda.zip          los binarios custodiados (storage_vault), cifrados si la bóveda
+                      lo está (RNF-04). La llave (BOVEDA_LLAVE) no va en el paquete:
+                      se guarda aparte, porque sin ella no se recuperan.
   extracciones.sqlite3  la SQLite del ai-service, copiada con la API de respaldo de SQLite.
   MANIFIESTO.json     SHA-256 y tamaño de cada pieza, último eslabón de la bitácora
                       antes del volcado y versiones.
@@ -19,7 +21,7 @@ es una caché indexada por huella.
 
 Prueba de restauración (``verificar``, también al final de ``crear``): restaura
 el volcado en una base temporal, recalcula la huella de cada documento contra
-boveda.zip (RIE-03), verifica la cadena de la bitácora con el verificar_cadena
+boveda.zip, descifrado con BOVEDA_LLAVE (RIE-03, RNF-04), verifica la cadena de la bitácora con el verificar_cadena
 del core (PLUS-05) y que contenga el eslabón anotado en el manifiesto, y corre
 PRAGMA integrity_check sobre la SQLite. Al terminar borra la base temporal.
 
@@ -54,6 +56,8 @@ from contextlib import contextmanager
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
+
+import importlib.util
 
 import psycopg2
 from dotenv import load_dotenv
@@ -101,6 +105,17 @@ def config_desde_entorno() -> Config:
 
 
 # ═══════════════════ Utilidades ═══════════════════
+
+def _cargar_cifrado():
+    """config/cifrado_boveda.py del core, sin importar el resto del servicio (RNF-04)."""
+    spec = importlib.util.spec_from_file_location("cifrado_boveda", CORE / "config" / "cifrado_boveda.py")
+    modulo = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(modulo)
+    return modulo
+
+
+cifrado_boveda = _cargar_cifrado()
+
 
 def sha256_archivo(ruta: Path) -> str:
     h = hashlib.sha256()
@@ -299,7 +314,9 @@ def verificar(cfg: Config, paquete: Path) -> dict:
         detalle["conteos"] = conteos
 
         # RIE-03 sobre lo restaurado: cada documento tiene su archivo y su huella.
-        sin_archivo, alterados = [], []
+        # RNF-04: la bóveda va cifrada en el paquete; se descifra con BOVEDA_LLAVE para
+        # recalcular la huella del original. La llave no viaja en el paquete.
+        sin_archivo, alterados, sin_llave = [], [], []
         with zipfile.ZipFile(paquete / PIEZA_BOVEDA) as zf:
             nombres = set(zf.namelist())
             for documento_id, huella, ruta in documentos:
@@ -307,13 +324,20 @@ def verificar(cfg: Config, paquete: Path) -> dict:
                 if miembro not in nombres:
                     sin_archivo.append(documento_id)
                     continue
-                h = hashlib.sha256()
-                with zf.open(miembro) as f:
-                    for bloque in iter(lambda: f.read(1 << 20), b""):
-                        h.update(bloque)
-                if h.hexdigest() != huella:
+                try:
+                    original = cifrado_boveda.descifrar(zf.read(miembro))
+                except cifrado_boveda.LlaveBovedaError:
+                    sin_llave.append(documento_id)
+                    continue
+                except cifrado_boveda.ArchivoCifradoAlteradoError:
                     alterados.append(documento_id)
-        detalle["documentos_verificados"] = len(documentos) - len(sin_archivo) - len(alterados)
+                    continue
+                if hashlib.sha256(original).hexdigest() != huella:
+                    alterados.append(documento_id)
+        detalle["documentos_verificados"] = len(documentos) - len(sin_archivo) - len(alterados) - len(sin_llave)
+        if sin_llave:
+            hallazgos.append(f"{len(sin_llave)} documento(s) cifrado(s) que no se pueden verificar: BOVEDA_LLAVE "
+                             f"falta o no es la que los cifró: {sin_llave[:5]}")
         if sin_archivo:
             hallazgos.append(f"{len(sin_archivo)} documento(s) sin su archivo en la bóveda: {sin_archivo[:5]}")
         if alterados:

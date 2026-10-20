@@ -40,6 +40,10 @@ services:
       DB_PASSWORD: ${DB_PASSWORD:-plurione-demo}
       DB_NAME: plurione_compliance
       STORAGE_VAULT_PATH: /app/storage_vault
+      # RNF-04: la bóveda se cifra con AES-256-GCM. La llave por omisión es la de demostración
+      # (/health lo advierte): en producción, BOVEDA_LLAVE en el .env de la raíz, guardada
+      # también fuera del equipo, porque sin ella los documentos no se recuperan.
+      BOVEDA_LLAVE: ${BOVEDA_LLAVE:-5a1f0c7e3b9d2468ace013579bdf2468ace013579bdf2468ace013579bdf2468}
       # M1: en producción, RFC_DIGITO_ESTRICTO=true en el .env de la raíz rechaza un RFC
       # cuyo dígito verificador no coincide; sin definir, se acepta (datos de prueba).
       RFC_DIGITO_ESTRICTO: ${RFC_DIGITO_ESTRICTO:-false}

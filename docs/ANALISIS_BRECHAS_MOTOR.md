@@ -79,7 +79,7 @@ Mientras no exista el Módulo 7, la bitácora sellada prueba **qué** ocurrió p
 
 | Requisito | Fuente | Estado |
 |---|---|---|
-| Cifrado AES-256 en reposo | RNF-04; ISO/IEC 27001 A.8.24 | Fuera del alcance de esta entrega (20/10/2026; ESTADO_DEL_DESARROLLO §1.3): la bóveda está en claro. Además, la SQLite del ai-service guarda el texto completo extraído (con datos personales de apoderados y firmantes) en claro, fuera de la cadena de custodia y de cualquier respaldo. |
+| Cifrado AES-256 en reposo | RNF-04; ISO/IEC 27001 A.8.24 | Implementado para la bóveda el 20/10/2026 (AES-256-GCM; ESTADO_DEL_DESARROLLO §1.3). Sigue en claro la SQLite del ai-service guarda el texto completo extraído (con datos personales de apoderados y firmantes) en claro, fuera de la cadena de custodia y de cualquier respaldo. |
 | TLS 1.3 entre componentes | RNF-05 | Fuera del alcance de esta entrega (20/10/2026; ESTADO_DEL_DESARROLLO §1.3): solo va cifrada la conexión con el proveedor de inferencia. |
 | Respaldos diarios con RPO < 24 h | RNF-10 | Pendiente: solo `pg_dump` manual. Un respaldo de la base sin la bóveda no sirve como evidencia: ambos deben respaldarse en el mismo punto, o RIE-03 marcará como alterados documentos que simplemente no se restauraron. |
 | Fecha y hora UTC en la bitácora | RF-27; ISO/IEC 27001 A.8.15 | Parcial: columnas `TIMESTAMP` sin zona. El sello de P3 incluye la fecha serializada: migrar a `TIMESTAMPTZ` sin conservar esa serialización rompería la verificación de la cadena existente. |

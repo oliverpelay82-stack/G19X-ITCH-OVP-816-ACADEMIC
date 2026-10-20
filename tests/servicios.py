@@ -30,6 +30,9 @@ SERVICIOS = ("core-service", "rules-service", "ai-service")
 # la de un .env. Forma parte del entorno original, así que ``activar`` la conserva.
 SECRETO_PRUEBAS = "secreto-de-las-pruebas-del-motor-de-validacion"
 os.environ["JWT_SECRET"] = SECRETO_PRUEBAS
+# RNF-04: la bóveda de las pruebas se cifra con su propia llave, nunca con la de un .env.
+LLAVE_BOVEDA_PRUEBAS = "0f" * 32
+os.environ["BOVEDA_LLAVE"] = LLAVE_BOVEDA_PRUEBAS
 
 _ENTORNO_ORIGINAL = dict(os.environ)
 

@@ -47,6 +47,8 @@ CUENTAS_DEMO: dict[str, tuple[str, str]] = {
 SECRETO_AISLADO = "secreto-de-los-entornos-aislados-de-prueba-del-motor"
 ENTORNO_AISLADO = {
     "JWT_SECRET": SECRETO_AISLADO,
+    # RNF-04: la bóveda aislada se cifra con su propia llave.
+    "BOVEDA_LLAVE": "3c" * 32,
     "USUARIOS_DEMO": "true",
     "ADMIN_INICIAL_EMAIL": "",
     "ADMIN_INICIAL_CONTRASENA": "",

@@ -64,6 +64,7 @@ Microservicios FastAPI desacoplados en `services/`, orquestados con Docker Compo
 - Firma binaria (PDF, JPEG, PNG), 15 MB y huella SHA-256 (NOM-151).
 - PLUS-01: una huella repetida en el mismo expediente responde 409 (`pg_advisory_xact_lock`). PLUS-02: un PDF con contraseña se custodia con un dictamen NO_CONFORME de origen `NIVEL_1`.
 - RIE-03: toda lectura del binario recalcula la huella; si no coincide, el documento queda ALTERADO, con un dictamen NO_CONFORME y respuesta 409.
+- RNF-04: la bóveda se escribe cifrada (`config/cifrado_boveda.py`, AES-256-GCM, `BOVEDA_LLAVE`) y se lee solo por `motor/integridad.py`, que descifra antes de recalcular la huella (siempre la del original). Un archivo cifrado que no supera la etiqueta GCM es una alteración (RIE-03); una llave distinta o ausente es `LlaveBovedaError` (503) y **nunca** marca un documento. Toda lectura nueva de la bóveda pasa por `integridad`; los archivos en claro anteriores se siguen leyendo (`scripts/cifrar_boveda.py` los cifra).
 
 ### Nivel 2 — Reglas deterministas (rules y core)
 - Completitud contra los obligatorios del tipo de expediente que declara el rules-service (con respaldo DOC-02); los anexos RIE-02 se exigen solo si su documento principal está presente.
@@ -168,7 +169,7 @@ Bandas del DOC-08 §6.2: ≥ 0.85 CONFORME; de 0.70 a 0.84 y por debajo de 0.70,
 
 | Área | Pruebas |
 |---|---|
-| Nivel 1 e ingesta (P1) | `test_pipeline_nivel1`, `test_ingesta_robustez`, `test_ingesta_blindada` |
+| Nivel 1 e ingesta (P1) | `test_pipeline_nivel1`, `test_ingesta_robustez`, `test_ingesta_blindada`, `test_cifrado_boveda` (RNF-04) |
 | Dictámenes, semáforo, alertas, reportes, índice | `test_dictamenes_semaforo`, `test_tipos_anexos_alertas`, `test_indice_cumplimiento`, `test_sello_reporte` (PLUS-23) |
 | Representación (P2) y custodia (P3) | `test_representacion_legal`, `test_cadena_custodia`; ai: `test_representacion` |
 | Autenticidad y operación (P6) | `test_rfc_titular`, `test_senales_archivo`, `test_version_catalogo`, `test_rules_version_catalogo`, `test_antiguedad_pendientes`, `test_fechas_limite`, `test_rules_fechas_limite`; ai: `test_revision_por_senales`, `test_cuota_diaria` |
@@ -213,6 +214,7 @@ Bandas del DOC-08 §6.2: ≥ 0.85 CONFORME; de 0.70 a 0.84 y por debajo de 0.70,
 | `LEGIBILIDAD_MIN_CARACTERES` / `LEGIBILIDAD_MIN_CONFIANZA` | `50` / `0.40` | Umbral de «Documento ilegible» (P5) |
 | `DIFERIDOS_INTERVALO_MINUTOS` / `DIFERIDOS_MAX_INTENTOS` | `15` / `6` | Ciclo de procesamiento diferido (P5); `0` lo desactiva |
 | `AUTO_SEED` (rules) / `DB_ECHO` (core, rules) | `true` / `false` | Precarga idempotente del catálogo / imprimir SQL |
+| `BOVEDA_LLAVE` (core, `scripts/respaldo.py`) | vacía (la de demostración en el docker-compose) | Llave AES-256 de la bóveda (RNF-04), 64 caracteres hexadecimales; vacía, se guarda en claro; mal formada, el core no arranca. `/health` advierte la ausencia y la de demostración. Sin ella no se recuperan los documentos cifrados: se guarda fuera del equipo, nunca en el respaldo |
 | `STORAGE_VAULT_PATH` (core) | `storage_vault/` | Bóveda física; el ai-service no la monta (lee por el core, RIE-03) |
 | `RESPALDO_DIR` / `RESPALDO_SECUNDARIO` / `RESPALDO_RETENCION` | `../respaldos` / vacía / `14` | Destino de los respaldos (fuera del repositorio: contienen los originales), segunda copia dentro de la infraestructura (PRD §12.5) y paquetes verificados que se conservan (RNF-10) |
 | `JWT_SECRET` (core, rules y ai) | — (obligatorio, ≥ 32 caracteres) | Clave HMAC de las sesiones y del token SISTEMA, **la misma en los tres servicios**; sin ella ninguno arranca. El docker-compose trae una de demostración que `/health` del core advierte |

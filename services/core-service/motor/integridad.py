@@ -10,6 +10,11 @@ de ese momento el documento queda bloqueado: no se sirve ni se analiza.
 P5 (PLUS-14): además de al leerse, toda la bóveda se verifica en el barrido
 programado (``barrer``), para que un archivo alterado que nadie abre también
 se detecte; cada barrido deja su constancia sellada en la bitácora.
+
+RNF-04: el archivo de la bóveda puede estar cifrado (``config.cifrado_boveda``).
+La huella se compara siempre contra el original descifrado; un archivo cifrado
+que no supera la etiqueta GCM es una alteración, y una llave equivocada o
+ausente es un error de configuración (``LlaveBovedaError``) que no marca nada.
 """
 from __future__ import annotations
 
@@ -20,6 +25,7 @@ from dataclasses import dataclass
 
 from sqlalchemy.orm import Session
 
+from config import cifrado_boveda
 from config.boveda import ruta_en_boveda
 from models.bitacora import EVENTO_ALERTA_INTEGRIDAD, EVENTO_VERIFICACION_INTEGRIDAD
 from models.dictamen import ORIGEN_RIE_03, DictamenAuditoria
@@ -56,11 +62,13 @@ def huella_actual(documento: Documento) -> str | None:
     ruta = ruta_binario(documento)
     if not os.path.isfile(ruta):
         return None
-    huella = hashlib.sha256()
     with open(ruta, "rb") as archivo:
-        for bloque in iter(lambda: archivo.read(1 << 20), b""):
-            huella.update(bloque)
-    return huella.hexdigest()
+        almacenado = archivo.read()
+    try:
+        return hashlib.sha256(cifrado_boveda.descifrar(almacenado)).hexdigest()
+    except cifrado_boveda.ArchivoCifradoAlteradoError:
+        # La huella del archivo tal como está: no coincide con la registrada.
+        return hashlib.sha256(almacenado).hexdigest()
 
 
 MOTIVO_SIN_BINARIO = "El binario del documento no se encuentra en la bóveda (posible eliminación no autorizada)."
@@ -134,7 +142,13 @@ def leer_verificado(
         raise DocumentoAlteradoError(documento, f"[RIE-03] {MOTIVO_SIN_BINARIO}")
 
     with open(ruta, "rb") as archivo:
-        contenido = archivo.read()
+        almacenado = archivo.read()
+    try:
+        contenido = cifrado_boveda.descifrar(almacenado)
+    except cifrado_boveda.ArchivoCifradoAlteradoError as exc:
+        motivo = f"{exc} Alteración no autorizada del archivo."
+        _registrar_violacion(db, documento, hashlib.sha256(almacenado).hexdigest(), motivo, usuario, ip_origen)
+        raise DocumentoAlteradoError(documento, f"[RIE-03] {motivo}") from exc
     hash_actual = hashlib.sha256(contenido).hexdigest()
     if hash_actual != documento.hash_sha256:
         motivo = _motivo_discrepancia(hash_actual, documento.hash_sha256)
@@ -160,9 +174,9 @@ def _calcular_senales(documento: Documento) -> int:
     puede analizarse queda marcado para no releerlo en cada barrido.
     """
     try:
-        with open(documento.ruta_almacenamiento, "rb") as f:
-            calculadas = senales_pdf.analizar(f.read())
-    except OSError:
+        with open(ruta_binario(documento), "rb") as f:
+            calculadas = senales_pdf.analizar(cifrado_boveda.descifrar(f.read()))
+    except (OSError, cifrado_boveda.ArchivoCifradoAlteradoError):
         return 0
     documento.senales_pdf = calculadas or {"version": senales_pdf.VERSION, "no_analizable": True}
     return 1

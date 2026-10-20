@@ -42,6 +42,8 @@ El rules-service carga el catálogo de reglas al arrancar (`AUTO_SEED=true`). La
 
 > **Producción: activar `RFC_DIGITO_ESTRICTO=true`.** Al dar de alta un titular, el core valida el formato, la longitud y la fecha del RFC, y calcula su dígito verificador con el algoritmo del SAT (módulo 11). Por defecto (`false`), un RFC cuyo dígito no coincide se acepta con la etiqueta «Dígito verificador no coincide (permitido en pruebas)», para poder trabajar con RFC ficticios. En producción, agregar `RFC_DIGITO_ESTRICTO=true` al `.env` de la raíz (en local, al `.env` del core-service) para rechazar esos RFC con un 422. La existencia del RFC no se consulta al SAT: se acredita con la Constancia de Situación Fiscal y la Opinión 32-D, cuyo RFC el motor coteja con el del titular durante la auditoría.
 
+> **Producción: una `BOVEDA_LLAVE` propia.** Los documentos se guardan cifrados con AES-256-GCM (RNF-04). El compose trae una llave de demostración, que `/health` del core advierte; en producción se define `BOVEDA_LLAVE` en el `.env` de la raíz (64 caracteres hexadecimales: `python -c "import secrets; print(secrets.token_hex(32))"`) y se guarda también fuera del equipo: **sin ella, los documentos no se recuperan**, ni siquiera desde un respaldo, que no la incluye. Los documentos que ya estaban en claro se cifran con `python scripts/cifrar_boveda.py`.
+
 ### Acceso y roles
 
 Toda la interfaz y las API exigen iniciar sesión (JWT con `Authorization: Bearer`; solo `GET /api/v1/health` y `POST /api/v1/auth/login` son públicos). El `docker-compose.yml` arranca con `USUARIOS_DEMO=true`, que crea una cuenta ficticia por rol del DOC-04, con correos del dominio reservado `example.com`:
@@ -70,7 +72,7 @@ También se puede crear con `python scripts/setup_postgres.py` (sin las cuentas,
 
 ### En local
 
-Se necesitan Python 3.12, Node 20.19 o superior, PostgreSQL 17 y Tesseract (con los idiomas `spa` y `eng`). Cada servicio lee su propio `.env`, que se copia de su `.env.example` (`DB_*` en core y rules, con la contraseña de tu PostgreSQL local, que también usa `scripts/setup_postgres.py`; `GROQ_API_KEY`, `TESSERACT_CMD`, `CORE_BASE_URL` y `RULES_BASE_URL` en el ai-service; ver [`services/ai-service/README.md`](services/ai-service/README.md)). Los tres llevan el mismo `JWT_SECRET`, y el del core, `ADMIN_INICIAL_EMAIL` y `ADMIN_INICIAL_CONTRASENA` o `USUARIOS_DEMO=true`.
+Se necesitan Python 3.12, Node 20.19 o superior, PostgreSQL 17 y Tesseract (con los idiomas `spa` y `eng`). Cada servicio lee su propio `.env`, que se copia de su `.env.example` (`DB_*` en core y rules, con la contraseña de tu PostgreSQL local, que también usa `scripts/setup_postgres.py`; `GROQ_API_KEY`, `TESSERACT_CMD`, `CORE_BASE_URL` y `RULES_BASE_URL` en el ai-service; ver [`services/ai-service/README.md`](services/ai-service/README.md)). Los tres llevan el mismo `JWT_SECRET`, y el del core, `ADMIN_INICIAL_EMAIL` y `ADMIN_INICIAL_CONTRASENA` o `USUARIOS_DEMO=true`, más `BOVEDA_LLAVE` para cifrar la bóveda (sin ella se guarda en claro y `/health` lo advierte).
 
 Un entorno virtual del proyecto (`.venv`) instala las mismas versiones que Docker, más las herramientas de prueba (`requirements-dev.txt`):
 
@@ -104,10 +106,10 @@ Las pruebas del core-service recrean `plurione_compliance_test` y una bóveda te
 
 ## Lo que todavía no funciona
 
-RNF-04 y RNF-05 quedan **fuera del alcance de esta entrega**: el alcance se congeló el 20/10/2026 para estabilizar (justificación en [`docs/ESTADO_DEL_DESARROLLO.md`](docs/ESTADO_DEL_DESARROLLO.md), §1.3).
+RNF-05 queda **fuera del alcance de esta entrega**: el alcance se congeló el 20/10/2026 para estabilizar (justificación en [`docs/ESTADO_DEL_DESARROLLO.md`](docs/ESTADO_DEL_DESARROLLO.md), §1.3).
 
 
-- **Cifrado de la bóveda en reposo (RNF-04, fuera del alcance):** los documentos se custodian con su huella SHA-256 y se verifican en cada lectura, pero el archivo no se cifra.
+- **Cifrado en reposo fuera de la bóveda (RNF-04, parcial):** los documentos de la bóveda van cifrados con AES-256; el texto extraído que guarda la SQLite del ai-service y el secreto de la verificación en dos pasos, no.
 - **TLS y aislamiento de red (RNF-05, fuera del alcance):** solo va cifrada la conexión con el proveedor de IA. El proxy inverso con TLS es del despliegue de PluriOne, y el docker-compose de demostración publica los puertos de cada servicio.
 - **Tablas y pares clave-valor (RF-10, parcial):** se extrae el texto de cada página; los datos que dictamina el motor salen de ese texto, no de una estructura tabular.
 - **Disponibilidad (RNF-09):** hay comprobaciones de salud y reinicio automático en Docker, pero no una medición documentada.

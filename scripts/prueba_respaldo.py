@@ -13,6 +13,8 @@ con los servicios en marcha:
   3. Un archivo que falta en la bóveda se detecta.
   4. Una pieza modificada después del respaldo no coincide con el manifiesto.
   5. Un eslabón del manifiesto que no está en la bitácora restaurada se detecta.
+  5b. RNF-04: la bóveda va cifrada en el paquete y, sin BOVEDA_LLAVE, la
+     verificación no puede comprobar los documentos y lo dice.
   6. Retención: con RESPALDO_RETENCION=2 quedan los dos paquetes verificados
      más recientes, y la segunda copia recibe los mismos.
   7. La base de restauración se borra al terminar.
@@ -22,6 +24,7 @@ Uso, desde la raíz: python scripts/prueba_respaldo.py   (código 0 si todo pasa
 from __future__ import annotations
 
 import json
+import os
 import shutil
 import sqlite3
 import sys
@@ -113,6 +116,8 @@ def main() -> int:
         c.execute("INSERT INTO extracciones VALUES ('abc', 'texto de prueba')")
     c.close()
 
+    # RNF-04: la verificación descifra la bóveda con la misma llave que usa el core aislado.
+    os.environ["BOVEDA_LLAVE"] = sesion_api.ENTORNO_AISLADO["BOVEDA_LLAVE"]
     procesos = levantar({"rules-service": 8102, "core-service": 8101}, trabajo,
                         entorno_extra={"STORAGE_VAULT_PATH": str(boveda)})
     try:
@@ -168,6 +173,19 @@ def main() -> int:
         r = respaldo.verificar(cfg, p)
         comprobar(not r["verificado"] and any("eslabón" in h for h in r["hallazgos"]),
                   "verificar: un eslabón ausente de la bitácora restaurada se detecta")
+
+        # 5b. RNF-04: la bóveda viaja cifrada y la llave no va en el paquete.
+        with zipfile.ZipFile(paquete / respaldo.PIEZA_BOVEDA) as zf:
+            cifrados = all(respaldo.cifrado_boveda.esta_cifrado(zf.read(n)) for n in zf.namelist())
+        comprobar(cifrados, "RNF-04: los archivos de boveda.zip van cifrados")
+        p = copia(paquete, pruebas, "sin_llave")
+        llave = os.environ.pop("BOVEDA_LLAVE")
+        try:
+            r = respaldo.verificar(cfg, p)
+        finally:
+            os.environ["BOVEDA_LLAVE"] = llave
+        comprobar(not r["verificado"] and any("BOVEDA_LLAVE" in h for h in r["hallazgos"]),
+                  "RNF-04: sin la llave, la verificación lo dice en vez de dar por buenos los documentos")
 
         # 6. Retención: dos paquetes más; quedan los dos verificados más recientes.
         segundo, _ = respaldo.crear(cfg)

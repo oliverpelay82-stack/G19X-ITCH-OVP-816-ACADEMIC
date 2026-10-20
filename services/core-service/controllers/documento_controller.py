@@ -13,7 +13,7 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Respon
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from config import seguridad
+from config import cifrado_boveda, seguridad
 from config.autorizacion import Actor, lectura_o_sistema, operacion, solo_sistema
 from config.boveda import ruta_en_boveda
 from config.catalogo import etiqueta_documento
@@ -236,11 +236,12 @@ def subir_documento(
 
     # 6. Almacenamiento en bóveda física. El nombre se reduce a su base para que
     #    un nombre con separadores de ruta no pueda escribir fuera de la bóveda.
+    #    RNF-04: con BOVEDA_LLAVE se guarda cifrado (AES-256-GCM); la huella es la del original.
     nombre_original = os.path.basename(file.filename or "documento")
     ruta_guardado = ruta_en_boveda(hash_sha256, nombre_original)
     archivo_nuevo = not os.path.exists(ruta_guardado)
     with open(ruta_guardado, "wb") as f:
-        f.write(contenido)
+        f.write(cifrado_boveda.cifrar(contenido))
 
     try:
         # 7. Persistencia del documento y del evento de ingesta

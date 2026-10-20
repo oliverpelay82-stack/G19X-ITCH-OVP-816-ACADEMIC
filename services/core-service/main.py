@@ -16,7 +16,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse
 
-from config import observabilidad, seguridad
+from config import cifrado_boveda, observabilidad, seguridad
 from config.database import SessionLocal, engine, init_db
 from controllers.asignacion_controller import router as asignacion_router
 from controllers.asignacion_controller import router_usuarios as asignacion_usuarios_router
@@ -38,6 +38,8 @@ from motor import reevaluacion_programada, usuarios_iniciales
 async def lifespan(app: FastAPI):
     # Módulo 7: sin un JWT_SECRET válido el servicio no arranca (no podría firmar sesiones).
     seguridad.verificar_configuracion()
+    # RNF-04: una BOVEDA_LLAVE mal formada no deja arrancar (cifraría o leería mal la bóveda).
+    cifrado_boveda.verificar_configuracion()
     print("[core-service] Sincronizando modelos con PostgreSQL...")
     init_db()
     with SessionLocal() as db:
@@ -107,6 +109,10 @@ async def errores_no_controlados(request: Request, call_next):
             content={"detail": "La petición contiene un carácter nulo (0x00), que no se admite en los datos.",
                      "id_peticion": observabilidad.actual()},
         )
+    except cifrado_boveda.LlaveBovedaError as exc:
+        # RNF-04: la llave no es la que cifró la bóveda. Es configuración, no una
+        # alteración: el documento no se marca y el servicio lo dice (503).
+        return JSONResponse(status_code=503, content={"detail": str(exc), "id_peticion": observabilidad.actual()})
     except Exception:
         traceback.print_exc()  # el detalle queda en el registro del servidor
         return _error_interno()
