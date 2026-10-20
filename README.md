@@ -104,8 +104,11 @@ Las pruebas del core-service recrean `plurione_compliance_test` y una bóveda te
 
 ## Lo que todavía no funciona
 
-- **Cifrado de la bóveda en reposo (RNF-04):** los documentos se custodian con su huella SHA-256 y se verifican en cada lectura, pero el archivo no se cifra.
-- **TLS y aislamiento de red (RNF-05, parcial):** solo va cifrada la conexión con el proveedor de IA. El proxy inverso con TLS es del despliegue de PluriOne, y el docker-compose de demostración publica los puertos de cada servicio.
+RNF-04 y RNF-05 quedan **fuera del alcance de esta entrega**: el alcance se congeló el 20/10/2026 para estabilizar (justificación en [`docs/ESTADO_DEL_DESARROLLO.md`](docs/ESTADO_DEL_DESARROLLO.md), §1.3).
+
+
+- **Cifrado de la bóveda en reposo (RNF-04, fuera del alcance):** los documentos se custodian con su huella SHA-256 y se verifican en cada lectura, pero el archivo no se cifra.
+- **TLS y aislamiento de red (RNF-05, fuera del alcance):** solo va cifrada la conexión con el proveedor de IA. El proxy inverso con TLS es del despliegue de PluriOne, y el docker-compose de demostración publica los puertos de cada servicio.
 - **Tablas y pares clave-valor (RF-10, parcial):** se extrae el texto de cada página; los datos que dictamina el motor salen de ese texto, no de una estructura tabular.
 - **Disponibilidad (RNF-09):** hay comprobaciones de salud y reinicio automático en Docker, pero no una medición documentada.
 - **Búsqueda semántica en todo el corpus (RF-12):** fuera del alcance acordado; la búsqueda dentro de cada documento sí existe (chat documental).
