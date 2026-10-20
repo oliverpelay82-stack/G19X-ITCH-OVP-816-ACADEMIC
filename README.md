@@ -70,7 +70,7 @@ También se puede crear con `python scripts/setup_postgres.py` (sin las cuentas,
 
 ### En local
 
-Se necesitan Python 3.12, Node 20.19 o superior, PostgreSQL 17 y Tesseract (con los idiomas `spa` y `eng`). Cada servicio lee su propio `.env`, que se copia de su `.env.example` (`DB_*` en core y rules; `GROQ_API_KEY`, `TESSERACT_CMD`, `CORE_BASE_URL` y `RULES_BASE_URL` en el ai-service; ver [`services/ai-service/README.md`](services/ai-service/README.md)). Los tres llevan el mismo `JWT_SECRET`, y el del core, `ADMIN_INICIAL_EMAIL` y `ADMIN_INICIAL_CONTRASENA` o `USUARIOS_DEMO=true`.
+Se necesitan Python 3.12, Node 20.19 o superior, PostgreSQL 17 y Tesseract (con los idiomas `spa` y `eng`). Cada servicio lee su propio `.env`, que se copia de su `.env.example` (`DB_*` en core y rules, con la contraseña de tu PostgreSQL local, que también usa `scripts/setup_postgres.py`; `GROQ_API_KEY`, `TESSERACT_CMD`, `CORE_BASE_URL` y `RULES_BASE_URL` en el ai-service; ver [`services/ai-service/README.md`](services/ai-service/README.md)). Los tres llevan el mismo `JWT_SECRET`, y el del core, `ADMIN_INICIAL_EMAIL` y `ADMIN_INICIAL_CONTRASENA` o `USUARIOS_DEMO=true`.
 
 Un entorno virtual del proyecto (`.venv`) instala las mismas versiones que Docker, más las herramientas de prueba (`requirements-dev.txt`):
 
