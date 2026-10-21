@@ -36,7 +36,7 @@ cp .env.example .env      # y llena GROQ_API_KEY (https://console.groq.com/keys)
 docker compose up -d --build
 ```
 
-La interfaz queda en http://localhost:5173 (ver «Acceso y roles» para entrar). La base se crea sola al arrancar, con el catálogo de reglas y las cuentas de demostración. Sin la clave, el sistema funciona completo salvo la auditoría y el chat con IA, que responden con la instrucción para configurarla. `python scripts/prueba_entrega_docker.py [--con-ia]` comprueba la instalación desde un clon limpio del último commit. La corrida de la entrega (20/10/2026, commit `e394be0`), con su salida y capturas de las pantallas principales, está en [`docs/resultados_validacion/entrega_docker/`](docs/resultados_validacion/entrega_docker/).
+La interfaz queda en http://localhost:5173 (ver «Acceso y roles» para entrar). La base se crea sola al arrancar, con el catálogo de reglas y las cuentas de demostración. Sin la clave, el sistema funciona completo salvo la auditoría y el chat con IA, que responden con la instrucción para configurarla. `python scripts/prueba_entrega_docker.py [--con-ia]` comprueba la instalación desde un clon limpio del último commit. La corrida de la entrega (21/10/2026, commit `0709293`), con su salida y capturas de las pantallas principales, está en [`docs/resultados_validacion/entrega_docker/`](docs/resultados_validacion/entrega_docker/).
 
 El rules-service carga el catálogo de reglas al arrancar (`AUTO_SEED=true`). La precarga es idempotente: solo inserta las reglas que faltan y no toca las editadas.
 
