@@ -40,6 +40,8 @@ async def lifespan(app: FastAPI):
     seguridad.verificar_configuracion()
     # RNF-04: una BOVEDA_LLAVE mal formada no deja arrancar (cifraría o leería mal la bóveda).
     cifrado_boveda.verificar_configuracion()
+    # Fuera del modo demostración, el JWT_SECRET y la BOVEDA_LLAVE públicos del compose no se aceptan.
+    usuarios_iniciales.verificar_secretos()
     print("[core-service] Sincronizando modelos con PostgreSQL...")
     init_db()
     with SessionLocal() as db:

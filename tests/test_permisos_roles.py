@@ -31,7 +31,7 @@ os.environ["REEVALUACION_INTERVALO_HORAS"] = "0"
 
 from main import app  # noqa: E402
 from clients import rules_client  # noqa: E402
-from config import seguridad  # noqa: E402
+from config import cifrado_boveda, seguridad  # noqa: E402
 from config.database import SessionLocal, engine, init_db  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
 from models.titular import TitularExpediente  # noqa: E402
@@ -322,6 +322,30 @@ def test_la_descarga_del_original_registra_a_quien_descarga():
 
 
 # ── Cuentas iniciales ────────────────────────────────────────────
+
+def test_sin_modo_demostracion_no_arranca_con_los_secretos_del_compose(monkeypatch):
+    llave_propia = "3c" * 32
+    monkeypatch.setenv("USUARIOS_DEMO", "true")
+    monkeypatch.setenv("JWT_SECRET", seguridad.SECRETO_DEMOSTRACION)
+    monkeypatch.setenv("BOVEDA_LLAVE", cifrado_boveda.LLAVE_DEMOSTRACION)
+    usuarios_iniciales.verificar_secretos()  # el docker-compose de la entrega levanta igual
+
+    monkeypatch.setenv("USUARIOS_DEMO", "false")
+    with pytest.raises(seguridad.ConfiguracionInvalidaError, match="públicos: JWT_SECRET y BOVEDA_LLAVE\."):
+        usuarios_iniciales.verificar_secretos()
+    monkeypatch.setenv("BOVEDA_LLAVE", llave_propia)
+    with pytest.raises(seguridad.ConfiguracionInvalidaError, match="públicos: JWT_SECRET\."):
+        usuarios_iniciales.verificar_secretos()
+    monkeypatch.setenv("JWT_SECRET", bd_pruebas.SECRETO_PRUEBAS)
+    monkeypatch.setenv("BOVEDA_LLAVE", cifrado_boveda.LLAVE_DEMOSTRACION.upper())
+    with pytest.raises(seguridad.ConfiguracionInvalidaError, match="públicos: BOVEDA_LLAVE\."):
+        usuarios_iniciales.verificar_secretos()
+
+    monkeypatch.setenv("BOVEDA_LLAVE", llave_propia)
+    usuarios_iniciales.verificar_secretos()
+    monkeypatch.delenv("BOVEDA_LLAVE")
+    usuarios_iniciales.verificar_secretos()  # sin llave arranca en claro (lo advierte /health)
+
 
 def test_usuarios_de_demostracion_y_administrador_inicial(monkeypatch):
     monkeypatch.setenv("USUARIOS_DEMO", "true")

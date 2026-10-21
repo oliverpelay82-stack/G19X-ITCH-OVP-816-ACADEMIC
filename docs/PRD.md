@@ -231,7 +231,7 @@ Sin token, con un token inválido o vencido, o con la cuenta desactivada: 401. C
 **Arranque y entrega.**
 - Si no hay ningún usuario, el core crea el administrador inicial de `ADMIN_INICIAL_EMAIL` y `ADMIN_INICIAL_CONTRASENA`, que debe cambiar la contraseña en su primer acceso.
 - Con `USUARIOS_DEMO=true`, como en el `docker-compose.yml` de la entrega, crea además un usuario ficticio por rol, con correos del dominio reservado `example.com` (RFC 2606) y contraseñas documentadas en el README, para que PluriOne pruebe el RBAC de inmediato.
-- `JWT_SECRET` se lee del `.env`. El compose trae uno de demostración, y `/health` del core advierte mientras siga en uso.
+- `JWT_SECRET` se lee del `.env`. El compose trae uno de demostración, y `/health` del core advierte mientras siga en uso. Con `USUARIOS_DEMO=false`, el core no arranca con el `JWT_SECRET` ni con la `BOVEDA_LLAVE` de demostración: son públicos.
 - `CORS_ORIGENES` sustituye `allow_origins=["*"]` (informe de ZAP).
 
 **Riesgos aceptados.**

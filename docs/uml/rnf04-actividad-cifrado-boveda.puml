@@ -7,11 +7,29 @@
 ' restauración la descifra); ISO/IEC 27001 A.8.24.
 ' Implementación: services/core-service/config/cifrado_boveda.py (AES-256-GCM, cryptography),
 ' motor/integridad.py (lectura), controllers/documento_controller.py (escritura),
-' scripts/cifrar_boveda.py (cifra los archivos que ya estaban en claro) y scripts/respaldo.py.
+' scripts/cifrar_boveda.py (cifra los archivos que ya estaban en claro) y scripts/respaldo.py;
+' arranque: main.py y motor/usuarios_iniciales.verificar_secretos (corte del 21/10/2026).
 ' Sin tablas nuevas ni cambios en la base: la huella registrada sigue siendo la del original.
 ' Fuera de esta versión: la SQLite del ai-service y el secreto TOTP (PRD §12.5).
 
 title RNF-04 — Cifrado AES-256 de la bóveda en reposo
+
+partition "Arranque del core" {
+  start
+  if (¿BOVEDA_LLAVE mal formada?) then (sí)
+    #pink:No arranca;
+    stop
+  endif
+  if (¿USUARIOS_DEMO=false y BOVEDA_LLAVE o JWT_SECRET
+  son los de demostración del compose?) then (sí)
+    #pink:No arranca: son públicos
+    (el mensaje dice cuál cambiar);
+    stop
+  endif
+  :Arranca (con la llave de demostración o sin llave,
+  /health lo advierte);
+  stop
+}
 
 partition "Carga (POST /documentos)" {
   start

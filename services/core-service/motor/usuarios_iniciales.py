@@ -9,6 +9,9 @@ Cuentas que el core crea al arrancar (Módulo 7, PRD §5.2).
   reservado example.com (RFC 2606) y las contraseñas del README, para que PluriOne
   pruebe los roles de inmediato. No se reescriben si ya existen: una contraseña
   cambiada se respeta.
+- Sin ``USUARIOS_DEMO`` (producción), el core no arranca con el ``JWT_SECRET``
+  ni con la ``BOVEDA_LLAVE`` de demostración: el repositorio es público y con
+  ellos cualquiera firmaría sesiones o descifraría la bóveda.
 
 Cada alta queda en la bitácora como ALTA_USUARIO hecha por SISTEMA.
 """
@@ -18,7 +21,7 @@ import os
 
 from sqlalchemy.orm import Session
 
-from config import seguridad
+from config import cifrado_boveda, seguridad
 from models.bitacora import EVENTO_ALTA_USUARIO
 from models.usuario import Usuario
 from motor import bitacora
@@ -33,6 +36,22 @@ USUARIOS_DEMO = (
 
 def demo_activo() -> bool:
     return os.getenv("USUARIOS_DEMO", "false").strip().lower() in {"1", "true", "yes", "on"}
+
+
+def verificar_secretos() -> None:
+    """Se llama al arrancar: fuera del modo demostración, los secretos del compose no se aceptan."""
+    if demo_activo():
+        return
+    publicos = []
+    if seguridad.usa_secreto_demostracion():
+        publicos.append("JWT_SECRET")
+    if cifrado_boveda.usa_llave_demostracion():
+        publicos.append("BOVEDA_LLAVE")
+    if publicos:
+        raise seguridad.ConfiguracionInvalidaError(
+            "Con USUARIOS_DEMO=false no se aceptan los valores de demostración del docker-compose, que son "
+            f"públicos: {' y '.join(publicos)}. Defina valores propios en el .env de la raíz (README, «Puesta en marcha»)."
+        )
 
 
 def _alta(db: Session, rol: str, email: str, nombre: str, contrasena: str, temporal: bool) -> Usuario:
