@@ -11,7 +11,8 @@ Cuentas que el core crea al arrancar (Módulo 7, PRD §5.2).
   cambiada se respeta.
 - Sin ``USUARIOS_DEMO`` (producción), el core no arranca con el ``JWT_SECRET``
   ni con la ``BOVEDA_LLAVE`` de demostración: el repositorio es público y con
-  ellos cualquiera firmaría sesiones o descifraría la bóveda.
+  ellos cualquiera firmaría sesiones o descifraría la bóveda. Tampoco arranca
+  sin ``BOVEDA_LLAVE``: guardaría los documentos en claro (RNF-04).
 
 Cada alta queda en la bitácora como ALTA_USUARIO hecha por SISTEMA.
 """
@@ -51,6 +52,12 @@ def verificar_secretos() -> None:
         raise seguridad.ConfiguracionInvalidaError(
             "Con USUARIOS_DEMO=false no se aceptan los valores de demostración del docker-compose, que son "
             f"públicos: {' y '.join(publicos)}. Defina valores propios en el .env de la raíz (README, «Puesta en marcha»)."
+        )
+    if not cifrado_boveda.activo():
+        raise seguridad.ConfiguracionInvalidaError(
+            "Con USUARIOS_DEMO=false la BOVEDA_LLAVE es obligatoria: sin ella los documentos se guardarían en claro. "
+            'Genere una con python -c "import secrets; print(secrets.token_hex(32))", guárdela fuera del equipo '
+            "y defínala en el .env; los documentos que ya estén en claro los cifra scripts/cifrar_boveda.py."
         )
 
 

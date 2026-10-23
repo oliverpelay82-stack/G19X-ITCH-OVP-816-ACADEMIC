@@ -8,7 +8,7 @@
 ' Implementación: services/core-service/config/cifrado_boveda.py (AES-256-GCM, cryptography),
 ' motor/integridad.py (lectura), controllers/documento_controller.py (escritura),
 ' scripts/cifrar_boveda.py (cifra los archivos que ya estaban en claro) y scripts/respaldo.py;
-' arranque: main.py y motor/usuarios_iniciales.verificar_secretos (corte del 21/10/2026).
+' arranque: main.py y motor/usuarios_iniciales.verificar_secretos (cortes del 21/10 y del 23/10/2026).
 ' Sin tablas nuevas ni cambios en la base: la huella registrada sigue siendo la del original.
 ' Fuera de esta versión: la SQLite del ai-service y el secreto TOTP (PRD §12.5).
 
@@ -26,8 +26,13 @@ partition "Arranque del core" {
     (el mensaje dice cuál cambiar);
     stop
   endif
-  :Arranca (con la llave de demostración o sin llave,
-  /health lo advierte);
+  if (¿USUARIOS_DEMO=false y sin BOVEDA_LLAVE?) then (sí)
+    #pink:No arranca: guardaría
+    los documentos en claro;
+    stop
+  endif
+  :Arranca (en demostración, con la llave del compose
+  o sin llave: /health lo advierte);
   stop
 }
 
@@ -39,8 +44,8 @@ partition "Carga (POST /documentos)" {
     Archivo = cabecera PLVC1 + id de la llave (8 bytes)
     + nonce (12) + cifrado con su etiqueta (16);
   else (no)
-    :Se guarda en claro
-    (/health lo advierte);
+    :Se guarda en claro (solo en demostración;
+    /health lo advierte);
   endif
   :Escritura en storage_vault con el nombre de siempre
   (12 caracteres de la huella + nombre original);

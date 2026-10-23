@@ -344,7 +344,13 @@ def test_sin_modo_demostracion_no_arranca_con_los_secretos_del_compose(monkeypat
     monkeypatch.setenv("BOVEDA_LLAVE", llave_propia)
     usuarios_iniciales.verificar_secretos()
     monkeypatch.delenv("BOVEDA_LLAVE")
-    usuarios_iniciales.verificar_secretos()  # sin llave arranca en claro (lo advierte /health)
+    with pytest.raises(seguridad.ConfiguracionInvalidaError, match="BOVEDA_LLAVE es obligatoria"):
+        usuarios_iniciales.verificar_secretos()  # fuera del modo demostración, nada se guarda en claro
+    monkeypatch.setenv("BOVEDA_LLAVE", "  ")
+    with pytest.raises(seguridad.ConfiguracionInvalidaError, match="BOVEDA_LLAVE es obligatoria"):
+        usuarios_iniciales.verificar_secretos()
+    monkeypatch.setenv("USUARIOS_DEMO", "true")
+    usuarios_iniciales.verificar_secretos()  # en demostración, sin llave arranca en claro (lo advierte /health)
 
 
 def test_usuarios_de_demostracion_y_administrador_inicial(monkeypatch):

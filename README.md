@@ -44,7 +44,7 @@ El rules-service carga el catálogo de reglas al arrancar (`AUTO_SEED=true`). La
 
 > **Producción: una `BOVEDA_LLAVE` propia.** Los documentos se guardan cifrados con AES-256-GCM (RNF-04). El compose trae una llave de demostración, que `/health` del core advierte; en producción se define `BOVEDA_LLAVE` en el `.env` de la raíz (64 caracteres hexadecimales: `python -c "import secrets; print(secrets.token_hex(32))"`) y se guarda también fuera del equipo: **sin ella, los documentos no se recuperan**, ni siquiera desde un respaldo, que no la incluye. Los documentos que ya estaban en claro se cifran con `python scripts/cifrar_boveda.py`.
 >
-> **Los secretos de demostración no llegan a producción.** La llave de la bóveda y el `JWT_SECRET` del compose están en este repositorio, que es público: con ellos cualquiera descifraría la bóveda o firmaría sesiones. Por eso solo se aceptan en el modo demostración (`USUARIOS_DEMO=true`): con `USUARIOS_DEMO=false`, el core **se niega a arrancar** si `JWT_SECRET` o `BOVEDA_LLAVE` siguen siendo los del compose, e indica cuál cambiar. Las dos se definen en el `.env` de la raíz antes de pasar a producción.
+> **Los secretos de demostración no llegan a producción.** La llave de la bóveda y el `JWT_SECRET` del compose están en este repositorio, que es público: con ellos cualquiera descifraría la bóveda o firmaría sesiones. Por eso solo se aceptan en el modo demostración (`USUARIOS_DEMO=true`): con `USUARIOS_DEMO=false`, el core **se niega a arrancar** si `JWT_SECRET` o `BOVEDA_LLAVE` siguen siendo los del compose, e indica cuál cambiar, y también si falta la `BOVEDA_LLAVE`, porque guardaría los documentos en claro. Las dos se definen en el `.env` de la raíz antes de pasar a producción.
 
 ### Acceso y roles
 
@@ -57,8 +57,7 @@ Toda la interfaz y las API exigen iniciar sesión (JWT con `Authorization: Beare
 | Auditor | `auditor@example.com` | `Auditor-Demo-2026` | Consulta de expedientes, dictámenes, bitácora y reportes, sin modificar nada |
 | Consulta | `consulta@example.com` | `Consulta-Demo-2026` | Solo el semáforo de los expedientes que el administrador le asigna |
 
-> **Producción: `USUARIOS_DEMO=false`.** Estas contraseñas son públicas. En producción se define `USUARIOS_DEMO=false` en el `.env` de la raíz, junto con un `JWT_SECRET` propio de al menos 32 caracteres y una `BOVEDA_LLAVE` propia (con los del compose, el core no arranca) y `ADMIN_INICIAL_EMAIL` y `ADMIN_INICIAL_CONTRASENA`: si no hay ninguna cuenta, el core crea ese administrador, que debe cambiar la contraseña en su primer acceso y desde la vista Usuarios da de alta al resto. Las cuentas de demostración que ya existan se desactivan desde esa vista (nunca se borran: la bitácora las referencia). Cada cuenta puede activar la verificación en dos pasos con una app autenticadora.
-
+> **Producción: `USUARIOS_DEMO=false`.** Estas contraseñas son públicas. En producción se define `USUARIOS_DEMO=false` en el `.env` de la raíz, junto con un `JWT_SECRET` propio de al menos 32 caracteres y una `BOVEDA_LLAVE` propia (con los del compose, o sin llave, el core no arranca) y `ADMIN_INICIAL_EMAIL` y `ADMIN_INICIAL_CONTRASENA`: si no hay ninguna cuenta, el core crea ese administrador, que debe cambiar la contraseña en su primer acceso y desde la vista Usuarios da de alta al resto. Las cuentas de demostración que ya existan se desactivan desde esa vista (nunca se borran: la bitácora las referencia). Cada cuenta puede activar la verificación en dos pasos con una app autenticadora.
 Los avisos por correo (RF-20) a los validadores asignados se encienden con `SMTP_HOST` y las demás variables `SMTP_*`; sin ellas, cada aviso queda en la bitácora como no enviado.
 
 ### Base de datos
@@ -74,7 +73,7 @@ También se puede crear con `python scripts/setup_postgres.py` (sin las cuentas,
 
 ### En local
 
-Se necesitan Python 3.12, Node 20.19 o superior, PostgreSQL 17 y Tesseract (con los idiomas `spa` y `eng`). Cada servicio lee su propio `.env`, que se copia de su `.env.example` (`DB_*` en core y rules, con la contraseña de tu PostgreSQL local, que también usa `scripts/setup_postgres.py`; `GROQ_API_KEY`, `TESSERACT_CMD`, `CORE_BASE_URL` y `RULES_BASE_URL` en el ai-service; ver [`services/ai-service/README.md`](services/ai-service/README.md)). Los tres llevan el mismo `JWT_SECRET`, y el del core, `ADMIN_INICIAL_EMAIL` y `ADMIN_INICIAL_CONTRASENA` o `USUARIOS_DEMO=true`, más `BOVEDA_LLAVE` para cifrar la bóveda (sin ella se guarda en claro y `/health` lo advierte).
+Se necesitan Python 3.12, Node 20.19 o superior, PostgreSQL 17 y Tesseract (con los idiomas `spa` y `eng`). Cada servicio lee su propio `.env`, que se copia de su `.env.example` (`DB_*` en core y rules, con la contraseña de tu PostgreSQL local, que también usa `scripts/setup_postgres.py`; `GROQ_API_KEY`, `TESSERACT_CMD`, `CORE_BASE_URL` y `RULES_BASE_URL` en el ai-service; ver [`services/ai-service/README.md`](services/ai-service/README.md)). Los tres llevan el mismo `JWT_SECRET`, y el del core, `ADMIN_INICIAL_EMAIL` y `ADMIN_INICIAL_CONTRASENA` o `USUARIOS_DEMO=true`, más `BOVEDA_LLAVE` para cifrar la bóveda (sin ella, el core solo arranca con `USUARIOS_DEMO=true`: guarda en claro y `/health` lo advierte).
 
 Un entorno virtual del proyecto (`.venv`) instala las mismas versiones que Docker, más las herramientas de prueba (`requirements-dev.txt`):
 

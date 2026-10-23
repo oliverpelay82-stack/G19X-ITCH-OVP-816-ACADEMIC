@@ -15,7 +15,8 @@ documento sano; con la llave correcta, una etiqueta que no verifica sí es una
 alteración del archivo (``ArchivoCifradoAlteradoError``).
 
 Sin ``BOVEDA_LLAVE`` los archivos se guardan en claro y ``/health`` lo
-advierte. Los archivos que ya estaban en claro se siguen leyendo; los cifra
+advierte; eso solo se permite en el modo demostración (fuera de él, el core no
+arranca: ``usuarios_iniciales.verificar_secretos``). Los archivos que ya estaban en claro se siguen leyendo; los cifra
 ``scripts/cifrar_boveda.py``. Solo depende de ``cryptography``, para que
 ``scripts/respaldo.py`` pueda cargarlo sin el resto del core.
 """
