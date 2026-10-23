@@ -1,25 +1,29 @@
-Evidencia tomada en los contenedores de la corrida (proyecto plurione_entrega), 2026-10-21 15:58 -0600
+Evidencia tomada en los contenedores de la corrida (proyecto plurione_entrega), 2026-10-23 09:16 -0600
 
 ## Contenedores
-plurione-frontend  plurione_entrega-plurione-frontend  Up 26 seconds
-plurione-ai  plurione_entrega-plurione-ai  Up 27 seconds
-plurione-rules  plurione_entrega-plurione-rules  Up 28 seconds
-plurione-core  plurione_entrega-plurione-core  Up 27 seconds
-plurione-db  postgres:17-alpine  Up 34 seconds (healthy)
+plurione-frontend  plurione_entrega-plurione-frontend  Up 35 seconds
+plurione-ai  plurione_entrega-plurione-ai  Up 35 seconds
+plurione-core  plurione_entrega-plurione-core  Up 36 seconds
+plurione-rules  plurione_entrega-plurione-rules  Up 36 seconds
+plurione-db  postgres:17-alpine  Up 42 seconds (healthy)
 
 ## Versiones
-Docker Engine 29.9.1
-Docker Compose version v5.6.0
+Docker Engine 29.9.2
+Docker Compose version v5.6.1
 
 ## Bóveda del core (RNF-04)
-c57912792dc6_constancia.pdf  1706 bytes  cabecera=PLVC1  contiene %PDF: 0
+bcfb16f7446f_constancia.pdf  1704 bytes  cabecera=PLVC1  contiene %PDF: 0
 
 ## GET /api/v1/health del core
 {"status":"online","servicio":"core-service","puerto":8001,"conexion_bd":true,"version":"1.0.0","advertencias":["Las sesiones se firman con el secreto de demostración: defina JWT_SECRET en el .env.","La bóveda se cifra con la llave de demostración: defina BOVEDA_LLAVE en el .env."]}
 
-## Candado de secretos (corte del 21/10/2026)
+## Candado de secretos (cortes del 21/10 y del 23/10/2026)
 Con USUARIOS_DEMO=false y los secretos del compose, la comprobación de arranque del core rechaza:
 config.seguridad.ConfiguracionInvalidaError: Con USUARIOS_DEMO=false no se aceptan los valores de demostración del docker-compose, que son públicos: JWT_SECRET y BOVEDA_LLAVE. Defina valores propios en el .env de la raíz (README, «Puesta en marcha»).
+Con USUARIOS_DEMO=false, un JWT_SECRET propio y sin BOVEDA_LLAVE, también rechaza:
+config.seguridad.ConfiguracionInvalidaError: Con USUARIOS_DEMO=false la BOVEDA_LLAVE es obligatoria: sin ella los documentos se guardarían en claro. Genere una con python -c "import secrets; print(secrets.token_hex(32))", guárdela fuera del equipo y defínala en el .env; los documentos que ya estén en claro los cifra scripts/cifrar_boveda.py.
+Con USUARIOS_DEMO=false y valores propios, pasa:
+arranca
 Con USUARIOS_DEMO=true (el compose de la entrega), la misma comprobación pasa:
 arranca
 

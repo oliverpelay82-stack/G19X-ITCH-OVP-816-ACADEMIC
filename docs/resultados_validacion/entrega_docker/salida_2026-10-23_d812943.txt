@@ -1,5 +1,5 @@
-Clon limpio de 0709293 fix(core): sin modo demostración, el core no arranca con los secretos del compose
-OK    docker compose up --build (35 s)
+Clon limpio de d812943 fix(core): sin modo demostración, el core no arranca sin BOVEDA_LLAVE
+OK    docker compose up --build (174 s)
 OK    ai-service operativo con clave de IA
 OK    core-service sin token responde 401 (401)
 OK    rules-service sin token responde 401 (401)
@@ -12,7 +12,7 @@ OK    la cuenta de consulta no ve las empresas (403)
 OK    catálogo de reglas precargado
 OK    empresa con RFC ficticio (201)
 OK    carga de una constancia ficticia (201)
-OK    auditoría real guardada (200: CONFORME)
+OK    auditoría real guardada (200: EN_REVISION)
 OK    el chat responde con el RFC
 OK    un expediente incompleto no se aprueba (NO_CONFORME)
 OK    cadena de la bitácora íntegra (14 eventos)
@@ -20,6 +20,6 @@ OK    reporte del expediente en pdf
 OK    reporte del expediente en xlsx
 OK    ficha de custodia en pdf
 
-Se conservan los contenedores (plurione_entrega) y el clon en C:\Users\HP\AppData\Local\Temp\plurione_entrega_je7pkuws\motor
+Se conservan los contenedores (plurione_entrega) y el clon en C:\Users\HP\AppData\Local\Temp\plurione_entrega_yu6ibj5a\motor
 
 Todo pasó
