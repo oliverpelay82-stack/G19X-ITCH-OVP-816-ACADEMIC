@@ -36,7 +36,7 @@ cp .env.example .env      # y llena GROQ_API_KEY (https://console.groq.com/keys)
 docker compose up -d --build
 ```
 
-La interfaz queda en http://localhost:5173 (ver «Acceso y roles» para entrar). La base se crea sola al arrancar, con el catálogo de reglas y las cuentas de demostración. Sin la clave, el sistema funciona completo salvo la auditoría y el chat con IA, que responden con la instrucción para configurarla. `python scripts/prueba_entrega_docker.py [--con-ia]` comprueba la instalación desde un clon limpio del último commit. La corrida de la entrega (23/10/2026, commit `d812943`), con su salida y capturas de las pantallas principales, está en [`docs/resultados_validacion/entrega_docker/`](docs/resultados_validacion/entrega_docker/).
+La interfaz queda en http://localhost:5173 (ver «Acceso y roles» para entrar). La base se crea sola al arrancar, con el catálogo de reglas y las cuentas de demostración. Sin la clave, el sistema funciona completo salvo la auditoría y el chat con IA, que responden con la instrucción para configurarla. `python scripts/prueba_entrega_docker.py [--con-ia]` comprueba la instalación desde un clon limpio del último commit. La corrida de la entrega (23/10/2026, commit `d812943`), con su salida y capturas de las pantallas principales, está en [`docs/resultados_validacion/entrega_docker/`](docs/resultados_validacion/entrega_docker/). El recorrido de la demostración en vivo con las cuatro cuentas está en [`docs/GUION_DEMOSTRACION.md`](docs/GUION_DEMOSTRACION.md).
 
 El rules-service carga el catálogo de reglas al arrancar (`AUTO_SEED=true`). La precarga es idempotente: solo inserta las reglas que faltan y no toca las editadas.
 
@@ -70,6 +70,8 @@ psql -U postgres -d plurione_compliance -f db/base-de-datos.sql
 ```
 
 También se puede crear con `python scripts/setup_postgres.py` (sin las cuentas, que el core crea al arrancar con `USUARIOS_DEMO=true`). El archivo se regenera con `python scripts/exportar_base_sql.py`, que lo prueba importándolo en otra base vacía.
+
+> **La contraseña del historial ya no sirve.** Hasta el commit `4452469`, `docker-compose.yml` y `scripts/setup_postgres.py` traían escrita `plurione-demo`, que era la contraseña de la PostgreSQL local del desarrollo. Esa contraseña se cambió: la nueva solo está en los `.env` de core y rules, fuera del repositorio, y la PostgreSQL local rechaza `plurione-demo` (comprobado el 21/10 y el 24/10/2026). Hoy `plurione-demo` solo es el valor de demostración de la base del contenedor (`DB_PASSWORD` en el `.env` de la raíz).
 
 ### En local
 
