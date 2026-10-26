@@ -1,0 +1,23 @@
+Clon limpio de 998b221 docs(validacion): bitácora del ensayo de la demostración en un clon limpio
+OK    docker compose up --build (159 s)
+OK    ai-service operativo con clave de IA
+OK    core-service sin token responde 401 (401)
+OK    rules-service sin token responde 401 (401)
+OK    ai-service sin token responde 401 (401)
+OK    inicio de sesión de admin@example.com (ADMIN)
+OK    inicio de sesión de validador@example.com (VALIDADOR)
+OK    inicio de sesión de auditor@example.com (AUDITOR)
+OK    inicio de sesión de consulta@example.com (CONSULTA)
+OK    la cuenta de consulta no ve las empresas (403)
+OK    catálogo de reglas precargado
+OK    empresa con RFC ficticio (201)
+OK    carga de una constancia ficticia (201)
+OK    auditoría real guardada (200: EN_REVISION)
+OK    el chat responde con el RFC
+OK    un expediente incompleto no se aprueba (NO_CONFORME)
+OK    cadena de la bitácora íntegra (14 eventos)
+OK    reporte del expediente en pdf
+OK    reporte del expediente en xlsx
+OK    ficha de custodia en pdf
+
+Todo pasó

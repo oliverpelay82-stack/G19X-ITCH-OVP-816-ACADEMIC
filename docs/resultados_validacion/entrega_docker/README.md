@@ -1,18 +1,20 @@
-# Prueba de entrega en Docker — 23/10/2026, commit `d812943`
+# Prueba de entrega en Docker — 26/10/2026, commit `998b221`
 
 Evidencia de la instalación tal como la recibe PluriOne (RNF-11): un clon limpio del último commit de `main`, levantado con `docker compose up --build` en un proyecto propio (`plurione_entrega`, con su base y sus volúmenes nuevos) y recorrido con datos ficticios.
 
 | Campo | Valor |
 |---|---|
-| Fecha | 23 de octubre de 2026, 09:16 (UTC−6) |
-| Commit | `d812943` (`main`; incluye el candado de secretos de los cortes del 21/10 y del 23/10/2026) |
-| Comando | `python scripts/prueba_entrega_docker.py --con-ia --conservar` |
+| Fecha | 26 de octubre de 2026, 17:21 (UTC−6) |
+| Commit | `998b221` (`main`, el commit de la entrega) |
+| Comando | `python scripts/prueba_entrega_docker.py --con-ia` |
 | Entorno | Windows 11, Docker Engine 29.9.2, Docker Compose 5.6.1 |
-| Resultado | **20 de 20 comprobaciones**, código de salida 0; `docker compose up --build` en 174 s |
+| Resultado | **20 de 20 comprobaciones**, código de salida 0; `docker compose up --build` en 159 s |
 
-`--con-ia` hace una auditoría y una pregunta reales al proveedor de IA (Groq) con la clave del equipo de desarrollo, que solo se escribió en el `.env` del clon temporal. `--conservar` dejó los contenedores en marcha para tomar las capturas y revisar la bóveda; después se bajaron con sus volúmenes y se borró el clon. Sin `--con-ia`, la misma prueba comprueba que la auditoría responde 503 con la instrucción para configurar la clave.
+`--con-ia` hace una auditoría y una pregunta reales al proveedor de IA (Groq) con la clave del equipo de desarrollo, que solo se escribió en el `.env` del clon temporal. Al terminar, la prueba bajó los contenedores con sus volúmenes y borró el clon. Sin `--con-ia`, la misma prueba comprueba que la auditoría responde 503 con la instrucción para configurar la clave.
 
-**Resultado de la auditoría con IA: EN_REVISION.** La constancia de la prueba es un PDF sintético que declara no tener validez fiscal. El modelo, aun a temperatura 0, no es determinista entre corridas: el mismo PDF salió CONFORME sobre `8fadc84`, `e4a42bf` y `0709293`, y EN_REVISION sobre `e394be0`, en una primera corrida del 21/10 y en esta. En esta corrida, el motivo es una discrepancia de tipo: se esperaba «Constancia de Situación Fiscal (SAT)» y el modelo identificó «Constancia de Situación Fiscal». El documento pasa a ratificación humana y no se rechaza. Por eso la prueba comprueba que la auditoría se guarde, no su veredicto. El expediente queda NO_CONFORME con 3 alertas: los dos documentos obligatorios críticos que faltan y la ratificación pendiente (índice de cumplimiento del 60 %, 3 de 5 reglas, bloqueado por dos reglas críticas).
+Entre `d812943` y `998b221` no cambió el código, los Dockerfiles, el `docker-compose.yml`, los scripts, `db/` ni `.env.example` (solo documentación), así que `boveda_y_salud.txt` y las capturas, tomadas sobre `d812943` con `--conservar`, siguen describiendo la misma instalación.
+
+**Resultado de la auditoría con IA: EN_REVISION.** La constancia de la prueba es un PDF sintético que declara no tener validez fiscal. El modelo, aun a temperatura 0, no es determinista entre corridas: el mismo PDF salió CONFORME sobre `8fadc84`, `e4a42bf` y `0709293` y en el ensayo de la demostración del 26/10 ([`../ensayo_demostracion_2026-10-26.md`](../ensayo_demostracion_2026-10-26.md)), y EN_REVISION sobre `e394be0`, `d812943` y en esta corrida. La salida de la prueba registra el estatus, no su motivo; en la corrida sobre `d812943` el motivo fue una discrepancia de tipo: se esperaba «Constancia de Situación Fiscal (SAT)» y el modelo identificó «Constancia de Situación Fiscal». Un documento EN_REVISION pasa a ratificación humana y no se rechaza. Por eso la prueba comprueba que la auditoría se guarde, no su veredicto. En las dos corridas el expediente queda NO_CONFORME; en la de `d812943`, con 3 alertas: los dos documentos obligatorios críticos que faltan y la ratificación pendiente (índice de cumplimiento del 60 %, 3 de 5 reglas, bloqueado por dos reglas críticas).
 
 **Candado de secretos (cortes del 21/10 y del 23/10/2026).** Con `USUARIOS_DEMO=false`, el core no arranca con el `JWT_SECRET` ni con la `BOVEDA_LLAVE` de demostración del compose, que son públicos, ni sin `BOVEDA_LLAVE`, porque guardaría los documentos en claro (RNF-04). `boveda_y_salud.txt` lo muestra en el contenedor construido. La comprobación de arranque rechaza los valores de demostración y la llave ausente fuera del modo demostración. Pasa con valores propios y con `USUARIOS_DEMO=true`, que es como levanta la entrega.
 
@@ -20,7 +22,8 @@ Evidencia de la instalación tal como la recibe PluriOne (RNF-11): un clon limpi
 
 | Archivo | Qué muestra |
 |---|---|
-| [`salida_2026-10-23_d812943.txt`](salida_2026-10-23_d812943.txt) | Salida completa de la prueba: salud de los servicios, 401 sin sesión, inicio de sesión de las cuatro cuentas de demostración, permisos de la cuenta de consulta, catálogo de reglas, empresa con RFC ficticio, carga, auditoría con IA (guardada; EN_REVISION), chat, semáforo de un expediente incompleto (NO_CONFORME), cadena de la bitácora íntegra y reportes PDF y Excel con la ficha de custodia. |
+| [`salida_2026-10-26_998b221.txt`](salida_2026-10-26_998b221.txt) | Salida completa de la corrida de la entrega: las mismas 20 comprobaciones (auditoría guardada: EN_REVISION; cadena de la bitácora íntegra, 14 eventos). |
+| [`salida_2026-10-23_d812943.txt`](salida_2026-10-23_d812943.txt) | Corrida anterior, sobre `d812943`. Salida completa de la prueba: salud de los servicios, 401 sin sesión, inicio de sesión de las cuatro cuentas de demostración, permisos de la cuenta de consulta, catálogo de reglas, empresa con RFC ficticio, carga, auditoría con IA (guardada; EN_REVISION), chat, semáforo de un expediente incompleto (NO_CONFORME), cadena de la bitácora íntegra y reportes PDF y Excel con la ficha de custodia. |
 | [`boveda_y_salud.txt`](boveda_y_salud.txt) | Contenedores y versiones; el documento custodiado dentro del contenedor del core, cifrado (cabecera `PLVC1`, sin el `%PDF` del original; RNF-04); `GET /health` del core con sus dos advertencias de demostración (secreto de sesión y llave de la bóveda); los cuatro casos del candado de secretos y el frontend respondiendo. |
 | [`capturas/`](capturas/) | Pantallas principales a 1366 × 768 con la cuenta de administración, sobre los datos que dejó la corrida. |
 
