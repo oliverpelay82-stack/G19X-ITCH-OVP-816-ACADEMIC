@@ -25,4 +25,4 @@ Recorrido de unos 8 minutos con las cuatro cuentas de demostración (`*@example.
 ## Si preguntan
 
 - **¿Y si la cuenta de consulta llama a la API directamente?** Cada servicio autoriza por el rol guardado en la base en cada petición, no por lo que muestra la interfaz (`tests/test_permisos_roles.py` recorre la matriz completa).
-- **¿Esto corre así en producción?** No: con `USUARIOS_DEMO=false` no se crean estas cuentas, y el core no arranca con la llave y el `JWT_SECRET` del compose ni sin `BOVEDA_LLAVE` (README, «Los secretos de demostración no llegan a producción»).
+- **¿Esto corre así en producción?** No: con `USUARIOS_DEMO=false` no se crean estas cuentas, y el core no arranca con la llave y el `JWT_SECRET` del compose ni sin `BOVEDA_LLAVE` (README, «Los secretos de demostración no llegan a producción»). La contraseña de la base también se cambia: en el `.env` se define una `DB_PASSWORD` propia, porque la del compose (`plurione-demo`) es pública y PostgreSQL queda publicado en el puerto 5433.
