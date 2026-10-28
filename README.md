@@ -15,7 +15,7 @@ La especificación oficial está en [`docs/ESPECIFICACIONES_DOC01_A_DOC08.txt`](
 | `services/rules-service` | 8002 | Catálogo de reglas del DOC-05 (familias RIE, RCV, RSC, RDS) y evaluación determinista de la vigencia |
 | `services/ai-service` | 8003 | Nivel 3 (PyMuPDF + Tesseract con OpenCV) y Nivel 4 (Groq Cloud, `qwen/qwen3.8-27b`), verificación de contenido y chat documental |
 | `frontend` | 5173 | Interfaz React 19 + Vite |
-| PostgreSQL 17 | 5432 | Base `plurione_compliance`, compartida por core y rules (cada uno con sus tablas) |
+| PostgreSQL 17 | 5433 en el equipo (5432 dentro de Docker) | Base `plurione_compliance`, compartida por core y rules (cada uno con sus tablas) |
 
 ### Pipeline de validación (DOC-05)
 
