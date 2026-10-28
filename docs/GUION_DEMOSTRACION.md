@@ -5,6 +5,7 @@ Recorrido de unos 8 minutos con las cuatro cuentas de demostración (`*@example.
 ## Antes de empezar
 
 - [ ] `python scripts/prueba_entrega_docker.py --con-ia` sobre el último commit: 20 de 20 comprobaciones.
+- [ ] Entrar solo con las cuentas `admin@`, `validador@`, `auditor@` y `consulta@example.com` (contraseñas en «[Acceso y roles](../README.md#acceso-y-roles)» del README): en una instalación limpia no existe otra.
 - [ ] `docker compose up -d --build` con `GROQ_API_KEY` en el `.env` de la raíz; `GET :8001/api/v1/health` responde y avisa que corren los secretos de demostración, como corresponde al compose.
 - [ ] A la mano, la constancia ficticia `services/ai-service/evaluacion/gold_standard/documentos/gs-csf-01.pdf` (RFC `PLU180514AB3`, PLURIONE S.A. DE C.V., emitida el 10/09/2026: vigente hasta el 09/12/2026 por RCV-03).
 - [ ] Plan B, si la IA no responde: la auditoría entra en la cola de reintento (DOC-05, Tabla 1) y se muestra la del ensayo en [`resultados_validacion/entrega_docker/`](resultados_validacion/entrega_docker/).
@@ -17,7 +18,7 @@ Recorrido de unos 8 minutos con las cuatro cuentas de demostración (`*@example.
 | 2 | validador | Subir `gs-csf-01.pdf` | Huella SHA-256 y bóveda cifrada (AES-256-GCM); el semáforo queda **NO_CONFORME**: faltan los obligatorios críticos del expediente corporativo. Subir archivos nunca aprueba un expediente |
 | 3 | validador | Auditar la constancia y abrir la cita en el visor | La IA solo extrae; las reglas deciden titularidad (RFC) y vigencia (RCV-03, 90 días). El motivo cita el texto del documento |
 | 4 | validador | Preguntar en el chat «¿Cuál es el RFC del documento?» | La respuesta dice su procedencia (datos del dictamen, pasaje o modelo) |
-| 5 | `admin@example.com` | En Usuarios, asignar el expediente a `consulta@example.com` y al validador; ver la bitácora | Solo el administrador gestiona cuentas, asignaciones y reglas; cada asignación queda en la bitácora sellada |
+| 5 | `admin@example.com` | En Usuarios, asignar el expediente **a dos cuentas: `consulta@example.com` y el validador**; ver la bitácora | Solo el administrador gestiona cuentas, asignaciones y reglas; cada asignación queda en la bitácora sellada |
 | 6 | `auditor@example.com` | Abrir el expediente, el dictamen, la bitácora y descargar el reporte PDF | Ve todo, pero no tiene botones de escritura y el servicio responde 403 si lo intenta; el reporte imprime el último sello de la cadena |
 | 7 | `consulta@example.com` | Iniciar sesión | Solo ve el semáforo de los expedientes asignados. No ve empresas, documentos, dictámenes, chat ni bitácora, y no carga ni audita: la interfaz no lo ofrece y la API responde 403 (comprobado en la prueba de entrega) |
 | 8 | validador | Volver al expediente | Sigue NO_CONFORME aunque la constancia esté auditada: la completitud y el índice de cumplimiento muestran los obligatorios que faltan |
