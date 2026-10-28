@@ -549,7 +549,7 @@ Microservicios desacoplados orquestados con Docker Compose en la red `plurione-n
 | plurione-rules | 8002 | Catálogo de reglas (RIE, RCV, RSC, RDS), documentos obligatorios por tipo y evaluación de vigencia. |
 | plurione-ai | 8003 | Niveles 3 y 4: extracción de texto, análisis con Groq Cloud y chat documental; texto persistido en SQLite propio. |
 | plurione-frontend | 5173 | Aplicación React 19 + Vite; Nivel 1 en el navegador (WebCrypto) y System Health Strip. |
-| plurione-db | 5432 | PostgreSQL 17 compartido por core y rules. |
+| plurione-db | 5433 en el equipo (5432 dentro de Docker) | PostgreSQL 17 compartido por core y rules. |
 | storage_vault | — | Bóveda de binarios con huella verificada en cada lectura. |
 
 **Aislamiento de fallas:** si el rules-service o el ai-service caen, el core-service y la interfaz siguen operando; la salud de cada servicio se muestra en vivo (`GET /api/v1/health`).
