@@ -28,7 +28,7 @@ import os
 import re
 import sys
 import zipfile
-from datetime import date, timedelta
+from datetime import timedelta
 from types import SimpleNamespace
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -41,6 +41,7 @@ from pypdf import PdfReader  # noqa: E402
 
 from main import app  # noqa: E402
 from clients import rules_client  # noqa: E402
+from config import zona_horaria  # noqa: E402
 from config.database import SessionLocal, engine, init_db  # noqa: E402
 from models.titular import TitularExpediente  # noqa: E402
 from models.expediente import Expediente  # noqa: E402
@@ -200,7 +201,7 @@ def prueba_anexos(juridico: dict) -> None:
 def prueba_vigencia_y_alertas(ctx: dict) -> None:
     print("\n[3] Vigencia recalculada contra la fecha actual (RN-02, RF-19)")
     exp_id = ctx["corporativo"]["id"]
-    hoy = date.today()
+    hoy = zona_horaria.hoy()
     csf = subir(exp_id, "CSF_SAT", "csf.pdf")
     dom = subir(exp_id, "COMP_DOMICILIO", "recibo.pdf")
     acta = subir(exp_id, "ACTA_CONSTITUTIVA", "acta.pdf")
@@ -288,9 +289,9 @@ def prueba_busqueda(ctx: dict) -> None:
     verificar(len(listar(q="constructora del norte")) == 3, "Búsqueda por razón social (sin distinguir mayúsculas)")
     verificar(len(listar(q="TIP010101")) == 3, "Búsqueda por RFC")
     verificar(all(e["tipo_expediente"] == "JURIDICO" for e in listar(tipo_expediente="JURIDICO")), "Filtro por tipo")
-    hoy = date.today().isoformat()
+    hoy = zona_horaria.hoy().isoformat()
     verificar(len(listar(desde=hoy, hasta=hoy)) >= 3, "Filtro por fecha de apertura (hoy)")
-    verificar(listar(desde=(date.today() + timedelta(days=1)).isoformat()) == [], "Sin aperturas futuras")
+    verificar(listar(desde=(zona_horaria.hoy() + timedelta(days=1)).isoformat()) == [], "Sin aperturas futuras")
     verificar(all(e["estado_cumplimiento"] == "CONFORME" for e in listar(estado="CONFORME")), "Filtro por estatus")
     verificar(client.get("/api/v1/expedientes", params={"tipo_expediente": "X"}).status_code == 422,
               "Un tipo inválido en el filtro responde 422")

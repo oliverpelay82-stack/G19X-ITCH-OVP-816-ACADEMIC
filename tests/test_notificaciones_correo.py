@@ -16,7 +16,7 @@ Aislamiento: base plurione_compliance_test y bóveda temporal (bd_pruebas.py).
 import os
 import sys
 import uuid
-from datetime import date, timedelta
+from datetime import timedelta
 
 import pytest
 
@@ -28,7 +28,7 @@ BOVEDA = bd_pruebas.preparar_entorno()
 
 from main import app  # noqa: E402
 from clients import rules_client  # noqa: E402
-from config import seguridad  # noqa: E402
+from config import seguridad, zona_horaria  # noqa: E402
 from config.database import SessionLocal, engine, init_db  # noqa: E402
 from models.expediente import Expediente  # noqa: E402
 from models.titular import TitularExpediente  # noqa: E402
@@ -218,7 +218,7 @@ def _con_csf_por_vencer(exp_id: str, dias: int) -> str:
     r = admin.post("/api/v1/dictamenes", headers=auth.sistema(), json={
         "documento_id": doc_id, "estatus": "CONFORME", "nivel_confianza": 0.95,
         "observaciones": ["Prueba automatizada."], "vigencia": VIGENCIA_RCV01,
-        "fecha_vencimiento": (date.today() + timedelta(days=dias)).isoformat()})
+        "fecha_vencimiento": (zona_horaria.hoy() + timedelta(days=dias)).isoformat()})
     assert r.status_code == 201, r.text
     return doc_id
 

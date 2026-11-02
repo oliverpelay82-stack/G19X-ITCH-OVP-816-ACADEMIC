@@ -28,7 +28,7 @@ temporal (tests/bd_pruebas.py).
 """
 import io
 import os
-from datetime import date, timedelta
+from datetime import timedelta
 import sys
 import threading
 import time
@@ -42,6 +42,7 @@ os.environ["REEVALUACION_INTERVALO_HORAS"] = "0"
 from pypdf import PdfWriter  # noqa: E402
 from main import app  # noqa: E402
 from clients import rules_client  # noqa: E402
+from config import zona_horaria  # noqa: E402
 from config.database import SessionLocal, engine, init_db  # noqa: E402
 from controllers import documento_controller  # noqa: E402
 from models.bitacora import BitacoraAuditoria  # noqa: E402
@@ -285,7 +286,7 @@ def _dictaminar_opinion(doc_id: str, estatus: str, emitida_hace: int, verificaci
     resultado = "VENCIDO" if emitida_hace > 30 else "VIGENTE"
     respuesta = client.post("/api/v1/dictamenes", headers=auth.sistema(), json={
         "documento_id": doc_id, "estatus": estatus, "nivel_confianza": 0.95,
-        "fecha_emision": (date.today() - timedelta(days=emitida_hace)).isoformat(),
+        "fecha_emision": (zona_horaria.hoy() - timedelta(days=emitida_hace)).isoformat(),
         "vigencia": {"disponible": True, "resultado": resultado, "evaluaciones": [
             {"codigo_regla": "RCV-04", "resultado": resultado, "limite_dias": 30, "dias_calculados": emitida_hace,
              "criterio": "ANTIGUEDAD_DESDE_EMISION", "detalle": f"{emitida_hace} días desde la emisión."}]},
@@ -325,7 +326,7 @@ def test_opinion_con_mas_de_30_dias_vence_por_rcv04():
     db = SessionLocal()
     try:
         expediente = db.get(Expediente, exp_id)
-        evaluacion = cumplimiento.evaluar(db, expediente, hoy=date.today() + timedelta(days=20))
+        evaluacion = cumplimiento.evaluar(db, expediente, hoy=zona_horaria.hoy() + timedelta(days=20))
     finally:
         db.close()
 

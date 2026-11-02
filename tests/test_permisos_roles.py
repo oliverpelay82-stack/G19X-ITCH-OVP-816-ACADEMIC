@@ -331,14 +331,14 @@ def test_sin_modo_demostracion_no_arranca_con_los_secretos_del_compose(monkeypat
     usuarios_iniciales.verificar_secretos()  # el docker-compose de la entrega levanta igual
 
     monkeypatch.setenv("USUARIOS_DEMO", "false")
-    with pytest.raises(seguridad.ConfiguracionInvalidaError, match="públicos: JWT_SECRET y BOVEDA_LLAVE\."):
+    with pytest.raises(seguridad.ConfiguracionInvalidaError, match=r"públicos: JWT_SECRET y BOVEDA_LLAVE\."):
         usuarios_iniciales.verificar_secretos()
     monkeypatch.setenv("BOVEDA_LLAVE", llave_propia)
-    with pytest.raises(seguridad.ConfiguracionInvalidaError, match="públicos: JWT_SECRET\."):
+    with pytest.raises(seguridad.ConfiguracionInvalidaError, match=r"públicos: JWT_SECRET\."):
         usuarios_iniciales.verificar_secretos()
     monkeypatch.setenv("JWT_SECRET", bd_pruebas.SECRETO_PRUEBAS)
     monkeypatch.setenv("BOVEDA_LLAVE", cifrado_boveda.LLAVE_DEMOSTRACION.upper())
-    with pytest.raises(seguridad.ConfiguracionInvalidaError, match="públicos: BOVEDA_LLAVE\."):
+    with pytest.raises(seguridad.ConfiguracionInvalidaError, match=r"públicos: BOVEDA_LLAVE\."):
         usuarios_iniciales.verificar_secretos()
 
     monkeypatch.setenv("BOVEDA_LLAVE", llave_propia)

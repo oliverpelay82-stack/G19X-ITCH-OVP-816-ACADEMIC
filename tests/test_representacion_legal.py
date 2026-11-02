@@ -36,6 +36,7 @@ from sqlalchemy import text  # noqa: E402
 from sqlalchemy.exc import DBAPIError  # noqa: E402
 from main import app  # noqa: E402
 from clients import rules_client  # noqa: E402
+from config import zona_horaria  # noqa: E402
 from config.database import SessionLocal, engine, init_db  # noqa: E402
 from models.titular import TitularExpediente  # noqa: E402
 from motor import representacion  # noqa: E402
@@ -120,7 +121,7 @@ def test_la_representacion_del_dictamen_es_inmutable():
 
 
 # ── Cotejo RN-03 (HU-38) ──────────────────────────────────────────────
-HOY = date.today()
+HOY = zona_horaria.hoy()
 FIRMA_TITULAR = {"nombre": "Lic. Juan Pérez López", "cargo": "Apoderado legal", "empresa": RAZON,
                  "cita": "POR CONSTRUCTORA SIERRA MADRE: Lic. Juan Pérez López", "cita_verificada": True}
 FIRMA_CONTRAPARTE = {"nombre": "Ana María Ruiz", "cargo": "Directora General",

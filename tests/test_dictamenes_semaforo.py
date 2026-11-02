@@ -21,7 +21,7 @@ Uso:  python tests/test_dictamenes_semaforo.py   (requiere PostgreSQL)
 """
 import os
 import sys
-from datetime import date, timedelta
+from datetime import timedelta
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import bd_pruebas  # noqa: E402
@@ -33,6 +33,7 @@ from sqlalchemy.exc import DBAPIError  # noqa: E402
 
 from main import app  # noqa: E402
 from clients import rules_client  # noqa: E402
+from config import zona_horaria  # noqa: E402
 from config.database import SessionLocal, engine, init_db  # noqa: E402
 from models.documento import Documento  # noqa: E402
 from models.titular import TitularExpediente  # noqa: E402
@@ -116,7 +117,7 @@ VIGENCIA_RCV02_VENCIDA = {
          "dias_calculados": 2722, "detalle": "El documento tiene 2722 días naturales de antigüedad; el máximo es 90."}
     ],
 }
-VENCIMIENTO_LEJANO = (date.today() + timedelta(days=400)).isoformat()
+VENCIMIENTO_LEJANO = (zona_horaria.hoy() + timedelta(days=400)).isoformat()
 VIGENCIA_VIGENTE = {
     "disponible": True, "tipo_documento": "CSF_SAT", "resultado": "VIGENTE", "dias_calculados": None,
     "evaluaciones": [{"codigo_regla": "RCV-01", "resultado": "VIGENTE", "limite_dias": 30,
