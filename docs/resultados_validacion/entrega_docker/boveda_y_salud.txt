@@ -1,18 +1,18 @@
-Evidencia tomada en los contenedores de la corrida (proyecto plurione_entrega), 2026-10-23 09:16 -0600
+Evidencia tomada en los contenedores de la corrida (proyecto plurione_entrega), 2026-11-02 09:59 -0600
 
-## Contenedores
-plurione-frontend  plurione_entrega-plurione-frontend  Up 35 seconds
-plurione-ai  plurione_entrega-plurione-ai  Up 35 seconds
-plurione-core  plurione_entrega-plurione-core  Up 36 seconds
-plurione-rules  plurione_entrega-plurione-rules  Up 36 seconds
-plurione-db  postgres:17-alpine  Up 42 seconds (healthy)
+## Contenedores y política de reinicio (RNF-09)
+plurione-frontend  plurione_entrega-plurione-frontend  Up 4 minutes  restart=unless-stopped
+plurione-ai  plurione_entrega-plurione-ai  Up 4 minutes  restart=unless-stopped
+plurione-core  plurione_entrega-plurione-core  Up 4 minutes  restart=unless-stopped
+plurione-rules  plurione_entrega-plurione-rules  Up About a minute  restart=unless-stopped
+plurione-db  postgres:17-alpine  Up 4 minutes (healthy)  restart=unless-stopped
 
 ## Versiones
 Docker Engine 29.9.2
 Docker Compose version v5.6.1
 
 ## Bóveda del core (RNF-04)
-bcfb16f7446f_constancia.pdf  1704 bytes  cabecera=PLVC1  contiene %PDF: 0
+58d6cc5116e9_constancia.pdf  1706 bytes  cabecera=PLVC1  contiene %PDF: 0
 
 ## GET /api/v1/health del core
 {"status":"online","servicio":"core-service","puerto":8001,"conexion_bd":true,"version":"1.0.0","advertencias":["Las sesiones se firman con el secreto de demostración: defina JWT_SECRET en el .env.","La bóveda se cifra con la llave de demostración: defina BOVEDA_LLAVE en el .env."]}
@@ -26,6 +26,18 @@ Con USUARIOS_DEMO=false y valores propios, pasa:
 arranca
 Con USUARIOS_DEMO=true (el compose de la entrega), la misma comprobación pasa:
 arranca
+
+## Reinicio automático (RNF-09)
+Se termina el proceso principal del rules-service dentro de su contenedor (sh -c 'kill 1'), sin docker stop.
+Reinicios del contenedor: 1 -> 2; GET :8002/api/v1/health -> 200
+
+## Hora del negocio en el reporte y el folio (corte 7)
+Reloj del contenedor del core: 2026-11-02 15:59 UTC
+Folio del expediente de la corrida: EXP-EMP2-202611020954  (apertura guardada en UTC: 2026-11-02T15:54:41.155559)
+PDF del dictamen, encabezado: emitido el 2026-11-02 09:59 (UTC-06:00)
+PDF del dictamen, Fecha de apertura: 2026-11-02 09:54
+PDF del dictamen, Verificada el: 2026-11-02 09:59
+PDF del dictamen, último evento de la trazabilidad: 2026-11-02 09:58 · Reporte exportado
 
 ## Frontend
 GET http://127.0.0.1:5173/ -> 200
