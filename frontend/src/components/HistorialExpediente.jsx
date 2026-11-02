@@ -19,6 +19,14 @@ const CAUSA = {
   REPORTE_GLOBAL: 'reporte global',
 }
 
+/** Resultado de un aviso por correo (bitácora, NOTIFICACION_CORREO; RF-20). */
+const ENVIO_CORREO = {
+  ENVIADO: 'enviado',
+  FALLIDO: 'no se pudo enviar',
+  SIN_DESTINATARIOS: 'sin validadores asignados',
+  ENVIO_DESACTIVADO: 'el envío de correo está apagado',
+}
+
 const estado = (e) => getEstadoBadge(e)
 
 // Eventos que se muestran antes de «Ver todo».
@@ -96,6 +104,20 @@ function describir(evento, nombres) {
     }
     case 'DESCARGA_DOCUMENTO':
       return { titulo: 'Archivo original descargado', detalle: documento, tono: 'neutral' }
+    case 'ASIGNACION_EXPEDIENTE':
+      return {
+        titulo: 'Expediente asignado',
+        detalle: (d.nuevos || []).join(', ') || 'Sin cuentas asignadas',
+        tono: 'neutral',
+      }
+    case 'NOTIFICACION_CORREO':
+      return {
+        titulo: `Aviso por correo: ${ENVIO_CORREO[d.estado] || 'registrado'}`,
+        detalle: d.asunto || null,
+        tono: 'neutral',
+      }
+    case 'PROCESAMIENTO_DIFERIDO':
+      return { titulo: 'Auditoría diferida (la IA no respondió)', detalle: documento, tono: 'neutral' }
     default:
       return { titulo: evento.evento, tono: 'neutral' }
   }

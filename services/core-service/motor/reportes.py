@@ -77,6 +77,8 @@ EVENTO_LEGIBLE = {
     "DESCARGA_DOCUMENTO": "Archivo original descargado",
     "ACTUALIZACION_TITULAR": "Datos de la empresa corregidos",
     "ACTUALIZACION_EXPEDIENTE": "Expediente renombrado",
+    "ASIGNACION_EXPEDIENTE": "Expediente asignado",
+    "NOTIFICACION_CORREO": "Aviso por correo",
 }
 ORIGEN_LEGIBLE = {
     "NIVEL_4_IA": "Análisis con IA",

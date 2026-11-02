@@ -9,6 +9,7 @@ docs/uml/rf20-actividad-notificacion-correo.puml).
      SIN_DESTINATARIOS y ENVIO_DESACTIVADO (sin SMTP_HOST). Un rollback no envía nada.
   3. Documento por vencer: la reevaluación programada avisa el umbral alcanzado
      (30, 15 o 5 días) una sola vez; un aviso FALLIDO se reintenta en el ciclo siguiente.
+  4. La trazabilidad del reporte nombra la asignación y el aviso en lenguaje llano (RNF-08).
 
 El correo se entrega a un servidor SMTP en memoria (tests/servidor_smtp.py).
 Aislamiento: base plurione_compliance_test y bóveda temporal (bd_pruebas.py).
@@ -17,8 +18,10 @@ import os
 import sys
 import uuid
 from datetime import timedelta
+from io import BytesIO
 
 import pytest
+from pypdf import PdfReader
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import bd_pruebas  # noqa: E402
@@ -185,6 +188,19 @@ def test_sin_smtp_host_el_envio_esta_apagado_y_queda_en_la_bitacora(entorno):
     [aviso] = _avisos(exp["id"])
     assert aviso["estado"] == "ENVIO_DESACTIVADO" and aviso["destinatarios"] == [validador]
     assert entorno.recibidos == []
+
+
+def test_el_reporte_nombra_la_asignacion_y_el_aviso_sin_codigos(entorno):
+    os.environ.pop("SMTP_HOST", None)
+    validador_id, _ = _cuenta("VALIDADOR")
+    exp = _expediente(validador_id)
+    _caer_a_no_conforme(exp["id"])
+    r = admin.get(f"/api/v1/reportes/expedientes/{exp['id']}", params={"formato": "pdf"})
+    assert r.status_code == 200, r.text
+    texto = "\n".join(p.extract_text() for p in PdfReader(BytesIO(r.content)).pages)
+    assert "Expediente asignado" in texto and "Aviso por correo" in texto
+    for codigo in ("ASIGNACION_EXPEDIENTE", "NOTIFICACION_CORREO"):
+        assert codigo not in texto, f"La trazabilidad cita el código «{codigo}»"
 
 
 def test_un_servidor_que_rechaza_deja_el_aviso_como_fallido_sin_afectar_la_peticion(smtp):
