@@ -53,7 +53,7 @@ Toda la interfaz y las API exigen iniciar sesión (JWT con `Authorization: Beare
 | Rol | Correo | Contraseña | Puede |
 |---|---|---|---|
 | Administrador | `admin@example.com` | `Admin-Demo-2026` | Todo, más cuentas de usuario, asignación de expedientes y alta o pausa de reglas |
-| Validador | `validador@example.com` | `Validador-Demo-2026` | Empresas, expedientes, carga, auditoría, chat, ratificación y tipos de documento nuevos |
+| Validador (en la interfaz, «Responsable de cumplimiento», su nombre en el DOC-04) | `validador@example.com` | `Validador-Demo-2026` | Empresas, expedientes, carga, auditoría, chat, ratificación y tipos de documento nuevos |
 | Auditor | `auditor@example.com` | `Auditor-Demo-2026` | Consulta de expedientes, dictámenes, bitácora y reportes, sin modificar nada |
 | Consulta | `consulta@example.com` | `Consulta-Demo-2026` | Solo el semáforo de los expedientes que el administrador le asigna |
 
