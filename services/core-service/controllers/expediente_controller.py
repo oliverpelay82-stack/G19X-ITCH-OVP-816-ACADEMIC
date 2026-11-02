@@ -132,7 +132,7 @@ def crear_expediente(dto: ExpedienteCreate, actor: Actor = Depends(operacion), d
     # 2. Generar código legible de expediente (ej. EXP-PLU-202609131745). Si el
     #    titular ya abrió otro en el mismo minuto, se agrega un consecutivo.
     prefijo_rfc = titular.rfc[:4]
-    estampa_tiempo = datetime.now().strftime("%Y%m%d%H%M")
+    estampa_tiempo = zona_horaria.ahora().strftime("%Y%m%d%H%M")  # hora de México, no la del servidor
     codigo = f"EXP-{prefijo_rfc}-{estampa_tiempo}"
     consecutivo = 1
     while db.query(Expediente.id).filter(Expediente.codigo_expediente == codigo).first():

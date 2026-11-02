@@ -11,12 +11,12 @@ Cada exportación queda en la bitácora (EXPORTACION_REPORTE): qué se exportó,
 en qué formato, quién lo pidió y desde qué IP.
 """
 import hashlib
-from datetime import datetime
 from typing import Literal, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy.orm import Session
 
+from config import zona_horaria
 from config.autorizacion import Actor, lectura
 from config.database import get_db
 from controllers.expediente_controller import consultar_expedientes, evaluar_lista
@@ -109,7 +109,7 @@ def reporte_global(
                  else reportes.global_xlsx(evaluados, cadena, sello))
     _registrar(db, actor, {"reporte": "CUMPLIMIENTO_GLOBAL", "formato": formato,
                              "tipo_expediente": tipo_expediente, "expedientes": len(evaluados)}, contenido, sello)
-    return _archivo(contenido, formato, f"reporte_cumplimiento_{datetime.now().strftime('%Y%m%d_%H%M')}")
+    return _archivo(contenido, formato, f"reporte_cumplimiento_{zona_horaria.ahora().strftime('%Y%m%d_%H%M')}")
 
 
 @router.get(

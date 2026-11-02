@@ -20,7 +20,7 @@ import io
 import json
 from collections import Counter
 from dataclasses import dataclass, field
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from typing import Any
 
 from openpyxl import Workbook
@@ -177,18 +177,34 @@ def _ancla(cadena: dict[str, Any]) -> list[tuple[str, Any]]:
         ("Cadena de custodia", _texto_cadena(cadena)),
         ("Último eslabón", f"Secuencia {cadena['ultima_secuencia']}" if cadena.get("ultima_secuencia") else "—"),
         ("Último sello (SHA-256)", cadena.get("ultimo_hash") or "—"),
-        ("Verificada el", cadena.get("verificado_en") or "—"),
+        ("Verificada el", _fecha_texto(cadena.get("verificado_en"))),
         ("Uso del sello", "Conserve este reporte: si la bitácora se reescribiera, su último sello dejaría de "
                           "coincidir con el aquí impreso."),
     ]
 
 
 def _fecha(valor: Any) -> str:
+    """
+    Fecha impresa en la zona del negocio, la misma de la hora de emisión: la
+    base guarda los instantes en UTC sin zona, y de las 18:00 a las 24:00 de
+    México en UTC ya es el día siguiente. Las fechas sin hora se imprimen igual.
+    """
     if valor is None:
         return "—"
     if isinstance(valor, datetime):
-        return valor.strftime("%Y-%m-%d %H:%M")
+        utc = valor if valor.tzinfo else valor.replace(tzinfo=timezone.utc)
+        return utc.astimezone(zona_horaria.ZONA).strftime("%Y-%m-%d %H:%M")
     return valor.isoformat() if hasattr(valor, "isoformat") else str(valor)
+
+
+def _fecha_texto(valor: str | None) -> str:
+    """El ``verificado_en`` de la cadena (ISO 8601 en UTC, motor/bitacora.py) con el formato de ``_fecha``."""
+    if not valor:
+        return "—"
+    try:
+        return _fecha(datetime.fromisoformat(valor))
+    except ValueError:
+        return valor
 
 
 def _ahora() -> str:
@@ -1001,7 +1017,7 @@ def ficha_custodia_pdf(datos: DatosCustodia, sello: str | None = None) -> bytes:
         _ficha([
             ("Resultado", _texto_cadena(datos.cadena)),
             ("Último sello", datos.cadena.get("ultimo_hash") or "—"),
-            ("Verificada el", datos.cadena.get("verificado_en") or "—"),
+            ("Verificada el", _fecha_texto(datos.cadena.get("verificado_en"))),
             ("Algoritmo", datos.cadena.get("algoritmo") or "—"),
         ], e, ancho),
     ]
