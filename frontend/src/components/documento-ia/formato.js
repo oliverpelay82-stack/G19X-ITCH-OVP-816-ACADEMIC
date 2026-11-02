@@ -1,5 +1,4 @@
 // Constantes y funciones puras del panel de inteligencia documental (sin JSX).
-import { formatFechaCorta } from '../../utils/format.js'
 
 const MODELO_POR_DEFECTO = 'Modelo de lenguaje'
 
@@ -101,8 +100,6 @@ export function formatDuracion(ms) {
 }
 
 export const numero = (n) => Number(n).toLocaleString('es-MX')
-
-export const fechaIso = (iso) => formatFechaCorta(iso && `${iso}T00:00:00`)
 
 /** La regla RCV que decidió el resultado de vigencia (la de antigüedad, si aplicó). */
 function reglaDecisiva(vigencia) {

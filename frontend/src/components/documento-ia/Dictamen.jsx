@@ -3,6 +3,7 @@
 import { useEvidencia } from '../evidencia-context.js'
 import { Badge, Card, KeyValue, KeyValueList } from '../ui/index.js'
 import { TIPO_DOCUMENTO_LABEL } from '../../constants.js'
+import { formatDia } from '../../utils/format.js'
 import { EstadoLectura, MetaInferencia } from './Lectura.jsx'
 import {
   ESTATUS_IA,
@@ -12,7 +13,6 @@ import {
   TIPO_IA_LABEL,
   TITULARIDAD,
   diasRestantes,
-  fechaIso,
   nombreModelo,
   numero,
   resultadoTipo,
@@ -357,10 +357,10 @@ export function DictamenEvidencia({ dictamen, expediente, tipoRegistrado, ids })
       <Bloque id={ids.fechas} titulo="Vigencia">
         <KeyValueList className="detail-grid detail-grid--3">
           <KeyValue etiqueta="Emisión" className="detail-item" valorClassName="mono">
-            {fechaIso(dictamen.fecha_emision)}
+            {formatDia(dictamen.fecha_emision)}
           </KeyValue>
           <KeyValue etiqueta="Vencimiento" className="detail-item" valorClassName="mono">
-            {fechaIso(dictamen.fecha_vencimiento)}
+            {formatDia(dictamen.fecha_vencimiento)}
           </KeyValue>
           <KeyValue etiqueta="Días para el vencimiento" className="detail-item" valorClassName="mono">
             {vigencia.dias === null ? '—' : numero(vigencia.dias)}

@@ -20,7 +20,7 @@ process.env.TZ = 'America/Mexico_City'
 Object.defineProperty(globalThis.crypto, 'randomUUID', { value: undefined, configurable: true })
 
 const { idAleatorio } = await import('../src/utils/id.js')
-const { aFecha, diaLocal, formatRelativo } = await import('../src/utils/format.js')
+const { aFecha, diaLocal, formatDia, formatRelativo } = await import('../src/utils/format.js')
 const { agruparCambios } = await import('../src/components/graficas/cambios.js')
 const { valorTrasCarga } = await import('../src/utils/carga.js')
 const { puede, seccionPermitida, seccionesDe } = await import('../src/utils/permisos.js')
@@ -100,6 +100,19 @@ const CASOS = [
   {
     nombre: 'Las 03:30 UTC del 15 de octubre son el 14 en México',
     probar: () => diaLocal('2026-10-15T03:30:00.000001') === '2026-10-14' && diaLocal('') === '',
+  },
+  {
+    nombre: 'Una fecha de calendario (emisión, vencimiento) es el mismo día en México',
+    probar: () => formatDia('2026-09-10').startsWith('10 sep') && formatDia(null) === '—',
+  },
+  {
+    nombre: 'Ningún componente formatea una fecha de calendario como hora UTC (usar formatDia)',
+    probar: () => {
+      // «AAAA-MM-DDT00:00:00» sin zona es UTC para aFecha: en México sería el día anterior.
+      const usos = archivos(SRC).filter((ruta) => /formatFecha\w*\([^)]*T00:00/.test(readFileSync(ruta, 'utf8')))
+      for (const ruta of usos) console.log(`          ${relative(SRC, ruta)}`)
+      return usos.length === 0
+    },
   },
   {
     nombre: '«hace 2 h» para un evento de hace dos horas (no «hace instantes»)',
