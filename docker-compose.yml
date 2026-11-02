@@ -11,6 +11,8 @@ services:
   plurione-db:
     image: postgres:17-alpine
     container_name: plurione-db
+    # RNF-09: Docker vuelve a levantar el contenedor si se cae, salvo que se detenga a mano.
+    restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ${DB_PASSWORD:-plurione-demo}
@@ -31,6 +33,7 @@ services:
     build:
       context: ./services/core-service
     container_name: plurione-core
+    restart: unless-stopped
     ports:
       - "8001:8001"
     environment:
@@ -79,6 +82,7 @@ services:
     build:
       context: ./services/rules-service
     container_name: plurione-rules
+    restart: unless-stopped
     ports:
       - "8002:8002"
     environment:
@@ -102,6 +106,7 @@ services:
     build:
       context: ./services/ai-service
     container_name: plurione-ai
+    restart: unless-stopped
     ports:
       - "8003:8003"
     environment:
@@ -128,6 +133,7 @@ services:
     build:
       context: ./frontend
     container_name: plurione-frontend
+    restart: unless-stopped
     ports:
       - "5173:5173"
     volumes:
